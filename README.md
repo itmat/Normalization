@@ -62,7 +62,7 @@ Create a file with the names of the sample directories (sorted by condition). Th
 
 > `runblast.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
       e.g. the &lt;sample dirs> should look like this:<br> 
           Sample_1<br>
           Sample_2<br>
@@ -90,7 +90,7 @@ Run the following command. By default it will return both unique and non-unique 
 
 > `filter_sam.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
       e.g. the &lt;sample dirs> should look like this:<br>
           Sample_1<br>
           Sample_2<br>
@@ -124,7 +124,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
 
 > `quantify_exons.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
       e.g. the &lt;sample dirs> should look like this:<br>
           Sample_1<br>
           Sample_2<br>
@@ -140,9 +140,9 @@ This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... 20).sa
 ##### C. Normalization Factors
 * Ribo percents: 
 
-       perl runall_get_ribo_percents.pl <sample dirs> <loc>
+         perl runall_get_ribo_percents.pl <sample dirs> <loc>
 
-       * &lt;sample dirs> : a file with the names of the sample directories (without path)
+       * &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
        	 e.g. the &lt;sample dirs> should look like this:<br>
                Sample_1<br>
                Sample_2<br>
@@ -154,9 +154,9 @@ It assumes there are files of ribosomal ids output from runblast.pl each with su
 
 * Exon to nonexon signal:
 
-       perl get_exon2nonexon_signal_stats.pl <sample dirs> <loc>
+         perl get_exon2nonexon_signal_stats.pl <sample dirs> <loc>
 
-       * &lt;sample dirs> : a file with the names of the sample directories (without path)
+       * &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
        	 e.g. the &lt;sample dirs> should look like this:<br>
               Sample_1<br>
               Sample_2<br>
@@ -171,9 +171,9 @@ It assumes there are files of ribosomal ids output from runblast.pl each with su
 
 * One exon vs multi exons:
   
-	perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc>
+	 perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc>
 
-       * &lt;sample dirs> : a file with the names of the sample directories (without path)
+       * &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
         e.g. the &lt;sample dirs> should look like this:<br>
               Sample_1<br>
               Sample_2<br>
@@ -205,7 +205,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
 
 > `quantify_introns.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
       e.g. the &lt;sample dirs> should look like this:<br>
           Sample_1<br>
           Sample_2<br>
@@ -225,7 +225,7 @@ This identifies minimum line count of each type of exonmappers/intronmappers/int
       
       perl runall_head.pl <sample dirs> <loc>
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
       e.g. the &lt;sample dirs> should look like this:<br>
           Sample_1<br>
           Sample_2<br>
@@ -239,7 +239,7 @@ This will output the same number of rows from each file in each `sample_dir/Uniq
 
       perl cat_headfiles.pl <sample dirs> <loc> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
       e.g. the &lt;sample dirs> should look like this:<br>
           Sample_1<br>
           Sample_2<br>
@@ -258,7 +258,7 @@ This will create `NORMALIZED_DATA`, `NORMALIZED_DATA/exonmappers`, and `NORMALIZ
 
       perl make_final_samfile.pl <sample dirs> <loc> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
       e.g. the &lt;sample dirs> should look like this:<br>
           Sample_1<br>
           Sample_2<br>
@@ -279,7 +279,7 @@ By default, this will use merged final sam files as input.
  
     perl runall_sam2junctions.pl <sample dirs> <loc> <genes> <genome> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
       e.g. the &lt;sample dirs> should look like this:<br>
           Sample_1<br>
           Sample_2<br>
@@ -299,7 +299,7 @@ Run the following command with **&lt;output sam?> = false**. This will output me
 
 > `quantify_exons.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
       e.g. the &lt;sample dirs> should look like this:<br>
           Sample_1<br>
           Sample_2<br>
@@ -320,7 +320,7 @@ Run the following command with **&lt;output sam?> = false**. By default this wil
 
 > `quantify_introns.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
       e.g. the &lt;sample dirs> should look like this:<br>
           Sample_1<br>
           Sample_2<br>
@@ -338,7 +338,7 @@ This outputs `intronquants` file of all samples.
 
      perl make_final_spreadsheets.pl <sample dirs> <loc> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
       e.g. the &lt;sample dirs> should look like this:<br>
           Sample_1<br>
           Sample_2<br>
@@ -369,9 +369,9 @@ This will generate `master_list_of_exons_counts`.
 
      perl runall_filter_low_expressors.pl <file of quants files> <number_of_samples> <cutoff> <loc>
 
-* &file of quants files> : a file with the names of the quants file without path
-* &number_of_samples> : number of samples
-* &cutoff> : cutoff value
+* &lt;file of quants files> : a file with the names of the quants file without path
+* &lt;number_of_samples> : number of samples
+* &lt;cutoff> : cutoff value
 * &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 
 This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts`.
