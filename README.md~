@@ -165,13 +165,13 @@ It assumes there are files of ribosomal ids output from runblast.pl each with su
        * &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
        * option:<br>
        **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
-       **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
+       **-nu** :  set this if you want to return only non-unique statsotherwise by default it will return both unique and non-uniqe stats
 
  This will output `exon2nonexon_signal_stats_Unique.txt` and/or `exon2nonexon_signal_stats_NU.txt` depending on the option provided to `Aligned_DATA` directory.
 
 * One exon vs multi exons:
   
-	  perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc>
+	 perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc>
 
        * &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
         e.g. the &lt;sample dirs> should look like this:<br>
@@ -182,7 +182,7 @@ It assumes there are files of ribosomal ids output from runblast.pl each with su
        * &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 	* option:<br>
   	**-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
-  	**-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
+  	**-nu** :  set this if you want to return only non-unique statsotherwise by default it will return both unique and non-uniqe stats
 
  This will output `1exon_vs_multi_exon_stats_Unique.txt` and/or `1exon_vs_multi_exon_stats_NU.txt` depending on the option provided to `Aligned_DATA` directory.
 
@@ -289,26 +289,7 @@ By default, this will use merged final sam files as input.
 * &lt;genes> :the RUM gene info file (with full path)
 * &lt;genome> : the RUM genome sequene one-line fasta file (with full path)
 * option:<br>
-  **-u**  :  set this if you want to return only unique junctions files, otherwise by default 
-  	 it will return merged(unique+non-unique) junctions files.
-  **-nu** :  set this if you want to return only non-unique files, otherwise by default
-         it will return merged(unique+non-unique) junctions files.
- 
-This will create `Junctions` directory and output `junctions_hq.bed`, `junctions_all.bed` and `junctions_all.rum` files of all samples.
-
-### 7. Master table of features counts
-#####A. Get Exonquants 
-**a. Concatenate unique and non-unique normalized exonmappers**
-
-If you want to quantify both Unique and Non-unique normalized exonmappers run this. If you're only interested in either Unique or Non-Unique exonmappers, go to step b.:
-
-   perl cat_exonmappers_Unique_NU.pl <sample dirs> <loc>
-
-
-* &lt;sample dirs> : a file with the names of the sample directories with SAM file/alignment output (without path)
-* &lt;loc> : the path of the directory with the sample directories
-
-This will create `NORMALIZED_DATA/exonmappers/MERGED` directory and output concatenated `exonmappers.norm.sam` file of all samples to the directory created.
+  **-u**  :  set this if you want to return only unique junctions files, otherwis` file of all samples to the directory created.
 
 **b. Run Quantify exons**
 
