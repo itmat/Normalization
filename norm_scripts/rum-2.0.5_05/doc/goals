@@ -1,0 +1,30 @@
+* Check exit status of all system calls (or use autodie)
+
+* Move most functionality from scripts into modules for reuse and testing
+
+* Add unit tests
+
+* Use more conventional directory structure and packaging (CPAN?)
+
+* Be able to install in one place and run on files in another directory
+
+* Add logging?
+
+* Be able to restart at an intermediate step?
+
+* Rather than have create_indexes_from_ucsc.pl actually run
+  everything, maybe add an option that causes it to print out a
+  Makefile.
+
+* There are a few different scripts for sorting based on
+  chromosome. Can we unify them?
+
+* It seems like we could create temp directories for all the
+  intermediate files, so we don't have to depend on the user running
+  the script in a separate directory.
+
+Need to install Log::Log4perl
+Need to install Test::Exception, Test::More
+
+
+Make mock blat and bowtie, to make testing easier?

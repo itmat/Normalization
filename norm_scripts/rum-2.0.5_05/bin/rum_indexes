@@ -1,0 +1,482 @@
+#!/usr/bin/env perl 
+# -*- cperl -*-
+
+package RUM::Script::Indexes;
+
+use strict;
+use warnings;
+use autodie;
+
+use Cwd qw(realpath);
+use FindBin qw($Bin);
+use lib ("$Bin/../lib", "$Bin/../lib/perl5");
+use RUM::Repository;
+use RUM::Script qw(get_options show_usage);
+use POSIX;
+use File::Spec qw(splitpath);
+use File::Path qw(mkpath);
+use File::Copy qw(mv);
+use Text::Wrap qw(fill);
+
+sub new {
+    my ($class) = @_;
+    return bless {}, $class;
+}
+
+sub main {
+    my ($self) = @_;
+
+    my @args = @ARGV;
+    get_options(
+        "--list|l"      => \(my $do_list),
+        "--install|i"   => \(my $do_install),
+        "--all|a"       => \(my $all),
+        "--force|f"       => \(my $force),
+        "--migrate|m"   => \(my $do_migrate),
+        "--remove|r"    => \(my $do_remove),
+        "--prefix|p=s"  => \(my $prefix),
+        "--markdown"    => \(my $use_markdown));
+    
+    if (!$prefix) {
+        my $msg;
+        if ($do_install || $do_migrate) {
+            $msg = <<"EOF";
+
+Please tell me where you want your indexes installed with the --prefix
+noption. For example, if you want the index for organism ORGANISM
+ninstalled in ~/rum_indexes/ORGANISM, you would use:
+
+  $0 --prefix ~/rum_indexes @args 
+
+EOF
+
+        }
+        else {
+            $msg = <<"EOF";
+
+Please tell me where your indexes are installed with the --prefix
+option. For example, if all of your indexes are in subdirectories of
+~/rum_indexes, you would use:
+
+  $0 --prefix ~/rum_indexes @args
+
+EOF
+        }
+        die fill('', '', $msg) . "\n";
+    }
+
+    # show_usage() unless $do_list || $do_install || $do_remove;
+    my %options;
+    $options{indexes_dir} = $prefix;
+
+    $self->{repo} = RUM::Repository->new(%options);
+    $self->{markdown} = $use_markdown;
+    $self->{force} = $force;
+    print "Using the repository located at " . realpath($prefix) . "\n";
+    
+    if ($do_list) {
+        $self->list_indexes(@ARGV);
+    }
+    elsif ($do_install) {
+        if ($all) {
+            $self->install_all_indexes();
+        }
+        else {
+            $self->install_index(@ARGV);
+        }
+    }
+    elsif ($do_remove) {
+        $self->remove_index(@ARGV);
+    }
+    elsif ($do_migrate) {
+        $self->migrate_indexes(@ARGV);
+    }
+    else {
+        $self->interactive();
+    }
+}
+
+sub repo { shift->{repo} }
+
+sub list_indexes {
+    my ($self, $pattern) = @_;
+    $self->repo->setup;
+
+    print <<EOF;
+The following indexes are available.
+Indexes that you already have are marked with '*':
+
+EOF
+    my %query;
+    $query{pattern} = qr /$pattern/ if $pattern;
+    $self->print_indexes($self->repo->indexes(%query));
+}
+
+
+sub print_indexes {
+    my ($self, @indexes) = @_;
+
+    my $i = 1;
+    for my $idx (@indexes) {
+        my $have = $self->repo->has_index($idx) ? "*" : " ";
+        if ($self->{markdown}) {
+            printf "%d. *%s* (build %s) (**%s**)\n",
+                $idx->order, $idx->latin, $idx->build, $idx->common;
+        }
+        else {
+            printf "%1s %2d %8s: %20s (%s)\n", 
+                $have, $idx->order, $idx->build, $idx->common, $idx->latin;
+        }
+    }
+}
+
+sub select_indexes {
+    my ($self, $spec) = @_;
+    my $repo = $self->repo;
+    $repo->setup;
+    my @orgs = $repo->indexes;
+    if (isdigit($spec)) {
+        my @indexes = $repo->indexes;
+        return ($indexes[$spec - 1]) if $spec > 0 && $spec <= @indexes;
+    }
+    
+    return $repo->indexes(pattern => $spec);
+}
+
+sub select_index {
+    my ($self, $spec) = @_;
+    my @candidates = $self->select_indexes($spec);
+    return $candidates[0] if @candidates == 1;
+    
+    if (@candidates > 1) {
+        print <<EOF;
+I found more than one index matching '$spec'; please be more specific:
+
+EOF
+        $self->print_indexes(@candidates);
+        return undef;
+    }
+
+    if (@candidates == 0) {
+        print <<EOF;
+
+I don't have an index with a build name, common name, or latin name of
+$spec. Please try $0 --list to see available indexes.
+EOF
+        return undef;
+    }
+    
+}
+
+my $callback = sub {
+    my ($event, $url) = @_;
+    print "$url\n" if $event eq 'start';
+};
+
+sub install_index {
+    my ($self, $spec) = @_;
+    $self->repo->setup;
+    unless ($spec) {
+        die <<EOF;
+Please specify an index. Use $0 -l to see a list of available indexes.
+EOF
+    }
+    my $org = $self->select_index($spec) or die "\n";
+    print "Installing $org->{build}: $org->{common} ($org->{latin})\n";
+
+    $self->repo->install_index($org, $callback);
+}
+
+
+
+sub install_all_indexes {
+    my ($self) = @_;
+    $self->repo->setup;
+    for my $org ($self->repo->indexes) {
+        my $name = "$org->{build}: $org->{common} ($org->{latin})";
+        if ($self->repo->has_index($org) && !$self->{force}) {
+            print "Already have $name, not installing without --force\n";
+        }
+        else {
+            print "Installing $name\n";
+            $self->repo->install_index($org, $callback);
+        }
+    }
+}
+
+
+
+sub migrate_indexes {
+    my ($self, @old_config_files) = @_;
+
+    if (! @old_config_files) {
+        die "Please list one or more old RUM index config files "
+        . "on the command line.\n";
+    }
+    
+    my @old_configs;
+    my @new_configs;
+    my @names;
+    my @old_files;
+
+    local $_;
+
+    my $root = $self->{repo}->indexes_dir;
+
+    for my $filename (@old_config_files) {
+        open my $in, "<", $filename;
+        my $old_config = RUM::ConfigFile->parse($in);
+
+        my $gene_annotations            = $old_config->gene_annotation_file;
+        my $genome_fasta                = $old_config->blat_genome_index;
+        my $bowtie_genome_prefix        = $old_config->bowtie_genome_index;
+        my $bowtie_transcriptome_prefix = $old_config->bowtie_gene_index;
+
+        my $name = RUM::Repository->config_url_to_index_name($filename);
+
+        my $dir = File::Spec->catfile($self->{repo}->indexes_dir, $name);
+
+        my (undef, undef, $new_gene_annotations) = 
+            File::Spec->splitpath($gene_annotations);
+        my (undef, undef, $new_genome_fasta) = 
+            File::Spec->splitpath($genome_fasta);
+        my (undef, undef, $new_bowtie_genome_prefix) = 
+            File::Spec->splitpath($bowtie_genome_prefix);
+        my (undef, undef, $new_bowtie_transcriptome_prefix) = 
+            File::Spec->splitpath($bowtie_transcriptome_prefix);
+
+        my @these_files = ( $gene_annotations,
+                            $genome_fasta,
+                            glob("$bowtie_genome_prefix*"),
+                            glob("$bowtie_transcriptome_prefix*") );
+        
+        print "\nThis will remove $filename and move the following files into $dir:\n\n";
+        for (@these_files) {
+            print "  $_\n";
+        }
+
+        print "\nIs this ok (y/n): ";
+        $_ = <STDIN>;
+        print "\n";
+
+        unless (/^y/) {
+            print "Skipping $name\n";
+            next;
+        }
+
+        mkpath $dir;
+        for (@these_files) {
+            print "  mv $_ $dir\n";
+            mv $_, $dir;
+        }
+        print "\n";
+
+        push @names, $name;
+        push @old_configs,$old_config;
+        print "Determining the size of the genome.\n";
+        my $genome_size =  RUM::Repository::genome_size(File::Spec->catfile($dir, $new_genome_fasta));
+
+        my $new_config = RUM::Index->new(
+            directory => $dir,
+            gene_annotations => $new_gene_annotations,
+            genome_fasta => $new_genome_fasta,
+            bowtie_genome_index => $new_bowtie_genome_prefix,
+            bowtie_transcriptome_index => $new_bowtie_transcriptome_prefix,
+            genome_size => $genome_size
+        );
+        
+        print "Saving new config file to " . $new_config->config_filename . "\n";
+        $new_config->save;
+
+        print "Removing old config file\n";
+        unlink $filename;
+    }
+}
+
+sub remove_index {
+    my ($self, $spec) = @_;
+    $self->repo->setup;
+    my $org = $self->select_index($spec) or die "\n";
+    print "Removing $org->{build}: $org->{common} ($org->{latin})\n";
+    my $callback = sub {
+        my ($event, $file) = @_;
+        print "  Removing $file\n" if $event eq 'start';
+    };
+    $self->repo->remove_index($org, $callback);
+}
+
+sub interactive {
+    my ($self) = @_;
+
+    my $prompt = "Enter the number of an index to install or q to quit: ";
+
+    while (1) {
+        print "-" x 80;
+        print "\n";
+        $self->list_indexes();
+        print "\n$prompt";
+        my $response = <STDIN>;
+        chomp $response;
+
+        if ($response eq "q") {
+            return;
+        }
+        else {
+            my @indexes = $self->select_indexes($response);
+            if (@indexes == 0) {
+                $prompt  = "$response doesn't match an index.\n";
+                $prompt .= "Please enter a number from the list or q to quit: ";
+            }
+            elsif (@indexes > 1) {
+                $prompt  = "'$response' matches more than one index.\n";
+                $prompt .= "Please enter a number from the list or q to quit: ";
+            }
+            else {
+                my $idx = $indexes[0];
+                printf "I'll install %s: %s (%s)\n", 
+                    $idx->build, $idx->common, $idx->latin;
+                $self->repo->install_index($idx, $callback);            
+            }
+
+        }
+        
+    }
+}
+
+__PACKAGE__->new->main;
+
+__END__
+
+=head1 NAME
+
+rum_indexes - List, install, or remove RUM indexes
+
+=head1 SYNOPSIS
+
+  rum_indexes [OPTIONS] [INDEX]
+  rum_indexes # Run with no arguments for interactive mode
+
+=head1 DESCRIPTION
+
+Use this program to list, install, and remove your RUM indexes.
+
+By default it will operate on the indexes installed at the same
+location as this script. For example, if the script is located at
+C<~/rum/bin/rum_indexes>, it will assume that config files are in
+C<~/rum/conf> and indexes are in C<~/rum/indexes>. You can tell it to
+use another location with the B<--prefix> option.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-a>, B<--all>
+
+When combined with B<-i>, (B<--install>), installs all the indexes
+found on the server that aren't already installed. Combine with B<-f>
+(B<--force>) to also install indexes you do already have.
+
+=item B<-f>, B<--force>
+
+When combined with B<-a>, (B<--all>) and B<-i> (B<--install>), forcibly
+re-installs all indexes found on the server.
+
+=item B<-i>, B<--install>
+
+Install the index specified by the B<INDEX> argument. This can be the
+number of the index, according to the output of C<rum_indexes --list>,
+or a pattern that matches part of the index name.
+
+=item B<-l>, B<--list>
+
+Print a list of available indexes, with a star next to any that are
+already installed.
+
+=item B<-m>, B<--migrate>
+
+Migrates an index from RUM 1.x into the directory structure needed by
+RUM 2.0. Please provide one or more RUM 1.x index configuration files
+on the command line, and it will move all the files from those indexes
+into their new locations. If you provide a --prefix argument, I'll put
+the indexes in subdirectories under that directory.
+
+=item B<--prefix> I<PREFIX>
+
+Specify a different location for the repository.
+
+=item B<-r>, B<--remove>
+
+Remove the index specified by the B<INDEX> argument, which has the
+same requirements as the B<INDEX> argument for the B<--install>
+option.
+
+=back
+
+=head1 EXAMPLES
+
+=head2 Listing Indexes
+
+Get a list of all available indexes:
+
+  $ ./bin/rum_indexes -l
+  The following indexes are available. Indexes that you already
+  have are marked with '*':
+
+    1     hg19:                human (Homo sapiens)
+  * 2     hg18:                human (Homo sapiens)
+    3      mm9:                mouse (Mus musculus)
+    4  danRer7:            zebrafish (Danio rerio)
+  --- snip ---
+
+Or filtered by a regular expression:
+
+  $ ./bin/rum_indexes -l human
+  The following indexes are available. Indexes that you already 
+  have are marked with '*':
+
+    1     hg19:                human (Homo sapiens)
+  * 2     hg18:                human (Homo sapiens)
+  --- snip ---
+
+Or in another location:
+
+  $ ./bin/rum_indexes -l human --prefix ~/rum/indexes
+  --- snip ---
+
+=head2 Installing Indexes
+
+Install an index by build name, or number, or in another location:
+
+  $ rum-indexes -i hg19
+  $ rum-indexes -i 1
+  $ rum-indexes -i 1 --prefix ~/rum/indexes
+
+Install all indexes we don't already have:
+
+  $ rum-indexes --install --all
+  $ rum-indexes -i -a
+
+Forcibly re-install all indexes found on the server:
+
+  $ rum-indexes --install --all --force
+  $ rum-indexes -i -a -f
+
+=head2 Removing Indexes
+
+Remove an index by build name, or number, or in another location:
+
+  $ rum-indexes -r hg19
+  $ rum-indexes -r 1
+  $ rum-indexes -i 1 --prefix ~/rum/indexes
+
+=head2 Interactive mode
+
+Run rum_indexes without any arguments to enter interactive mode, where
+it will prompt you for indexes to install:
+
+  $ rum_indexes
+
+Or run it with just the B<--prefix> option to run interactive mode
+pointing to a set of indexes in another location:
+
+  $ rum_indexes --list --prefix ~/my-rum-indexes
