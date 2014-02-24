@@ -171,7 +171,7 @@ It assumes there are files of ribosomal ids output from runblast.pl each with su
 
 * One exon vs multi exons:
   
-	  perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc>
+	 perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc>
 
        * &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
         e.g. the &lt;sample dirs> should look like this:<br>
