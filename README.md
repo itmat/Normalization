@@ -2,13 +2,11 @@
 
 ### 0. Setting Up
 
-#####A. Download
+#####A. Clone the repository
+    
+    git clone git@github.com:itmat/Normalization.git
 
-
-#####B. Install BLAST
-Download [BLAST and BLAST databases] (http://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs&DOC_TYPE=Download)
-
-#####C. Input Directory Structure
+#####B. Input Directory Structure
 Make sure your alignment outputs(sam files) are in each sample directory inside the `Aligned_DATA` folder.
 <pre>
 STUDY					
@@ -23,7 +21,7 @@ STUDY
         └── Aligned.sam															          
 </pre>	    																	    
 
-#####D. Output Directory Structure
+#####C. Output Directory Structure
 Once you complete the normalization pipeline, your directory structure will look like this:
 <pre>
 STUDY
@@ -64,8 +62,13 @@ Create a file with the names of the sample directories (sorted by condition). Th
 
 > `runblast.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories with SAM file/alignment output (without path)
-* &lt;loc> : the path of the directory with the sample directories
+* &lt;sample dirs> : a file with the names of the sample directories (without path)
+      e.g. the &lt;sample dirs> should look like this:<br> 
+          Sample_1<br>
+          Sample_2<br>
+          Sample_3<br>
+          Sample_4
+* &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 * &lt;samfile name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
 * &lt;blast dir> : the blast dir (full path)
 * &lt;db> : database (full path)
@@ -87,8 +90,13 @@ Run the following command. By default it will return both unique and non-unique 
 
 > `filter_sam.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories with SAM file/alignment output (without path)
-* &lt;loc> : the path of the directory with the sample directories
+* &lt;sample dirs> : a file with the names of the sample directories (without path)
+      e.g. the &lt;sample dirs> should look like this:<br>
+          Sample_1<br>
+          Sample_2<br>
+          Sample_3<br>
+          Sample_4
+* &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 * &lt;sam file name> :  the name of sam file
 * option:<br>
   **-u** : set this if you want to return only unique mappers<br>
@@ -116,8 +124,13 @@ Run the following command with **&lt;output sam?> = true**. By default this will
 
 > `quantify_exons.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories with SAM file/alignment output (without path)
-* &lt;loc> : the path of the directory with the sample directories
+* &lt;sample dirs> : a file with the names of the sample directories (without path)
+      e.g. the &lt;sample dirs> should look like this:<br>
+          Sample_1<br>
+          Sample_2<br>
+          Sample_3<br>
+          Sample_4
+* &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 * &lt;exons> : the `master_list_of_exons.txt` file (with full path)
 * &lt;output sam?> : true
 * option:<br>**-NU-only** : set this for non-unique mappers
@@ -129,8 +142,13 @@ This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... 20).sa
 
        perl runall_get_ribo_percents.pl <sample dirs> <loc>
 
-       * &lt;sample dirs> : a file with the names of the sample directories
-       * &lt;loc> : the location where the sample directories are
+       * &lt;sample dirs> : a file with the names of the sample directories (without path)
+       	 e.g. the &lt;sample dirs> should look like this:<br>
+               Sample_1<br>
+               Sample_2<br>
+               Sample_3<br>
+               Sample_4
+       * &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 
 It assumes there are files of ribosomal ids output from runblast.pl each with suffix "ribosomalids.txt". This will output `ribosomal_counts.txt` and `ribo_percents.txt` to `Aligned_DATA` directory.
 
@@ -138,8 +156,13 @@ It assumes there are files of ribosomal ids output from runblast.pl each with su
 
        perl get_exon2nonexon_signal_stats.pl <sample dirs> <loc>
 
-       * &lt;sample dirs> : a file with the names of the sample directories
-       * &lt;loc> : the location where the sample directories are
+       * &lt;sample dirs> : a file with the names of the sample directories (without path)
+       	 e.g. the &lt;sample dirs> should look like this:<br>
+              Sample_1<br>
+              Sample_2<br>
+              Sample_3<br>
+              Sample_4
+       * &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
        * option:<br>
        **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
        **-nu** :  set this if you want to return only non-unique statsotherwise by default it will return both unique and non-uniqe stats
@@ -150,8 +173,13 @@ It assumes there are files of ribosomal ids output from runblast.pl each with su
   
 	perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc>
 
-	* &lt;sample dirs> : a file with the names of the sample directories
-	* &lt;loc> : the location where the sample directories are
+       * &lt;sample dirs> : a file with the names of the sample directories (without path)
+        e.g. the &lt;sample dirs> should look like this:<br>
+              Sample_1<br>
+              Sample_2<br>
+              Sample_3<br>
+              Sample_4
+       * &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 	* option:<br>
   	**-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
   	**-nu** :  set this if you want to return only non-unique statsotherwise by default it will return both unique and non-uniqe stats
@@ -177,8 +205,13 @@ Run the following command with **&lt;output sam?> = true**. By default this will
 
 > `quantify_introns.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories with SAM file/alignment output (without path)
-* &lt;loc> : the path of the directory with the sample directories
+* &lt;sample dirs> : a file with the names of the sample directories (without path)
+      e.g. the &lt;sample dirs> should look like this:<br>
+          Sample_1<br>
+          Sample_2<br>
+          Sample_3<br>
+          Sample_4
+* &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 * &lt;introns> : the `master_list_of_introns.txt` file (with full path)
 * &lt;output sam?> : true
 * option:<br>**-NU-only** : set this for non-unique mappers
@@ -188,11 +221,17 @@ This outputs multiple files of all samples: `intronmappers.(1, 2, 3, ... 10).sam
 ### 5. Downsample
 
 ##### A. Run head 
+This identifies minimum line count of each type of exonmappers/intronmappers/intergenicmappers and downsamples each file by taking the minimum line count of rows from each file.
       
       perl runall_head.pl <sample dirs> <loc>
 
-* &lt;sample dirs> : a file with the names of the sample directories with SAM file/alignment output (without path)
-* &lt;loc> : the path of the directory with the sample directories
+* &lt;sample dirs> : a file with the names of the sample directories (without path)
+      e.g. the &lt;sample dirs> should look like this:<br>
+          Sample_1<br>
+          Sample_2<br>
+          Sample_3<br>
+          Sample_4
+* &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 
 This will output the same number of rows from each file in each `sample_dir/Unique` and/or `sample_dir/NU` directory of the same type.
 
@@ -200,8 +239,13 @@ This will output the same number of rows from each file in each `sample_dir/Uniq
 
       perl cat_headfiles.pl <sample dirs> <loc> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories with SAM file/alignment output (without path)
-* &lt;loc> : the path of the directory with the sample directories
+* &lt;sample dirs> : a file with the names of the sample directories (without path)
+      e.g. the &lt;sample dirs> should look like this:<br>
+          Sample_1<br>
+          Sample_2<br>
+          Sample_3<br>
+          Sample_4
+* &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 * option:<br>
   **-u**  :  set this if you want to return only unique mappers, otherwise by default
          it will return both unique and non-unique mappers.<br>
@@ -214,8 +258,13 @@ This will create `NORMALIZED_DATA`, `NORMALIZED_DATA/exonmappers`, and `NORMALIZ
 
       perl make_final_samfile.pl <sample dirs> <loc> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories with SAM file/alignment output (without path)
-* &lt;loc> : the path of the directory with the sample directories
+* &lt;sample dirs> : a file with the names of the sample directories (without path)
+      e.g. the &lt;sample dirs> should look like this:<br>
+          Sample_1<br>
+          Sample_2<br>
+          Sample_3<br>
+          Sample_4
+* &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 * option:<br>
   **-u**  :  set this if you want to return only unique mappers, otherwise by default
          it will return both unique, non-unique, and merged final sam files.<br>
@@ -230,8 +279,13 @@ By default, this will use merged final sam files as input.
  
     perl runall_sam2junctions.pl <sample dirs> <loc> <genes> <genome> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories with SAM file/alignment output (without path)
-* &lt;loc> : the path of the directory with the sample directories
+* &lt;sample dirs> : a file with the names of the sample directories (without path)
+      e.g. the &lt;sample dirs> should look like this:<br>
+          Sample_1<br>
+          Sample_2<br>
+          Sample_3<br>
+          Sample_4
+* &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 * &lt;genes> :the RUM gene info file (with full path)
 * &lt;genome> : the RUM genome sequene one-line fasta file (with full path)
 * option:<br>
@@ -245,8 +299,13 @@ Run the following command with **&lt;output sam?> = false**. This will output me
 
 > `quantify_exons.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories with SAM file/alignment output (without path)
-* &lt;loc> : the path of the directory with the sample directories
+* &lt;sample dirs> : a file with the names of the sample directories (without path)
+      e.g. the &lt;sample dirs> should look like this:<br>
+          Sample_1<br>
+          Sample_2<br>
+          Sample_3<br>
+          Sample_4
+* &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 * &lt;exons> : the `master_list_of_exons.txt` file (with full path)
 * &lt;output sam?> : false
 * option:<br>**-NU-only** : set this for non-unique mappers
@@ -261,8 +320,13 @@ Run the following command with **&lt;output sam?> = false**. By default this wil
 
 > `quantify_introns.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories with SAM file/alignment output (without path)
-* &lt;loc> : the path of the directory with the sample directories
+* &lt;sample dirs> : a file with the names of the sample directories (without path)
+      e.g. the &lt;sample dirs> should look like this:<br>
+          Sample_1<br>
+          Sample_2<br>
+          Sample_3<br>
+          Sample_4
+* &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 * &lt;introns> : the `master_list_of_introns.txt` file (with full path)
 * &lt;output sam?> : false
 * option:<br>**-NU-only** : set this for non-unique mappers
@@ -274,8 +338,13 @@ This outputs `intronquants` file of all samples.
 
      perl make_final_spreadsheets.pl <sample dirs> <loc> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories with SAM file/alignment output (without path)
-* &lt;loc> : the path of the directory with the sample directories
+* &lt;sample dirs> : a file with the names of the sample directories (without path)
+      e.g. the &lt;sample dirs> should look like this:<br>
+          Sample_1<br>
+          Sample_2<br>
+          Sample_3<br>
+          Sample_4
+* &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 * option:<br>
   **-u**  :  set this if you want to return only unique, otherwise by default
          it will return min and max spreadsheets.<br>
@@ -292,7 +361,7 @@ This will create `list_of_exons_counts`, `master_list_of_introns_counts`, and `m
 * &lt;annotation file> : should be downloaded from UCSC known-gene track including
 at minimum name, chrom, strand, exonStarts, exonEnds, all kgXref fields and hgnc, spDisease,\
  protein and gene fields from the Linked Tables table.
-* &lt;loc> : the path to the sample directories.
+* &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 
 This will generate `master_list_of_exons_counts`.
 
@@ -303,6 +372,6 @@ This will generate `master_list_of_exons_counts`.
 * &file of quants files> : a file with the names of the quants file without path
 * &number_of_samples> : number of samples
 * &cutoff> : cutoff value
-* &loc> : the path to the sample directories
+* &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 
 This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts`.
