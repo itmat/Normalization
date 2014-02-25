@@ -53,8 +53,8 @@ for($i=1; $i<=20; $i++) {
 	}
     }
     close(INFILE);
-    print "minEU[$i] = $minEU[$i]\n";
-    print "minENU[$i] = $minENU[$i]\n";
+#    print "minEU[$i] = $minEU[$i]\n";
+#    print "minENU[$i] = $minENU[$i]\n";
 }
 if($exonuniques eq 'true' && $warnUE =~ /\S/) {
     die "$warnUE\nAre you sure the directories in '$ARGV[0]' are exactly the ones you want?  Please check and fix and rerun...\n\n";
@@ -104,8 +104,8 @@ for($i=1; $i<=10; $i++) {
 	}
     }
     close(INFILE);
-    print "minIU[$i] = $minIU[$i]\n";
-    print "minINU[$i] = $minINU[$i]\n";
+#    print "minIU[$i] = $minIU[$i]\n";
+#    print "minINU[$i] = $minINU[$i]\n";
 }
 if($intronuniques eq 'true' && $warnUI =~ /\S/) {
     die "$warnUI\nAre you sure the directories in '$ARGV[0]' are exactly the ones you want?  Please check and fix and rerun...\n\n";
@@ -153,8 +153,8 @@ while($dirname = <INFILE>) {
     }
 }
 close(INFILE);
-print "minIGU = $minIGU\n";
-print "minIGNU = $minIGNU\n";
+#print "minIGU = $minIGU\n";
+#print "minIGNU = $minIGNU\n";
 if($iguniques eq 'true' && $warnUIG =~ /\S/) {
     die "$warnUIG\nAre you sure the directories in '$ARGV[0]' are exactly the ones you want?  Please check and fix and rerun...\n\n";
 }

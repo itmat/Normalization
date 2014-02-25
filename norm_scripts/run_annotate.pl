@@ -1,4 +1,4 @@
-if(@ARGV<2) {
+if(@ARGV<3) {
     die "usage: perl run_annotate.pl <file of features files> <annotation file> <loc>
 
 where:
