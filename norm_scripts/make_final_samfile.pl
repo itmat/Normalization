@@ -62,6 +62,15 @@ while ($line = <INFILE>){
     $dir = $line;
     $id = $line;
     $id =~ s/Sample_//;
+    $in_UE = "$exon_dir/Unique/$id.exonmappers.norm_u.sam";
+    $in_NUE = "$exon_dir/NU/$id.exonmappers.norm_nu.sam";
+    $in_UI = "$nexon_dir/Unique/$id.intronmappers.norm_u.sam";
+    $in_NUI = "$nexon_dir/NU/$id.intronmappers.norm_nu.sam";
+    $in_UG = "$nexon_dir/Unique/$id.intergenicmappers.norm_u.sam";
+    $in_NUG = "$nexon_dir/NU/$id.intergenicmappers.norm_nu.sam";
+    $out_U = "$final_U_dir/$id.FINAL.norm_u.sam";
+    $out_NU = "$final_NU_dir/$id.FINAL.norm_nu.sam";
+    $out_M = "$final_M_dir/$id.FINAL.norm.sam";
     if ($option_found eq "false"){
 	unless (-d $final_U_dir){
 	    `mkdir $final_U_dir`;
@@ -72,22 +81,121 @@ while ($line = <INFILE>){
 	unless (-d $final_M_dir){
 	    `mkdir $final_M_dir`;
 	}
-	`cat $exon_dir/Unique/$id.*norm_u.sam $nexon_dir/Unique/$id.*intronmappers.norm_u.sam $nexon_dir/Unique/$id.*intergenicmappers.norm_u.sam > $final_U_dir/$id.FINAL.norm_u.sam`;
-	`cat $exon_dir/NU/$id.*norm_nu.sam $nexon_dir/NU/$id.*intronmappers.norm_nu.sam $nexon_dir/NU/$id.*intergenicmappers.norm_nu.sam > $final_NU_dir/$id.FINAL.norm_nu.sam`;
-	`cat $exon_dir/*/$id.*norm*.sam $nexon_dir/*/$id.*intronmappers.norm*.sam $nexon_dir/*/$id.*intergenicmappers.norm*.sam > $final_M_dir/$id.FINAL.norm.sam`;
+	#unique 
+	open(OUTU, ">$out_U");
+	open(INUE, $in_UE);
+	while($line = <INUE>){
+	    chomp($line);
+	    $line = $line . "\tXT:A:E";
+	    print OUTU "$line\n";
+	}
+	close(INUE);
+
+	open(INUI, $in_UI);
+	while($line = <INUI>){
+	    chomp($line);
+            $line = $line . "\tXT:A:I";
+            print OUTU "$line\n";
+	}
+	close(INUI);
+
+	open(INUG, $in_UG);
+	while($line = <INUG>){
+            chomp($line);
+            $line = $line . "\tXT:A:G";
+            print OUTU "$line\n";
+	}
+	close(INUG);
+	close(OUTU);
+
+	#non-unique
+	open(OUTNU, ">$out_NU");
+	open(INNUE, $in_NUE);
+	while($line = <INNUE>){
+	    chomp($line);
+	    $line = $line . "\tXT:A:E";
+	    print OUTNU "$line\n";
+	}
+	close(INNUE);
+	open(INNUI, $in_NUI);
+	while($line = <INNUI>){
+	    chomp($line);
+            $line = $line . "\tXT:A:I";
+            print OUTNU "$line\n";
+	}
+	close(INNUI);
+	open(INNUG, $in_NUG);
+	while($line = <INNUG>){
+            chomp($line);
+            $line = $line . "\tXT:A:G";
+            print OUTNU "$line\n";
+	}
+	close(INNUG);
+	close(OUTNU);
+	#merged
+	`cat $out_U $out_NU > $out_M`;
     }
     else{
 	if ($U eq "true"){
 	    unless (-d $final_U_dir){
 		`mkdir $final_U_dir`;
 	    }
-	    `cat $exon_dir/Unique/$id.*norm_u.sam $nexon_dir/Unique/$id.*intronmappers.norm_u.sam $nexon_dir/Unique/$id.*intergenicmappers.norm_u.sam > $final_U_dir/$id.FINAL.norm_u.sam`;
+	    #unique 
+	    open(OUTU, ">$out_U");
+	    open(INUE, $in_UE);
+	    while($line = <INUE>){
+		chomp($line);
+		$line = $line . "\tXT:A:E";
+		print OUTU "$line\n";
+	    }
+	    close(INUE);
+	    
+	    open(INUI, $in_UI);
+	    while($line = <INUI>){
+		chomp($line);
+		$line = $line . "\tXT:A:I";
+		print OUTU "$line\n";
+	    }
+	    close(INUI);
+	    
+	    open(INUG, $in_UG);
+	    while($line = <INUG>){
+		chomp($line);
+		$line = $line . "\tXT:A:G";
+		print OUTU "$line\n";
+	    }
+	    close(INUG);
+	    close(OUTU);
 	}
+	
 	if ($NU eq "true"){
             unless (-d $final_NU_dir){
                 `mkdir $final_NU_dir`;
             }
-	        `cat $exon_dir/NU/$id.*norm_nu.sam $nexon_dir/NU/$id.*intronmappers.norm_nu.sam $nexon_dir/NU/$id.*intergenicmappers.norm_nu.sam > $final_NU_dir/$id.FINAL.norm_nu.sam`;
+	    #non-unique
+	    open(OUTNU, ">$out_NU");
+	    open(INNUE, $in_NUE);
+	    while($line = <INNUE>){
+		chomp($line);
+		$line = $line . "\tXT:A:E";
+		print OUTNU "$line\n";
+	    }
+	    close(INNUE);
+	    open(INNUI, $in_NUI);
+	    while($line = <INNUI>){
+		chomp($line);
+		$line = $line . "\tXT:A:I";
+		print OUTNU "$line\n";
+	    }
+	    close(INNUI);
+	    open(INNUG, $in_NUG);
+	    while($line = <INNUG>){
+		chomp($line);
+		$line = $line . "\tXT:A:G";
+		print OUTNU "$line\n";
+	    }
+	    close(INNUG);
+	    close(OUTNU);
 	}
     }
 }
