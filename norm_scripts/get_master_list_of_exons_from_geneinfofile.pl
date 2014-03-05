@@ -24,7 +24,7 @@ For more information see the library file: 'how2setup_genome-indexes_forPipeline
 ";
 }
 
-open(INFILE, $ARGV[0]);
+open(INFILE, $ARGV[0]) or die "file '$ARGV[0]' cannot open for reading.\n";
 while($line = <INFILE>) {
     chomp($line);
     @a = split(/\t/,$line);

@@ -10,6 +10,18 @@ if(@ARGV < 3) {
 ";}
 use Cwd 'abs_path';
 $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+@fields = split("/", $LOC);
+$size = @fields;
+$last_dir = $fields[@size-1];
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$shdir = $study_dir . "shell_scripts";
+$logdir = $study_dir . "logs";
+unless (-d $shdir){
+    `mkdir $shdir`;}
+unless (-d $logdir){
+    `mkdir $logdir`;}
 $sam = $ARGV[2];
 $path = abs_path($0);
 $path =~ s/runall_//;
@@ -20,10 +32,10 @@ while($line = <INFILE>) {
     $line =~ s/Sample_//;
     $line =~ s/\//_/g;
     $id = $line;
-    $shfile = "$LOC/$dir/a" . $id . "runsam2fa.sh";
+    $shfile = "$shdir/a" . $id . "runsam2fa.sh";
     open(OUTFILE, ">$shfile");
     print OUTFILE "perl $path $LOC/$dir/$sam $LOC/$dir/reads.fa\n";
     close(OUTFILE);
-    `bsub -e $LOC/$dir/sam2readsfa.err -o $LOC/$dir/sam2readsfa.out sh $shfile`;
+    `bsub -e $logdir/sam2readsfa.err -o $logdir/sam2readsfa.out sh $shfile`;
 }
 close(INFILE);

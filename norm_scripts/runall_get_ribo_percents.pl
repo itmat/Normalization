@@ -12,8 +12,20 @@ $path = abs_path($0);
 $path =~ s/runall_//;
 $sampledirs = $ARGV[0];
 $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+@fields = split("/", $LOC);
+$size = @fields;
+$last_dir = $fields[@size-1];
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$shdir = $study_dir . "shell_scripts";
+$logdir = $study_dir . "logs";
+unless (-d $shdir){
+    `mkdir $shdir`;}
+unless (-d $logdir){
+    `mkdir $logdir`;}
 
-$shfile = "$LOC/get_ribo_percents.sh";
+$shfile = "$shdir/get_ribo_percents.sh";
 open(OUT, ">$shfile");
 print OUT "perl $path $sampledirs $LOC\n";
-`bsub -q max_mem30 -o getribo.out -e getribo.err sh $shfile`;
+`bsub -q max_mem30 -o $logdir/getribopercents.out -e $logdir/getribopercents.err sh $shfile`;

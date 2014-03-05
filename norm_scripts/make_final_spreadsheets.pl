@@ -47,61 +47,67 @@ $LOC =~ s/\/$//;
 @fields = split("/", $LOC);
 $size = @fields;
 $last_dir = $fields[@size-1];
-$norm_dir = $LOC;
-$norm_dir =~ s/$last_dir//;
-$norm_dir = $norm_dir . "NORMALIZED_DATA";
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$shdir = $study_dir . "shell_scripts";
+$logdir = $study_dir . "logs";
+unless (-d $shdir){
+    `mkdir $shdir`;}
+unless (-d $logdir){
+    `mkdir $logdir`;}
+$norm_dir = $study_dir . "NORMALIZED_DATA";
 $FILE = $ARGV[0];
 
 if ($option_found eq "false"){
-    $sh_exon = "$norm_dir/exonquants2spreadsheet_min_max.sh";
+    $sh_exon = "$shdir/exonquants2spreadsheet_min_max.sh";
     open(OUTexon, ">$sh_exon");
     print OUTexon "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC exonquants";
     close(OUTexon);
-    $sh_intron = "$norm_dir/intronquants2spreadsheet_min_max.sh";
+    $sh_intron = "$shdir/intronquants2spreadsheet_min_max.sh";
     open(OUTintron, ">$sh_intron");
     print OUTintron "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC intronquants";
     close(OUTintron);
-    $sh_junctions = "$norm_dir/juncs2spreadsheet_min_max.sh";
+    $sh_junctions = "$shdir/juncs2spreadsheet_min_max.sh";
     open(OUTjunctions, ">$sh_junctions");
     print OUTjunctions "perl $path/juncs2spreadsheet_min_max.pl $FILE $LOC";
     (OUTjunctions);
-    `bsub -q max_mem30 -o $norm_dir/exonquants2spreadsheet_min_max.out -e $norm_dir/exonquants2spreadsheet_min_max.err sh $sh_exon`;
-    `bsub -q max_mem30 -o $norm_dir/intronquants2spreadsheet_min_max.out -e $norm_dir/intronquants2spreadsheet_min_max.err sh $sh_intron`;
-    `bsub -q plus -o $norm_dir/juncs2spreadsheet_min_max.out -e $norm_dir/juncs2spreadsheet_min_max.err sh $sh_junctions`;
+    `bsub -q max_mem30 -o $logdir/exonquants2spreadsheet_min_max.out -e $logdir/exonquants2spreadsheet_min_max.err sh $sh_exon`;
+    `bsub -q max_mem30 -o $logdir/intronquants2spreadsheet_min_max.out -e $logdir/intronquants2spreadsheet_min_max.err sh $sh_intron`;
+    `bsub -q plus -o $logdir/juncs2spreadsheet_min_max.out -e $logdir/juncs2spreadsheet_min_max.err sh $sh_junctions`;
 }
 else{
     if ($U eq "true"){
-	$sh_exon = "$norm_dir/exonquants2spreadsheet.u.sh";
+	$sh_exon = "$shdir/exonquants2spreadsheet.u.sh";
 	open(OUTexon, ">$sh_exon");
 	print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants";
 	close(OUTexon);
-	$sh_intron = "$norm_dir/intronquants2spreadsheet.u.sh";
+	$sh_intron = "$shdir/intronquants2spreadsheet.u.sh";
 	open(OUTintron, ">$sh_intron");
 	print OUTintron "perl $path/quants2spreadsheet.1.pl $FILE $LOC intronquants";
 	close(OUTintron);
-	$sh_junctions = "$norm_dir/juncs2spreadsheet.u.sh";
+	$sh_junctions = "$shdir/juncs2spreadsheet.u.sh";
 	open(OUTjunctions, ">$sh_junctions");
 	print OUTjunctions "perl $path/juncs2spreadsheet.1.pl $FILE $LOC";
 	(OUTjunctions);
-	`bsub -q max_mem30 -o $norm_dir/exonquants2spreadsheet.u.out -e $norm_dir/exonquants2spreadsheet.u.err sh $sh_exon`;
-	`bsub -q max_mem30 -o $norm_dir/intronquants2spreadsheet.u.out -e $norm_dir/intronquants2spreadsheet.u.err sh $sh_intron`;
-	`bsub -q plus -o $norm_dir/juncs2spreadsheet.u.out -e $norm_dir/juncs2spreadsheet.u.err sh $sh_junctions`;
+	`bsub -q max_mem30 -o $logdir/exonquants2spreadsheet.u.out -e $logdir/exonquants2spreadsheet.u.err sh $sh_exon`;
+	`bsub -q max_mem30 -o $logdir/intronquants2spreadsheet.u.out -e $logdir/intronquants2spreadsheet.u.err sh $sh_intron`;
+	`bsub -q plus -o $logdir/juncs2spreadsheet.u.out -e $logdir/juncs2spreadsheet.u.err sh $sh_junctions`;
     }
     if ($NU eq "true"){
-        $sh_exon = "$norm_dir/exonquants2spreadsheet.nu.sh";
+        $sh_exon = "$shdir/exonquants2spreadsheet.nu.sh";
         open(OUTexon, ">$sh_exon");
         print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -NU";
         close(OUTexon);
-        $sh_intron = "$norm_dir/intronquants2spreadsheet.nu.sh";
+        $sh_intron = "$shdir/intronquants2spreadsheet.nu.sh";
         open(OUTintron, ">$sh_intron");
         print OUTintron "perl $path/quants2spreadsheet.1.pl $FILE $LOC intronquants -NU";
         close(OUTintron);
-        $sh_junctions = "$norm_dir/juncs2spreadsheet.nu.sh";
+        $sh_junctions = "$shdir/juncs2spreadsheet.nu.sh";
         open(OUTjunctions, ">$sh_junctions");
         print OUTjunctions "perl $path/juncs2spreadsheet.1.pl $FILE $LOC -NU";
         (OUTjunctions);
-        `bsub -q max_mem30 -o $norm_dir/exonquants2spreadsheet.nu.out -e $norm_dir/exonquants2spreadsheet.nu.err sh $sh_exon`;
-        `bsub -q max_mem30 -o $norm_dir/intronquants2spreadsheet.nu.out -e $norm_dir/intronquants2spreadsheet.nu.err sh $sh_intron`;
-        `bsub -q plus -o $norm_dir/juncs2spreadsheet.nu.out -e $norm_dir/juncs2spreadsheet.nu.err sh $sh_junctions`;
+        `bsub -q max_mem30 -o $logdir/exonquants2spreadsheet.nu.out -e $logdir/exonquants2spreadsheet.nu.err sh $sh_exon`;
+        `bsub -q max_mem30 -o $logdir/intronquants2spreadsheet.nu.out -e $logdir/intronquants2spreadsheet.nu.err sh $sh_intron`;
+        `bsub -q plus -o $logdir/juncs2spreadsheet.nu.out -e $logdir/juncs2spreadsheet.nu.err sh $sh_junctions`;
     }
 }

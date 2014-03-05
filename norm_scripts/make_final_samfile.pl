@@ -7,9 +7,9 @@ where:
 
 option:
   -u  :  set this if you want to return only unique mappers, otherwise by default
-         it will return both unique and non-unique mappers.
+         it will return both unique and non-unique mappers to merged sam file.
   -nu :  set this if you want to return only non-unique mappers, otherwise by default
-         it will return both unique and non-unique mappers.
+         it will return both unique and non-unique mappers to merged sam file.
 
 ";
 }
@@ -34,8 +34,8 @@ for($i=2; $i<@ARGV; $i++) {
 }
 if($numargs > 1) {
     die "you cannot specify both -u and -nu, it will output both unique
-and non-unique by default so if that's what you want don't use either arg
--u or -nu.
+and non-unique to merged file by default so if that's what you want don't 
+use either arg -u or -nu.
 ";
 }
 
@@ -56,7 +56,7 @@ $final_M_dir = "$finalsam_dir/MERGED";
 unless (-d $finalsam_dir){
     `mkdir $finalsam_dir`;
 }
-open(INFILE, $ARGV[0]);
+open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){
     chomp($line);
     $dir = $line;
@@ -72,22 +72,16 @@ while ($line = <INFILE>){
     $out_NU = "$final_NU_dir/$id.FINAL.norm_nu.sam";
     $out_M = "$final_M_dir/$id.FINAL.norm.sam";
     if ($option_found eq "false"){
-	unless (-d $final_U_dir){
-	    `mkdir $final_U_dir`;
-	}
-	unless (-d $final_NU_dir){
-	    `mkdir $final_NU_dir`;
-	}
 	unless (-d $final_M_dir){
 	    `mkdir $final_M_dir`;
 	}
-	#unique 
-	open(OUTU, ">$out_U");
+	#merged
+	open(OUTM, ">$out_M");
 	open(INUE, $in_UE);
 	while($line = <INUE>){
 	    chomp($line);
 	    $line = $line . "\tXT:A:E";
-	    print OUTU "$line\n";
+	    print OUTM "$line\n";
 	}
 	close(INUE);
 
@@ -95,7 +89,7 @@ while ($line = <INFILE>){
 	while($line = <INUI>){
 	    chomp($line);
             $line = $line . "\tXT:A:I";
-            print OUTU "$line\n";
+            print OUTM "$line\n";
 	}
 	close(INUI);
 
@@ -103,37 +97,34 @@ while ($line = <INFILE>){
 	while($line = <INUG>){
             chomp($line);
             $line = $line . "\tXT:A:G";
-            print OUTU "$line\n";
+            print OUTM "$line\n";
 	}
 	close(INUG);
-	close(OUTU);
 
-	#non-unique
-	open(OUTNU, ">$out_NU");
 	open(INNUE, $in_NUE);
 	while($line = <INNUE>){
 	    chomp($line);
 	    $line = $line . "\tXT:A:E";
-	    print OUTNU "$line\n";
+	    print OUTM "$line\n";
 	}
 	close(INNUE);
+
 	open(INNUI, $in_NUI);
 	while($line = <INNUI>){
 	    chomp($line);
             $line = $line . "\tXT:A:I";
-            print OUTNU "$line\n";
+            print OUTM "$line\n";
 	}
 	close(INNUI);
+
 	open(INNUG, $in_NUG);
 	while($line = <INNUG>){
             chomp($line);
             $line = $line . "\tXT:A:G";
-            print OUTNU "$line\n";
+            print OUTM "$line\n";
 	}
 	close(INNUG);
-	close(OUTNU);
-	#merged
-	`cat $out_U $out_NU > $out_M`;
+	close(OUTM);
     }
     else{
 	if ($U eq "true"){

@@ -50,9 +50,15 @@ $LOC =~ s/\/$//;
 @fields = split("/", $LOC);
 $size = @fields;
 $last_dir = $fields[@size-1];
-$norm_dir = $LOC;
-$norm_dir =~ s/$last_dir//;
-$norm_dir = $norm_dir . "NORMALIZED_DATA";
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$shdir = $study_dir . "shell_scripts";
+$logdir = $study_dir . "logs";
+unless (-d $shdir){
+    `mkdir $shdir`;}
+unless (-d $logdir){
+    `mkdir $logdir`;}
+$norm_dir = $study_dir . "NORMALIZED_DATA";
 $finalsam_dir = "$norm_dir/FINAL_SAM";
 $final_U_dir = "$finalsam_dir/Unique";
 $final_NU_dir = "$finalsam_dir/NU";
@@ -90,9 +96,9 @@ while($line = <INFILE>) {
     $outfile2 =~ s/.sam/_junctions_all.bed/;
     $outfile3 = $filename;
     $outfile3 =~ s/.sam/_junctions_hq.bed/;
-    open(OUTFILE, ">$junctions_dir/$shfile");
+    open(OUTFILE, ">$shdir/$shfile");
     print OUTFILE "perl $path/rum-2.0.5_05/bin/make_RUM_junctions_file.pl --genes $genes --sam-in $final_dir/$filename --genome $genome --all-rum-out $junctions_dir/$outfile1 --all-bed-out $junctions_dir/$outfile2 --high-bed-out $junctions_dir/$outfile3 -faok\n";
     close(OUTFILE);
-    `bsub -q plus -o $junctions_dir/$id.sam2junctions.out -e $junctions_dir/$id.sam2junctions.err sh $junctions_dir/$shfile`;
+    `bsub -q plus -o $logdir/$id.sam2junctions.out -e $logdir/$id.sam2junctions.err sh $shdir/$shfile`;
 }
 close(INFILE);

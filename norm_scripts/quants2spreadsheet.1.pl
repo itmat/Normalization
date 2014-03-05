@@ -60,7 +60,7 @@ tronquants\".\n\n";
 }
 
 if($type =~ /^exon/){
-    open(INFILE, $ARGV[0]);
+    open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     open(OUT, ">$sample_name_file");
     while ($line = <INFILE>){
 	chomp($line);
@@ -75,7 +75,7 @@ if($type =~ /^exon/){
     }
 }
 if ($type =~ /^intron/){
-    open(INFILE, $ARGV[0]);
+    open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     open(OUT, ">$sample_name_file");
     while ($line = <INFILE>){
 	chomp($line);

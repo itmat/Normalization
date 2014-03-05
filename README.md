@@ -39,20 +39,24 @@ STUDY
 │       ├── NU
 │       └── Unique
 │
-└── NORMALIZED_DATA
-    ├── exonmappers
-    │   ├── MERGED
-    │   ├── NU
-    │   └── Unique
-    ├── notexonmappers
-    │    ├── MERGED
-    │    ├── NU
-    │    └── Unique
-    ├── FINAL_SAM
-    │   ├── MERGED
-    │   ├── NU
-    │   └── Unique
-    └── Junctions
+│── NORMALIZED_DATA
+│   ├── exonmappers
+│   │   ├── MERGED
+│   │   ├── NU
+│   │   └── Unique
+│   ├── notexonmappers
+│   │    ├── MERGED
+│   │    ├── NU
+│   │    └── Unique
+│   ├── FINAL_SAM
+│   │   ├── MERGED
+│   │   ├── NU
+│   │   └── Unique
+│   └── Junctions
+│
+│── logs
+│
+└── shell_scripts
 </pre>
    					
 ### 1. Run BLAST
@@ -170,8 +174,8 @@ It assumes there are files of ribosomal ids output from runblast.pl each with su
  This will output `exon2nonexon_signal_stats_Unique.txt` and/or `exon2nonexon_signal_stats_NU.txt` depending on the option provided to `Aligned_DATA` directory.
 
 * One exon vs multi exons:
-  
-	 perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc>
+
+      	 perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc>
 
        * &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
         e.g. the &lt;sample dirs> should look like this:<br>
@@ -267,11 +271,11 @@ This will create `NORMALIZED_DATA`, `NORMALIZED_DATA/exonmappers`, and `NORMALIZ
 * &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 * option:<br>
   **-u**  :  set this if you want to return only unique mappers, otherwise by default
-         it will return both unique, non-unique, and merged final sam files.<br>
+         it will return merged final sam.<br>
   **-nu** :  set this if you want to return only non-unique mappers, otherwise by default
-         it will return both unique, non-unique, and merged final sam files.
+         it will return merged final sam.
 
-This will create `FINAL_SAM`. Then, depending on the option given, it will make `FINAL_SAM/Unique`, `FINAL_SAM/NU`, and/or `FINAL_SAM/MERGED` directory and output final sam files to the directories created.
+This will create `FINAL_SAM`. Then, depending on the option given, it will make `FINAL_SAM/Unique`, `FINAL_SAM/NU`, or `FINAL_SAM/MERGED` directory and output final sam files to the directories created. A tag will be added to each sequence indicating its type (XT:A:E for exonmappers, XT:A:I for intronmapper, and XT:A:G for intergenicmappers).
 
 ### 6. Run sam2junctions
 
@@ -302,7 +306,7 @@ This will create `Junctions` directory and output `junctions_hq.bed`, `junctions
 
 If you want to quantify both Unique and Non-unique normalized exonmappers run this. If you're only interested in either Unique or Non-Unique exonmappers, go to step b.:
 
-   perl cat_exonmappers_Unique_NU.pl <sample dirs> <loc>
+    perl cat_exonmappers_Unique_NU.pl <sample dirs> <loc>
 
 
 * &lt;sample dirs> : a file with the names of the sample directories with SAM file/alignment output (without path)
@@ -394,3 +398,33 @@ This will generate `master_list_of_exons_counts`.
 * &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
 
 This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts`.
+
+###8. Clean Up
+#####A. Delete Intermediate SAM Files
+
+     perl cleanup.pl <sample dirs> <loc>
+
+* &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
+      e.g. the &lt;sample dirs> should look like this:<br>
+          Sample_1<br>
+          Sample_2<br>
+          Sample_3<br>
+          Sample_4
+* &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
+
+#####B. Convert SAM to BAM
+
+     perl runall_sam2bam.pl <sample dirs> <loc> <sam file name> <fai file>
+
+* &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
+      e.g. the &lt;sample dirs> should look like this:<br>
+          Sample_1<br>
+          Sample_2<br>
+          Sample_3<br>
+          Sample_4
+* &lt;loc> : full path of the directory with the sample directories (Aligned_DATA)
+* &lt;sam file name> : name of the alignment sam file
+* &lt;fai file> : fai file (full path)
+
+This will covert SAM to BAM, sort, index, and delete the SAM and unsorted BAM file. 
+ 

@@ -20,17 +20,23 @@ $LOC =~ s/\/$//;
 @fields = split("/", $LOC);
 $size = @fields;
 $last_dir = $fields[@size-1];
-$norm_dir = $LOC;
-$norm_dir =~ s/$last_dir//;
-$norm_dir = $norm_dir . "NORMALIZED_DATA";
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$shdir = $study_dir . "shell_scripts";
+$logdir = $study_dir . "logs";
+unless (-d $shdir){
+    `mkdir $shdir`;}
+unless (-d $logdir){
+    `mkdir $logdir`;}
+$norm_dir = $study_dir . "NORMALIZED_DATA";
 
-open(INFILE, $ARGV[0]);
+open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){
     chomp($line);
-    $shfile = "annotate.$line.sh";
+    $shfile = "$shdir/annotate.$line.sh";
     open(OUT, ">$shfile");
     print OUT "perl $path/annotate.pl $annot_file $norm_dir/$line > $norm_dir/master_$line";
     close(OUT);
-    `bsub -q max_mem30 -o $norm_dir/annotate_$line.out -e $norm_dir/annotate_$line.err sh $shfile`;
+    `bsub -q max_mem30 -o $logdir/annotate_$line.out -e $logdir/annotate_$line.err sh $shfile`;
 }
 close(INFILE);

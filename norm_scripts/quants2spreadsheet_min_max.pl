@@ -42,7 +42,7 @@ else{
 }
 
 if ($type =~ /^exon/){
-    open(INFILE, $ARGV[0]);
+    open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     open(OUT, ">$sample_name_file");
     while ($line = <INFILE>){
 	chomp($line);
@@ -55,7 +55,7 @@ close(INFILE);
 close(OUT);
 
 if ($type =~ /^intron/){
-    open(INFILE, $ARGV[0]);
+    open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     while($line = <INFILE>){
 	chomp($line);
 	$id = $line;

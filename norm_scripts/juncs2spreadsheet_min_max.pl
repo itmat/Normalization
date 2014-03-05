@@ -23,7 +23,7 @@ $out_MIN = $outfile . "_MIN.txt";
 $out_MAX = $outfile . "_MAX.txt";
 $sample_name_file = "$norm_dir/file_junctions_minmax.txt";
 
-open(INFILE, $ARGV[0]);
+open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 open(OUT, ">$sample_name_file");
 while($line = <INFILE>){
     chomp($line);

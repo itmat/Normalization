@@ -27,13 +27,22 @@ for($i=4; $i<@ARGV; $i++) {
         die "arg \"$ARGV[$i]\" not recognized.\n";
     }
 }
-unless (-e $ARGV[0]){
-    die"ERROR: cannot find file $ARGV[0] \n";}
-unless (-e $ARGV[2]){
-    die"ERROR: cannot find file $ARGV[2] \n";}
-open(INFILE, $ARGV[0]);  # file names
+open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
+$LOC =~ s/\/$//;
+@fields = split("/", $LOC);
+$size = @fields;
+$last_dir = $fields[@size-1];
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$shdir = $study_dir . "shell_scripts";
+$logdir = $study_dir . "logs";
+unless (-d $shdir){
+    `mkdir $shdir`;}
+unless (-d $logdir){
+    `mkdir $logdir`;}
+
 $introns = $ARGV[2];
 $outputsam = $ARGV[3];
 while($line = <INFILE>) {
@@ -70,21 +79,22 @@ while($line = <INFILE>) {
     }
 
     $shfile = "IQ" . $filename . ".sh";
+    $shfile2 = "IQ" . $filename . ".2.sh";
     $outfile = $filename;
     $outfile =~ s/.sam/_intronquants/;
     if($outputsam eq "true") {
-	open(OUTFILE, ">$LOC/$dir/$shfile");
+	open(OUTFILE, ">$shdir/$shfile");
 	print OUTFILE "perl $path $introns $LOC/$dir/$filename $LOC/$dir/$outfile true\n";
     } else {
-	open(OUTFILE, ">$final_nexon_dir/$shfile");
+	open(OUTFILE, ">$shdir/$shfile2");
 	print OUTFILE "perl $path $introns $final_nexon_dir/$filename $final_nexon_dir/$outfile false\n";
     }
     close(OUTFILE);
     if($outputsam eq "true") {
-	`bsub -q plus -e $LOC/$dir/$id.quantifyintrons.err -o $LOC/$dir/$id.quantifyintrons.out sh $LOC/$dir/$shfile`;
+	`bsub -q plus -e $logdir/$id.quantifyintrons.err -o $logdir/$id.quantifyintrons.out sh $shdir/$shfile`;
     }
     else {
-	`bsub -q plus -e $final_nexon_dir/$id.quantifyintrons.err -o $final_nexon_dir/$id.quantifyintrons.out sh $final_nexon_dir/$shfile`;
+	`bsub -q plus -e $logdir/$id.quantifyintrons.err -o $logdir/$id.quantifyintrons.out sh $shdir/$shfile2`;
     }
 }
 close(INFILE);

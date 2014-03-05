@@ -14,7 +14,7 @@ if (-e "$LOC/ribosomal_counts.txt"){
     `rm "$LOC/ribosomal_counts.txt"`;
 }
 
-open(IN, $ARGV[0]);
+open(IN, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 $i=0;
 while($dir = <IN>){
     chomp($dir);
@@ -25,8 +25,9 @@ while($dir = <IN>){
     $i++;
 }
 
-open(INFILE, "$LOC/ribosomal_counts.txt");
-open(OUTFILE, ">$LOC/ribo_percents.txt");
+open(INFILE, "$LOC/ribosomal_counts.txt") or die "file '$LOC/ribosomal_counts.txt' cannot open for reading.\n";
+open(OUTFILE, ">$LOC/ribo_percents.txt") or die "file '$LOC/ribo_percents.txt'\
+ cannot open for writing.\n";
 print OUTFILE "#ribo\t#reads\t\%ribo\tname\n";
 $i=0;
 while($line = <INFILE>) {

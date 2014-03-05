@@ -23,7 +23,7 @@ $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
 $norm_dir = $norm_dir . "NORMALIZED_DATA";
 
-open(INFILE, $ARGV[0]);
+open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){
     chomp($line);
     `perl $path $norm_dir/$line $num_samples $cutoff > $norm_dir/FINAL_$line`;

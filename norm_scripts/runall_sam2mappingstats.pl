@@ -24,6 +24,18 @@ $path = abs_path($0);
 $path =~ s/runall_//;
 $sampledirs = $ARGV[0];
 $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+@fields = split("/", $LOC);
+$size = @fields;
+$last_dir = $fields[@size-1];
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$shdir = $study_dir . "shell_scripts";
+$logdir = $study_dir . "logs";
+unless (-d $shdir){
+    `mkdir $shdir`;}
+unless (-d $logdir){
+    `mkdir $logdir`;}
 $sam_name = $ARGV[2];
 $total_reads_file = $ARGV[3];
 if ($total_reads_file eq "true"){
@@ -47,7 +59,7 @@ if ($total_reads_file eq "true"){
     close(INFILE);
     $sampledirs = $outfile;
     
-    open(INFILE, $sampledirs);
+    open(INFILE, $sampledirs) or die "cannot find file '$sampledirs'\n";
     while($line = <INFILE>){
 	chomp($line);
 	@fields = split(" ", $line);
@@ -56,7 +68,7 @@ if ($total_reads_file eq "true"){
 	$num_id = $fields[1];
 	$id = $dir;
 	$id =~ s/Sample_//;
-	$shfile = "$LOC/$dir/a." . $id . "runsam2mappingstats.sh";
+	$shfile = "$shdir/m." . $id . "runsam2mappingstats.sh";
 	open(OUTFILE, ">$shfile");
 	if ($size eq "1"){
 	    print OUTFILE "perl $path $LOC/$dir/$sam_name > $LOC/$dir/$id.mappingstats.txt\n";
@@ -65,7 +77,7 @@ if ($total_reads_file eq "true"){
 	    print OUTFILE "perl $path $LOC/$dir/$sam_name -numreads $num_id > $LOC/$dir/$id.mappingstats.txt\n";
 	}
 	close(OUTFILE);
-	`bsub -q max_mem30 -o $LOC/$dir/$id.sam2mappingstats.out -e $LOC/$dir/$id.sam2mappingstats.err sh $shfile`;
+	`bsub -q max_mem30 -o $logdir/$id.sam2mappingstats.out -e $logdir/$id.sam2mappingstats.err sh $shfile`;
     }
     close(INFILE);
 }
@@ -78,11 +90,11 @@ if ($total_reads_file eq "false"){
 	$id = $dir;
 	$id =~ s/Sample_//;
 	$id =~ s/\//_/g;
-	$shfile = "$LOC/$dir/a." . $id . "runsam2mappingstats.sh";
+	$shfile = "$shdir/m." . $id . "runsam2mappingstats.sh";
 	open(OUTFILE, ">$shfile");
 	print OUTFILE "perl $path $LOC/$dir/$sam_name > $LOC/$dir/$id.mappingstats.txt\n";
 	close(OUTFILE);
-	`bsub -q max_mem30 -o $LOC/$dir/$id.sam2mappingstats.out -e $LOC/$dir/$id.sam2mappingstats.err sh $shfile`;
+	`bsub -q max_mem30 -o $logdir/$id.sam2mappingstats.out -e $logdir/$id.sam2mappingstats.err sh $shfile`;
     }
     close(INFILE);
 }

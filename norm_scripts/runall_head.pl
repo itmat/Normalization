@@ -12,6 +12,18 @@ The output file names will be modified from the input file names.
 }
 
 $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+@fields = split("/", $LOC);
+$size = @fields;
+$last_dir = $fields[@size-1];
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$shdir = $study_dir . "shell_scripts";
+$logdir = $study_dir . "logs";
+unless (-d $shdir){
+    `mkdir $shdir`;}
+unless (-d $logdir){
+    `mkdir $logdir`;}
 
 $exonuniques = "false";
 $exonnu = "false";
@@ -69,7 +81,7 @@ $intronnu = "false";
 $warnUI = "";
 $warnNUI = "";
 for($i=1; $i<=10; $i++) {
-    open(INFILE, $ARGV[0]);  # file of dirs
+    open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";  # file of dirs
     $minIU[$i] = 1000000000000;
     $minINU[$i] = 1000000000000;
     while($dirname = <INFILE>) {
@@ -181,19 +193,19 @@ for($i=1; $i<=20; $i++) {
 	$outfileNU =~ s/.sam/_head_$numNU.sam/;
 	$dirU = $dirname . "/Unique";
 	$dirNU = $dirname . "/NU";
-	$shfileU[$i] = "$LOC/$dirU/a" . $id . "exonmappers.u_runhead.$i.sh";
-	$shfileNU[$i] = "$LOC/$dirNU/a" . $id . "exonmappers.nu_runhead.$i.sh";
+	$shfileU[$i] = "$shdir/a" . $id . "exonmappers.u_runhead.$i.sh";
+	$shfileNU[$i] = "$shdir/a" . $id . "exonmappers.nu_runhead.$i.sh";
 	if($exonuniques eq 'true') {
 	    open(OUTFILEU, ">$shfileU[$i]");
 	    print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	    close(OUTFILEU);
-	    `bsub -o $LOC/$dirU/$id.exonmappers.u_head.$i.out -e $LOC/$dirU/$id.exonmappers.u_head.$i.err sh $shfileU[$i]`;
+	    `bsub -o $logdir/$id.exonmappers.u_head.$i.out -e $logdir/$id.exonmappers.u_head.$i.err sh $shfileU[$i]`;
 	}
 	if($exonnu eq 'true') {
 	    open(OUTFILENU, ">$shfileNU[$i]");
 	    print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	    close(OUTFILENU);
-	    `bsub -o $LOC/$dirNU/$id.exonmappers.nu_head.$i.out -e $LOC/$dirNU/$id.exonmappers.nu_head.$i.err sh $shfileNU[$i]`;
+	    `bsub -o $logdir/$id.exonmappers.nu_head.$i.out -e $logdir/$id.exonmappers.nu_head.$i.err sh $shfileNU[$i]`;
 	}
     }
     close(INFILE);
@@ -216,19 +228,19 @@ for($i=1; $i<=10; $i++) {
         $outfileNU =~ s/.sam/_head_$numNU.sam/;
         $dirU = $dirname . "/Unique";
         $dirNU = $dirname . "/NU";
-        $shfileU[$i] = "$LOC/$dirU/a" . $id . "intronmappers.u_runhead.$i.sh";
-        $shfileNU[$i] = "$LOC/$dirNU/a" . $id . "intronmappers.nu_runhead.$i.sh";
+        $shfileU[$i] = "$shdir/a" . $id . "intronmappers.u_runhead.$i.sh";
+        $shfileNU[$i] = "$shdir/a" . $id . "intronmappers.nu_runhead.$i.sh";
 	if($intronuniques eq 'true') {
 	    open(OUTFILEU, ">$shfileU[$i]");
 	    print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	    close(OUTFILEU);
-	    `bsub -o $LOC/$dirU/$id.intronmappers.u_head.$i.out -e $LOC/$dirU/$id.intronmappers.u_head.$i.err sh $shfileU[$i]`;
+	    `bsub -o $logdir/$id.intronmappers.u_head.$i.out -e $logdir/$id.intronmappers.u_head.$i.err sh $shfileU[$i]`;
 	}
 	if($intronnu eq 'true') {
 	    open(OUTFILENU, ">$shfileNU[$i]");
 	    print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	    close(OUTFILENU);
-	    `bsub -o $LOC/$dirNU/$id.intronmappers.nu_head.$i.out -e $LOC/$dirNU/$id.intronmappers.nu_head.$i.err sh $shfileNU[$i]`;
+	    `bsub -o $logdir/$id.intronmappers.nu_head.$i.out -e $logdir/$id.intronmappers.nu_head.$i.err sh $shfileNU[$i]`;
 	}
     }
     close(INFILE);
@@ -248,19 +260,19 @@ while($dirname = <INFILE>) {
     $outfileNU = "$id.intergenicmappers.norm_nu.sam";
     $dirU = $dirname . "/Unique";
     $dirNU = $dirname . "/NU";
-    $shfileU = "$LOC/$dirU/a" . $id . "intergenic.u_runhead.sh";
-    $shfileNU = "$LOC/$dirNU/a" . $id . "intergenic.nu_runhead.sh";
+    $shfileU = "$shdir/a" . $id . "intergenic.u_runhead.sh";
+    $shfileNU = "$shdir/a" . $id . "intergenic.nu_runhead.sh";
     if($iguniques eq 'true') {
 	open(OUTFILEU, ">$shfileU");
 	print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	close(OUTFILEU);
-	`bsub -o $LOC/$dirU/$id.intergenic.u_head.out -e $LOC/$dirU/$id.intergenic.u_head.err sh $shfileU`;
+	`bsub -o $logdir/$id.intergenic.u_head.out -e $logdir/$id.intergenic.u_head.err sh $shfileU`;
     }
     if($ignu eq 'true') {
 	open(OUTFILENU, ">$shfileNU");
 	print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	close(OUTFILENU);
-	`bsub -o $LOC/$dirNU/$id.intergenic.nu_head.out -e $LOC/$dirNU/$id.intergenic.nu_head.err sh $shfileNU`;
+	`bsub -o $logdir/$id.intergenic.nu_head.out -e $logdir/$id.intergenic.nu_head.err sh $shfileNU`;
     }
 }
 close(INFILE);

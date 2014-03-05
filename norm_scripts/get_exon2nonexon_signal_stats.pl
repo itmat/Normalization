@@ -46,17 +46,17 @@ $outfileU = "$LOC/exon2nonexon_signal_stats_Unique.txt";
 $outfileNU = "$LOC/exon2nonexon_signal_stats_NU.txt";
 
 
-open(INFILE, $ARGV[0]); # sample dirs
+open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; 
 if ($option_found eq "false"){
-    open(OUTU, ">$outfileU");
-    open(OUTNU, ">$outfileNU");
+    open(OUTU, ">$outfileU") or die "file '$outfileU' cannot open for writing.\n";
+    open(OUTNU, ">$outfileNU") or die "file '$outfileNU' cannot open for writing.\n";
 }
 else{
     if ($U eq "true"){
-	open(OUTU, ">$outfileU");
+	open(OUTU, ">$outfileU") or die "file '$outfileU' cannot open for writing.\n";
     }
     if ($NU eq "true"){
-	open(OUTNU, ">$outfileNU");
+	open(OUTNU, ">$outfileNU") or die "file '$outfileNU' cannot open for writing.\n";
     }
 }
 while($line = <INFILE>){

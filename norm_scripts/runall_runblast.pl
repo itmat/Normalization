@@ -15,6 +15,18 @@ use Cwd 'abs_path';
 open(INFILE, $ARGV[0]) or die "cannot find file \"$ARGV[0]\"\n";  
 $LOC = $ARGV[1];  
 $LOC =~ s/\/$//;
+$LOC =~ s/\/$//;
+@fields = split("/", $LOC);
+$size = @fields;
+$last_dir = $fields[@size-1];
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$shdir = $study_dir . "shell_scripts";
+$logdir = $study_dir . "logs";
+unless (-d $shdir){
+    `mkdir $shdir`;}
+unless (-d $logdir){
+    `mkdir $logdir`;}
 
 $path = abs_path($0);
 $path =~ s/runall_//;
@@ -28,10 +40,10 @@ while($line = <INFILE>) {
     $line =~ s/Sample_//;
     $line =~ s/\//_/g;
     $id = $line;
-    $shfile = "$LOC/$dir/a" . $id . "runblast.sh";
+    $shfile = "$shdir/a" . $id . "runblast.sh";
     open(OUTFILE, ">$shfile");
     print OUTFILE "perl $path $dir $LOC $samfile $blastdir $db\n";
     close(OUTFILE);
-    `bsub -q plus -e $LOC/$dir/$id.runblast.err -o $LOC/$dir/$id.runblast.out sh $shfile`;
+    `bsub -q plus -e $logdir/$id.runblast.err -o $logdir/$id.runblast.out sh $shfile`;
 }
 close(INFILE);

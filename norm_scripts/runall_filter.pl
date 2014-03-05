@@ -55,6 +55,17 @@ and non-unique by default so if that's what you want don't use either arg
 open(INFILE, $ARGV[0]);  # file of sample dirs (without path)
 $LOC = $ARGV[1];  # the location where the sample dirs are
 $LOC =~ s/\/$//;
+@fields = split("/", $LOC);
+$size = @fields;
+$last_dir = $fields[@size-1];
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$shdir = $study_dir . "shell_scripts";
+$logdir = $study_dir . "logs";
+unless (-d $shdir){
+    `mkdir $shdir`;}
+unless (-d $logdir){
+    `mkdir $logdir`;}
 
 while($line = <INFILE>) {
     chomp($line);
@@ -63,7 +74,7 @@ while($line = <INFILE>) {
     $id =~ s/Sample_//;
     $id =~ s/\//_/g;
     $idsfile = "$LOC/$dir/$id.ribosomalids.txt";
-    $shfile = "$LOC/$dir/a" . $id . "filter.sh";
+    $shfile = "$shdir/a" . $id . "filter.sh";
 
     open(OUTFILE, ">$shfile");
     if ($option_found eq "false"){
@@ -78,6 +89,6 @@ while($line = <INFILE>) {
 	}
     }
     close(OUTFILE);
-    `bsub -q plus -e $LOC/$dir/$id.filtersam.err -o $LOC/$dir/$id.filtersam.out sh $shfile`;
+    `bsub -q plus -e $logdir/$id.filtersam.err -o $logdir/$id.filtersam.out sh $shfile`;
 }
 close(INFILE);

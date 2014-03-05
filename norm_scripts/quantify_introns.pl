@@ -91,7 +91,7 @@ while($line = <INFILE>) {
     }
 }
 close(INFILE);
-for($i=1;$i<9;$i++){
+for($i=1;$i<11;$i++){
     $outfile_cnt[$i]=0;
 }
 $outfile_cnt_ig=0;

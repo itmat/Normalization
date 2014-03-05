@@ -26,7 +26,7 @@ for($i=2; $i<@ARGV; $i++) {
     }
 }
 
-open(INFILE, $annotation_file);
+open(INFILE, $annotation_file) or die "file '$annotation_file' cannot open for reading.\n";
 $line = <INFILE>;
 chomp($line);
 @ANNOTHEADER = split(/\t/,$line);
@@ -134,7 +134,7 @@ while($line = <INFILE>) {
 }
 close(INFILE);
 
-open(INFILE, $features_file);
+open(INFILE, $features_file) or die "file '$features_file' cannot open for reading.\n";
 while($line = <INFILE>) {
     chomp($line);
     if(!($line =~ /[^\s:,;]+:\d+-\d+/)) {

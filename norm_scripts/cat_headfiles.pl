@@ -65,7 +65,7 @@ unless (-d $norm_notexon_dir){
 $norm_notexon_dirU = $norm_notexon_dir . "/Unique";
 $norm_notexon_dirNU = $norm_notexon_dir . "/NU";
 
-open(INFILE, $ARGV[0]);
+open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){
     chomp($line);
     $dir = $line;

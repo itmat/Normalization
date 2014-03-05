@@ -1,5 +1,5 @@
 if(@ARGV < 3) {
-    die  "usage: perl filter_low_expressions.pl <file> <number_of_samples> <cutoff>
+    die  "usage: perl filter_low_expressors.pl <file> <number_of_samples> <cutoff>
 
 where
 <file> is quants file without path
@@ -12,7 +12,7 @@ where
 $col_num = $ARGV[1];
 $cutoff = $ARGV[2];
 
-open(INFILE, $ARGV[0]);
+open(INFILE, $ARGV[0]) or die "file '$ARGV[0]' cannot open for reading.\n";
 $line = <INFILE>;
 print $line;
 while($line = <INFILE>) {

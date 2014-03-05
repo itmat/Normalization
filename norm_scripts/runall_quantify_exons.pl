@@ -29,11 +29,22 @@ for($i=4; $i<@ARGV; $i++) {
 $path = abs_path($0);
 $path =~ s/runall_//;
 
-unless (-e $ARGV[0]){
-    die "ERROR: cannot find file $ARGV[0] \n";}
-open(INFILE, $ARGV[0]);  # sample dirs
+open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
+$LOC =~ s/\/$//;
+@fields = split("/", $LOC);
+$size = @fields;
+$last_dir = $fields[@size-1];
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$shdir = $study_dir . "shell_scripts";
+$logdir = $study_dir . "logs";
+unless (-d $shdir){
+    `mkdir $shdir`;}
+unless (-d $logdir){
+    `mkdir $logdir`;}
+
 $exons = $ARGV[2];
 unless (-e $exons){
     die "ERROR: cannot find file $exons \n";} 
@@ -82,6 +93,7 @@ while($line = <INFILE>) {
     }
 
     $shfile = "EQ" . $filename . ".sh";
+    $shfile2 = "EQ" . $filename . ".2.sh";
     $outfile = $filename;
     $outfile =~ s/.sam/_exonquants/;
     $exonsamoutfile = $filename;
@@ -89,7 +101,7 @@ while($line = <INFILE>) {
     $intronsamoutfile = $filename;
     $intronsamoutfile =~ s/.sam/_notexonmappers.sam/;
     if($outputsam eq "true") {
-	open(OUTFILE, ">$LOC/$dir/$shfile");
+	open(OUTFILE, ">$shdir/$shfile");
 		if($nuonly eq 'false') {
 		    print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile\n";
 		} else {
@@ -97,7 +109,7 @@ while($line = <INFILE>) {
 		}
     } 
     else {
-	open(OUTFILE, ">$final_exon_dir/$shfile");
+	open(OUTFILE, ">$shdir/$shfile2");
 	if($nuonly eq 'false') {
 	    print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none \n";
 	}
@@ -107,10 +119,10 @@ while($line = <INFILE>) {
     }
     close(OUTFILE);
     if($outputsam eq "true") {
-	`bsub -q plus -e $LOC/$dir/$id.quantifyexons.err -o $LOC/$dir/$id.quantifyexons.out sh $LOC/$dir/$shfile`;
+	`bsub -q plus -e $logdir/$id.quantifyexons.err -o $logdir/$id.quantifyexons.out sh $shdir/$shfile`;
     }
     if($outputsam eq "false") {
-	`bsub -q plus -e $final_exon_dir/$id.quantifyexons.err -o $final_exon_dir/$id.quantifyexons.out sh $final_exon_dir/$shfile`;
+	`bsub -q plus -e $logdir/$id.quantifyexons_2.err -o $logdir/$id.quantifyexons_2.out sh $shdir/$shfile2`;
     }
 }
 close(INFILE);

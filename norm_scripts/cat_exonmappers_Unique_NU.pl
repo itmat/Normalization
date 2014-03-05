@@ -19,7 +19,7 @@ $loc_merged = $loc_exon . "/MERGED";
 unless (-d $loc_merged){
     `mkdir $loc_merged`;
 }
-open(INFILE, $ARGV[0]);
+open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){
     chomp($line);
     $id = $line;
