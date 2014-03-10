@@ -70,12 +70,14 @@ STUDY
 ### 1. Run BLAST
 
 ##### A. File of Sample Directories
-Create a file &lt;sample dirs> with the names of the sample directories (without path, sorted by condition). This file will be used throughout the pipeline. 
-      e.g. the &lt;sample dirs> file should look like this:<br> 
-          Sample_1<br>
-          Sample_2<br>
-          Sample_3<br>
-          Sample_4
+Create a file &lt;sample dirs> with the names of the sample directories (without path, sorted by condition). This file will be used throughout the pipeline.
+
+       e.g. 
+       	    the &lt;sample dirs> file should look like this:<br> 
+            Sample_1<br>
+            Sample_2<br>
+            Sample_3<br>
+            Sample_4
 
 ##### B. Total Number of Reads
 Get total number of reads from input fasta or fastq files.
@@ -246,8 +248,8 @@ This identifies minimum line count of each type of exonmappers/intronmappers/int
 * option : <br>
   **-bsub** : set this if you want submit batch jobs to LSF<br>
   **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-depthE &lt;n> : set the exonmapper depth (by default, n = 20)<br>
-  **-depthI &lt;n> : set the intronmapper depth (by default, n = 10)
+  **-depthE &lt;n>** : set the exonmapper depth (by default, n = 20)<br>
+  **-depthI &lt;n>** : set the intronmapper depth (by default, n = 10)
 
 This will output the same number of rows from each file in each `sample_dir/Unique` and/or `sample_dir/NU` directory of the same type.
 
