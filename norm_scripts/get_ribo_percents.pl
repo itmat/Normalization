@@ -25,6 +25,7 @@ while($dir = <IN>){
     $i++;
 }
 
+$total_num_file = "$LOC/total_num_reads.txt";
 open(INFILE, "$LOC/ribosomal_counts.txt") or die "file '$LOC/ribosomal_counts.txt' cannot open for reading.\n";
 open(OUTFILE, ">$LOC/ribo_percents.txt") or die "file '$LOC/ribo_percents.txt'\
  cannot open for writing.\n";
@@ -35,14 +36,14 @@ while($line = <INFILE>) {
     $cnt = $line;
     $sample_name = $filename[$i];
     $i++;
-    $total_num_file = "$LOC/$sample_name/total_num_reads.txt";
-    $x = `tail -1 $total_num_file`;
-    $x =~ s/total = //;
-    chomp($x);
-    $ratio = int($cnt / $x * 10000) / 10000;
-    $x = &format_large_int($x);
+    $x = `grep -w $sample_name $total_num_file`;
+    @x_s = split(" ", $x);
+    $total = $x_s[1];
+    chomp($total);
+    $ratio = int($cnt / $total * 10000) / 10000;
+    $x = &format_large_int($total);
     $cnt = &format_large_int($cnt);
-    print OUTFILE "$cnt\t$x\t$ratio\t$sample_name\n";
+    print OUTFILE "$cnt\t$total\t$ratio\t$sample_name\n";
 }
 close(INFILE);
 close(OUTFILE);

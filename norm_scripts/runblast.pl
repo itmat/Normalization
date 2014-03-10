@@ -41,7 +41,7 @@ while($line = <INFILE>) {
 	last;
     }
 }
-$cnt_total = 0;
+#$cnt_total = 0;
 while($line = <INFILE>) {
     open(OUTFILE, ">$LOC/$dir/temp.1");
     @a = split(/\t/,$line);
@@ -72,7 +72,7 @@ while($line = <INFILE>) {
 	    $hash{$seqnum}++;
 	    if($hash{$seqnum} == 1) {
 		$cnt++;
-		$cnt_total++;
+#		$cnt_total++;
 		print OUTFILE ">$a[0]";
 		print OUTFILE "a\n";
 		print OUTFILE "$a[9]\n";
@@ -90,7 +90,7 @@ while($line = <INFILE>) {
     $x = `perl $path/parseblastout.pl $LOC/$dir/blast.out.1 >> $LOC/$dir/$str.ribosomalids.txt`;
     close(OUT);
 }
-$total_num_reads = "$LOC/$dir/total_num_reads.txt";
-open(OUT, ">$total_num_reads");
-print OUT "total = $cnt_total\n";
+#$total_num_reads = "$LOC/$dir/total_num_reads.txt";
+#open(OUT, ">$total_num_reads");
+#print OUT "total = $cnt_total\n";
 

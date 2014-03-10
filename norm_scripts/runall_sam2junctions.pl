@@ -14,6 +14,10 @@ option:
  -nu :  set this if you want to return only non-unique junctions, otherwise by default
          it will return merged(unique+non-unique) junctions.
 
+ -bsub : set this if you want to submit batch jobs to LSF.
+
+ -qsub : set this if you want to submit batch jobs to Sun Grid Engine.
+
 ";
 }
 
@@ -24,10 +28,14 @@ $U = "true";
 $NU = "true";
 $numargs = 0;
 $option_found = "false";
+$bsub = "false";
+$qsub = "false";
+$numargs_b = 0;
 for($i=4; $i<@ARGV; $i++) {
     $option_found = "false";
     if($ARGV[$i] eq '-nu') {
         $U = "false";
+	$numargs++;
         $option_found = "true";
     }
     if($ARGV[$i] eq '-u') {
@@ -35,12 +43,26 @@ for($i=4; $i<@ARGV; $i++) {
         $numargs++;
         $option_found = "true";
     }
+    if ($ARGV[$i] eq '-bsub'){
+	$bsub = "true";
+	$numargs_b++;
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-qsub'){
+	$qsub = "true";
+	$numargs_b++;
+	$option_found = "true";
+    }
     if($option_found eq "false") {
         die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
 if($numargs > 1) {
     die "you cannot specify both -u and -nu. 
+";
+}
+if($numargs_b ne '1'){
+    die "you have to specify how you want to submit batch jobs. choose either -bsub or -qsub.\n
 ";
 }
 
@@ -75,7 +97,7 @@ while($line = <INFILE>) {
     $dir = $line;
     $id = $line;
     $id =~ s/Sample_//;
-    if ($option_found eq "false"){
+    if ($numargs eq "0"){
 	$final_dir = $final_M_dir;
 	$filename = "$id.FINAL.norm.sam";
     }
@@ -99,6 +121,11 @@ while($line = <INFILE>) {
     open(OUTFILE, ">$shdir/$shfile");
     print OUTFILE "perl $path/rum-2.0.5_05/bin/make_RUM_junctions_file.pl --genes $genes --sam-in $final_dir/$filename --genome $genome --all-rum-out $junctions_dir/$outfile1 --all-bed-out $junctions_dir/$outfile2 --high-bed-out $junctions_dir/$outfile3 -faok\n";
     close(OUTFILE);
-    `bsub -q plus -o $logdir/$id.sam2junctions.out -e $logdir/$id.sam2junctions.err sh $shdir/$shfile`;
+    if($bsub eq "true"){
+	`bsub -q plus -o $logdir/$id.sam2junctions.out -e $logdir/$id.sam2junctions.err sh $shdir/$shfile`;
+    }
+    if ($qsub eq "true"){
+	`qsub -N $id.sam2junctions -o $logdir -e $logdir -l h_vmem=6G $shdir/$shfile`;
+    }
 }
 close(INFILE);

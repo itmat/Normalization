@@ -11,7 +11,7 @@ if(@ARGV < 4) {
 
 <loc> is the directory with the sample directories
 <sam file name> is the name of the sam file
-<total_num_reads?> if you have the total_num_reads.txt file from runblast,
+<total_num_reads>  if you have the total_num_reads.txt file,
                    use \"true\". If not, use \"false\".
 
 SAM file must use the IH or NH tags to indicate multi-mappers
@@ -39,27 +39,8 @@ unless (-d $logdir){
 $sam_name = $ARGV[2];
 $total_reads_file = $ARGV[3];
 if ($total_reads_file eq "true"){
-    $outfile = "$LOC/sampledir_totalreads.txt";
-    if (-e $outfile){
-	`rm $outfile`;
-    }
-    open(INFILE, $sampledirs);
-    while($line = <INFILE>){
-	chomp($line);
-	$dir = $line;
-	$total_file = "$LOC/$dir/total_num_reads.txt";
-	$total_reads = `head -1 $total_file`;
-	chomp($total_reads);
-	$total_reads =~ s/total = //;
-	$dir_reads = "$dir\t$total_reads\n";
-	open(OUT, ">>$outfile");
-	print OUT $dir_reads;
-    }
-    close(OUT);
-    close(INFILE);
-    $sampledirs = $outfile;
-    
-    open(INFILE, $sampledirs) or die "cannot find file '$sampledirs'\n";
+    $dirs_reads = "$LOC/total_num_reads.txt";
+    open(INFILE, $dirs_reads) or die "cannot find file '$dirs_reads'\n";
     while($line = <INFILE>){
 	chomp($line);
 	@fields = split(" ", $line);
@@ -70,11 +51,7 @@ if ($total_reads_file eq "true"){
 	$id =~ s/Sample_//;
 	$shfile = "$shdir/m." . $id . "runsam2mappingstats.sh";
 	open(OUTFILE, ">$shfile");
-	if ($size eq "1"){
-	    print OUTFILE "perl $path $LOC/$dir/$sam_name > $LOC/$dir/$id.mappingstats.txt\n";
-	}
-	if ($size eq "2"){
-	    print OUTFILE "perl $path $LOC/$dir/$sam_name -numreads $num_id > $LOC/$dir/$id.mappingstats.txt\n";
+	print OUTFILE "perl $path $LOC/$dir/$sam_name -numreads $num_id > $LOC/$dir/$id.mappingstats.txt\n";
 	}
 	close(OUTFILE);
 	`bsub -q max_mem30 -o $logdir/$id.sam2mappingstats.out -e $logdir/$id.sam2mappingstats.err sh $shfile`;

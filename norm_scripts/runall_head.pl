@@ -1,5 +1,5 @@
 if(@ARGV < 2) {
-    die "usage: perl runall_head.pl <dirs> <loc>
+    die "usage: perl runall_head.pl <dirs> <loc> [options]
 
 where
 <dirs> is directory names without path
@@ -8,8 +8,60 @@ where
 will output the same number of rows from each file in <loc>/<dirs>/Unique
 of the same type. (ditto for NU)
 The output file names will be modified from the input file names.
+
+option:  -bsub : set this if you want to submit batch jobs to LSF.
+
+         -qsub : set this if you want to submit batch jobs to Sun Grid Engine.
+
+         -depthE <n> : This is the number of exonmappers file used for normalization.
+                       By default, <n> = 20.
+
+         -depthI <n> : This is the number of intronmappers file used for normalization.
+                       By default, <n> = 10. 
 ";
 }
+$bsub = "false";
+$qsub = "false";
+$numargs = 0;
+$i_exon = 20;
+$i_intron = 10;
+for ($i=2; $i<@ARGV; $i++){
+    $option_found = "false";
+    if ($ARGV[$i] eq '-bsub'){
+	$bsub = "true";
+	$numargs++;
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-qsub'){
+	$qsub = "true";
+	$numargs++;
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-depthE'){
+	$i_exon = $ARGV[$i+1];
+	if ($i_exon !~ /(\d+$)/ ){
+	    die "-depthE <n> : <n> needs to be a number\n";
+	}
+	$i++;
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-depthI'){
+	$i_intron = $ARGV[$i+1];
+	if ($i_intron !~ /(\d+$)/ ){
+	    die "-depthI <n> : <n> needs to be a number\n";
+	}
+	$i++;
+	$option_found = "true";
+    }
+    if ($option_found eq "false"){
+	die "option \"$ARGV[$i]\" was not recognized.\n";
+    }
+}
+if($numargs ne '1'){
+    die "you have to specify how you want to submit batch jobs. choose either -bsub or -qsub.\n
+";
+}
+print "$i_exon\t$i_intron\n";
 
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
@@ -29,7 +81,7 @@ $exonuniques = "false";
 $exonnu = "false";
 $warnUE = "";
 $warnNUE = "";
-for($i=1; $i<=20; $i++) {
+for($i=1; $i<=$i_exon; $i++) {
     open(INFILE, $ARGV[0]);  # file of dirs
     $minEU[$i] = 1000000000000;
     $minENU[$i] = 1000000000000;
@@ -41,7 +93,8 @@ for($i=1; $i<=20; $i++) {
 	    $N = `tail -1 $LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam`;
 	    $exonuniques = "true";
 	} else {
-	    $warnUE = $warnUE . "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to exist...\n";
+	    die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to exist...\n";
+#	    $warnUE = $warnUE . "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to exist...\n";
 	}
 	if($N !~ /line count/) {
 	    die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to have the proper last line...\n";
@@ -54,7 +107,8 @@ for($i=1; $i<=20; $i++) {
 	    $N = `tail -1 $LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam`;
 	    $exonnu = "true";
 	} else {
-	     $warnNUE = $warnNUE . "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to exist...\n";
+	    die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to exist...\n";
+#	     $warnNUE = $warnNUE . "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to exist...\n";
 	}
 	if($N !~ /line count/) {
 	    die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to have the proper last line...\n";
@@ -80,7 +134,7 @@ $intronuniques = "false";
 $intronnu = "false";
 $warnUI = "";
 $warnNUI = "";
-for($i=1; $i<=10; $i++) {
+for($i=1; $i<=$i_intron; $i++) {
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";  # file of dirs
     $minIU[$i] = 1000000000000;
     $minINU[$i] = 1000000000000;
@@ -92,7 +146,8 @@ for($i=1; $i<=10; $i++) {
 	    $N = `tail -1 $LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam`;
 	    $intronuniques = "true";
 	} else {
-	    $warnUI = $warnUI . "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
+	    die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
+#	    $warnUI = $warnUI . "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
 	}
 	if($N !~ /line count/) {
 	    die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to have the proper last line...\n";
@@ -105,7 +160,8 @@ for($i=1; $i<=10; $i++) {
 	    $N = `tail -1 $LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam`;
 	    $intronnu = "true";
 	} else {
-	    $warnNUI = $warnNUI . "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
+	    die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
+#	    $warnNUI = $warnNUI . "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
 	}
 	if($N !~ /line count/) {
 	    die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to have the proper last line...\n";
@@ -141,7 +197,8 @@ while($dirname = <INFILE>) {
 	$N = `tail -1 $LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam`;
 	$iguniques = "true";
     } else {
-	$warnUIG = $warnUIG . "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
+	die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
+#	$warnUIG = $warnUIG . "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
     }
     if($N !~ /line count/) {
 	die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to have the proper last line...\n";
@@ -154,7 +211,8 @@ while($dirname = <INFILE>) {
 	$N = `tail -1 $LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam`;
 	$ignu = "true";
     } else {
-	$warnNUIG = $warnNUIG . "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
+	die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
+#	$warnNUIG = $warnNUIG . "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
     }
     if($N !~ /line count/) {
 	die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to have the proper last line...\n";
@@ -177,7 +235,7 @@ if($ignu eq 'true' && $warnNUIG =~ /\S/) {
 ##run head
 
 #exonmappers
-for($i=1; $i<=20; $i++) {
+for($i=1; $i<=$i_exon; $i++) {
     open(INFILE, $ARGV[0]);
     while($dirname = <INFILE>) {
 	chomp($dirname);
@@ -199,20 +257,30 @@ for($i=1; $i<=20; $i++) {
 	    open(OUTFILEU, ">$shfileU[$i]");
 	    print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	    close(OUTFILEU);
-	    `bsub -o $logdir/$id.exonmappers.u_head.$i.out -e $logdir/$id.exonmappers.u_head.$i.err sh $shfileU[$i]`;
+	    if ($bsub eq "true"){
+		`bsub -o $logdir/$id.exonmappers.u_head.$i.out -e $logdir/$id.exonmappers.u_head.$i.err sh $shfileU[$i]`;
+	    }
+	    if ($qsub eq "true"){
+		`qsub -N $id.exonmappers.u_head.$i -o $logdir -e $logdir $shfileU[$i]`;
+	    }
 	}
 	if($exonnu eq 'true') {
 	    open(OUTFILENU, ">$shfileNU[$i]");
 	    print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	    close(OUTFILENU);
-	    `bsub -o $logdir/$id.exonmappers.nu_head.$i.out -e $logdir/$id.exonmappers.nu_head.$i.err sh $shfileNU[$i]`;
+	    if ($bsub eq "true"){
+		`bsub -o $logdir/$id.exonmappers.nu_head.$i.out -e $logdir/$id.exonmappers.nu_head.$i.err sh $shfileNU[$i]`;
+	    }
+	    if ($qsub eq "true"){
+		`qsub -N $id.exonmappers.nu_head.$i -e $logdir -o $logdir $shfileNU[$i]`;
+	    }
 	}
     }
     close(INFILE);
 }
 
 #intronmappers
-for($i=1; $i<=10; $i++) {
+for($i=1; $i<=$i_intron; $i++) {
     open(INFILE, $ARGV[0]);
     while($dirname = <INFILE>) {
         chomp($dirname);
@@ -234,13 +302,23 @@ for($i=1; $i<=10; $i++) {
 	    open(OUTFILEU, ">$shfileU[$i]");
 	    print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	    close(OUTFILEU);
-	    `bsub -o $logdir/$id.intronmappers.u_head.$i.out -e $logdir/$id.intronmappers.u_head.$i.err sh $shfileU[$i]`;
+	    if ($bsub eq "true"){
+		`bsub -o $logdir/$id.intronmappers.u_head.$i.out -e $logdir/$id.intronmappers.u_head.$i.err sh $shfileU[$i]`;
+	    }
+	    if ($qsub eq "true"){
+		`qsub -N $id.intronmappers.u_head.$i -o $logdir -e $logdir $shfileU[$i]`;
+	    }
 	}
 	if($intronnu eq 'true') {
 	    open(OUTFILENU, ">$shfileNU[$i]");
 	    print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	    close(OUTFILENU);
-	    `bsub -o $logdir/$id.intronmappers.nu_head.$i.out -e $logdir/$id.intronmappers.nu_head.$i.err sh $shfileNU[$i]`;
+	    if ($bsub eq "true"){
+		`bsub -o $logdir/$id.intronmappers.nu_head.$i.out -e $logdir/$id.intronmappers.nu_head.$i.err sh $shfileNU[$i]`;
+	    }
+	    if ($qsub eq "true"){
+		`qsub -N $id.intronmappers.nu_head.$i -o $logdir -e $logdir $shfileNU[$i]`;
+	    }
 	}
     }
     close(INFILE);
@@ -266,13 +344,23 @@ while($dirname = <INFILE>) {
 	open(OUTFILEU, ">$shfileU");
 	print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	close(OUTFILEU);
-	`bsub -o $logdir/$id.intergenic.u_head.out -e $logdir/$id.intergenic.u_head.err sh $shfileU`;
+	if ($bsub eq "true"){
+	    `bsub -o $logdir/$id.intergenic.u_head.out -e $logdir/$id.intergenic.u_head.err sh $shfileU`;
+	}
+	if ($qsub eq "true"){
+	    `qsub -N $id.intergenic.u_head -o $logdir -e $logdir $shfileU`;
+	}
     }
     if($ignu eq 'true') {
 	open(OUTFILENU, ">$shfileNU");
 	print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	close(OUTFILENU);
-	`bsub -o $logdir/$id.intergenic.nu_head.out -e $logdir/$id.intergenic.nu_head.err sh $shfileNU`;
+	if ($bsub eq "true"){
+	    `bsub -o $logdir/$id.intergenic.nu_head.out -e $logdir/$id.intergenic.nu_head.err sh $shfileNU`;
+	}
+	if ($qsub eq "true"){
+	    `qsub -N $id.intergenic.nu_head -o $logdir -e $logdir $shfileNU`;
+	}
     }
 }
 close(INFILE);

@@ -45,17 +45,13 @@ while ($line = <INFILE>){
     if (-e "$LOC/$line/$sam_name"){
 	open(OUT, ">$shfile");
 	print OUT "samtools view -bt $fai_file $LOC/$line/$sam_name > $LOC/$line/$bam_name\n";
-	print OUT "samtools sort $LOC/$line/$bam_name $LOC/$line/$sorted_bam\n";
-	print OUT "samtools index $LOC/$line/$sorted_bam.bam\n";
-	print OUT "rm $LOC/$line/$bam_name $LOC/$line/$sam_name\n";
+	print OUT "rm $LOC/$line/$sam_name\n";
 	close(OUT);
 	`bsub -q plus -o $logdir/$id.sam2bam.out -e $logdir/$id.sam2bam.err sh $shfile`;
 	if (-e "$final_M_dir/$id.FINAL.norm.sam"){
 	    open(OUT2, ">$norm_shfile");
 	    print OUT2 "samtools view -bt $fai_file $final_M_dir/$id.FINAL.norm.sam > $final_M_dir/$id.FINAL.norm.bam\n";
-	    print OUT2 "samtools sort $final_M_dir/$id.FINAL.norm.bam $final_M_dir/$id.FINAL.norm-sorted\n";
-	    print OUT2 "samtools index $final_M_dir/$id.FINAL.norm-sorted.bam\n";
-	    print OUT2 "rm $final_M_dir/$id.FINAL.norm.bam $final_M_dir/$id.FINAL.norm.sam\n";
+	    print OUT2 "rm $final_M_dir/$id.FINAL.norm.sam\n";
 	    close(OUT2);
 	    `bsub -q plus -o $logdir/$id.norm.sam2bam.out -e $logdir/$id.norm.sam2bam.err sh $norm_shfile`;
 	}
@@ -63,18 +59,14 @@ while ($line = <INFILE>){
 	    if (-e "$final_U_dir/$id.FINAL.norm_u.sam"){
 		open(OUT2, ">$norm_shfile");
 		print OUT2 "samtools view -bt $fai_file $final_U_dir/$id.FINAL.norm_u.sam > $final_U_dir/$id.FINAL.norm_u.bam\n";
-		print OUT2 "samtools sort $final_U_dir/$id.FINAL.norm_u.bam $final_U_dir/$id.FINAL.norm_u-sorted\n";
-		print OUT2 "samtools index $final_U_dir/$id.FINAL.norm_u-sorted.bam\n";
-		print OUT2 "rm $final_U_dir/$id.FINAL.norm_u.bam $final_U_dir/$id.FINAL.norm_u.sam\n";
+		print OUT2 "rm $final_U_dir/$id.FINAL.norm_u.sam\n";
 		close(OUT2);
 		`bsub -q plus -o $logdir/$id.norm.sam2bam.out -e $logdir/$id.norm.sam2bam.err sh $norm_shfile`;
 	    }
 	    if (-e "$final_NU_dir/$id.FINAL.norm_nu.sam"){
                 open(OUT2, ">$norm_shfile");
                 print OUT2 "samtools view -bt $fai_file $final_NU_dir/$id.FINAL.norm_nu.sam > $final_NU_dir/$id.FINAL.norm_nu.bam\n";
-                print OUT2 "samtools sort $final_NU_dir/$id.FINAL.norm_nu.bam $final_NU_dir/$id.FINAL.norm_nu-sorted\n";
-                print OUT2 "samtools index $final_NU_dir/$id.FINAL.norm_nu-sorted.bam\n";
-                print OUT2 "rm $final_NU_dir/$id.FINAL.norm_nu.bam $final_NU_dir/$id.FINAL.norm_nu.sam\n";
+                print OUT2 "rm $final_NU_dir/$id.FINAL.norm_nu.sam\n";
                 close(OUT2);
                 `bsub -q plus -o $logdir/$id.norm.sam2bam.out -e $logdir/$id.norm.sam2bam.err sh $norm_shfile`;
             }

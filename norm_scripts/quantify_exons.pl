@@ -55,100 +55,9 @@ consecutive, then you should use this option or you could get weird results.
 
 -NU-only
 
+-depth <n> : by default, it will output 20 exonmappers
+
 ";
-}
-
-$exonsfile = $ARGV[0];
-$samfile = $ARGV[1];
-$outfile = $ARGV[2];
-$exon_sam_outfile = $ARGV[3];
-$intron_sam_outfile = $ARGV[4];
-if($exon_sam_outfile ne "none") {
-    open(EXONSAMOUT, ">$exon_sam_outfile");
-}
-if($intron_sam_outfile ne "none") {
-    open(INTRONSAMOUT, ">$intron_sam_outfile");
-}
-if($exon_sam_outfile ne "none") {
-    $exon_sam_outfile1 = $exon_sam_outfile;
-    $exon_sam_outfile1 =~ s/.sam$/.1.sam/;
-    open(OUTFILE1, ">$exon_sam_outfile1");
-    
-    $exon_sam_outfile2 = $exon_sam_outfile;
-    $exon_sam_outfile2 =~ s/.sam$/.2.sam/;
-    open(OUTFILE2, ">$exon_sam_outfile2");
-    
-    $exon_sam_outfile3 = $exon_sam_outfile;
-    $exon_sam_outfile3 =~ s/.sam$/.3.sam/;
-    open(OUTFILE3, ">$exon_sam_outfile3");
-    
-    $exon_sam_outfile4 = $exon_sam_outfile;
-    $exon_sam_outfile4 =~ s/.sam$/.4.sam/;
-    open(OUTFILE4, ">$exon_sam_outfile4");
-    
-    $exon_sam_outfile5 = $exon_sam_outfile;
-    $exon_sam_outfile5 =~ s/.sam$/.5.sam/;
-    open(OUTFILE5, ">$exon_sam_outfile5");
-
-    $exon_sam_outfile6 = $exon_sam_outfile;
-    $exon_sam_outfile6 =~ s/.sam$/.6.sam/;
-    open(OUTFILE6, ">$exon_sam_outfile6");
-
-    $exon_sam_outfile7 = $exon_sam_outfile;
-    $exon_sam_outfile7 =~ s/.sam$/.7.sam/;
-    open(OUTFILE7, ">$exon_sam_outfile7");
-
-    $exon_sam_outfile8 = $exon_sam_outfile;
-    $exon_sam_outfile8 =~ s/.sam$/.8.sam/;
-    open(OUTFILE8, ">$exon_sam_outfile8");
-
-    $exon_sam_outfile9 = $exon_sam_outfile;
-    $exon_sam_outfile9 =~ s/.sam$/.9.sam/;
-    open(OUTFILE9, ">$exon_sam_outfile9");
-
-    $exon_sam_outfile10 = $exon_sam_outfile;
-    $exon_sam_outfile10 =~ s/.sam$/.10.sam/;
-    open(OUTFILE10, ">$exon_sam_outfile10");
-
-    $exon_sam_outfile11 = $exon_sam_outfile;
-    $exon_sam_outfile11 =~ s/.sam$/.11.sam/;
-    open(OUTFILE11, ">$exon_sam_outfile11");
-
-    $exon_sam_outfile12 = $exon_sam_outfile;
-    $exon_sam_outfile12 =~ s/.sam$/.12.sam/;
-    open(OUTFILE12, ">$exon_sam_outfile12");
-
-    $exon_sam_outfile13 = $exon_sam_outfile;
-    $exon_sam_outfile13 =~ s/.sam$/.13.sam/;
-    open(OUTFILE13, ">$exon_sam_outfile13");
-
-    $exon_sam_outfile14 = $exon_sam_outfile;
-    $exon_sam_outfile14 =~ s/.sam$/.14.sam/;
-    open(OUTFILE14, ">$exon_sam_outfile14");
-
-    $exon_sam_outfile15 = $exon_sam_outfile;
-    $exon_sam_outfile15 =~ s/.sam$/.15.sam/;
-    open(OUTFILE15, ">$exon_sam_outfile15");
-
-    $exon_sam_outfile16 = $exon_sam_outfile;
-    $exon_sam_outfile16 =~ s/.sam$/.16.sam/;
-    open(OUTFILE16, ">$exon_sam_outfile16");
-
-    $exon_sam_outfile17 = $exon_sam_outfile;
-    $exon_sam_outfile17 =~ s/.sam$/.17.sam/;
-    open(OUTFILE17, ">$exon_sam_outfile17");
-
-    $exon_sam_outfile18 = $exon_sam_outfile;
-    $exon_sam_outfile18 =~ s/.sam$/.18.sam/;
-    open(OUTFILE18, ">$exon_sam_outfile18");
-
-    $exon_sam_outfile19 = $exon_sam_outfile;
-    $exon_sam_outfile19 =~ s/.sam$/.19.sam/;
-    open(OUTFILE19, ">$exon_sam_outfile19");
-
-    $exon_sam_outfile20 = $exon_sam_outfile;
-    $exon_sam_outfile20 =~ s/.sam$/.20.sam/;
-    open(OUTFILE20, ">$exon_sam_outfile20");
 }
 
 $secondary_as_non_unique = "false";
@@ -156,6 +65,7 @@ $noHItags = "false";
 $HI1_as_unique = "false";
 $rpf = 'false';
 $nuonly = 'false';
+$i_exon = 20;
 for($i=5; $i<@ARGV; $i++) {
     $arg_recognized = 'false';
     if($ARGV[$i] eq '-treat-primary-as-unique') {
@@ -178,8 +88,34 @@ for($i=5; $i<@ARGV; $i++) {
 	$nuonly = 'true';
 	$arg_recognized = 'true';
     }
+    if($ARGV[$i] eq '-depth'){
+	$i_exon = $ARGV[$i+1];
+	$arg_recognized = 'true';
+	$i++;
+    }
     if($arg_recognized eq 'false') {
 	die "arg \"$ARGV[$i]\" not recognized.\n";
+    }
+}
+
+
+$exonsfile = $ARGV[0];
+$samfile = $ARGV[1];
+$outfile = $ARGV[2];
+$exon_sam_outfile = $ARGV[3];
+$intron_sam_outfile = $ARGV[4];
+
+if($exon_sam_outfile ne "none") {
+    open(EXONSAMOUT, ">$exon_sam_outfile");
+}
+if($intron_sam_outfile ne "none") {
+    open(INTRONSAMOUT, ">$intron_sam_outfile");
+}
+if($exon_sam_outfile ne "none") {
+    for ($i=1; $i<=$i_exon; $i++){
+	$exon_sam_outfile[$i] = $exon_sam_outfile;
+	$exon_sam_outfile[$i] =~ s/.sam$/.$i.sam/;
+	open($OUTFILE[$i], ">$exon_sam_outfile[$i]");
     }
 }
 
@@ -235,26 +171,9 @@ if($noHItags eq 'true' && $secondary_as_non_unique eq 'false') {
 
 $CNT_OF_FRAGS_WHICH_HIT_EXONS=0;
 $Flag = 0;
-$outfile1_cnt=0;
-$outfile2_cnt=0;
-$outfile3_cnt=0;
-$outfile4_cnt=0;
-$outfile5_cnt=0;
-$outfile6_cnt=0;
-$outfile7_cnt=0;
-$outfile8_cnt=0;
-$outfile9_cnt=0;
-$outfile10_cnt=0;
-$outfile11_cnt=0;
-$outfile12_cnt=0;
-$outfile13_cnt=0;
-$outfile14_cnt=0;
-$outfile15_cnt=0;
-$outfile16_cnt=0;
-$outfile17_cnt=0;
-$outfile18_cnt=0;
-$outfile19_cnt=0;
-$outfile20_cnt=0;
+for ($i=1; $i<=$i_exon; $i++){
+    $outfile_cnt[$i] = 0;
+}
 open(INFILE, $samfile);
 while ($line1 = <INFILE>) {
     chomp($line1);
@@ -384,7 +303,6 @@ while ($line1 = <INFILE>) {
 	    }
 	}
     }
-
     if($secondary_as_non_unique eq "true") {
 	if($a[1] & 256) {
 	    $unique = "false";
@@ -603,6 +521,7 @@ while ($line1 = <INFILE>) {
 	    }
 	}
     }
+
     if($Flag >= 1) {
 	if($exon_sam_outfile ne "none") {
 	    if($forward_only eq 'true' && $reverse_only eq 'false') {
@@ -614,86 +533,16 @@ while ($line1 = <INFILE>) {
 	    if($forward_only eq 'false' && $reverse_only eq 'false') {
 		print EXONSAMOUT "$line1\n";
 		print EXONSAMOUT "$line2\n";
-	    }	    
-	    if($Flag == 1) {
-		$outfile1_cnt++;
-		print OUTFILE1 "$line1\n";
 	    }
-	    if($Flag == 2) {
-		$outfile2_cnt++;
-		print OUTFILE2 "$line1\n";
+	    for ($i=1; $i<$i_exon; $i++){
+		if($Flag == $i) {
+		    $outfile_cnt[$i]++;
+		    print {$OUTFILE[$i]} "$line1\n";
+		}
 	    }
-	    if($Flag == 3) {
-		$outfile3_cnt++;
-		print OUTFILE3 "$line1\n";
-	    }
-	    if($Flag == 4) {
-		$outfile4_cnt++;
-		print OUTFILE4 "$line1\n";
-	    }
-	    if($Flag == 5) {	
-		$outfile5_cnt++;
-		print OUTFILE5 "$line1\n";
-	    }
-	    if($Flag == 6) {
-                $outfile6_cnt++;
-                print OUTFILE6 "$line1\n";
-            }
-	    if($Flag == 7) {
-                $outfile7_cnt++;
-                print OUTFILE7 "$line1\n";
-            }
-	    if($Flag == 8) {
-                $outfile8_cnt++;
-                print OUTFILE8 "$line1\n";
-	    }
-            if($Flag == 9) {
-                $outfile9_cnt++;
-                print OUTFILE9 "$line1\n";
-            }
-	    if($Flag == 10) {
-                $outfile10_cnt++;
-                print OUTFILE10 "$line1\n";
-            }
-            if($Flag == 11) {
-                $outfile11_cnt++;
-                print OUTFILE11 "$line1\n";
-            }
-            if($Flag == 12) {
-                $outfile12_cnt++;
-                print OUTFILE12 "$line1\n";
-            }
-            if($Flag == 13) {
-                $outfile13_cnt++;
-                print OUTFILE13 "$line1\n";
-            }
-	    if($Flag == 14) {
-		$outfile14_cnt++;
-		print OUTFILE14 "$line1\n";
-	    }
-	    if($Flag == 15) {
-		$outfile15_cnt++;
-		print OUTFILE15 "$line1\n";
-	    }
-	    if($Flag == 16) {
-		$outfile16_cnt++;
-		print OUTFILE16 "$line1\n";
-	    }
-	    if($Flag == 17) {
-		$outfile17_cnt++;
-		print OUTFILE17 "$line1\n";
-	    }
-	    if($Flag == 18) {
-		$outfile18_cnt++;
-		print OUTFILE18 "$line1\n";
-	    }
-	    if($Flag == 19) {
-		$outfile19_cnt++;
-		print OUTFILE19 "$line1\n";
-	    }
-	    if($Flag >= 20) {
-		$outfile20_cnt++;
-		print OUTFILE20 "$line1\n";
+	    if($Flag >= $i_exon) {
+		$outfile_cnt[$i_exon]++;
+		print {$OUTFILE[$i_exon]} "$line1\n";
             }
 	}
     } else {
@@ -712,47 +561,10 @@ while ($line1 = <INFILE>) {
     }
     $FLAG_DIST[$Flag]++;
 }
-print OUTFILE1 "line count = $outfile1_cnt\n";
-print OUTFILE2 "line count = $outfile2_cnt\n";
-print OUTFILE3 "line count = $outfile3_cnt\n";
-print OUTFILE4 "line count = $outfile4_cnt\n";
-print OUTFILE5 "line count = $outfile5_cnt\n";
-print OUTFILE6 "line count = $outfile6_cnt\n";
-print OUTFILE7 "line count = $outfile7_cnt\n";
-print OUTFILE8 "line count = $outfile8_cnt\n";
-print OUTFILE9 "line count = $outfile9_cnt\n";
-print OUTFILE10 "line count = $outfile10_cnt\n";
-print OUTFILE11 "line count = $outfile11_cnt\n";
-print OUTFILE12 "line count = $outfile12_cnt\n";
-print OUTFILE13 "line count = $outfile13_cnt\n";
-print OUTFILE14 "line count = $outfile14_cnt\n";
-print OUTFILE15 "line count = $outfile15_cnt\n";
-print OUTFILE16 "line count = $outfile16_cnt\n";
-print OUTFILE17 "line count = $outfile17_cnt\n";
-print OUTFILE18 "line count = $outfile18_cnt\n";
-print OUTFILE19 "line count = $outfile19_cnt\n";
-print OUTFILE20 "line count = $outfile20_cnt\n";
-close(OUTFILE1);
-close(OUTFILE2);
-close(OUTFILE3);
-close(OUTFILE4);
-close(OUTFILE5);
-close(OUTFILE6);
-close(OUTFILE7);
-close(OUTFILE8);
-close(OUTFILE9);
-close(OUTFILE10);
-close(OUTFILE11);
-close(OUTFILE12);
-close(OUTFILE13);
-close(OUTFILE14);
-close(OUTFILE15);
-close(OUTFILE16);
-close(OUTFILE17);
-close(OUTFILE18);
-close(OUTFILE19);
-close(OUTFILE20);
-
+for ($i=1; $i<=$i_exon; $i++){
+    print {$OUTFILE[$i]} "line count = $outfile_cnt[$i]\n";
+    close($OUTFILE[$i]);
+}
 open(OUTFILE, ">$outfile");
 print OUTFILE "total number of reads-pairs which incremented at least one exon: $CNT_OF_FRAGS_WHICH_HIT_EXONS\n";
 print OUTFILE "feature\tmin\tmax\n";

@@ -11,19 +11,49 @@ sam files of exon mappers, etc...
 option:
  -NU-only
 
+ -bsub : set this if you want to submit batch jobs to LSF.
+
+ -qsub : set this if you want to submit batch jobs to Sun Grid Engine.
+
+ -depth <n> : by default, it will output 20 exonmappers
+
 ";
 }
 use Cwd 'abs_path';
 $nuonly = 'false';
+$bsub = "false";
+$qsub = "false";
+$numargs = 0;
+$i_exon = 20;
 for($i=4; $i<@ARGV; $i++) {
-    $arg_recognized = 'false';
+    $option_found = 'false';
     if($ARGV[$i] eq '-NU-only') {
 	$nuonly = 'true';
-	$arg_recognized = 'true';
+	$option_found = 'true';
     }
-    if($arg_recognized eq 'false') {
-	die "arg \"$ARGV[$i]\" not recognized.\n";
+    if ($ARGV[$i] eq '-bsub'){
+	$bsub = "true";
+	$numargs++;
+	$option_found = "true";
     }
+    if ($ARGV[$i] eq '-qsub'){
+	$qsub = "true";
+	$numargs++;
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-depth'){
+	$i_exon = $ARGV[$i+1];
+	$i++;
+	$option_found = "true";
+    }
+  
+    if($option_found eq 'false') {
+	die "option \"$ARGV[$i]\" not recognized.\n";
+    }
+}
+if($numargs ne '1'){
+    die "you have to specify how you want to submit batch jobs. choose either -bsub or -qsub.\n
+";
 }
 
 $path = abs_path($0);
@@ -103,15 +133,15 @@ while($line = <INFILE>) {
     if($outputsam eq "true") {
 	open(OUTFILE, ">$shdir/$shfile");
 		if($nuonly eq 'false') {
-		    print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile\n";
+		    print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -depth $i_exon\n";
 		} else {
-		    print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -NU-only\n";
+		    print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -NU-only -depth $i_exon\n";
 		}
     } 
     else {
 	open(OUTFILE, ">$shdir/$shfile2");
 	if($nuonly eq 'false') {
-	    print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none \n";
+	    print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none\n";
 	}
 	else{
 	    print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none -NU-only\n";
@@ -119,10 +149,20 @@ while($line = <INFILE>) {
     }
     close(OUTFILE);
     if($outputsam eq "true") {
-	`bsub -q plus -e $logdir/$id.quantifyexons.err -o $logdir/$id.quantifyexons.out sh $shdir/$shfile`;
+	if ($bsub eq "true"){
+	    `bsub -q plus -e $logdir/$id.quantifyexons.err -o $logdir/$id.quantifyexons.out sh $shdir/$shfile`;
+	}
+	if ($qsub eq "true"){
+	    `qsub -N $id.quantifyexons -o $logdir -e $logdir -l h_vmem=4G $shdir/$shfile`;
+	}
     }
     if($outputsam eq "false") {
-	`bsub -q plus -e $logdir/$id.quantifyexons_2.err -o $logdir/$id.quantifyexons_2.out sh $shdir/$shfile2`;
+	if ($bsub eq "true"){
+	    `bsub -q plus -e $logdir/$id.quantifyexons_2.err -o $logdir/$id.quantifyexons_2.out sh $shdir/$shfile2`;
+	}
+	if ($qsub eq "true"){
+	    `qsub -N $id.quantifyexons2 -o $logdir -e $logdir -l h_vmem=4G $shdir/$shfile2`;
+	}
     }
 }
 close(INFILE);

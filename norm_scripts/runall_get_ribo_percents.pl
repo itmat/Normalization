@@ -1,9 +1,36 @@
 if(@ARGV<2) {
-    die "Usage: perl runall_get_ribo_percents.pl <sample dirs> <loc>
+    die "Usage: perl runall_get_ribo_percents.pl <sample dirs> <loc> [option]
 
 <sample dirs> is a file with the names of the sample directories
 <loc> is the location where the sample directories are
 
+option:  -bsub : set this if you want to submit batch jobs to LSF.
+
+         -qsub : set this if you want to submit batch jobs to Sun Grid Engine.
+
+";
+}
+$bsub = "false";
+$qsub = "false";
+$numargs = 0;
+for ($i=2; $i<@ARGV; $i++){
+    $option_found = "false";
+    if ($ARGV[$i] eq '-bsub'){
+	$bsub = "true";
+	$numargs++;
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-qsub'){
+	$qsub = "true";
+	$numargs++;
+	$option_found = "true";
+    }
+    if ($option_found eq "false"){
+	die "option \"$ARGV[$i]\" was not recognized.\n";
+    }
+}
+if($numargs ne '1'){
+    die "you have to specify how you want to submit batch jobs. choose either -bsub or -qsub.\n
 ";
 }
 
@@ -28,4 +55,9 @@ unless (-d $logdir){
 $shfile = "$shdir/get_ribo_percents.sh";
 open(OUT, ">$shfile");
 print OUT "perl $path $sampledirs $LOC\n";
-`bsub -q max_mem30 -o $logdir/getribopercents.out -e $logdir/getribopercents.err sh $shfile`;
+if ($bsub eq "true"){
+    `bsub -q max_mem30 -o $logdir/getribopercents.out -e $logdir/getribopercents.err sh $shfile`;
+}
+if ($qsub eq "true"){
+    `qsub -N getribopercents -o $logdir -e $logdir -l h_vmem=10G $shfile`;
+}

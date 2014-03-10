@@ -10,6 +10,12 @@ where:
 option:
  -NU-only
 
+ -bsub : set this if you want to submit batch jobs to LSF.
+
+ -qsub : set this if you want to submit batch jobs to Sun Grid Engine.
+
+ -depth <n> : by default, it will output 10 intronmappers
+
 ";
 }
 use Cwd 'abs_path';
@@ -17,16 +23,40 @@ $path = abs_path($0);
 $path =~ s/runall_//;
 
 $nuonly = 'false';
+$bsub = "false";
+$qsub = "false";
+$numargs = 0;
+$i_intron = 10;
 for($i=4; $i<@ARGV; $i++) {
-    $arg_recognized = 'false';
+    $option_found = 'false';
     if($ARGV[$i] eq '-NU-only') {
         $nuonly = 'true';
-        $arg_recognized = 'true';
+        $option_found = 'true';
     }
-    if($arg_recognized eq 'false') {
+    if ($ARGV[$i] eq '-bsub'){
+	$bsub = "true";
+	$numargs++;
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-qsub'){
+	$qsub = "true";
+	$numargs++;
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-depth'){
+	$i_intron = $ARGV[$i+1];
+	$i++;
+	$option_found = "true";
+    }
+    if($option_found eq 'false') {
         die "arg \"$ARGV[$i]\" not recognized.\n";
     }
 }
+if($numargs ne '1'){
+    die "you have to specify how you want to submit batch jobs. choose either -bsub or -qsub.\n
+";
+}
+
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
@@ -84,17 +114,29 @@ while($line = <INFILE>) {
     $outfile =~ s/.sam/_intronquants/;
     if($outputsam eq "true") {
 	open(OUTFILE, ">$shdir/$shfile");
-	print OUTFILE "perl $path $introns $LOC/$dir/$filename $LOC/$dir/$outfile true\n";
-    } else {
+	print OUTFILE "perl $path $introns $LOC/$dir/$filename $LOC/$dir/$outfile true -depth $i_intron\n";
+	close(OUTFILE);
+    } 
+    else {
 	open(OUTFILE, ">$shdir/$shfile2");
 	print OUTFILE "perl $path $introns $final_nexon_dir/$filename $final_nexon_dir/$outfile false\n";
+	close(OUTFILE);
     }
-    close(OUTFILE);
     if($outputsam eq "true") {
-	`bsub -q plus -e $logdir/$id.quantifyintrons.err -o $logdir/$id.quantifyintrons.out sh $shdir/$shfile`;
+	if ($bsub eq "true"){
+	    `bsub -q plus -e $logdir/$id.quantifyintrons.err -o $logdir/$id.quantifyintrons.out sh $shdir/$shfile`;
+	}
+	if ($qsub eq "true"){
+	    `qsub -N $id.quantifyintrons -o $logdir -e $logdir -l h_vmem=4G $shdir/$shfile`;
+	}
     }
     else {
-	`bsub -q plus -e $logdir/$id.quantifyintrons.err -o $logdir/$id.quantifyintrons.out sh $shdir/$shfile2`;
+	if ($bsub eq "true"){
+	    `bsub -q plus -e $logdir/$id.quantifyintrons_2.err -o $logdir/$id.quantifyintrons_2.out sh $shdir/$shfile2`;
+	}
+	if ($qsub eq "true"){
+	    `qsub -N $id.quantifyintrons_2 -e $logdir -o $logdir -l h_vmem=4G $shdir/$shfile2`;
+	}
     }
 }
 close(INFILE);

@@ -1,5 +1,5 @@
 if(@ARGV < 5) {
-    die "usage: perl runall_runblast.pl <sample dirs> <loc> <samfile name> <blast dir> <db>
+    die "usage: perl runall_runblast.pl <sample dirs> <loc> <samfile name> <blast dir> <db> [option]
 
 where
 <sample dirs> is a file of sample dirs with alignment output
@@ -8,6 +8,36 @@ where
 <samfile> is the name of the sam file (without path)
 <blast dir> is the blast dir (full path)
 <db> database (full path)
+
+option:  -bsub : set this if you want to submit batch jobs to LSF. 
+ 
+         -qsub : set this if you want to submit batch jobs to Sun Grid Engine.
+
+";
+
+}
+
+$bsub = "false";
+$qsub = "false";
+$numargs = 0;
+for ($i=5; $i<@ARGV; $i++){
+    $option_found = "false";
+    if ($ARGV[$i] eq '-bsub'){
+	$bsub = "true";
+	$numargs++;
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-qsub'){
+	$qsub = "true";
+	$numargs++;
+	$option_found = "true";
+    }
+    if ($option_found eq "false"){
+	die "option \"$ARGV[$i]\" was not recognized.\n";
+    }
+}
+if($numargs ne '1'){
+    die "you have to specify how you want to submit batch jobs. choose either -bsub or -qsub.\n
 ";
 }
 
@@ -44,6 +74,11 @@ while($line = <INFILE>) {
     open(OUTFILE, ">$shfile");
     print OUTFILE "perl $path $dir $LOC $samfile $blastdir $db\n";
     close(OUTFILE);
-    `bsub -q plus -e $logdir/$id.runblast.err -o $logdir/$id.runblast.out sh $shfile`;
+    if ($bsub eq "true"){
+	`bsub -q plus -e $logdir/$id.runblast.err -o $logdir/$id.runblast.out sh $shfile`;
+    }
+    if ($qsub eq "true"){
+	`qsub -N $id.runblast -e $logdir -o $logdir -l h_vmem=6G $shfile`;
+    }
 }
 close(INFILE);

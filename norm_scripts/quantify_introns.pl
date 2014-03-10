@@ -1,66 +1,49 @@
 $|=1;
 if(@ARGV<4) {
-    die "Usage: quantify_introns.pl <introns file> <sam file> <output file> <output sam?>
+    die "Usage: quantify_introns.pl <introns file> <sam file> <output file> <output sam?> [options]
 
 <introns file> has one line per intron, each line is in the format chr:start-end
 
 <sam file> has must have mate pairs in consecutive rows
 
+<output file> intronquants file
+
 <output sam?> = true if you want it to output two sam files, one of things that map to introns 
                 and one with things that do not.
 
+option:
+
+-depth <n> : by default, it will output 10 intronmappers
+
 ";
+}
+$i_intron = 10;
+for($i=4; $i<@ARGV; $i++) {
+    $arg_recognized = 'false';
+    if($ARGV[$i] eq '-depth'){
+	$i_intron = $ARGV[$i+1];
+	$arg_recognized = 'true';
+	$i++;
+    }
+    if($arg_recognized eq 'false') {
+	die "arg \"$ARGV[$i]\" not recognized.\n";
+    }
 }
 
 $intronsfile = $ARGV[0];
 $samfile = $ARGV[1];
 $outfile = $ARGV[2];
 $intronoutfile = $samfile;
-$intronoutfile =~ s/.sam/_intronmappers.sam/;
+$intronoutfile =~ s/.sam$/_intronmappers.sam/;
 $intergenicoutfile = $samfile;
-$intergenicoutfile =~ s/.sam/_intergenicmappers.sam/;
+$intergenicoutfile =~ s/.sam$/_intergenicmappers.sam/;
 $outputsam = $ARGV[3];
 if($outputsam eq "true") {
-    $intronoutfile1 = $intronoutfile;
-    $intronoutfile1 =~ s/.sam$/.1.sam/;
-    open(OUTFILE1, ">$intronoutfile1");
-    
-    $intronoutfile2 = $intronoutfile;
-    $intronoutfile2 =~ s/.sam$/.2.sam/;
-    open(OUTFILE2, ">$intronoutfile2");
-    
-    $intronoutfile3 = $intronoutfile;
-    $intronoutfile3 =~ s/.sam$/.3.sam/;
-    open(OUTFILE3, ">$intronoutfile3");
-    
-    $intronoutfile4 = $intronoutfile;
-    $intronoutfile4 =~ s/.sam$/.4.sam/;
-    open(OUTFILE4, ">$intronoutfile4");
-    
-    $intronoutfile5 = $intronoutfile;
-    $intronoutfile5 =~ s/.sam$/.5.sam/;
-    open(OUTFILE5, ">$intronoutfile5");
-
-    $intronoutfile6 = $intronoutfile;
-    $intronoutfile6 =~ s/.sam$/.6.sam/;
-    open(OUTFILE6, ">$intronoutfile6");
-
-    $intronoutfile7 = $intronoutfile;
-    $intronoutfile7 =~ s/.sam$/.7.sam/;
-    open(OUTFILE7, ">$intronoutfile7");
-
-    $intronoutfile8 = $intronoutfile;
-    $intronoutfile8 =~ s/.sam$/.8.sam/;
-    open(OUTFILE8, ">$intronoutfile8");
-
-    $intronoutfile9 = $intronoutfile;
-    $intronoutfile9 =~ s/.sam$/.9.sam/;
-    open(OUTFILE9, ">$intronoutfile9");
-
-    $intronoutfile10 = $intronoutfile;
-    $intronoutfile10 =~ s/.sam$/.10.sam/;
-    open(OUTFILE10, ">$intronoutfile10");
-
+    for ($i=1; $i<=$i_intron; $i++){
+	$intronoutfile[$i] = $intronoutfile;
+	$intronoutfile[$i] =~ s/.sam$/.$i.sam/;
+	open($OUTFILE[$i], ">$intronoutfile[$i]");
+    }
     open(IGOUTFILE, ">$intergenicoutfile");
 }
 
@@ -91,7 +74,7 @@ while($line = <INFILE>) {
     }
 }
 close(INFILE);
-for($i=1;$i<11;$i++){
+for($i=1;$i<=$i_intron;$i++){
     $outfile_cnt[$i]=0;
 }
 $outfile_cnt_ig=0;
@@ -208,46 +191,16 @@ while ($line1 = <INFILE>) {
     $flagDist[$flag]++;
     if($flag > 0) {
 	if($outputsam eq "true") {
-	    if($flag == 1) {
-		$outfile_cnt[1]++;
-		print OUTFILE1 $line1;
+	    for ($i=1; $i<$i_intron; $i++){
+		if($flag == $i) {
+		    $outfile_cnt[$i]++;
+		    print {$OUTFILE[$i]} $line1;
+		}
 	    }
-	    if($flag == 2) {
-		$outfile_cnt[2]++;
-		print OUTFILE2 $line1;
-	    }
-	    if($flag == 3) {
-		$outfile_cnt[3]++;
-		print OUTFILE3 $line1;
-	    }
-	    if($flag == 4) {
-		$outfile_cnt[4]++;
-		print OUTFILE4 $line1;
-	    }
-	    if($flag == 5) {
-		$outfile_cnt[5]++;
-		print OUTFILE5 $line1;
-	    }
-	    if($flag == 6) {
-		$outfile_cnt[6]++;
-		print OUTFILE6 $line1;
-	    }
-	    if($flag == 7) {
-		$outfile_cnt[7]++;
-		print OUTFILE7 $line1;
-	    }
-	    if($flag == 8) {
-		$outfile_cnt[8]++;
-		print OUTFILE8 $line1;
-	    }
-	    if($flag == 9) {
-		$outfile_cnt[9]++;
-		print OUTFILE9 $line1;
-	    }
-	    if($flag >= 10) {
-		$outfile_cnt[10]++;
-		print OUTFILE10 $line1;
-	    }
+	    if($flag >= $i_intron) {
+		$outfile_cnt[$i_intron]++;
+		print {$OUTFILE[$i_intron]} $line1;
+            }
 	}
     } else {
 	if($outputsam eq "true") {
@@ -263,28 +216,12 @@ for($i=0; $i<@flagDist; $i++) {
 	
 if($outputsam eq "true") {
     print IGOUTFILE "line count = $outfile_cnt_ig\n";
-    print OUTFILE1 "line count = $outfile_cnt[1]\n";
-    print OUTFILE2 "line count = $outfile_cnt[2]\n";
-    print OUTFILE3 "line count = $outfile_cnt[3]\n";
-    print OUTFILE4 "line count = $outfile_cnt[4]\n";
-    print OUTFILE5 "line count = $outfile_cnt[5]\n";
-    print OUTFILE6 "line count = $outfile_cnt[6]\n";
-    print OUTFILE7 "line count = $outfile_cnt[7]\n";
-    print OUTFILE8 "line count = $outfile_cnt[8]\n";
-    print OUTFILE9 "line count = $outfile_cnt[9]\n";
-    print OUTFILE10 "line count = $outfile_cnt[10]\n";
+    for ($i=1; $i<=$i_intron; $i++){
+	print {$OUTFILE[$i]} "line count = $outfile_cnt[$i]\n";
+	close($OUTFILE[$i]);
+    }
     close(INTRONOUTFILE);
     close(IGOUTFILE);
-    close(OUTFILE1);
-    close(OUTFILE2);
-    close(OUTFILE3);
-    close(OUTFILE4);
-    close(OUTFILE5);
-    close(OUTFILE6);
-    close(OUTFILE7);
-    close(OUTFILE8);
-    close(OUTFILE9);
-    close(OUTFILE10);
 }
 
 foreach $intron (sort {cmpChrs($a,$b)} keys %INTRON_hash) {
