@@ -73,10 +73,10 @@ STUDY
 Create a file &lt;sample dirs> with the names of the sample directories (without path, sorted by condition). This file will be used throughout the pipeline.
 
        e.g. 
-       	    the &lt;sample dirs> file should look like this:<br> 
-            Sample_1<br>
-            Sample_2<br>
-            Sample_3<br>
+       	    the <sample dirs> file should look like this:
+            Sample_1
+            Sample_2
+            Sample_3
             Sample_4
 
 ##### B. Total Number of Reads
