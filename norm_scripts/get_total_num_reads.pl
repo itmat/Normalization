@@ -64,9 +64,7 @@ open(DIRS, $sample_dirs) or die "cannot find file '$sample_dirs'\n";
 open(OUTFINAL, ">$outfile_final");
 while($dir = <DIRS>){
     chomp($dir);
-    $id = $dir;
-    $id =~ s/Sample_//;
-    $total_num_reads = `grep -w $id $outfile_all`;
+    $total_num_reads = `grep -w $dir $outfile_all`;
     @fields = split(" ", $total_num_reads);
     $num = $fields[0];
     print OUTFINAL "$dir\t$num\n";
