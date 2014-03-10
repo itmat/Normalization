@@ -87,6 +87,13 @@ Get total number of reads from input fasta or fastq files.
 * &lt;sample dirs> : a file with the names of the sample directories (without path)
 * &lt;loc> : full path of the directory with the sample directories (READS)
 * &lt;file of input forward fa/fq files> :  a file with the names of input forward fa or forward fq files (full path)
+       e.g.
+            the <file of input forward fa/fq files> file should look like this:
+            path/to/STUDY/READS/Sample_1/fwd.fq
+            path/to/STUDY/READS/Sample_2/fwd.fq
+            path/to/STUDY/READS/Sample_3/fwd.fq
+            path/to/STUDY/READS/Sample_4/fwd.fq
+
 * option:<br>
   **-fa** : set this if the input files are in fasta format <br>
   **-fq** : set this if the input files are in fastq format
