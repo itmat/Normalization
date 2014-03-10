@@ -261,7 +261,7 @@ for($i=1; $i<=$i_exon; $i++) {
 		`bsub -o $logdir/$id.exonmappers.u_head.$i.out -e $logdir/$id.exonmappers.u_head.$i.err sh $shfileU[$i]`;
 	    }
 	    if ($qsub eq "true"){
-		`qsub -N $id.exonmappers.u_head.$i -o $logdir -e $logdir $shfileU[$i]`;
+		`qsub -N $dirname.exonmappers.u_head.$i -o $logdir -e $logdir $shfileU[$i]`;
 	    }
 	}
 	if($exonnu eq 'true') {
@@ -272,7 +272,7 @@ for($i=1; $i<=$i_exon; $i++) {
 		`bsub -o $logdir/$id.exonmappers.nu_head.$i.out -e $logdir/$id.exonmappers.nu_head.$i.err sh $shfileNU[$i]`;
 	    }
 	    if ($qsub eq "true"){
-		`qsub -N $id.exonmappers.nu_head.$i -e $logdir -o $logdir $shfileNU[$i]`;
+		`qsub -N $dirname.exonmappers.nu_head.$i -e $logdir -o $logdir $shfileNU[$i]`;
 	    }
 	}
     }
@@ -306,7 +306,7 @@ for($i=1; $i<=$i_intron; $i++) {
 		`bsub -o $logdir/$id.intronmappers.u_head.$i.out -e $logdir/$id.intronmappers.u_head.$i.err sh $shfileU[$i]`;
 	    }
 	    if ($qsub eq "true"){
-		`qsub -N $id.intronmappers.u_head.$i -o $logdir -e $logdir $shfileU[$i]`;
+		`qsub -N $dirname.intronmappers.u_head.$i -o $logdir -e $logdir $shfileU[$i]`;
 	    }
 	}
 	if($intronnu eq 'true') {
@@ -317,7 +317,7 @@ for($i=1; $i<=$i_intron; $i++) {
 		`bsub -o $logdir/$id.intronmappers.nu_head.$i.out -e $logdir/$id.intronmappers.nu_head.$i.err sh $shfileNU[$i]`;
 	    }
 	    if ($qsub eq "true"){
-		`qsub -N $id.intronmappers.nu_head.$i -o $logdir -e $logdir $shfileNU[$i]`;
+		`qsub -N $dirname.intronmappers.nu_head.$i -o $logdir -e $logdir $shfileNU[$i]`;
 	    }
 	}
     }
@@ -348,7 +348,7 @@ while($dirname = <INFILE>) {
 	    `bsub -o $logdir/$id.intergenic.u_head.out -e $logdir/$id.intergenic.u_head.err sh $shfileU`;
 	}
 	if ($qsub eq "true"){
-	    `qsub -N $id.intergenic.u_head -o $logdir -e $logdir $shfileU`;
+	    `qsub -N $dirname.intergenic.u_head -o $logdir -e $logdir $shfileU`;
 	}
     }
     if($ignu eq 'true') {
@@ -359,7 +359,7 @@ while($dirname = <INFILE>) {
 	    `bsub -o $logdir/$id.intergenic.nu_head.out -e $logdir/$id.intergenic.nu_head.err sh $shfileNU`;
 	}
 	if ($qsub eq "true"){
-	    `qsub -N $id.intergenic.nu_head -o $logdir -e $logdir $shfileNU`;
+	    `qsub -N $dirname.intergenic.nu_head -o $logdir -e $logdir $shfileNU`;
 	}
     }
 }

@@ -116,7 +116,7 @@ while($line = <INFILE>) {
 	`bsub -q plus -e $logdir/$id.filtersam.err -o $logdir/$id.filtersam.out sh $shfile`;
     }
     if ($qsub eq "true"){
-	`qsub -N $id.filtersam -o $logdir -e $logdir -l h_vmem=4G $shfile`;
+	`qsub -N $dir.filtersam -o $logdir -e $logdir -l h_vmem=4G $shfile`;
     }
 }
 close(INFILE);

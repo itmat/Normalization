@@ -78,7 +78,7 @@ while($line = <INFILE>) {
 	`bsub -q plus -e $logdir/$id.runblast.err -o $logdir/$id.runblast.out sh $shfile`;
     }
     if ($qsub eq "true"){
-	`qsub -N $id.runblast -e $logdir -o $logdir -l h_vmem=6G $shfile`;
+	`qsub -N $dir.runblast -e $logdir -o $logdir -l h_vmem=6G $shfile`;
     }
 }
 close(INFILE);
