@@ -155,7 +155,8 @@ This outputs a file called `master_list_of_exons.txt` to the `READS` directory.
 
 ##### B. [optional step] : Filter Other High Expressors
 This is an extra filter step that removes highly expressed exons.
-**a. Run Quantify exons**
+
+**I. Run Quantify exons**
 
 Run the following command with **&lt;output sam?> = false**. This will output merged exonquants by default.
 
@@ -174,7 +175,7 @@ Run the following command with **&lt;output sam?> = false**. This will output me
 
 This will output `exonquants` file of all samples to `Unique` and/or `NU` directory in each sample directory.
 
-**b. Get High Expressors**
+**II. Get High Expressors**
 
      perl runall_get_high_expressors.pl <sample dirs> <loc> <cutoff> <annotation file> <exons> [options]
 
@@ -191,7 +192,7 @@ This will output `exonquants` file of all samples to `Unique` and/or `NU` direct
 
 This will output `exonpercents.txt` and `high_expressors_annot.txt` files of all samples to each sample directory. It will also output `annotated_master_list_of_exons.txt` to `STUDY/READS` directory.
 
-**c. Filter High Expressors**
+**III. Filter High Expressors**
 
      perl filter_high_expressors.pl <sample dirs> <loc> <exons>
 
@@ -213,7 +214,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
 
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
-* &lt;exons> : the `filtered_master_list_of_exons.txt` or `master_list_of_exons.txt` if you skipped step B
+* &lt;exons> : the `filtered_master_list_of_exons.txt` or `master_list_of_exons.txt` if you skipped step 3B
 * &lt;output sam?> : true
 * option:<br>
   **-depth &lt;n>** : by default, it will output 20 exonmappers<br>
@@ -378,7 +379,7 @@ Run the following command with **&lt;output sam?> = false**. This will output me
 
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
-* &lt;exons> : the `master_list_of_exons.txt` file 
+* &lt;exons> : the `filtered_master_list_of_exons.txt` (or `master_list_of_exons.txt` file if you skipped step 3B)
 * &lt;output sam?> : false
 * option:<br>
   **-NU-only** : set this for non-unique mappers<br>
@@ -448,12 +449,12 @@ This will output `master_list_of_exons_counts` to `STUDY/NORMALIZED_DATA`.
 * &lt;file of quants files> : a file with the names of the quants file
 
          e.g. the <file of quants files> file should look like this:
-  	       master_list_of_exons_counts_MIN.txt
-               master_list_of_exons_counts_MAX.txt
-  	       master_list_of_introns_counts_MIN.txt
-               master_list_of_introns_counts_MAX.txt
-  	       master_list_of_junctions_counts_MIN.txt
-               master_list_of_junctions_counts_MAX.txt
+	      master_list_of_exons_counts_MIN.txt
+	      master_list_of_exons_counts_MAX.txt
+	      master_list_of_introns_counts_MIN.txt
+	      master_list_of_introns_counts_MAX.txt
+	      master_list_of_junctions_counts_MIN.txt
+	      master_list_of_junctions_counts_MAX.txt
 
 * &lt;number_of_samples> : number of samples
 * &lt;cutoff> : cutoff value
