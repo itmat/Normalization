@@ -61,7 +61,7 @@ if($numargs ne '1'){
     die "you have to specify how you want to submit batch jobs. choose either -bsub or -qsub.\n
 ";
 }
-print "$i_exon\t$i_intron\n";
+#print "$i_exon\t$i_intron\n";
 
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;

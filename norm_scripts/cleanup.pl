@@ -25,8 +25,12 @@ if (-d $nexon_dir){
     `rm -r $nexon_dir`;
 }
 if (-d "$norm_dir/FINAL_SAM/MERGED"){
-    `rm -r $norm_dir/FINAL_SAM/Unique`;
-    `rm -r $norm_dir/FINAL_SAM/NU`;
+    if (-d "$norm_dir/FINAL_SAM/Unique"){
+	`rm -r $norm_dir/FINAL_SAM/Unique`;
+    }
+    if (-d "$norm_dir/FINAL_SAM/NU"){
+	`rm -r $norm_dir/FINAL_SAM/NU`;
+    }
 }
 open(INFILE, $ARGV[0]) or die "cannot find file $ARGV[0]\n";
 while($line = <INFILE>){
