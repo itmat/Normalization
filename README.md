@@ -83,21 +83,21 @@ Get total number of reads from input fasta or fastq files.
 
       perl get_total_num_reads.pl <sample dirs> <loc> <file of input forward fa/fq files> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (READS)
 * &lt;file of input forward fa/fq files> :  a file with the names of input forward fa or forward fq files (full path)
 
            e.g. the <file of input forward fa/fq files> file should look like this:
-       		path/to/STUDY/READS/Sample_1/fwd.fq
+     		path/to/STUDY/READS/Sample_1/fwd.fq
 	        path/to/STUDY/READS/Sample_2/fwd.fq
-		path/to/STUDY/READS/Sample_3/fwd.fq
-		path/to/STUDY/READS/Sample_4/fwd.fq
+     		path/to/STUDY/READS/Sample_3/fwd.fq
+	        path/to/STUDY/READS/Sample_4/fwd.fq
 
 * option:<br>
   **-fa** : set this if the input files are in fasta format <br>
   **-fq** : set this if the input files are in fastq format
 
-This will output a file called `total_num_reads.txt` in the `READS` directory.
+This will output a file called `total_num_reads.txt` to the `READS` directory.
 
 ##### C. BLAST
 
@@ -105,7 +105,7 @@ This will output a file called `total_num_reads.txt` in the `READS` directory.
 
 > `runblast.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (READS)
 * &lt;samfile name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
 * &lt;blast dir> : the blast dir (full path)
@@ -131,7 +131,7 @@ Run the following command. By default it will return both unique and non-unique 
 
 > `filter_sam.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (READS)
 * &lt;sam file name> :  the name of sam file
 * option:<br>
@@ -162,7 +162,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
 
 > `quantify_exons.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (READS)
 * &lt;exons> : the `master_list_of_exons.txt` file (with full path)
 * &lt;output sam?> : true
@@ -179,7 +179,7 @@ This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam
 
          perl runall_get_ribo_percents.pl <sample dirs> <loc> [options]
 
-       * &lt;sample dirs> : a file with the names of the sample directories (without path)
+       * &lt;sample dirs> : a file with the names of the sample directories 
        * &lt;loc> : full path of the directory with the sample directories (READS)
        * option : <br>
          **-bsub** : set this if you want submit batch jobs to LSF<br>
@@ -191,7 +191,7 @@ It assumes there are files of ribosomal ids output from runblast.pl each with su
 
          perl get_exon2nonexon_signal_stats.pl <sample dirs> <loc> [options]
 
-       * &lt;sample dirs> : a file with the names of the sample directories (without path)
+       * &lt;sample dirs> : a file with the names of the sample directories 
        * &lt;loc> : full path of the directory with the sample directories (READS)
        * option:<br>
        **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
@@ -203,7 +203,7 @@ It assumes there are files of ribosomal ids output from runblast.pl each with su
 
       	 perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc> [options]
 
-       * &lt;sample dirs> : a file with the names of the sample directories (without path)<br>
+       * &lt;sample dirs> : a file with the names of the sample directories <br>
        * &lt;loc> : full path of the directory with the sample directories (READS)
 	* option:<br>
   	**-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
@@ -230,7 +230,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
 
 > `quantify_introns.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (READS)
 * &lt;introns> : the `master_list_of_introns.txt` file (with full path)
 * &lt;output sam?> : true
@@ -249,7 +249,7 @@ This identifies minimum line count of each type of exonmappers/intronmappers/int
       
       perl runall_head.pl <sample dirs> <loc> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (READS)
 * option : <br>
   **-bsub** : set this if you want submit batch jobs to LSF<br>
@@ -263,7 +263,7 @@ This will output the same number of rows from each file in each `sample_dir/Uniq
 
       perl cat_headfiles.pl <sample dirs> <loc> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (READS)
 * option:<br>
   **-u**  :  set this if you want to return only unique mappers, otherwise by default
@@ -277,7 +277,7 @@ This will create `STUDY/NORMALIZED_DATA`, `STUDY/NORMALIZED_DATA/exonmappers`, a
 
       perl make_final_samfile.pl <sample dirs> <loc> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (READS)
 * option:<br>
   **-u**  :  set this if you want to return only unique mappers, otherwise by default
@@ -293,7 +293,7 @@ By default, this will use merged final sam files as input.
  
     perl runall_sam2junctions.pl <sample dirs> <loc> <genes> <genome> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (READS)
 * &lt;genes> :the RUM gene info file (with full path)
 * &lt;genome> : the RUM genome sequene one-line fasta file (with full path)
@@ -316,7 +316,7 @@ If you want to quantify both Unique and Non-unique normalized exonmappers run th
     perl cat_exonmappers_Unique_NU.pl <sample dirs> <loc>
 
 
-* &lt;sample dirs> : a file with the names of the sample directories with SAM file/alignment output (without path)
+* &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : the path of the directory with the sample directories
 
 This will create `NORMALIZED_DATA/exonmappers/MERGED` directory and output concatenated `exonmappers.norm.sam` file of all samples to the directory created.
@@ -329,7 +329,7 @@ Run the following command with **&lt;output sam?> = false**. This will output me
 
 > `quantify_exons.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (READS)
 * &lt;exons> : the `master_list_of_exons.txt` file (with full path)
 * &lt;output sam?> : false
@@ -348,7 +348,7 @@ Run the following command with **&lt;output sam?> = false**. By default this wil
 
 > `quantify_introns.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (READS)
 * &lt;introns> : the `master_list_of_introns.txt` file (with full path)
 * &lt;output sam?> : false
@@ -364,7 +364,7 @@ This outputs `intronquants` file of all samples to `NORMALIZED_DATA/notexonmappe
 
      perl make_final_spreadsheets.pl <sample dirs> <loc> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (READS)
 * option:<br>
   **-u**  :  set this if you want to return only unique, otherwise by default
@@ -407,14 +407,14 @@ This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_intr
 
      perl cleanup.pl <sample dirs> <loc>
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (READS)
 
 #####B. Convert SAM to BAM
 
      perl runall_sam2bam.pl <sample dirs> <loc> <sam file name> <fai file>
 
-* &lt;sample dirs> : a file with the names of the sample directories (without path)
+* &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (READS)
 * &lt;sam file name> : name of the alignment sam file
 * &lt;fai file> : fai file (full path)
