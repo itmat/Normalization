@@ -185,8 +185,8 @@ This will output `exonquants` file of all samples to `Unique` and/or `NU` direct
 * &lt;annotation file> : downloaded from UCSC known-gene track including at minimum name, chrom, strand, exonStarts, exonEnds, all kgXref fields and hgnc, spDisease, protein and gene fields from the Linked Tables table.
 * &lt;exons> : `master_list_of_exons.txt` file
 * option:<br>
- ** -u**  :  set this if you want to return only unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
- ** -nu** :  set this if you want to return only non-unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
+ **-u**  :  set this if you want to return only unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
+ **-nu** :  set this if you want to return only non-unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
  **-bsub** : set this if you want to submit batch jobs to LSF.<br>
  **-qsub** : set this if you want to submit batch jobs to Sun Grid Engine.
 
