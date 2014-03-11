@@ -49,7 +49,7 @@ if($outputsam eq "true") {
 
 open(OUTFILE, ">$outfile");
 
-open(INFILE, $intronsfile);
+open(INFILE, $intronsfile) or die "cannot find file '$intronsfile'\n";
 
 while($line = <INFILE>) {
     chomp($line);
@@ -78,7 +78,7 @@ for($i=1;$i<=$i_intron;$i++){
     $outfile_cnt[$i]=0;
 }
 $outfile_cnt_ig=0;
-open(INFILE, $samfile);
+open(INFILE, $samfile) or die "cannot find file '$samfile'\n";
 $CNT_OF_FRAGS_WHICH_HIT_INTRONS=0;
 while ($line1 = <INFILE>) {
     $flag = 0;

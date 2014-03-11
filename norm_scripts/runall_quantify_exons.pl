@@ -111,14 +111,26 @@ while($line = <INFILE>) {
 	    if (-d $merged_exon_dir){
 		$final_exon_dir = $merged_exon_dir;
 	    }
-	    else {
+	    if (-d $unique_exon_dir){
 		$final_exon_dir = $unique_exon_dir;
 		$filename =~ s/.sam$/_u.sam/;
 	    }
+	    else {
+		$filename = "$id.filtered.sam";
+		$filename =~ s/.sam$/_u.sam/;
+		$final_exon_dir = "$LOC/$dir/Unique";
+	    }
 	}
 	if ($nuonly eq "true"){
-	    $final_exon_dir = $nu_exon_dir;
-	    $filename =~ s/.sam$/_nu.sam/;
+	    if (-d $nu_exon_dir){
+		$final_exon_dir = $nu_exon_dir;
+		$filename =~ s/.sam$/_nu.sam/;
+	    }
+	    else{
+		$filename = "$id.filtered.sam";
+                $filename =~ s/.sam$/_nu.sam/;
+		$final_exon_dir = "$LOC/$dir/NU";
+	    }
 	}
     }
 

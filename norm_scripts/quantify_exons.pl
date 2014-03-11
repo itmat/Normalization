@@ -119,7 +119,7 @@ if($exon_sam_outfile ne "none") {
     }
 }
 
-open(INFILE, $exonsfile);
+open(INFILE, $exonsfile) or die "cannot find file '$exonsfile'\n";
 while($line = <INFILE>) {
     chomp($line);
     if($line =~ /([^:\t\s]+):(\d+)-(\d+)/) {
@@ -174,7 +174,7 @@ $Flag = 0;
 for ($i=1; $i<=$i_exon; $i++){
     $outfile_cnt[$i] = 0;
 }
-open(INFILE, $samfile);
+open(INFILE, $samfile) or die "cannot find file '$samfile'\n";
 while ($line1 = <INFILE>) {
     chomp($line1);
     $Flag = 0;
