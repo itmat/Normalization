@@ -156,55 +156,55 @@ This outputs a file called `master_list_of_exons.txt` to the `READS` directory.
 ##### B. [optional step] : Filter Other High Expressors
 This is an extra filter step that removes highly expressed exons.
 
-I. Run Quantify exons
+ I. Run Quantify exons
 
-Run the following command with **&lt;output sam?> = false**. This will output merged exonquants by default.
+ Run the following command with **&lt;output sam?> = false**. 
 
-    perl runall_quantify_exons.pl <sample dirs> <loc> <exons> <output sam?> [options]
+     perl runall_quantify_exons.pl <sample dirs> <loc> <exons> <output sam?> [options]
 
-> `quantify_exons.pl` available for running one sample at a time
+ > `quantify_exons.pl` available for running one sample at a time
 
-* &lt;sample dirs> : a file with the names of the sample directories
-* &lt;loc> : full path of the directory with the sample directories (`READS`)
-* &lt;exons> : `master_list_of_exons.txt` file
-* &lt;output sam?> : false
-* option:<br>
-  **-NU-only** : set this for non-unique mappers<br>
-  **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+ * &lt;sample dirs> : a file with the names of the sample directories
+ * &lt;loc> : full path of the directory with the sample directories (`READS`)
+ * &lt;exons> : `master_list_of_exons.txt` file
+ * &lt;output sam?> : false
+ * option:<br>
+   **-NU-only** : set this for non-unique mappers<br>
+   **-bsub** : set this if you want to submit batch jobs to LSF<br>
+   **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
 
-This will output `exonquants` file of all samples to `Unique` and/or `NU` directory in each sample directory.
+ This will output `exonquants` file of all samples to `Unique` and/or `NU` directory in each sample directory.
 
-II. Get High Expressors
+ II. Get High Expressors
 
-     perl runall_get_high_expressors.pl <sample dirs> <loc> <cutoff> <annotation file> <exons> [options]
+      perl runall_get_high_expressors.pl <sample dirs> <loc> <cutoff> <annotation file> <exons> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories
-* &lt;loc> : full path of the directory with the sample directories (`READS`)
-* &lt;cutoff> : cutoff % value 
-* &lt;annotation file> : downloaded from UCSC known-gene track including at minimum name, chrom, strand, exonStarts, exonEnds, all kgXref fields and hgnc, spDisease, protein and gene fields from the Linked Tables table.
-* &lt;exons> : `master_list_of_exons.txt` file
-* option:<br>
- **-u**  :  set this if you want to return only unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
- **-nu** :  set this if you want to return only non-unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
- **-bsub** : set this if you want to submit batch jobs to LSF.<br>
- **-qsub** : set this if you want to submit batch jobs to Sun Grid Engine.
+ * &lt;sample dirs> : a file with the names of the sample directories
+ * &lt;loc> : full path of the directory with the sample directories (`READS`)
+ * &lt;cutoff> : cutoff % value 
+ * &lt;annotation file> : downloaded from UCSC known-gene track including at minimum name, chrom, strand, exonStarts, exonEnds, all kgXref fields and hgnc, spDisease, protein and gene fields from the Linked Tables table.
+ * &lt;exons> : `master_list_of_exons.txt` file
+ * option:<br>
+  **-u**  :  set this if you want to return only unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
+  **-nu** :  set this if you want to return only non-unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
+  **-bsub** : set this if you want to submit batch jobs to LSF.<br>
+  **-qsub** : set this if you want to submit batch jobs to Sun Grid Engine.
 
-This will output `exonpercents.txt` and `high_expressors_annot.txt` files of all samples to each sample directory. It will also output `annotated_master_list_of_exons.txt` to `STUDY/READS` directory.
+ This will output `exonpercents.txt` and `high_expressors_annot.txt` files of all samples to each sample directory. It will also output `annotated_master_list_of_exons.txt` to `STUDY/READS` directory.
 
-III. Filter High Expressors
+ III. Filter High Expressors
 
-     perl filter_high_expressors.pl <sample dirs> <loc> <exons>
+      perl filter_high_expressors.pl <sample dirs> <loc> <exons>
 
-* &lt;sample dirs> : a file with the names of the sample directories
-* &lt;loc> : full path of the directory with the sample directories (`READS`)
-* &lt;exons> : `master_list_of_exons.txt` file
+ * &lt;sample dirs> : a file with the names of the sample directories
+ * &lt;loc> : full path of the directory with the sample directories (`READS`)
+ * &lt;exons> : `master_list_of_exons.txt` file
 
-This will output a text file called `filtered_master_list_of_exons.txt` to `STUDY/READS` directory.
+ This will output a text file called `filtered_master_list_of_exons.txt` to `STUDY/READS` directory.
 
 ##### C. Run quantify exons
 
-This step takes filtered sam files and splits them into 1, 2, 3 ... n exonmappers and notexonmappers (&lt;n> = 20 if you don't use the -depth option).
+This step takes filtered sam files and splits them into 1, 2, 3 ... n exonmappers and notexonmappers (n = 20 if you don't use the -depth option).
 
 Run the following command with **&lt;output sam?> = true**. By default this will return unique exonmappers. Use -NU-only to get non-unique exonmappers:
 
@@ -214,7 +214,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
 
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
-* &lt;exons> : the `filtered_master_list_of_exons.txt` or `master_list_of_exons.txt` if you skipped step 3B
+* &lt;exons> : the `filtered_master_list_of_exons.txt` (or `master_list_of_exons.txt` if you skipped step 3B)
 * &lt;output sam?> : true
 * option:<br>
   **-depth &lt;n>** : by default, it will output 20 exonmappers<br>
@@ -235,7 +235,7 @@ This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam
          **-bsub** : set this if you want to submit batch jobs to LSF<br>
 	 **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
 
-It assumes there are files of ribosomal ids output from runblast.pl each with suffix "ribosomalids.txt" in each sample directory. This will output `ribosomal_counts.txt` and `ribo_percents.txt` to `READS` directory.
+ It assumes there are files of ribosomal ids output from runblast.pl each with suffix "ribosomalids.txt" in each sample directory. This will output `ribosomal_counts.txt` and `ribo_percents.txt` to `READS` directory.
 
 * Exon to nonexon signal:
 
@@ -273,7 +273,7 @@ This outputs a txt file called `master_list_of_introns.txt` to `READS` directory
 
 ##### B. Run quantify introns
 
-This step takes `notexonmappers.sam` files and splits them into 1, 2, 3 ... n intronmappers and intergenicmappers files (&lt;n> = 10 if you don't use the -depth option). 
+This step takes `notexonmappers.sam` files and splits them into 1, 2, 3 ... n intronmappers and intergenicmappers files (n = 10 if you don't use the -depth option). 
 
 Run the following command with **&lt;output sam?> = true**. By default this will return unique intronmappers. Use -NU-only to get non-unique intronmappers:
 

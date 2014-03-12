@@ -28,7 +28,7 @@ use Cwd 'abs_path';
 $path = abs_path($0);
 $path =~ s/\/runblast.pl//;
 
-open(INFILE, "$LOC/$dir/$samfile");
+open(INFILE, "$LOC/$dir/$samfile") or die "cannot find fild '$LOC/$dir/$samfile'\n";
 while($line = <INFILE>) {
     chomp($line);
     @a = split(/\t/,$line);
