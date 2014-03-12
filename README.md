@@ -267,7 +267,7 @@ This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam
 
 * Mapping statistics:
 
-  	  perl runall_sam2mappingstats.pl <sample dir> <loc> <sam file name> <total_num_reads?> [options]
+         perl runall_sam2mappingstats.pl <sample dir> <loc> <sam file name> <total_num_reads?> [options]
 
        * &lt;sample dirs> : a file with the names of the sample directories
        * &lt;loc> : full path of the directory with the sample directories (`READS`)
@@ -279,7 +279,7 @@ This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam
  
  This will output `*mappingstats.txt` file of all samples to each sample directory. The following script will parse the `*mappingstats.txt` files and output a table with summary info across all samples.
 
-      	  perl getstats.pl <dirs> <loc>
+         perl getstats.pl <dirs> <loc>
 
        * &lt;sample dirs> : a file with the names of the sample directories
        * &lt;loc> : full path of the directory with the sample directories (`READS`)
