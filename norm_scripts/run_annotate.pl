@@ -68,7 +68,7 @@ while ($line = <INFILE>){
 	`bsub -q max_mem30 -o $logdir/annotate_$line.out -e $logdir/annotate_$line.err sh $shfile`;
     }
     if ($qsub eq "true"){
-	`qsub -N annotate_$line -e $logdir -o $logdir -l h_vmem=6G $shfile`;
+	`qsub -cwd -N annotate_$line -e $logdir -o $logdir -l h_vmem=6G $shfile`;
     }
 }
 close(INFILE);

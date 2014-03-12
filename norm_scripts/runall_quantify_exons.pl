@@ -165,7 +165,7 @@ while($line = <INFILE>) {
 	    `bsub -q plus -e $logdir/$id.quantifyexons.err -o $logdir/$id.quantifyexons.out sh $shdir/$shfile`;
 	}
 	if ($qsub eq "true"){
-	    `qsub -N $line.quantifyexons -o $logdir -e $logdir -l h_vmem=4G $shdir/$shfile`;
+	    `qsub -cwd -N $line.quantifyexons -o $logdir -e $logdir -l h_vmem=4G $shdir/$shfile`;
 	}
     }
     if($outputsam eq "false") {
@@ -173,7 +173,7 @@ while($line = <INFILE>) {
 	    `bsub -q plus -e $logdir/$id.quantifyexons_2.err -o $logdir/$id.quantifyexons_2.out sh $shdir/$shfile2`;
 	}
 	if ($qsub eq "true"){
-	    `qsub -N $line.quantifyexons2 -o $logdir -e $logdir -l h_vmem=4G $shdir/$shfile2`;
+	    `qsub -cwd -N $line.quantifyexons2 -o $logdir -e $logdir -l h_vmem=4G $shdir/$shfile2`;
 	}
     }
 }

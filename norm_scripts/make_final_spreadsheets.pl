@@ -99,9 +99,9 @@ if ($numargs eq "0"){
 	`bsub -q plus -o $logdir/juncs2spreadsheet_min_max.out -e $logdir/juncs2spreadsheet_min_max.err sh $sh_junctions`;
     }
     if ($qsub eq "true"){
-	`qsub -N exonquants2spreadsheet_min_max -o $logdir -e $logdir -l h_vmem=10G $sh_exon`;
-	`qsub -N intronquants2spreadsheet_min_max -o $logdir -e $logdir -l h_vmem=10G $sh_intron`;
-	`qsub -N juncs2spreadsheet_min_max -o $logdir -e $logdir -l h_vmem=6G $sh_junctions`;
+	`qsub -cwd -N exonquants2spreadsheet_min_max -o $logdir -e $logdir -l h_vmem=10G $sh_exon`;
+	`qsub -cwd -N intronquants2spreadsheet_min_max -o $logdir -e $logdir -l h_vmem=10G $sh_intron`;
+	`qsub -cwd -N juncs2spreadsheet_min_max -o $logdir -e $logdir -l h_vmem=6G $sh_junctions`;
     }
 }
 else{
@@ -124,9 +124,9 @@ else{
 	    `bsub -q plus -o $logdir/juncs2spreadsheet.u.out -e $logdir/juncs2spreadsheet.u.err sh $sh_junctions`;
 	}
 	if ($qsub eq "true"){
-	    `qsub -N exonquants2spreadsheet.u -o $logdir -e $logdir -l h_vmem=10G $sh_exon`;
-	    `qsub -N intronquants2spreadsheet.u -o $logdir -e $logdir -l h_vmem=10G $sh_intron`;
-	    `qsub -N juncs2spreadsheet.u -o $logdir -e $logdir -l h_vmem=6G $sh_junctions`;
+	    `qsub -cwd -N exonquants2spreadsheet.u -o $logdir -e $logdir -l h_vmem=10G $sh_exon`;
+	    `qsub -cwd -N intronquants2spreadsheet.u -o $logdir -e $logdir -l h_vmem=10G $sh_intron`;
+	    `qsub -cwd -N juncs2spreadsheet.u -o $logdir -e $logdir -l h_vmem=6G $sh_junctions`;
 	}
     }
     if ($NU eq "true"){
@@ -148,9 +148,9 @@ else{
 	    `bsub -q plus -o $logdir/juncs2spreadsheet.nu.out -e $logdir/juncs2spreadsheet.nu.err sh $sh_junctions`;
 	}
 	if ($qsub eq "true"){
-	    `qsub -N exonquants2spreadsheet.nu -o $logdir -e $logdir -l h_vmem=10G $sh_exon`;
-            `qsub -N intronquants2spreadsheet.nu -o $logdir -e $logdir -l h_vmem=10G $sh_intron`;
-            `qsub -N juncs2spreadsheet.nu -o $logdir -e $logdir -l h_vmem=6G $sh_junctions`;
+	    `qsub -cwd -N exonquants2spreadsheet.nu -o $logdir -e $logdir -l h_vmem=10G $sh_exon`;
+            `qsub -cwd -N intronquants2spreadsheet.nu -o $logdir -e $logdir -l h_vmem=10G $sh_intron`;
+            `qsub -cwd -N juncs2spreadsheet.nu -o $logdir -e $logdir -l h_vmem=6G $sh_junctions`;
 	}
     }
 }

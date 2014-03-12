@@ -127,7 +127,7 @@ while($line = <INFILE>) {
 	    `bsub -q plus -e $logdir/$id.quantifyintrons.err -o $logdir/$id.quantifyintrons.out sh $shdir/$shfile`;
 	}
 	if ($qsub eq "true"){
-	    `qsub -N $line.quantifyintrons -o $logdir -e $logdir -l h_vmem=4G $shdir/$shfile`;
+	    `qsub -cwd -N $line.quantifyintrons -o $logdir -e $logdir -l h_vmem=4G $shdir/$shfile`;
 	}
     }
     else {
@@ -135,7 +135,7 @@ while($line = <INFILE>) {
 	    `bsub -q plus -e $logdir/$id.quantifyintrons_2.err -o $logdir/$id.quantifyintrons_2.out sh $shdir/$shfile2`;
 	}
 	if ($qsub eq "true"){
-	    `qsub -N $line.quantifyintrons_2 -e $logdir -o $logdir -l h_vmem=4G $shdir/$shfile2`;
+	    `qsub -cwd -N $line.quantifyintrons_2 -e $logdir -o $logdir -l h_vmem=4G $shdir/$shfile2`;
 	}
     }
 }

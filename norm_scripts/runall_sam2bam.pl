@@ -80,7 +80,7 @@ while ($line = <INFILE>){
 	    `bsub -q plus -o $logdir/$id.sam2bam.out -e $logdir/$id.sam2bam.err sh $shfile`;
 	}
 	if ($qsub eq "true"){
-	    `qsub -N $dir.sam2bam -o $logdir -e $logdir -l h_vmem=6G $shfile`;
+	    `qsub -cwd -N $dir.sam2bam -o $logdir -e $logdir -l h_vmem=6G $shfile`;
 	}
 	if (-e "$final_M_dir/$id.FINAL.norm.sam"){
 	    open(OUT2, ">$norm_shfile");
@@ -91,7 +91,7 @@ while ($line = <INFILE>){
 		`bsub -q plus -o $logdir/$id.norm.sam2bam.out -e $logdir/$id.norm.sam2bam.err sh $norm_shfile`;
 	    }
 	    if ($qsub eq "true"){
-		`qsub -N $dir.norm.sam2bam -o $logdir -e $logdir -l h_vmem=6G $norm_shfile`;
+		`qsub -cwd -N $dir.norm.sam2bam -o $logdir -e $logdir -l h_vmem=6G $norm_shfile`;
 	    }
 	}
 	else{
@@ -104,7 +104,7 @@ while ($line = <INFILE>){
 		    `bsub -q plus -o $logdir/$id.norm.sam2bam.out -e $logdir/$id.norm.sam2bam.err sh $norm_shfile`;
 		}
 		if ($qsub eq "true"){
-		    `qsub -N $dir.norm.sam2bam -o $logdir -e $logdir -l h_vmem=6G $norm_shfile`;
+		    `qsub -cwd -N $dir.norm.sam2bam -o $logdir -e $logdir -l h_vmem=6G $norm_shfile`;
 		}
 	    }
 	    if (-e "$final_NU_dir/$id.FINAL.norm_nu.sam"){
@@ -116,7 +116,7 @@ while ($line = <INFILE>){
 		    `bsub -q plus -o $logdir/$id.norm.sam2bam.out -e $logdir/$id.norm.sam2bam.err sh $norm_shfile`;
 		}
 		if ($qsub eq "true"){
-		    `qsub -N $dir.norm.sam2bam -o $logdir -e $logdir -l h_vmem=6G $norm_shfile`;
+		    `qsub -cwd -N $dir.norm.sam2bam -o $logdir -e $logdir -l h_vmem=6G $norm_shfile`;
 		}
             }
 	    else{

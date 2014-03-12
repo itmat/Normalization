@@ -125,7 +125,7 @@ while($line = <INFILE>) {
 	`bsub -q plus -o $logdir/$id.sam2junctions.out -e $logdir/$id.sam2junctions.err sh $shdir/$shfile`;
     }
     if ($qsub eq "true"){
-	`qsub -N $dir.sam2junctions -o $logdir -e $logdir -l h_vmem=6G $shdir/$shfile`;
+	`qsub -cwd -N $dir.sam2junctions -o $logdir -e $logdir -l h_vmem=6G $shdir/$shfile`;
     }
 }
 close(INFILE);

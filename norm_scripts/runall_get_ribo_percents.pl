@@ -59,5 +59,5 @@ if ($bsub eq "true"){
     `bsub -q max_mem30 -o $logdir/getribopercents.out -e $logdir/getribopercents.err sh $shfile`;
 }
 if ($qsub eq "true"){
-    `qsub -N getribopercents -o $logdir -e $logdir -l h_vmem=10G $shfile`;
+    `qsub -cwd -N getribopercents -o $logdir -e $logdir -l h_vmem=10G $shfile`;
 }
