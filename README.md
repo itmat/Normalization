@@ -109,9 +109,9 @@ This will output a file called `total_num_reads.txt` to the `STUDY/READS` direct
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * &lt;samfile name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
 * &lt;blast dir> : full path of the blast directory<br> 
-  BLAST is at : `Normalization/norm_scripts/ncbi-blast-2.2.27+/`
+> BLAST is at : `Normalization/norm_scripts/ncbi-blast-2.2.27+/`
 * &lt;db> : full path of the database<br> 
-  ribomouse db is available : `Normalization/norm_scripts/ncbi-blast-2.2.27+/ribomouse`
+> ribomouse db is available : `Normalization/norm_scripts/ncbi-blast-2.2.27+/ribomouse`
 * option:<br>
   **-bsub** : set this if you want to submit batch jobs to LSF<br>
   **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
@@ -185,7 +185,8 @@ II. Get High Expressors
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * &lt;cutoff> : cutoff % value 
-* &lt;annotation file> : downloaded from UCSC known-gene track including at minimum name, chrom, strand, exonStarts, exonEnds, all kgXref fields and hgnc, spDisease, protein and gene fields from the Linked Tables table.
+* &lt;annotation file> : downloaded from UCSC known-gene track including at minimum name, chrom, strand, exonStarts, exonEnds, all kgXref fields and hgnc, spDisease, protein and gene fields from the Linked Tables table.<br>
+> annotation file for mm9 and hg19 available: `Normalization/norm_scripts/ucsc_known_hg19` and `Normalization/norm_scripts/ucsc_known_hg19`
 * &lt;exons> : `master_list_of_exons.txt` file
 * option:<br>
   **-u**  :  set this if you want to return only unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
