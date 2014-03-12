@@ -124,7 +124,7 @@ $max4 = 0;
 $max5 = 0;
 $max6 = 0;
 
-$outfile = "$LOC/alignment_stats.txt";
+$outfile = "$LOC/mappingstats_summary.txt";
 open(OUT, ">$outfile");
 print OUT "id\ttotal\t!<>\t!<|>\t!chrM(%!)\t\%overlap\t~!<|>\t<|>\n";
 foreach $dir (keys %UchrM) {

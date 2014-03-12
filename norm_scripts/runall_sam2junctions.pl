@@ -8,6 +8,10 @@ where:
 <genome> is the RUM genome sequene fasta file (with full path)
 
 option:
+ -samfilename <s> : set this to create junctions files using unfiltered aligned samfile.
+                    <s> is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam)
+                    and all sam files in each sample directory should have the same name.
+
  -u  :  set this if you want to return only unique junctions, otherwise by default
          it will return merged(unique+non-unique) junctions.
 
@@ -31,8 +35,15 @@ $option_found = "false";
 $bsub = "false";
 $qsub = "false";
 $numargs_b = 0;
+$samfilename = "false";
 for($i=4; $i<@ARGV; $i++) {
     $option_found = "false";
+    if ($ARGV[$i] eq '-samfilename'){
+	$option_found = "true";
+	$samname = $ARGV[$i+1];
+	$i++;
+	$samfilename = "true";
+    }
     if($ARGV[$i] eq '-nu') {
         $U = "false";
 	$numargs++;
@@ -96,21 +107,29 @@ while($line = <INFILE>) {
     $dir = $line;
     $id = $line;
     $id =~ s/Sample_//;
-    if ($numargs eq "0"){
-	$final_dir = $final_M_dir;
-	$filename = "$id.FINAL.norm.sam";
+    if ($samfilename = "true"){
+	$final_dir = "$LOC/$dir";
+	$filename = $samname;
+	$junctions_dir = "$LOC/$dir";
     }
-    else{
-	if ($U eq "true"){
-	    $final_dir = $final_U_dir;
-	    $filename ="$id.FINAL.norm_u.sam";
+    else {
+
+	if ($numargs eq "0"){
+	    $final_dir = $final_M_dir;
+	    $filename = "$id.FINAL.norm.sam";
 	}
-	if ($NU eq "true"){
-	    $final_dir = $final_NU_dir;
-	    $filename = "$id.FINAL.norm_nu.sam";
+	else{
+	    if ($U eq "true"){
+		$final_dir = $final_U_dir;
+		$filename ="$id.FINAL.norm_u.sam";
+	    }
+	    if ($NU eq "true"){
+		$final_dir = $final_NU_dir;
+		$filename = "$id.FINAL.norm_nu.sam";
+	    }
 	}
     }
-    $shfile = "J" . $filename . ".sh";
+    $shfile = "J" . $id . $filename . ".sh";
     $outfile1 = $filename;
     $outfile1 =~ s/.sam/_junctions_all.rum/;
     $outfile2 = $filename;
