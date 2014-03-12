@@ -3,8 +3,8 @@ if(@ARGV<3) {
 
 where:
 <sample dirs> is the name of a file with the names of the sample directories (no paths)
-<loc> is the path to the sample directories.
-<type of quants file> is the type of quants file. e.g: exonquants, intronquants
+<loc> is the path to the sample directories
+<type of quants file> is the type of quants file (e.g: exonquants, intronquants)
 
 option:
  -NU: set this if you want to use non-unique quants, otherwise by default it will 
@@ -28,8 +28,7 @@ $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 $type = $ARGV[2];
 @fields = split("/", $LOC);
-$size = @fields;
-$last_dir = $fields[@size-1];
+$last_dir = $fields[@fields-1];
 $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
 $norm_dir = $norm_dir . "NORMALIZED_DATA";

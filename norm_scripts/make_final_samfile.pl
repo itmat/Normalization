@@ -42,8 +42,7 @@ use either arg -u or -nu.
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 @fields = split("/", $LOC);
-$size = @fields;
-$last_dir = $fields[@size-1];
+$last_dir = $fields[@fields-1];
 $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
 $norm_dir = $norm_dir . "NORMALIZED_DATA";

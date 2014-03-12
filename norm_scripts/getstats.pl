@@ -1,11 +1,9 @@
 if(@ARGV<2) {
     die "usage: perl getstats.pl <dirs> <loc>
 
-where <dirs> is a file of directory names
+where 
+<dirs> is a file of directory names (without path)
 <loc> is where the sample directories are
-
-Run this from the directory that has the <dirs> and don't put
-paths in the names in the <dirs> file.
 
 This will parse the mapping_stats.txt files for all dirs
 and output a table with summary info across all samples.
@@ -126,9 +124,11 @@ $max4 = 0;
 $max5 = 0;
 $max6 = 0;
 
-print "id\ttotal\t!<>\t!<|>\t!chrM(%!)\t\%overlap\t~!<|>\t<|>\n";
+$outfile = "$LOC/alignment_stats.txt";
+open(OUT, ">$outfile");
+print OUT "id\ttotal\t!<>\t!<|>\t!chrM(%!)\t\%overlap\t~!<|>\t<|>\n";
 foreach $dir (keys %UchrM) {
-    print "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$UchrM{$dir}\t$Pover{$dir}\%\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped{$dir}\n";
+    print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$UchrM{$dir}\t$Pover{$dir}\%\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped{$dir}\n";
     $x = $total{$dir};
     $x =~ s/,//g;
     if($x < $min_total) {
@@ -206,14 +206,14 @@ $min_utotal_f_or_r_cons = &format_large_int($min_utotal_f_or_r_cons);
 $min_nutotal = &format_large_int($min_nutotal);
 $min_total_UorNU = &format_large_int($min_total_UorNU);
 $min_chrm = &format_large_int($min_chrm);
-print "mins\t$min_total\t$min_total_frcons\t$min_utotal_f_or_r_cons\t$min_chrm\t$min_pover\%\t$min_nutotal\t$min_total_UorNU\n";
+print OUT "mins\t$min_total\t$min_total_frcons\t$min_utotal_f_or_r_cons\t$min_chrm\t$min_pover\%\t$min_nutotal\t$min_total_UorNU\n";
 $max_total = &format_large_int($max_total);
 $max_total_frcons = &format_large_int($max_total_frcons);
 $max_utotal_f_or_r_cons = &format_large_int($max_utotal_f_or_r_cons);
 $max_nutotal = &format_large_int($max_nutotal);
 $max_total_UorNU = &format_large_int($max_total_UorNU);
 $max_chrm = &format_large_int($max_chrm);
-print "maxs\t$max_total\t$max_total_frcons\t$max_utotal_f_or_r_cons\t$max_chrm\t$max_pover\%\t$max_nutotal\t$max_total_UorNU\n";
+print OUT "maxs\t$max_total\t$max_total_frcons\t$max_utotal_f_or_r_cons\t$max_chrm\t$max_pover\%\t$max_nutotal\t$max_total_UorNU\n";
 
 sub format_large_int () {
     ($int) = @_;

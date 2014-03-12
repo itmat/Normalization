@@ -43,8 +43,7 @@ and non-unique by default so if that's what you want don't use either arg
 
 $LOC = $ARGV[1];
 @fields = split("/", $LOC);
-$size = @fields;
-$last_dir = $fields[@size-1];
+$last_dir = $fields[@fields-1];
 $loc_study = $LOC;
 $loc_study =~ s/$last_dir//;
 $norm_dir = $loc_study."NORMALIZED_DATA";

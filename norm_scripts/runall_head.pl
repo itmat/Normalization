@@ -66,8 +66,7 @@ if($numargs ne '1'){
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 @fields = split("/", $LOC);
-$size = @fields;
-$last_dir = $fields[@size-1];
+$last_dir = $fields[@fields-1];
 $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 $shdir = $study_dir . "shell_scripts";

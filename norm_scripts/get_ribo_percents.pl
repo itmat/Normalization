@@ -43,7 +43,7 @@ while($line = <INFILE>) {
     $ratio = int($cnt / $total * 10000) / 10000;
     $x = &format_large_int($total);
     $cnt = &format_large_int($cnt);
-    print OUTFILE "$cnt\t$total\t$ratio\t$sample_name\n";
+    print OUTFILE "$cnt\t$x\t$ratio\t$sample_name\n";
 }
 close(INFILE);
 close(OUTFILE);

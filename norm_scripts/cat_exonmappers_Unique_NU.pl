@@ -4,13 +4,13 @@ if(@ARGV<1) {
 where:
 <sample dirs> is a file with the names of the sample directories (without path)
 <loc> is the path to the sample directories
+
 ";
 }
 
 $LOC = $ARGV[1];
 @fields = split("/", $LOC);
-$size = @fields;
-$last_dir = $fields[@size-1];
+$last_dir = $fields[@fields-1];
 $loc_study = $LOC;
 $loc_study =~ s/$last_dir//;
 $norm_dir = $loc_study."NORMALIZED_DATA";

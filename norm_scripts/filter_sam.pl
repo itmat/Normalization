@@ -2,6 +2,11 @@ $| = 1;
 if(@ARGV<3) {
     die "Usage: perl filter_sam.pl <sam infile> <sam outfile> <more ids> [options]
 
+where 
+<sam infile> is input sam file (aligned sam) to be filtered 
+<sam outfile> output sam file name (e.g. path/to/sampledirectory/sampleid.filtered.sam)
+<more ids> ribosomalids file
+
 option:
   -u  :  set this if you want to return only unique mappers, otherwise by default
          it will return both unique and non-unique mappers.  
@@ -21,8 +26,7 @@ This will remove all rows from <sam infile> except those that satisfy all of the
 
 $outfile = $ARGV[1];
 @fields = split("/", $outfile);
-$size_f = @fields;
-$outname = $fields[$size_f-1];
+$outname = $fields[@fields-1];
 $outfiledir = $outfile;
 $outfiledir =~ s/\/$outname//;
 $outfileU = "$outfiledir/Unique/$outname";

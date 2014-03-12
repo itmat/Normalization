@@ -6,6 +6,7 @@ where
 <number_of_samples> is number of samples
 <cutoff> cutoff value
 <loc> is the path to the sample directories
+
 ";
 }
 
@@ -17,8 +18,7 @@ $cutoff = $ARGV[2];
 $LOC = $ARGV[3];
 $LOC =~ s/\/$//;
 @fields = split("/", $LOC);
-$size = @fields;
-$last_dir = $fields[@size-1];
+$last_dir = $fields[@fields-1];
 $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
 $norm_dir = $norm_dir . "NORMALIZED_DATA";
