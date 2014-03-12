@@ -279,6 +279,8 @@ This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam
  
  This will output `*mappingstats.txt` file of all samples to each sample directory. The following script will parse the `*mappingstats.txt` files and output a table with summary info across all samples.
 
+* Mapping stats summary:
+
          perl getstats.pl <dirs> <loc>
 
        * &lt;sample dirs> : a file with the names of the sample directories
