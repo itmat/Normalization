@@ -108,8 +108,8 @@ This will output a file called `total_num_reads.txt` to the `STUDY/READS` direct
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * &lt;samfile name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
-* &lt;blast dir> : full path of the blast directory (e.g. path/to/Normalization/norm_scripts/ncbi-blast-2.2.27+/)
-* &lt;db> : full path of the database (e.g. path/to/Normalization/norm_scripts/ncbi-blast-2.2.27+/ribomouse)
+* &lt;blast dir> : full path of the blast directory (BLAST is at: path/to/Normalization/norm_scripts/ncbi-blast-2.2.27+/)
+* &lt;db> : full path of the database (ribomouse db is available: path/to/Normalization/norm_scripts/ncbi-blast-2.2.27+/ribomouse)
 * option:<br>
   **-bsub** : set this if you want to submit batch jobs to LSF<br>
   **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
