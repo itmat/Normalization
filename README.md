@@ -160,7 +160,7 @@ This is an extra filter step that removes highly expressed exons.
 
 I. Run Quantify exons
 
-Run the following command with **&lt;output sam?> = false**. 
+Run the following command with **&lt;output sam?> = false**. By default this will return unique exonmappers. Use -NU-only to get non-unique exonmappers:
 
     perl runall_quantify_exons.pl <sample dirs> <loc> <exons> <output sam?> [options]
 
