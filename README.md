@@ -156,49 +156,51 @@ This outputs a file called `master_list_of_exons.txt` to the `READS` directory.
 ##### B. [optional step] : Filter Other High Expressors
 This is an extra filter step that removes highly expressed exons.
 
- I. Run Quantify exons
+     I. Run Quantify exons
 
- Run the following command with **&lt;output sam?> = false**. 
+     Run the following command with **&lt;output sam?> = false**. 
 
-     perl runall_quantify_exons.pl <sample dirs> <loc> <exons> <output sam?> [options]
+     	 perl runall_quantify_exons.pl <sample dirs> <loc> <exons> <output sam?> [options]
 
- > `quantify_exons.pl` available for running one sample at a time
+	  > `quantify_exons.pl` available for running one sample at a time
 
- * &lt;sample dirs> : a file with the names of the sample directories
- * &lt;loc> : full path of the directory with the sample directories (`READS`)
- * &lt;exons> : `master_list_of_exons.txt` file
- * &lt;output sam?> : false
- * option:<br>
-   **-NU-only** : set this for non-unique mappers<br>
-   **-bsub** : set this if you want to submit batch jobs to LSF<br>
-   **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+	   * &lt;sample dirs> : a file with the names of the sample directories
+	   * &lt;loc> : full path of the directory with the sample directories (`READS`)
+	   * &lt;exons> : `master_list_of_exons.txt` file
+	   * &lt;output sam?> : false
+	   * option:<br>
+	     **-NU-only** : set this for non-unique mappers<br>
+	     **-bsub** : set this if you want to submit batch jobs to LSF<br>
+	     **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+
 
  This will output `exonquants` file of all samples to `Unique` and/or `NU` directory in each sample directory.
 
- II. Get High Expressors
 
-      perl runall_get_high_expressors.pl <sample dirs> <loc> <cutoff> <annotation file> <exons> [options]
+      II. Get High Expressors
 
- * &lt;sample dirs> : a file with the names of the sample directories
- * &lt;loc> : full path of the directory with the sample directories (`READS`)
- * &lt;cutoff> : cutoff % value 
- * &lt;annotation file> : downloaded from UCSC known-gene track including at minimum name, chrom, strand, exonStarts, exonEnds, all kgXref fields and hgnc, spDisease, protein and gene fields from the Linked Tables table.
- * &lt;exons> : `master_list_of_exons.txt` file
- * option:<br>
-  **-u**  :  set this if you want to return only unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
-  **-nu** :  set this if you want to return only non-unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
-  **-bsub** : set this if you want to submit batch jobs to LSF.<br>
-  **-qsub** : set this if you want to submit batch jobs to Sun Grid Engine.
+      	  perl runall_get_high_expressors.pl <sample dirs> <loc> <cutoff> <annotation file> <exons> [options]
+
+	  * &lt;sample dirs> : a file with the names of the sample directories
+	  * &lt;loc> : full path of the directory with the sample directories (`READS`)
+	  * &lt;cutoff> : cutoff % value 
+	  * &lt;annotation file> : downloaded from UCSC known-gene track including at minimum name, chrom, strand, exonStarts, exonEnds, all kgXref fields and hgnc, spDisease, protein and gene fields from the Linked Tables table.
+	  * &lt;exons> : `master_list_of_exons.txt` file
+	  * option:<br>
+	   **-u**  :  set this if you want to return only unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
+	   **-nu** :  set this if you want to return only non-unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
+	   **-bsub** : set this if you want to submit batch jobs to LSF.<br>
+	   **-qsub** : set this if you want to submit batch jobs to Sun Grid Engine.
 
  This will output `exonpercents.txt` and `high_expressors_annot.txt` files of all samples to each sample directory. It will also output `annotated_master_list_of_exons.txt` to `STUDY/READS` directory.
 
- III. Filter High Expressors
+      III. Filter High Expressors
 
-      perl filter_high_expressors.pl <sample dirs> <loc> <exons>
+      	   perl filter_high_expressors.pl <sample dirs> <loc> <exons>
 
- * &lt;sample dirs> : a file with the names of the sample directories
- * &lt;loc> : full path of the directory with the sample directories (`READS`)
- * &lt;exons> : `master_list_of_exons.txt` file
+	   * &lt;sample dirs> : a file with the names of the sample directories
+	   * &lt;loc> : full path of the directory with the sample directories (`READS`)
+	   * &lt;exons> : `master_list_of_exons.txt` file
 
  This will output a text file called `filtered_master_list_of_exons.txt` to `STUDY/READS` directory.
 
