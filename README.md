@@ -272,14 +272,14 @@ This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam
        * &lt;sample dirs> : a file with the names of the sample directories
        * &lt;loc> : full path of the directory with the sample directories (`READS`)
        * &lt;sam file name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
-       * &total_num_reads?> : if you have the total_num_reads.txt file, use "true" If not, use "false"
+       * &lt;total_num_reads?> : if you have the total_num_reads.txt file, use "true" If not, use "false"
        * option : <br>
          **-bsub** : set this if you want to submit batch jobs to LSF<br>
          **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
  
  This will output `*mappingstats.txt` file of all samples to each sample directory. The following script will parse the `*mappingstats.txt` files and output a table with summary info across all samples.
 
-	perl getstats.pl <dirs> <loc>
+      	  perl getstats.pl <dirs> <loc>
 
        * &lt;sample dirs> : a file with the names of the sample directories
        * &lt;loc> : full path of the directory with the sample directories (`READS`)
