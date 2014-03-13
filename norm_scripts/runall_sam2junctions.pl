@@ -107,7 +107,7 @@ while($line = <INFILE>) {
     $dir = $line;
     $id = $line;
     $id =~ s/Sample_//;
-    if ($samfilename = "true"){
+    if ($samfilename eq "true"){
 	$final_dir = "$LOC/$dir";
 	$filename = $samname;
 	$junctions_dir = "$LOC/$dir";
