@@ -56,7 +56,7 @@ $sorted_junc = $junc_name;
 $sorted_junc =~ s/.rum/.sorted.rum/;
 $master_list = "$LOC/master_list_of_exons.txt";
 $filtered_list = "$LOC/filtered_master_list_of_exons.txt";
-$final_list = "$LOC/FINAL_master_list_of_exons.txt";
+$final_list = "$LOC/merged_list_of_exons.txt";
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){
