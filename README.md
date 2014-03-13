@@ -129,7 +129,7 @@ This step removes all rows from input sam file except those that satisfy all of 
   2. Both forward and reverse map consistently
   3. id not in the `*ribosomalids.txt` file
   4. Only on a numbered chromosome, X or Y
-  5. Is a forward mapper (script outputs forward mappers only). Will output &lt;target num> read (pairs) (put 0 for this arg if you want to output all)
+  5. Is a forward mapper (script outputs forward mappers only)
 
 Run the following command. By default it will return both unique and non-unique mappers.
 
