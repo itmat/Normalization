@@ -108,9 +108,9 @@ This will output a file called `total_num_reads.txt` to the `STUDY/READS` direct
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * &lt;samfile name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
-* &lt;blast dir> : full path of the blast directory<br> 
+* &lt;blast dir> : full path of the blast directory
 > BLAST is at : `Normalization/norm_scripts/ncbi-blast-2.2.27+/`
-* &lt;db> : full path of the database<br> 
+* &lt;db> : full path of the database
 > ribomouse db is available : `Normalization/norm_scripts/ncbi-blast-2.2.27+/ribomouse`
 * option:<br>
   **-bsub** : set this if you want to submit batch jobs to LSF<br>
@@ -185,7 +185,7 @@ II. Get High Expressors
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * &lt;cutoff> : cutoff % value 
-* &lt;annotation file> : downloaded from UCSC known-gene track including at minimum name, chrom, strand, exonStarts, exonEnds, all kgXref fields and hgnc, spDisease, protein and gene fields from the Linked Tables table.<br>
+* &lt;annotation file> : downloaded from UCSC known-gene track including at minimum name, chrom, strand, exonStarts, exonEnds, all kgXref fields and hgnc, spDisease, protein and gene fields from the Linked Tables table
 > annotation file for mm9 and hg19 available: `Normalization/norm_scripts/ucsc_known_hg19` and `Normalization/norm_scripts/ucsc_known_hg19`
 * &lt;exons> : `master_list_of_exons.txt` file
 * option:<br>
@@ -461,7 +461,7 @@ This will output `list_of_exons_counts`, `master_list_of_introns_counts`, and `m
            	 list_of_exons_counts_MIN.txt
 	    	 list_of_exons_counts_MAX.txt
 	
-* &lt;annotation file> : should be downloaded from UCSC known-gene track including at minimum name, chrom, strand, exonStarts, exonEnds, all kgXref fields and hgnc, spDisease, protein and gene fields from the Linked Tables table.
+* &lt;annotation file> : should be downloaded from UCSC known-gene track including at minimum name, chrom, strand, exonStarts, exonEnds, all kgXref fields and hgnc, spDisease, protein and gene fields from the Linked Tables table
 > annotation file for mm9 and hg19 available: `Normalization/norm_scripts/ucsc_known_hg19` and `Normalization/norm_scripts/ucsc_known_hg19`
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * option : <br>
@@ -500,12 +500,15 @@ This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_intr
 
 #####B. Convert SAM to BAM
 
-     perl runall_sam2bam.pl <sample dirs> <loc> <sam file name> <fai file>
+     perl runall_sam2bam.pl <sample dirs> <loc> <sam file name> <fai file> [options]
 
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * &lt;sam file name> : name of the alignment sam file (e.g. RUM.sam, Aligned.out.sam)
 * &lt;fai file> : fai file 
+* option : <br>
+  **-bsub** : set this if you want to submit batch jobs to LSF<br>
+  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
 
 This will covert SAM to BAM and delete the SAM. 
  
