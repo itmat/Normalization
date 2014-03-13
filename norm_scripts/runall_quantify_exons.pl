@@ -108,7 +108,9 @@ while($line = <INFILE>) {
 	if ($nuonly eq "false"){
 	    if (-d $merged_exon_dir){
 		$final_exon_dir = $merged_exon_dir;
-	    }
+	    }	
+	}
+	else{
 	    if (-d $unique_exon_dir){
 		$final_exon_dir = $unique_exon_dir;
 		$filename =~ s/.sam$/_u.sam/;
@@ -119,6 +121,7 @@ while($line = <INFILE>) {
 		$final_exon_dir = "$LOC/$dir/Unique";
 	    }
 	}
+	
 	if ($nuonly eq "true"){
 	    if (-d $nu_exon_dir){
 		$final_exon_dir = $nu_exon_dir;
