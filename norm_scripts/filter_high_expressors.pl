@@ -4,7 +4,7 @@ if(@ARGV < 3) {
 where
 <sample dirs> is the name of a file with the names of sample directories (no paths)
 <loc> is the path to the dir with the sample directories
-<exons> the master list of exons file 
+<exons> the merged master list of exons or master list of exons file
 
 ";
 }
@@ -13,8 +13,10 @@ $LOC = $ARGV[1];
 $exons = $ARGV[2];
 $new_exons = $exons;
 $new_exons =~ s/master_list/filtered_master_list/;
+$new_exons =~ s/merged_list/filtered_master_list/;
 $annotated_exons = $exons;
 $annotated_exons =~ s/master_list/annotated_master_list/;
+$annotated_exons =~ s/merged_list/annotated_master_list/;
 
 open(INFILE, $ARGV[0]);
 while ($line = <INFILE>){
