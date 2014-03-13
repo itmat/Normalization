@@ -96,9 +96,6 @@ $final_U_dir = "$finalsam_dir/Unique";
 $final_NU_dir = "$finalsam_dir/NU";
 $final_M_dir = "$finalsam_dir/MERGED";
 $junctions_dir = "$norm_dir/Junctions";
-unless (-d $junctions_dir){
-    `mkdir $junctions_dir`;
-}
 
 $genes = $ARGV[2];
 $genome = $ARGV[3];
@@ -113,7 +110,9 @@ while($line = <INFILE>) {
 	$junctions_dir = "$LOC/$dir";
     }
     else {
-
+	unless (-d $junctions_dir){
+	    `mkdir $junctions_dir`;
+	}
 	if ($numargs eq "0"){
 	    $final_dir = $final_M_dir;
 	    $filename = "$id.FINAL.norm.sam";
