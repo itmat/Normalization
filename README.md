@@ -79,7 +79,7 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
             Sample_4
 
 ##### B. Mapping Statistics
-* Get total number of reads from input fasta or fastq files.
+* **Get total number of reads from input fasta or fastq files**
 
          perl get_total_num_reads.pl <sample dirs> <loc> <file of input forward fa/fq files> [options]
 
@@ -99,7 +99,7 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
 
  This will output a file called `total_num_reads.txt` to the `STUDY/READS` directory.
 
-* Mapping statistics:
+* **Mapping statistics**
 
          perl runall_sam2mappingstats.pl <sample dirs> <loc> <sam file name> <total_num_reads?> [options]
 
@@ -202,7 +202,7 @@ This outputs a file called `master_list_of_exons.txt` to the `READS` directory.
 ##### B. Get Novel Exons
 Create a study-specific master list of exons by adding novel exons from the study to the `master_list_of_exons.txt` file.
 
-* Make Junctions Files
+* **Make Junctions Files**
 
  Run the following command with option **-samfilename &lt;sam file name>**.
 
@@ -221,7 +221,7 @@ Create a study-specific master list of exons by adding novel exons from the stud
 
  This will output `*junctions_hq.bed`, `*junctions_all.bed` and `*junctions_all.rum` to `Sample*/Unique` and `Sample*/NU` directory of all samples.
 
-* Get Novel Exons
+* **Get Novel Exons**
 
  This takes `*junctions_all.rum` files as input.
 
