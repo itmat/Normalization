@@ -113,14 +113,19 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
  
  This will output `*mappingstats.txt` file of all samples to each sample directory. The following script will parse the `*mappingstats.txt` files and output a table with summary info across all samples.
 
-__* NORMALIZATION FACTOR: Mapping stats summary__
+__[FIRST 4 NORMALIZATION FACTORS]: Mapping stats summary__
 
      perl getstats.pl <dirs> <loc>
 
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
       	  
-This will output `mappingstats_summary.txt` file to `READS` directory. This file contains total number of reads, percent mitochondrial, percent non-unique mappers, and percent of forward and reverse reads that overlap.
+This will output `mappingstats_summary.txt` file to `READS` directory. This file contains: 
+
+     1. Total number of reads 
+     2. Percent mitochondrial 
+     3. Percent non-unique mappers 
+     4. Percent of forward and reverse reads that overlap
 
 ##### C. BLAST
 
@@ -145,7 +150,7 @@ This will output `mappingstats_summary.txt` file to `READS` directory. This file
 
 This outputs `*ribosomalids.txt` of samples to each sample directory (`STUDY/READS/Sample*/`).
 
-__* NORMALIZATION FACTOR: Ribo percents__
+__[NORMALIZATION FACTOR 5]: Ribo percents__
 
      perl runall_get_ribo_percents.pl <sample dirs> <loc> [options]
 
@@ -269,7 +274,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
 
 This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam`, `notexonmappers.sam`, and `exonquants` file to `Unique` / `NU` directory inside each sample directory. 
 
-__* NORMALIZATION FACTOR: Exon to nonexon signal__
+__[NORMALIZATION FACTOR 6]: Exon to nonexon signal__
 
      perl get_exon2nonexon_signal_stats.pl <sample dirs> <loc> [options]
 
@@ -281,7 +286,7 @@ __* NORMALIZATION FACTOR: Exon to nonexon signal__
 
 This will output `exon2nonexon_signal_stats_Unique.txt` and/or `exon2nonexon_signal_stats_NU.txt` depending on the option provided to `READS` directory.
 
-__* NORMALIZATION FACTOR: One exon vs multi exons__
+__[NORMALIZATION FACTOR 7]: One exon vs multi exons__
 
     perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc> [options]
 
