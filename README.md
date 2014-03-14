@@ -1,10 +1,10 @@
-# Normalization for Workshop
+# Normalization Workshop
 
 ### 0. Setting Up
 
 #####A. Clone the repository
     
-    git clone git@github.com:itmat/Normalization.git
+    git clone -b workshop https://github.com/itmat/Normalization.git
 
 #####B. Input Directory Structure
 Make sure your fastq/fasta files and alignment outputs(SAM files) are in each sample directory inside the `READS` folder.
