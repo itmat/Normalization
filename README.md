@@ -1,4 +1,4 @@
-## Normalization
+# Normalization
 
 ### 0. Setting Up
 
@@ -115,12 +115,12 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
 
 __* NORMALIZATION FACTOR: Mapping stats summary__
 
-         perl getstats.pl <dirs> <loc>
+     perl getstats.pl <dirs> <loc>
 
-       * &lt;sample dirs> : a file with the names of the sample directories
-       * &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
       	  
- This will output `mappingstats_summary.txt` file to `READS` directory. This file contains total number of reads, percent mitochondrial, percent non-unique mappers, and percent of forward and reverse reads that overlap.
+This will output `mappingstats_summary.txt` file to `READS` directory. This file contains total number of reads, percent mitochondrial, percent non-unique mappers, and percent of forward and reverse reads that overlap.
 
 ##### C. BLAST
 
@@ -147,15 +147,15 @@ This outputs `*ribosomalids.txt` of samples to each sample directory (`STUDY/REA
 
 __* NORMALIZATION FACTOR: Ribo percents__
 
-         perl runall_get_ribo_percents.pl <sample dirs> <loc> [options]
+     perl runall_get_ribo_percents.pl <sample dirs> <loc> [options]
 
-       * &lt;sample dirs> : a file with the names of the sample directories 
-       * &lt;loc> : full path of the directory with the sample directories (`READS`)
-       * option : <br>
-         **-bsub** : set this if you want to submit batch jobs to LSF<br>
-	 **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+* &lt;sample dirs> : a file with the names of the sample directories 
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* option : <br>
+  **-bsub** : set this if you want to submit batch jobs to LSF<br>
+  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
 
- It assumes there are files of ribosomal ids output from runblast.pl each with suffix "ribosomalids.txt" in each sample directory. This will output `ribosomal_counts.txt` and `ribo_percents.txt` to `READS` directory.
+It assumes there are files of ribosomal ids output from runblast.pl each with suffix "ribosomalids.txt" in each sample directory. This will output `ribosomal_counts.txt` and `ribo_percents.txt` to `READS` directory.
 
 ### 2. Run Filter
 This step removes all rows from input sam file except those that satisfy all of the following:
@@ -271,27 +271,27 @@ This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam
 
 __* NORMALIZATION FACTOR: Exon to nonexon signal__
 
-         perl get_exon2nonexon_signal_stats.pl <sample dirs> <loc> [options]
+     perl get_exon2nonexon_signal_stats.pl <sample dirs> <loc> [options]
 
-       * &lt;sample dirs> : a file with the names of the sample directories 
-       * &lt;loc> : full path of the directory with the sample directories (`READS`)
-       * option:<br>
-       **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
-       **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
+* &lt;sample dirs> : a file with the names of the sample directories 
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* option:<br>
+ **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
+ **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
 
- This will output `exon2nonexon_signal_stats_Unique.txt` and/or `exon2nonexon_signal_stats_NU.txt` depending on the option provided to `READS` directory.
+This will output `exon2nonexon_signal_stats_Unique.txt` and/or `exon2nonexon_signal_stats_NU.txt` depending on the option provided to `READS` directory.
 
 __* NORMALIZATION FACTOR: One exon vs multi exons__
 
-      	 perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc> [options]
+    perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc> [options]
 
-       * &lt;sample dirs> : a file with the names of the sample directories
-       * &lt;loc> : full path of the directory with the sample directories (`READS`)
-       * option:<br>
-  	**-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
-  	**-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* option:<br>
+ **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
+ **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
 
- This will output `1exon_vs_multi_exon_stats_Unique.txt` and/or `1exon_vs_multi_exon_stats_NU.txt` depending on the option provided to `READS` directory.
+This will output `1exon_vs_multi_exon_stats_Unique.txt` and/or `1exon_vs_multi_exon_stats_NU.txt` depending on the option provided to `READS` directory.
 
 ### 4. Quantify Introns
 ##### A. Create Master List of Introns
