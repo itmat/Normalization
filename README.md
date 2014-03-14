@@ -120,8 +120,7 @@ __[FIRST 4 NORMALIZATION FACTORS] Mapping stats summary__
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
       	  
-This will output `mappingstats_summary.txt` file to `READS` directory. This file contains: 
-
+This will output `mappingstats_summary.txt` file to `READS` directory. This file will contain:<br> 
  1. Total number of reads 
  2. Percent mitochondrial 
  3. Percent non-unique mappers 
@@ -198,6 +197,11 @@ Get master list of exons from a UCSC gene info file.
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 
 This outputs a file called `master_list_of_exons.txt` to the `READS` directory.
+
+##### B. Get Novel Exons
+Create a study-specific master list of exons by adding novel exons from the study to the `master_list_of_exons.txt` file.
+
+* 
 
 ##### B. [optional step] : Filter Other High Expressors
 This is an extra filter step that removes highly expressed exons.
