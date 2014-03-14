@@ -101,7 +101,7 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
 
 * Mapping statistics:
 
-         perl runall_sam2mappingstats.pl <sample dir> <loc> <sam file name> <total_num_reads?> [options]
+         perl runall_sam2mappingstats.pl <sample dirs> <loc> <sam file name> <total_num_reads?> [options]
 
        * &lt;sample dirs> : a file with the names of the sample directories
        * &lt;loc> : full path of the directory with the sample directories (`READS`)
@@ -199,9 +199,43 @@ Get master list of exons from a UCSC gene info file.
 
 This outputs a file called `master_list_of_exons.txt` to the `READS` directory.
 
+##### B. Get Novel Exons
+Create a study-specific master list of exons by adding novel exons from the study to the `master_list_of_exons.txt` file.
 
+* Make Junctions Files
+Run the following command with option **-samfilename <sam file name>**.
 
-##### B. [optional step] : Filter Other High Expressors
+         perl runall_sam2junctions.pl <sample dirs> <loc> <genes> <genome> [options]
+
+       * &lt;sample dirs> : a file with the names of the sample directories
+       * &lt;loc> : full path of the directory with the sample directories (`READS`)
+       * &lt;genes> : gene information file
+       * &lt;genome> : genome sequence one-line fasta file
+       * option : <br>
+         **-samfilename <s>** : set this to create junctions files using unfiltered aligned samfile. <s> is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam) and all sam files in each sample directory should have the same name<br>
+         **-u**  :  set this if you want to return only unique junctions files, otherwise by default it will return merged(unique+non-unique) junctions files<br>
+         **-nu** :  set this if you want to return only non-unique files, otherwise by default it will return merged(unique+non-unique) junctions files<br>
+         **-bsub** : set this if you want to submit batch jobs to LSF<br>
+         **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+
+ This will output `*junctions_hq.bed`, `*junctions_all.bed` and `*junctions_all.rum` to `Sample*/Unique` and `Sample*/NU` directory of all samples.
+
+* Get Novel Exons
+
+This takes `*junctions_all.rum` files as input.
+
+         perl runall_get_novel_exons.pl <sample dirs> <loc> <sam file name> [options]
+
+       * &lt;sample dirs> : a file with the names of the sample directories
+       * &lt;loc> : full path of the directory with the sample directories (`READS`)
+       * &lt;sam file name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
+       * options : <br>
+        **-min <n>** : size of inferred exon, min is set at 10 by default
+	**-max <n>** : size of inferred exon, max is set at 2000 by default
+
+ This outputs `*list_of_novel_exons.txt` file of all samples to each sample directory. It also outputs `master_list_of_exons.*STUDY*.txt` file to `READS` directory.
+
+##### C. [optional step] : Filter Other High Expressors
 This is an extra filter step that removes highly expressed exons.
 
 I. Run Quantify exons
@@ -214,7 +248,7 @@ Run the following command with **&lt;output sam?> = false**. By default this wil
 
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
-* &lt;exons> : `master_list_of_exons.txt` file
+* &lt;exons> : `master_list_of_exons.*STUDY*.txt` file
 * &lt;output sam?> : false
 * option:<br>
   **-NU-only** : set this for non-unique mappers<br>
@@ -235,14 +269,14 @@ II. Get High Expressors
 
 > annotation file for mm9 and hg19 available: `Normalization/norm_scripts/ucsc_known_hg19` and `Normalization/norm_scripts/ucsc_known_hg19`
 
-* &lt;exons> : `master_list_of_exons.txt` file
+* &lt;exons> : `master_list_of_exons.*STUDY*.txt` file
 * option:<br>
   **-u**  :  set this if you want to return only unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
   **-nu** :  set this if you want to return only non-unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
   **-bsub** : set this if you want to submit batch jobs to LSF.<br>
   **-qsub** : set this if you want to submit batch jobs to Sun Grid Engine.
 
-This will output `exonpercents.txt` and `high_expressors_annot.txt` files of all samples to each sample directory. It will also output `annotated_master_list_of_exons.txt` to `STUDY/READS` directory.
+This will output `*exonpercents.txt` and `*high_expressors_annot.txt` files of all samples to each sample directory. It will also output `annotated_master_list_of_exons.*STUDY*.txt` to `STUDY/READS` directory.
 
 III. Filter High Expressors
 
@@ -250,11 +284,11 @@ III. Filter High Expressors
 
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
-* &lt;exons> : `master_list_of_exons.txt` file
+* &lt;exons> : `master_list_of_exons.*STUDY*.txt` file
 
-This will output a text file called `filtered_master_list_of_exons.txt` to `STUDY/READS` directory.
+This will output a text file called `filtered_master_list_of_exons.*STUDY*.txt` to `STUDY/READS` directory.
 
-##### C. Run quantify exons
+##### D. Run quantify exons
 
 This step takes filtered sam files and splits them into 1, 2, 3 ... n exonmappers and notexonmappers (n = 20 if you don't use the -depth option).
 
@@ -266,7 +300,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
 
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
-* &lt;exons> : the `filtered_master_list_of_exons.txt` (or `master_list_of_exons.txt` if you skipped step 3B)
+* &lt;exons> : the `filtered_master_list_of_exons.*STUDY*.txt` (or `master_list_of_exons.*STUDY*.txt` if you skipped step 3B)
 * &lt;output sam?> : true
 * option:<br>
   **-depth &lt;n>** : by default, it will output 20 exonmappers<br>
@@ -418,7 +452,7 @@ Run the following command with **&lt;output sam?> = false**. This will output me
 
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
-* &lt;exons> : the `filtered_master_list_of_exons.txt` (or `master_list_of_exons.txt` file if you skipped step 3B)
+* &lt;exons> : the `filtered_master_list_of_exons.*STUDY*.txt` (or `master_list_of_exons.*STUDY*.txt` file if you skipped step 3B)
 * &lt;output sam?> : false
 * option:<br>
   **-NU-only** : set this for non-unique mappers<br>
