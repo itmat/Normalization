@@ -208,16 +208,16 @@ Create a study-specific master list of exons by adding novel exons from the stud
 
          perl runall_sam2junctions.pl <sample dirs> <loc> <genes> <genome> [options]
 
-       * &lt;sample dirs> : a file with the names of the sample directories
-       * &lt;loc> : full path of the directory with the sample directories (`READS`)
-       * &lt;genes> : gene information file
-       * &lt;genome> : genome sequence one-line fasta file
-       * option : <br>
-         **-samfilename &lt;s>** : set this to create junctions files using unfiltered aligned samfile. &lt;s> is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam) and all sam files in each sample directory should have the same name<br>
-         **-u**  :  set this if you want to return only unique junctions files, otherwise by default it will return merged(unique+non-unique) junctions files<br>
-         **-nu** :  set this if you want to return only non-unique files, otherwise by default it will return merged(unique+non-unique) junctions files<br>
-         **-bsub** : set this if you want to submit batch jobs to LSF<br>
-         **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+    * &lt;sample dirs> : a file with the names of the sample directories
+    * &lt;loc> : full path of the directory with the sample directories (`READS`)
+    * &lt;genes> : gene information file
+    * &lt;genome> : genome sequence one-line fasta file
+    * option : <br>
+      **-samfilename &lt;s>** : set this to create junctions files using unfiltered aligned samfile. &lt;s> is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam) and all sam files in each sample directory should have the same name<br>
+      **-u**  :  set this if you want to return only unique junctions files, otherwise by default it will return merged(unique+non-unique) junctions files<br>
+      **-nu** :  set this if you want to return only non-unique files, otherwise by default it will return merged(unique+non-unique) junctions files<br>
+      **-bsub** : set this if you want to submit batch jobs to LSF<br>
+      **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
 
  This will output `*junctions_hq.bed`, `*junctions_all.bed` and `*junctions_all.rum` to `Sample*/Unique` and `Sample*/NU` directory of all samples.
 
@@ -228,12 +228,12 @@ Create a study-specific master list of exons by adding novel exons from the stud
          perl runall_get_novel_exons.pl <sample dirs> <loc> <sam file name> [options]
 
 
-       * &lt;sample dirs> : a file with the names of the sample directories
-       * &lt;loc> : full path of the directory with the sample directories (`READS`)
-       * &lt;sam file name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
-       * options : <br>
-        **-min <n>** : size of inferred exon, min is set at 10 by default
-	**-max <n>** : size of inferred exon, max is set at 2000 by default
+    * &lt;sample dirs> : a file with the names of the sample directories
+    * &lt;loc> : full path of the directory with the sample directories (`READS`)
+    * &lt;sam file name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
+    * options : <br>
+     **-min <n>** : size of inferred exon, min is set at 10 by default
+     **-max <n>** : size of inferred exon, max is set at 2000 by default
 
  This outputs `*list_of_novel_exons.txt` file of all samples to each sample directory. It also outputs `master_list_of_exons.*STUDY*.txt` file to `READS` directory.
 
