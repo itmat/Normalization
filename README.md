@@ -1,10 +1,10 @@
-# Normalization Workshop
+# Normalization
 
 ### 0. Setting Up
 
 #####A. Clone the repository
     
-    git clone -b workshop https://github.com/itmat/Normalization.git
+    git clone https://github.com/itmat/Normalization.git
 
 #####B. Input Directory Structure
 Make sure your fastq/fasta files and alignment outputs(SAM files) are in each sample directory inside the `READS` folder.
@@ -120,7 +120,8 @@ __[FIRST 4 NORMALIZATION FACTORS] Mapping stats summary__
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
       	  
-This will output `mappingstats_summary.txt` file to `READS` directory. This file will contain:<br> 
+This will output `mappingstats_summary.txt` file to `READS` directory. This file contains: 
+
  1. Total number of reads 
  2. Percent mitochondrial 
  3. Percent non-unique mappers 
@@ -201,7 +202,32 @@ This outputs a file called `master_list_of_exons.txt` to the `READS` directory.
 ##### B. Get Novel Exons
 Create a study-specific master list of exons by adding novel exons from the study to the `master_list_of_exons.txt` file.
 
-* 
+* Make Junctions Files
+Run the following command with option **-samfilename Aligned.out.sam**. 
+
+         perl runall_sam2junctions.pl <sample dirs> <loc> <genes> <genome> [options]
+
+       * &lt;sample dirs> : a file with the names of the sample directories
+       * &lt;loc> : full path of the directory with the sample directories (`READS`)
+       * &lt;genes> : gene information file
+       * &lt;genome> : genome sequence one-line fasta file
+       * option : <br>
+         **-samfilename <s> : set this to create junctions files using unfiltered aligned samfile. <s> is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam) and all sam files in each sample directory should have the same name<br>
+	 **-u**  :  set this if you want to return only unique junctions files, otherwise by defa
+ult it will return merged(unique+non-unique) junctions files<br>
+         **-nu** :  set this if you want to return only non-unique files, otherwise by default it
+ will return merged(unique+non-unique) junctions files<br>
+         **-bsub** : set this if you want to submit batch jobs to LSF<br>
+         **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+
+ This will output `*junctions_hq.bed`, `*junctions_all.bed` and `*junctions_all.rum` to `Sample*/Unique` and `Sample*/NU` directory of all samples. 
+
+* Get Novel Exons
+This takes `*junctions_all.rum` files as input.
+
+         perl runall_get_novel_exons.pl <sample dirs> <loc> <sam file name> [options]
+
+
 
 ##### B. [optional step] : Filter Other High Expressors
 This is an extra filter step that removes highly expressed exons.
@@ -387,8 +413,8 @@ By default, this will use merged final sam files as input.
 
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
-* &lt;genes> :the RUM gene info file 
-* &lt;genome> : the RUM genome sequene one-line fasta file 
+* &lt;genes> : gene information file
+* &lt;genome> : genome sequence one-line fasta file
 * option:<br>
   **-u**  :  set this if you want to return only unique junctions files, otherwise by default it will return merged(unique+non-unique) junctions files.<br>
   **-nu** :  set this if you want to return only non-unique files, otherwise by default it will return merged(unique+non-unique) junctions files.<br>
