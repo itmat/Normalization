@@ -113,14 +113,14 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
  
  This will output `*mappingstats.txt` file of all samples to each sample directory. The following script will parse the `*mappingstats.txt` files and output a table with summary info across all samples.
 
-__[FIRST 4 NORMALIZATION FACTORS] Mapping stats summary__
+__[NORMALIZATION FACTORS] Mapping stats summary__
 
      perl getstats.pl <sample dirs> <loc>
 
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
       	  
-This will output `mappingstats_summary.txt` file to `READS` directory. This file contains: 
+This will output `mappingstats_summary.txt` file to `READS` directory. This file contains the following normalization factors: 
 
  1. Total number of reads 
  2. Percent mitochondrial 
@@ -150,7 +150,7 @@ This will output `mappingstats_summary.txt` file to `READS` directory. This file
 
 This outputs `*ribosomalids.txt` of samples to each sample directory (`STUDY/READS/Sample*/`).
 
-__[NORMALIZATION FACTOR 5] Ribo percents__
+__[NORMALIZATION FACTOR] Ribo percents__
 
      perl runall_get_ribo_percents.pl <sample dirs> <loc> [options]
 
@@ -203,7 +203,8 @@ This outputs a file called `master_list_of_exons.txt` to the `READS` directory.
 Create a study-specific master list of exons by adding novel exons from the study to the `master_list_of_exons.txt` file.
 
 * Make Junctions Files
-Run the following command with option **-samfilename <sam file name>**.
+
+ Run the following command with option **-samfilename &lt;sam file name>**.
 
          perl runall_sam2junctions.pl <sample dirs> <loc> <genes> <genome> [options]
 
@@ -212,7 +213,7 @@ Run the following command with option **-samfilename <sam file name>**.
        * &lt;genes> : gene information file
        * &lt;genome> : genome sequence one-line fasta file
        * option : <br>
-         **-samfilename <s>** : set this to create junctions files using unfiltered aligned samfile. <s> is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam) and all sam files in each sample directory should have the same name<br>
+         **-samfilename &lt;s>** : set this to create junctions files using unfiltered aligned samfile. &lt;s> is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam) and all sam files in each sample directory should have the same name<br>
          **-u**  :  set this if you want to return only unique junctions files, otherwise by default it will return merged(unique+non-unique) junctions files<br>
          **-nu** :  set this if you want to return only non-unique files, otherwise by default it will return merged(unique+non-unique) junctions files<br>
          **-bsub** : set this if you want to submit batch jobs to LSF<br>
@@ -222,9 +223,10 @@ Run the following command with option **-samfilename <sam file name>**.
 
 * Get Novel Exons
 
-This takes `*junctions_all.rum` files as input.
+ This takes `*junctions_all.rum` files as input.
 
          perl runall_get_novel_exons.pl <sample dirs> <loc> <sam file name> [options]
+
 
        * &lt;sample dirs> : a file with the names of the sample directories
        * &lt;loc> : full path of the directory with the sample directories (`READS`)
@@ -310,7 +312,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
 
 This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam`, `notexonmappers.sam`, and `exonquants` file to `Unique` / `NU` directory inside each sample directory. 
 
-__[NORMALIZATION FACTOR 6] Exon to nonexon signal__
+__[NORMALIZATION FACTOR] Exon to nonexon signal__
 
      perl get_exon2nonexon_signal_stats.pl <sample dirs> <loc> [options]
 
@@ -322,7 +324,7 @@ __[NORMALIZATION FACTOR 6] Exon to nonexon signal__
 
 This will output `exon2nonexon_signal_stats_Unique.txt` and/or `exon2nonexon_signal_stats_NU.txt` depending on the option provided to `READS` directory.
 
-__[NORMALIZATION FACTOR 7] One exon vs multi exons__
+__[NORMALIZATION FACTOR] One exon vs multi exons__
 
     perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc> [options]
 
