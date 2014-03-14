@@ -113,7 +113,7 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
  
  This will output `*mappingstats.txt` file of all samples to each sample directory. The following script will parse the `*mappingstats.txt` files and output a table with summary info across all samples.
 
-* NORMALIZATION FACTOR: Mapping stats summary
+__* NORMALIZATION FACTOR: Mapping stats summary__
 
          perl getstats.pl <dirs> <loc>
 
@@ -145,7 +145,7 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
 
 This outputs `*ribosomalids.txt` of samples to each sample directory (`STUDY/READS/Sample*/`).
 
-* NORMALIZATION FACTOR: Ribo percents
+__* NORMALIZATION FACTOR: Ribo percents__
 
          perl runall_get_ribo_percents.pl <sample dirs> <loc> [options]
 
@@ -269,7 +269,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
 
 This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam`, `notexonmappers.sam`, and `exonquants` file to `Unique` / `NU` directory inside each sample directory. 
 
-* NORMALIZATION FACTOR: Exon to nonexon signal
+__* NORMALIZATION FACTOR: Exon to nonexon signal__
 
          perl get_exon2nonexon_signal_stats.pl <sample dirs> <loc> [options]
 
@@ -281,7 +281,7 @@ This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam
 
  This will output `exon2nonexon_signal_stats_Unique.txt` and/or `exon2nonexon_signal_stats_NU.txt` depending on the option provided to `READS` directory.
 
-* NORMALIZATION FACTOR: One exon vs multi exons
+__* NORMALIZATION FACTOR: One exon vs multi exons__
 
       	 perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc> [options]
 
