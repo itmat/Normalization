@@ -1,4 +1,4 @@
-# Normalization
+# Normalization for Workshop
 
 ### 0. Setting Up
 
