@@ -78,26 +78,49 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
             Sample_3
             Sample_4
 
-##### B. Total Number of Reads
-Get total number of reads from input fasta or fastq files.
+##### B. Mapping Statistics
+* Get total number of reads from input fasta or fastq files.
 
-      perl get_total_num_reads.pl <sample dirs> <loc> <file of input forward fa/fq files> [options]
+         perl get_total_num_reads.pl <sample dirs> <loc> <file of input forward fa/fq files> [options]
 
-* &lt;sample dirs> : a file with the names of the sample directories
-* &lt;loc> : full path of the directory with the sample directories (`READS`)
-* &lt;file of input forward fa/fq files> :  a file with the full path of input forward fa or forward fq files
+	 * &lt;sample dirs> : a file with the names of the sample directories
+	 * &lt;loc> : full path of the directory with the sample directories (`READS`)
+	 * &lt;file of input forward fa/fq files> :  a file with the full path of input forward fa or forward fq files
 
-           e.g. the <file of input forward fa/fq files> file should look like this:
-     		path/to/STUDY/READS/Sample_1/fwd.fq
-	        path/to/STUDY/READS/Sample_2/fwd.fq
-     		path/to/STUDY/READS/Sample_3/fwd.fq
-	        path/to/STUDY/READS/Sample_4/fwd.fq
+           	    e.g. the <file of input forward fa/fq files> file should look like this:
+     		    path/to/STUDY/READS/Sample_1/fwd.fq
+	            path/to/STUDY/READS/Sample_2/fwd.fq
+     		    path/to/STUDY/READS/Sample_3/fwd.fq
+	            path/to/STUDY/READS/Sample_4/fwd.fq
 
-* option:<br>
-  **-fa** : set this if the input files are in fasta format <br>
-  **-fq** : set this if the input files are in fastq format
+	* option:<br>
+	  **-fa** : set this if the input files are in fasta format <br>
+	  **-fq** : set this if the input files are in fastq format
 
-This will output a file called `total_num_reads.txt` to the `STUDY/READS` directory.
+ This will output a file called `total_num_reads.txt` to the `STUDY/READS` directory.
+
+* Mapping statistics:
+
+         perl runall_sam2mappingstats.pl <sample dir> <loc> <sam file name> <total_num_reads?> [options]
+
+       * &lt;sample dirs> : a file with the names of the sample directories
+       * &lt;loc> : full path of the directory with the sample directories (`READS`)
+       * &lt;sam file name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
+       * &lt;total_num_reads?> : if you have the total_num_reads.txt file, use "true" If not, use "false"
+       * option : <br>
+         **-bsub** : set this if you want to submit batch jobs to LSF<br>
+         **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+ 
+ This will output `*mappingstats.txt` file of all samples to each sample directory. The following script will parse the `*mappingstats.txt` files and output a table with summary info across all samples.
+
+* NORMALIZATION FACTOR: Mapping stats summary
+
+         perl getstats.pl <dirs> <loc>
+
+       * &lt;sample dirs> : a file with the names of the sample directories
+       * &lt;loc> : full path of the directory with the sample directories (`READS`)
+      	  
+ This will output `mappingstats_summary.txt` file to `READS` directory. This file contains total number of reads, percent mitochondrial, percent non-unique mappers, and percent of forward and reverse reads that overlap.
 
 ##### C. BLAST
 
@@ -121,6 +144,18 @@ This will output a file called `total_num_reads.txt` to the `STUDY/READS` direct
   **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
 
 This outputs `*ribosomalids.txt` of samples to each sample directory (`STUDY/READS/Sample*/`).
+
+* NORMALIZATION FACTOR: Ribo percents
+
+         perl runall_get_ribo_percents.pl <sample dirs> <loc> [options]
+
+       * &lt;sample dirs> : a file with the names of the sample directories 
+       * &lt;loc> : full path of the directory with the sample directories (`READS`)
+       * option : <br>
+         **-bsub** : set this if you want to submit batch jobs to LSF<br>
+	 **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+
+ It assumes there are files of ribosomal ids output from runblast.pl each with suffix "ribosomalids.txt" in each sample directory. This will output `ribosomal_counts.txt` and `ribo_percents.txt` to `READS` directory.
 
 ### 2. Run Filter
 This step removes all rows from input sam file except those that satisfy all of the following:
@@ -234,20 +269,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
 
 This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam`, `notexonmappers.sam`, and `exonquants` file to `Unique` / `NU` directory inside each sample directory. 
 
-##### D. Normalization Factors
-* Ribo percents: 
-
-         perl runall_get_ribo_percents.pl <sample dirs> <loc> [options]
-
-       * &lt;sample dirs> : a file with the names of the sample directories 
-       * &lt;loc> : full path of the directory with the sample directories (`READS`)
-       * option : <br>
-         **-bsub** : set this if you want to submit batch jobs to LSF<br>
-	 **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
-
- It assumes there are files of ribosomal ids output from runblast.pl each with suffix "ribosomalids.txt" in each sample directory. This will output `ribosomal_counts.txt` and `ribo_percents.txt` to `READS` directory.
-
-* Exon to nonexon signal:
+* NORMALIZATION FACTOR: Exon to nonexon signal
 
          perl get_exon2nonexon_signal_stats.pl <sample dirs> <loc> [options]
 
@@ -259,7 +281,7 @@ This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam
 
  This will output `exon2nonexon_signal_stats_Unique.txt` and/or `exon2nonexon_signal_stats_NU.txt` depending on the option provided to `READS` directory.
 
-* One exon vs multi exons:
+* NORMALIZATION FACTOR: One exon vs multi exons
 
       	 perl get_1exon_vs_multi_exon_stats.pl  <sample dirs> <loc> [options]
 
@@ -270,29 +292,6 @@ This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam
   	**-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
 
  This will output `1exon_vs_multi_exon_stats_Unique.txt` and/or `1exon_vs_multi_exon_stats_NU.txt` depending on the option provided to `READS` directory.
-
-* Mapping statistics:
-
-         perl runall_sam2mappingstats.pl <sample dir> <loc> <sam file name> <total_num_reads?> [options]
-
-       * &lt;sample dirs> : a file with the names of the sample directories
-       * &lt;loc> : full path of the directory with the sample directories (`READS`)
-       * &lt;sam file name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
-       * &lt;total_num_reads?> : if you have the total_num_reads.txt file, use "true" If not, use "false"
-       * option : <br>
-         **-bsub** : set this if you want to submit batch jobs to LSF<br>
-         **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
- 
- This will output `*mappingstats.txt` file of all samples to each sample directory. The following script will parse the `*mappingstats.txt` files and output a table with summary info across all samples.
-
-* Mapping stats summary:
-
-         perl getstats.pl <dirs> <loc>
-
-       * &lt;sample dirs> : a file with the names of the sample directories
-       * &lt;loc> : full path of the directory with the sample directories (`READS`)
-      	  
- This will output `mappingstats_summary.txt` file to `READS` directory.
 
 ### 4. Quantify Introns
 ##### A. Create Master List of Introns
