@@ -115,7 +115,7 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
 
 __[FIRST 4 NORMALIZATION FACTORS] Mapping stats summary__
 
-     perl getstats.pl <dirs> <loc>
+     perl getstats.pl <sample dirs> <loc>
 
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
@@ -198,6 +198,8 @@ Get master list of exons from a UCSC gene info file.
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 
 This outputs a file called `master_list_of_exons.txt` to the `READS` directory.
+
+
 
 ##### B. [optional step] : Filter Other High Expressors
 This is an extra filter step that removes highly expressed exons.

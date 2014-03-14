@@ -38,16 +38,8 @@ $path =~ s/\/runall_get_novel_exons.pl//;
 
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
-#@fields = split("/", $LOC);
-#$last_dir = $fields[@fields-1];
-#$study_dir = $LOC;
-#$study_dir =~ s/$last_dir//;
-#$shdir = $study_dir . "shell_scripts";
-#$logdir = $study_dir . "logs";
-#unless (-d $shdir){
-#    `mkdir $shdir`;}
-#unless (-d $logdir){
-#    `mkdir $logdir`;}
+@fields = split("/", $LOC);
+$study = $fields[@fields-2];
 
 $sam_name = $ARGV[2];
 $junc_name = $sam_name;
@@ -56,7 +48,7 @@ $sorted_junc = $junc_name;
 $sorted_junc =~ s/.rum/.sorted.rum/;
 $master_list = "$LOC/master_list_of_exons.txt";
 $filtered_list = "$LOC/filtered_master_list_of_exons.txt";
-$final_list = "$LOC/merged_list_of_exons.txt";
+$final_list = "$LOC/master_list_of_exons.$study.txt";
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){
