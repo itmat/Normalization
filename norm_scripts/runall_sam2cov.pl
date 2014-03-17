@@ -61,7 +61,7 @@ while($line =  <INFILE>){
     $prefix =~ s/norm.sam//;
     $shfile = "C.$id.sam2cov.sh";
     open(OUTFILE, ">$shdir/$shfile");
-    print OUTFILE "/opt/rna_seq/scripts/sam2cov -u -s 1 -p $prefix $fai_file $filename"; # only fwd reads;star alignment
+    print OUTFILE "/opt/rna_seq/scripts/sam2cov -u -p $prefix $fai_file $filename"; 
     close(OUTFILE);
     `bsub -o $logdir/$id.sam2cov.out -e $logdir/$id.sam2cov.err sh $shdir/$shfile`;
 }
