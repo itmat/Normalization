@@ -2,7 +2,8 @@ www.github.com/itmat/normalization
 
 0. Set up 
    ssh pennkey@demohpc.pmacs.upenn.edu
-   bsub -Is bash 
+   bsub -Is bash
+   https://github.com/itmat/Normalization/tree/workshop 
    git clone -b workshop https://github.com/itmat/Normalization.git
    mkdir study
    cp -r /opt/rna_seq/data/reads study/
