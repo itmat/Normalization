@@ -126,7 +126,8 @@ $max6 = 0;
 
 $outfile = "$LOC/mappingstats_summary.txt";
 open(OUT, ">$outfile");
-print OUT "id\ttotal\t!<>\t!<|>\t!chrM(%!)\t\%overlap\t~!<|>\t<|>\n";
+#print OUT "id\ttotal\t!<>\t!<|>\t!chrM(%!)\t\%overlap\t~!<|>\t<|>\n";
+print OUT "id\ttotalreads\tUniqueFWDandREV\tUniqueFWDorREV\tUniqueChrM\t%overlap\tNon-UniqueFWDorREV\tFWDorREVmapped\n";
 foreach $dir (keys %UchrM) {
     print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$UchrM{$dir}\t$Pover{$dir}\%\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped{$dir}\n";
     $x = $total{$dir};
