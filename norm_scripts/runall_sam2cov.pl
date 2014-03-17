@@ -1,6 +1,9 @@
 if (@ARGV<3){
   die "usage: runall_sam2cov.pl <sample dirs> <loc> <fai file> [options]
 
+<sample dirs> is  a file of sample directories with alignment output without path
+<loc> is where the sample directories are
+<fai file> fai file (full path)
 
 option:  -bsub : set this if you want to submit batch jobs to LSF.
 
@@ -47,16 +50,16 @@ $finalsam_dir = "$norm_dir/FINAL_SAM";
 $final_M_dir = "$finalsam_dir/MERGED";
 $fai_file = $ARGV[2]; # fai file
 
-open(INFILE, $ARGV[0]); # dirnames
+open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; # dirnames
 while($line =  <INFILE>){
     chomp($line);
     $dir = $line;
     $id = $dir;
-    $id = s/Sample_//;
+    $id =~ s/Sample_//;
     $filename = "$final_M_dir/$id.FINAL.norm.sam";
     $prefix = $filename;
-    $prefix =~ s/.sam//;
-    $shfile = "C" . $id . ".sam2cov.sh";
+    $prefix =~ s/norm.sam//;
+    $shfile = "C.$id.sam2cov.sh";
     open(OUTFILE, ">$shdir/$shfile");
     print OUTFILE "/opt/rna_seq/scripts/sam2cov -s 1 -p $prefix $fai_file $filename"; # only fwd reads;star alignment
     close(OUTFILE);
