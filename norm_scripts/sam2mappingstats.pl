@@ -78,7 +78,7 @@ if($covU =~ /\S/) {
 	$linecnt++;
 	if($linecnt % 1000000 == 0) {
 	    $date = `date`;
-	    print STDERR "processed $linecnt lines of '$covU'\t$date";
+	    print STDOUT "processed $linecnt lines of '$covU'\t$date";
 	}
 	if($line =~ /track/) {
 	    next;
@@ -97,7 +97,7 @@ if($covNU =~ /\S/) {
 	$linecnt++;
 	if($linecnt % 1000000 == 0) {
 	    $date = `date`;
-	    print STDERR "processed $linecnt lines of '$covNU'\t$date";
+	    print STDOUT "processed $linecnt lines of '$covNU'\t$date";
 	}
 	if($line =~ /track/) {
 	    next;
@@ -117,7 +117,7 @@ while($line = <INFILE>) {
     $linecnt++;
     if($linecnt % 1000000 == 0) {
 	$date = `date`;
-	print STDERR "processed $linecnt lines\t$date";
+	print STDOUT "processed $linecnt lines\t$date";
     }
     chomp($line);
     if($line =~ /^@/) {
@@ -195,7 +195,7 @@ foreach $key (keys %U) {
     $linecnt++;
     if($linecnt % 1000000 == 0) {
 	$date = `date`;
-	print STDERR "processed $linecnt U IDs\t$date";
+	print STDOUT "processed $linecnt U IDs\t$date";
     }
     if($U{$key}+0==1) {
 	$forwardonlyU++;
@@ -213,7 +213,7 @@ foreach $key (keys %NU) {
     $linecnt++;
     if($linecnt % 1000000 == 0) {
 	$date = `date`;
-	print STDERR "processed $linecnt NU IDs\t$date";
+	print STDOUT "processed $linecnt NU IDs\t$date";
     }
     if($NU{$key}+0==1) {
 	$forwardonlyNU++;
