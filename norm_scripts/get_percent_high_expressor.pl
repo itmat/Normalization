@@ -59,13 +59,16 @@ foreach $dir (@dirs){
 	chomp($exon);
 	@e = split(" ", $exon);
 	$name = $e[0];
-	$HIGH_EXON{$name} = 1 if ($exon =~ /^exon:/);
+	$symbol = $e[3];
+	$HIGH_EXON{$name} = $symbol if ($exon =~ /^exon:/);
     }
 }
 
-$firstrow = "sample";
+$firstrow = "exon";
+$lastrow = "gene";
 while (($key, $value) = each (%HIGH_EXON)){
     $firstrow = $firstrow . "\t$key";
+    $lastrow = $lastrow . "\t$value";
 }
 
 if ($option_found eq "false"){
@@ -129,6 +132,8 @@ while($line = <INFILE>){
 	}
     }
 }
+print OUTU "$lastrow\n";
+print OUTNU "$lastrow\n";
 close(INFILE);
 close(OUTU);
 close(OUTNU);
