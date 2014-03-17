@@ -122,18 +122,18 @@ while($line = <INFILE>) {
     }
     if($outputsam eq "true") {
 	if ($bsub eq "true"){
-	    `bsub -q plus -e $logdir/$id.quantifyintrons.err -o $logdir/$id.quantifyintrons.out sh $shdir/$shfile`;
+	    `bsub -e $logdir/$id.quantifyintrons.err -o $logdir/$id.quantifyintrons.out sh $shdir/$shfile`;
 	}
 	if ($qsub eq "true"){
-	    `qsub -cwd -N $line.quantifyintrons -o $logdir -e $logdir -l h_vmem=4G $shdir/$shfile`;
+	    `qsub -cwd -N $line.quantifyintrons -o $logdir -e $logdir  $shdir/$shfile`;
 	}
     }
     else {
 	if ($bsub eq "true"){
-	    `bsub -q plus -e $logdir/$id.quantifyintrons_2.err -o $logdir/$id.quantifyintrons_2.out sh $shdir/$shfile2`;
+	    `bsub -e $logdir/$id.quantifyintrons_2.err -o $logdir/$id.quantifyintrons_2.out sh $shdir/$shfile2`;
 	}
 	if ($qsub eq "true"){
-	    `qsub -cwd -N $line.quantifyintrons_2 -e $logdir -o $logdir -l h_vmem=4G $shdir/$shfile2`;
+	    `qsub -cwd -N $line.quantifyintrons_2 -e $logdir -o $logdir  $shdir/$shfile2`;
 	}
     }
 }

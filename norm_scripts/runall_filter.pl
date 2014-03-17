@@ -112,10 +112,10 @@ while($line = <INFILE>) {
     }
     close(OUTFILE);
     if ($bsub eq "true"){
-	`bsub -q plus -e $logdir/$id.filtersam.err -o $logdir/$id.filtersam.out sh $shfile`;
+	`bsub -e $logdir/$id.filtersam.err -o $logdir/$id.filtersam.out sh $shfile`;
     }
     if ($qsub eq "true"){
-	`qsub -cwd -N $dir.filtersam -o $logdir -e $logdir -l h_vmem=4G $shfile`;
+	`qsub -cwd -N $dir.filtersam -o $logdir -e $logdir $shfile`;
     }
 }
 close(INFILE);

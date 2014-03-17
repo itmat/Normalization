@@ -64,10 +64,10 @@ while ($line = <INFILE>){
     print OUT "perl $path/annotate.pl $annot_file $norm_dir/$line > $norm_dir/master_$line";
     close(OUT);
     if($bsub eq "true"){
-	`bsub -q max_mem30 -o $logdir/annotate_$line.out -e $logdir/annotate_$line.err sh $shfile`;
+	`bsub -o $logdir/annotate_$line.out -e $logdir/annotate_$line.err sh $shfile`;
     }
     if ($qsub eq "true"){
-	`qsub -cwd -N annotate_$line -e $logdir -o $logdir -l h_vmem=6G $shfile`;
+	`qsub -cwd -N annotate_$line -e $logdir -o $logdir $shfile`;
     }
 }
 close(INFILE);

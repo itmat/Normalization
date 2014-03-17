@@ -74,10 +74,10 @@ while($line = <INFILE>) {
     print OUTFILE "perl $path $dir $LOC $samfile $blastdir $db\n";
     close(OUTFILE);
     if ($bsub eq "true"){
-	`bsub -q plus -e $logdir/$id.runblast.err -o $logdir/$id.runblast.out sh $shfile`;
+	`bsub -e $logdir/$id.runblast.err -o $logdir/$id.runblast.out sh $shfile`;
     }
     if ($qsub eq "true"){
-	`qsub -cwd -N $dir.runblast -e $logdir -o $logdir -l h_vmem=6G $shfile`;
+	`qsub -cwd -N $dir.runblast -e $logdir -o $logdir $shfile`;
     }
 }
 close(INFILE);

@@ -105,10 +105,10 @@ open(OUTFILE, ">$master_sh");
 print OUTFILE "perl $path/annotate.pl $annot_file $exons > $annotated_exons\n";
 close(OUTFILE);
 if($bsub eq "true"){
-    `bsub -q max_mem30 -o $logdir/masterexon.annotate.out -e $logdir/masterexon.annotate.err sh $master_sh`;
+    `bsub -o $logdir/masterexon.annotate.out -e $logdir/masterexon.annotate.err sh $master_sh`;
 }
 if ($qsub eq "true"){
-    `qsub -cwd -N masterexon.annotate -o $logdir -e $logdir -l h_vmem=6G $master_sh`;
+    `qsub -cwd -N masterexon.annotate -o $logdir -e $logdir $master_sh`;
 }
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
@@ -137,10 +137,10 @@ while($line = <INFILE>){
     print OUT "rm $highfile";
     close(OUT);
     if ($bsub eq "true"){
-	`bsub -q max_mem30 -o $logdir/$id.highexpressor.annotate.out -e $logdir/$id.highexpressor.annotate.err sh $shfile`;
+	`bsub -o $logdir/$id.highexpressor.annotate.out -e $logdir/$id.highexpressor.annotate.err sh $shfile`;
     }
     if ($qsub eq "true"){
-	`qsub -cwd -N $line.highexpressor.annotate -o $logdir -e $logdir -l h_vmem=6G $shfile`;
+	`qsub -cwd -N $line.highexpressor.annotate -o $logdir -e $logdir $shfile`;
     }
 }
 close(INFILE);

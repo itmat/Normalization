@@ -55,8 +55,8 @@ $shfile = "$shdir/get_ribo_percents.sh";
 open(OUT, ">$shfile");
 print OUT "perl $path $sampledirs $LOC\n";
 if ($bsub eq "true"){
-    `bsub -q max_mem30 -o $logdir/getribopercents.out -e $logdir/getribopercents.err sh $shfile`;
+    `bsub -o $logdir/getribopercents.out -e $logdir/getribopercents.err sh $shfile`;
 }
 if ($qsub eq "true"){
-    `qsub -cwd -N getribopercents -o $logdir -e $logdir -l h_vmem=10G $shfile`;
+    `qsub -cwd -N getribopercents -o $logdir -e $logdir $shfile`;
 }

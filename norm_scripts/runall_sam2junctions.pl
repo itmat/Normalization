@@ -139,10 +139,10 @@ while($line = <INFILE>) {
     print OUTFILE "perl $path/rum-2.0.5_05/bin/make_RUM_junctions_file.pl --genes $genes --sam-in $final_dir/$filename --genome $genome --all-rum-out $junctions_dir/$outfile1 --all-bed-out $junctions_dir/$outfile2 --high-bed-out $junctions_dir/$outfile3 -faok\n";
     close(OUTFILE);
     if($bsub eq "true"){
-	`bsub -q plus -o $logdir/$id.sam2junctions.out -e $logdir/$id.sam2junctions.err sh $shdir/$shfile`;
+	`bsub -o $logdir/$id.sam2junctions.out -e $logdir/$id.sam2junctions.err sh $shdir/$shfile`;
     }
     if ($qsub eq "true"){
-	`qsub -cwd -N $dir.sam2junctions -o $logdir -e $logdir -l h_vmem=6G $shdir/$shfile`;
+	`qsub -cwd -N $dir.sam2junctions -o $logdir -e $logdir $shdir/$shfile`;
     }
 }
 close(INFILE);

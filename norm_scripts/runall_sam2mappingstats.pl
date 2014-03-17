@@ -80,10 +80,10 @@ if ($total_reads_file eq "true"){
 	print OUTFILE "perl $path $LOC/$dir/$sam_name -numreads $num_id > $LOC/$dir/$id.mappingstats.txt\n";
     	close(OUTFILE);
 	if ($bsub eq "true"){
-	    `bsub -q max_mem30 -o $logdir/$id.sam2mappingstats.out -e $logdir/$id.sam2mappingstats.err sh $shfile`;
+	    `bsub -o $logdir/$id.sam2mappingstats.out -e $logdir/$id.sam2mappingstats.err sh $shfile`;
 	}
 	if ($qsub eq "true"){
-	    `qsub -cwd -N $dir.sam2mappingstats -o $logdir -e $logdir -l h_vmem=15G $shfile`;
+	    `qsub -cwd -N $dir.sam2mappingstats -o $logdir -e $logdir $shfile`;
 	}
     }
 }
@@ -103,10 +103,10 @@ if ($total_reads_file eq "false"){
 	print OUTFILE "perl $path $LOC/$dir/$sam_name > $LOC/$dir/$id.mappingstats.txt\n";
 	close(OUTFILE);
 	if ($bsub eq "true"){
-	    `bsub -q max_mem30 -o $logdir/$id.sam2mappingstats.out -e $logdir/$id.sam2mappingstats.err sh $shfile`;
+	    `bsub -o $logdir/$id.sam2mappingstats.out -e $logdir/$id.sam2mappingstats.err sh $shfile`;
 	}
 	if ($qsub eq "true"){
-	    `qsub -cwd -N $dir.sam2mappingstats -o $logdir -e $logdir -l h_vmem=15G $shfile`;
+	    `qsub -cwd -N $dir.sam2mappingstats -o $logdir -e $logdir $shfile`;
 	}
     }
 }
