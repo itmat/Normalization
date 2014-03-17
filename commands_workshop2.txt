@@ -91,6 +91,7 @@ https://github.com/itmat/Normalization/tree/workshop
 
 10. Coverage plots
     perl $HOME/Normalization/norm_scripts/runall_sam2cov.pl $HOME/study/reads/dirs.txt $HOME/study/reads/ /opt/rna_seq/data/star_chr1and2/chr1and2.fa.fai -bsub
+    cat *cov > final_coverage
     
 11. Clean up
     perl $HOME/Normalization/norm_scripts/cleanup.pl $HOME/study/reads/dirs.txt $HOME/study/reads/
