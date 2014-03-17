@@ -25,7 +25,7 @@ while($line = <INFILE>){
     chomp($line);
     $shfile = "$shdir/$line.runstar.sh";
     open(OUT, ">$shfile");
-    print OUT "STAR --outFileNamePrefix $LOC/$line/ --genomeDir $LOC/star_chr1and2 --outSAMunmapped Within --readFilesIn $LOC/$line/forward_"."$line.fq $LOC/$line/reverse_"."$line.fq\n";
+    print OUT "STAR --outFileNamePrefix $LOC/$line/ --genomeDir /opt/rna_seq/data/star_chr1and2/ --outSAMunmapped Within --readFilesIn $LOC/$line/forward_"."$line.fq $LOC/$line/reverse_"."$line.fq\n";
     close(OUT);
     `bsub -o $logdir/$line.star.out -e $logdir/$line.star.err sh $shfile`;
 }
