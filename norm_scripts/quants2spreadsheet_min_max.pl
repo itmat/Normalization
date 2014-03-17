@@ -65,7 +65,7 @@ if ($type =~ /^intron/){
 	$NU_no_header = $NU . "_no_header";
 	$NEW_quants = "$merged_dir/$id.intronquants_merged";
 
-	open(FILE1, "<$Unique");
+	open(FILE1, "<$Unique") or die "cannot find file '$Unique'\n";
 	@lines = <FILE1>;
 	close(FILE1);
 
@@ -75,7 +75,7 @@ if ($type =~ /^intron/){
 	}
 	close(FILE1_new);
 
-	open(FILE2, "<$NU");
+	open(FILE2, "<$NU") or die "cannot find file '$NU'\n";
 	@lines2 = <FILE2>;
 	close(FILE2);
 
@@ -114,9 +114,11 @@ if ($type =~ /^intron/){
 	    print OUT $feature_min_max;
 	}
 	close(OUT);
+	close(File1);
+	close(File2);
     }
     close(INFILE);
-    `rm $nexon_dir/Unique/*no_header $nexon_dir/NU/*no_header`;
+#    `rm $nexon_dir/Unique/*no_header $nexon_dir/NU/*no_header`;
     open(INFILE, $ARGV[0]);
     open(OUT, ">$sample_name_file");
     while ($line = <INFILE>){

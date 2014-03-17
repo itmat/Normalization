@@ -232,7 +232,7 @@ Create a study-specific master list of exons by adding novel exons from the stud
     * &lt;loc> : full path of the directory with the sample directories (`READS`)
     * &lt;sam file name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
     * options : <br>
-     **-min <n>** : size of inferred exon, min is set at 10 by default
+     **-min <n>** : size of inferred exon, min is set at 10 by default<br>
      **-max <n>** : size of inferred exon, max is set at 2000 by default
 
  This outputs `*list_of_novel_exons.txt` file of all samples to each sample directory. It also outputs `master_list_of_exons.*STUDY*.txt` file to `READS` directory.
@@ -290,6 +290,18 @@ III. Filter High Expressors
 
 This will output a text file called `filtered_master_list_of_exons.*STUDY*.txt` to `STUDY/READS` directory.
 
+__[NORMALIZATION FACTOR] High expressor exonpercent__
+
+     perl get_percent_high_expressor.pl <sample dirs> <loc> [options]
+
+* &lt;sample dirs> : a file with the names of the sample directories 
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* option:<br>
+ **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
+ **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
+
+This will output `percent_high_expressor_Unique.txt` and/or `percent_high_expressor_NU.txt` depending on the option provided to `READS` directory.
+
 ##### D. Run quantify exons
 
 This step takes filtered sam files and splits them into 1, 2, 3 ... n exonmappers and notexonmappers (n = 20 if you don't use the -depth option).
@@ -323,6 +335,7 @@ __[NORMALIZATION FACTOR] Exon to nonexon signal__
  **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
 
 This will output `exon2nonexon_signal_stats_Unique.txt` and/or `exon2nonexon_signal_stats_NU.txt` depending on the option provided to `READS` directory.
+
 
 __[NORMALIZATION FACTOR] One exon vs multi exons__
 
@@ -367,6 +380,18 @@ Run the following command with **&lt;output sam?> = true**. By default this will
   **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
  
 This outputs multiple files of all samples: `intronmappers.(1, 2, 3, ... n).sam`, `intergenicmappers.sam`, and `intronquants` file to `Unique` / `NU` directory in each sample directory.
+
+__[NORMALIZATION FACTOR] Percent of non-exonic signal that is intergenic (as opposed to intronic)__
+
+    perl get_percent_intergenic.pl  <sample dirs> <loc> [options]
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* option:<br>
+ **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
+ **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
+
+This will output `percent_intergenic_Unique.txt` and/or `percent_intergenic_NU.txt` depending on the option provided to `READS` directory.
 
 ### 5. Downsample
 
