@@ -86,12 +86,14 @@ https://github.com/itmat/Normalization/tree/workshop
       perl $HOME/Normalization/norm_scripts/make_final_spreadsheets.pl $HOME/study/reads/dirs.txt $HOME/study/reads/ -bsub
 
    e. annotate
+      cd $HOME/study/NORMALIZED_DATA
       ls list_of_exons_counts_M* > annotate.txt
-      perl $HOME/Normalization/norm_scripts/run_annotate.pl annotate.txt $HOME/Normalization/norm_scripts/ucsc_known_mm9 $HOME/study/reads/ -bsub
+      perl $HOME/Normalization/norm_scripts/run_annotate.pl $HOME/study/NORMALIZED_DATA/annotate.txt $HOME/Normalization/norm_scripts/ucsc_known_mm9 $HOME/study/reads/ -bsub
 
    f. filter low expressors
+      cd $HOME/study/NORMALIZED_DATA
       ls master_list_of_* > filter.txt
-      perl $HOME/Normalization/norm_scripts/runall_filter_low_expressors.pl filter.txt 3 3 $HOME/study/reads/
+      perl $HOME/Normalization/norm_scripts/runall_filter_low_expressors.pl $HOME/study/NORMALIZED_DATA/filter.txt 3 3 $HOME/study/reads/
 
 10. Coverage plots
     perl $HOME/Normalization/norm_scripts/runall_sam2cov.pl $HOME/study/reads/dirs.txt $HOME/study/reads/ /opt/rna_seq/data/star_chr1and2/chr1and2.fa.fai -bsub
