@@ -12,7 +12,7 @@ https://github.com/itmat/Normalization/tree/workshop
 1. STAR
    bsub -Is bash
    module load STAR-2.3.0e
-   cd study/reads
+   cd $HOME/study/reads
    ls -d testdata* > dirs.txt
    perl $HOME/Normalization/norm_scripts/runstar_workshop.pl $HOME/study/reads/dirs.txt $HOME/study/reads	
    more $HOME/study/shell_scripts/testdata1.runstar.sh
