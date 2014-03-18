@@ -4,6 +4,9 @@ https://github.com/itmat/Normalization/tree/workshop
    ssh pennkey@demohpc.pmacs.upenn.edu
    bsub -Is bash
    git clone -b workshop https://github.com/itmat/Normalization.git
+   cd $HOME/Normalization/norm_scripts/
+   cp -r /opt/rna_seq/scripts/ncbi-blast-2.2.27+ $HOME/Normalization/norm_scripts/
+   cp /opt/rna_seq/scripts/ucsc_known_mm9 $HOME/Normalization/norm_scripts/
    mkdir study
    cp -r /opt/rna_seq/data/reads study/
 
