@@ -7,6 +7,7 @@ https://github.com/itmat/Normalization/tree/workshop
    cp -r /opt/rna_seq/scripts/ncbi-blast-2.2.27+ $HOME/Normalization/norm_scripts/
    cp /opt/rna_seq/scripts/ucsc_known_mm9 $HOME/Normalization/norm_scripts/
    mkdir $HOME/study
+   cd $HOME/study
    cp -r /opt/rna_seq/data/reads $HOME/study/
 
 1. STAR
@@ -18,7 +19,7 @@ https://github.com/itmat/Normalization/tree/workshop
    more $HOME/study/shell_scripts/testdata1.runstar.sh
 
 2. Mapping Statistiscs
-   ls $PWD/testdata*/forward* > fqfiles.txt
+   ls $HOME/study/reads/testdata*/forward* > fqfiles.txt
    perl $HOME/Normalization/norm_scripts/get_total_num_reads.pl $HOME/study/reads/dirs.txt $HOME/study/reads/ $HOME/study/reads/fqfiles.txt -fq
    perl $HOME/Normalization/norm_scripts/runall_sam2mappingstats.pl $HOME/study/reads/dirs.txt $HOME/study/reads/ Aligned.out.sam true -bsub
    perl $HOME/Normalization/norm_scripts/getstats.pl $HOME/study/reads/dirs.txt $HOME/study/reads/
