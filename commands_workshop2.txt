@@ -2,15 +2,15 @@ https://github.com/itmat/Normalization/tree/workshop
 
 0. Set up 
    ssh pennkey@demohpc.pmacs.upenn.edu
-   bsub -Is bash
    git clone -b workshop https://github.com/itmat/Normalization.git
    cd $HOME/Normalization/norm_scripts/
    cp -r /opt/rna_seq/scripts/ncbi-blast-2.2.27+ $HOME/Normalization/norm_scripts/
    cp /opt/rna_seq/scripts/ucsc_known_mm9 $HOME/Normalization/norm_scripts/
-   mkdir study
-   cp -r /opt/rna_seq/data/reads study/
+   mkdir $HOME/study
+   cp -r /opt/rna_seq/data/reads $HOME/study/
 
 1. STAR
+   bsub -Is bash
    module load STAR-2.3.0e
    cd study/reads
    ls -d testdata* > dirs.txt
