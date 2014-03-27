@@ -95,7 +95,8 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
 
 	* option:<br>
 	  **-fa** : set this if the input files are in fasta format <br>
-	  **-fq** : set this if the input files are in fastq format
+	  **-fq** : set this if the input files are in fastq format <br>
+	  **-gz** : set this if the input files are compressed
 
  This will output a file called `total_num_reads.txt` to the `STUDY/READS` directory.
 
