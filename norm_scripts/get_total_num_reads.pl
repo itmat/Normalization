@@ -7,12 +7,14 @@ if(@ARGV<3) {
 
 option:  -fa : set this if the input files are in fasta format
          -fq : set this if the input files are in fastq format
+         -gz : set this if your input files are compressed
 
 ";
 }
 
 $fa = "false";
 $fq = "false";
+$gz = "false";
 $numargs = 0;
 for ($i=3; $i<@ARGV; $i++){
     $option_found = "false";
@@ -24,6 +26,10 @@ for ($i=3; $i<@ARGV; $i++){
     if ($ARGV[$i] eq '-fq'){
 	$fq = "true";
 	$numargs++;
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-gz'){
+	$gz = "true";
 	$option_found = "true";
     }
     if ($option_found eq "false"){
@@ -44,10 +50,18 @@ $outfile_all = "$LOC/total_reads_temp.txt";
 open(OUT, ">$outfile_all");
 while($line = <INFILE>){
     chomp($line);
-    $lc = `wc -l $line\n`;
-    @a = split(" ", $lc);
-    $num = $a[0];
-    $name = $a[1];
+    if ($gz eq "true"){
+	$lc = `zcat $line | wc -l`;
+	$num = $lc;
+	$name = $line;
+    }
+    else {
+	$lc = `wc -l $line`;
+	@a = split(" ", $lc);
+	$num = $a[0];
+	$name = $a[1];
+    }
+
     if ($fq eq "true"){
 	$num = $num/4;
     }
