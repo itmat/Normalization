@@ -8,7 +8,7 @@ option:
   -nu :  set this if you want to return only non-unique mappers, otherwise by default
          it will return both unique and non-unique mappers.  
 
-  -se :  set this if the data is single end, otherwise by default it will assume it's paired end.
+  -se :  set this if the data is single end, otherwise by default it will assume it's a paired end data.
 
   -bsub : set this if you want to submit batch jobs to LSF.
 

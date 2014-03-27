@@ -184,6 +184,7 @@ Run the following command. By default it will return both unique and non-unique 
 * option:<br>
   **-u** : set this if you want to return only unique mappers<br>
   **-nu** :  set this if you want to return only non-unique mappers<br>
+  **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
   **-bsub** : set this if you want to submit batch jobs to LSF<br>
   **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
 
