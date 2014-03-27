@@ -1,8 +1,9 @@
 
-if(@ARGV < 1) {
-    die "Usage: perl sam2mappingstats.pl <sam file> [options]
+if(@ARGV < 2) {
+    die "Usage: perl sam2mappingstats.pl <sam file> <outfilename> [options]
 
-SAM file must use the IH or NH tags to indicate multi-mappers
+samfile : SAM file must use the IH or NH tags to indicate multi-mappers
+outfilename : name of the output txt file
 
 options: -numreads <n>  :  This is the total number of reads.
                                 - This cannot usually be inferred from the SAM file
@@ -19,9 +20,10 @@ options: -numreads <n>  :  This is the total number of reads.
 }
 
 $sam_in = $ARGV[0];
+$outfile = $ARGV[1];
 $cov = "";
 $num_ids = 0;
-for($i=1; $i<@ARGV; $i++) {
+for($i=2; $i<@ARGV; $i++) {
     $argument_recognized = 0;
     if($ARGV[$i] eq '-numreads') {
 	$num_ids = $ARGV[$i+1];
@@ -78,7 +80,7 @@ if($covU =~ /\S/) {
 	$linecnt++;
 	if($linecnt % 1000000 == 0) {
 	    $date = `date`;
-	    print STDERR "processed $linecnt lines of '$covU'\t$date";
+	    print "processed $linecnt lines of '$covU'\t$date";
 	}
 	if($line =~ /track/) {
 	    next;
@@ -97,7 +99,7 @@ if($covNU =~ /\S/) {
 	$linecnt++;
 	if($linecnt % 1000000 == 0) {
 	    $date = `date`;
-	    print STDERR "processed $linecnt lines of '$covNU'\t$date";
+	    print "processed $linecnt lines of '$covNU'\t$date";
 	}
 	if($line =~ /track/) {
 	    next;
@@ -117,7 +119,7 @@ while($line = <INFILE>) {
     $linecnt++;
     if($linecnt % 1000000 == 0) {
 	$date = `date`;
-	print STDERR "processed $linecnt lines\t$date";
+	print "processed $linecnt lines\t$date";
     }
     chomp($line);
     if($line =~ /^@/) {
@@ -195,7 +197,7 @@ foreach $key (keys %U) {
     $linecnt++;
     if($linecnt % 1000000 == 0) {
 	$date = `date`;
-	print STDERR "processed $linecnt U IDs\t$date";
+	print "processed $linecnt U IDs\t$date";
     }
     if($U{$key}+0==1) {
 	$forwardonlyU++;
@@ -213,7 +215,7 @@ foreach $key (keys %NU) {
     $linecnt++;
     if($linecnt % 1000000 == 0) {
 	$date = `date`;
-	print STDERR "processed $linecnt NU IDs\t$date";
+	print "processed $linecnt NU IDs\t$date";
     }
     if($NU{$key}+0==1) {
 	$forwardonlyNU++;
@@ -268,18 +270,19 @@ $total_percent = int($total / $num_ids * 1000) / 10;
 $num_OL_formatted = format_large_int($num_OL);
 $num_NOL_formatted = format_large_int($num_NOL);
 
-print "Number of read pairs: $num_ids_formatted
+open(OUT, ">$outfile");
+print OUT "Number of read pairs: $num_ids_formatted
 
 UNIQUE MAPPERS
 --------------
 Both forward and reverse mapped consistently: $bothmappedU_formatted ($bothmappedU_percent%)
 ";
 if($num_OL > 0) {
-    print "   - do overlap: $num_OL_formatted
+    print OUT "   - do overlap: $num_OL_formatted
    - don't overlap: $num_NOL_formatted
 "
 }
-print "Number of forward mapped only: $forwardonlyU_formatted
+print OUT "Number of forward mapped only: $forwardonlyU_formatted
 Number of reverse mapped only: $reverseonlyU_formatted
 Number of forward total: $forwardU_total_formatted ($forwardU_total_percent%)
 Number of reverse total: $reverseU_total_formatted ($reverseU_total_percent%)
@@ -302,20 +305,20 @@ At least one of forward or reverse mapped: $total_formatted ($total_percent%)
 
 if($covU =~ /\S/ || $covNU =~ /\S/) {
     $genome_size_formatted = format_large_int($genome_size);
-    print "genome size: $genome_size_formatted\n"
+    print OUT "genome size: $genome_size_formatted\n"
 }
 if($covU =~ /\S/) {
     $coverageU_formatted = format_large_int($bases_covered_U);
     $coverageU_percent = int($bases_covered_U / $genome_size * 1000) / 10;
-    print "number of bases covered by unique mappers: $coverageU_formatted ($coverageU_percent%)\n";
+    print OUT "number of bases covered by unique mappers: $coverageU_formatted ($coverageU_percent%)\n";
 }
 if($covNU =~ /\S/) {
     $coverageNU_formatted = format_large_int($bases_covered_NU);
     $coverageNU_percent = int($bases_covered_NU / $genome_size * 1000) / 10;
-    print "number of bases covered by non-unique mappers: $coverageNU_formatted ($coverageNU_percent%)\n\n";
+    print OUT "number of bases covered by non-unique mappers: $coverageNU_formatted ($coverageNU_percent%)\n\n";
 }
 
-print "Uniquely mapping reads per chromosome
+print OUT "Uniquely mapping reads per chromosome
 -------------------------------------
 chr\tnum\t%ofU\t%allMapped\t%ofAll
 ";
@@ -324,23 +327,23 @@ foreach $chr (sort {cmpChrs($a,$b)} keys %CHR_U) {
     $pall = int($CHR_U{$chr} / $num_ids * 1000) / 10;
     $pU = int($CHR_U{$chr} / $atleastoneforwardorreverse * 1000) / 10;
     $ptm = int($CHR_U{$chr} / $total * 1000) / 10;
-    print "$chr\t$CHR_U{$chr}\t$pU\t$ptm\t$pall\n";
+    print OUT "$chr\t$CHR_U{$chr}\t$pU\t$ptm\t$pall\n";
 }
-print "\nNon-Uniquely mapping reads per chromosome\n-----------------------------------------\n";
-print "chr\tnum\t%ofNU\t%allMapped\t%ofAll\n";
+print OUT "\nNon-Uniquely mapping reads per chromosome\n-----------------------------------------\n";
+print OUT "chr\tnum\t%ofNU\t%allMapped\t%ofAll\n";
 foreach $chr (sort {cmpChrs($a,$b)} keys %CHR_NU) {
     $totalNU = $bothmappedNU + $forwardonlyNU + $reverseonlyNU;
     $pall = int($CHR_NU{$chr} / $num_ids * 1000) / 10;
     $pNU = int($CHR_NU{$chr} / $totalNU * 1000) / 10;
     $ptm = int($CHR_U{$chr} / $total * 1000) / 10;
-    print "$chr\t$CHR_NU{$chr}\t$pNU\t$ptm\t$pall\n";
+    print OUT "$chr\t$CHR_NU{$chr}\t$pNU\t$ptm\t$pall\n";
 }
-print "
+print OUT "
 Num. Locations      Num. Reads
 ------------------------------
 ";
 foreach $n (sort {$a<=>$b} keys %numLocs) {
-    print "$n\t$numLocs{$n}\n";
+    print OUT "$n\t$numLocs{$n}\n";
 }
 
 

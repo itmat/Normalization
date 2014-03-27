@@ -77,7 +77,7 @@ if ($total_reads_file eq "true"){
 	$id =~ s/Sample_//;
 	$shfile = "$shdir/m." . $id . "runsam2mappingstats.sh";
 	open(OUTFILE, ">$shfile");
-	print OUTFILE "perl $path $LOC/$dir/$sam_name -numreads $num_id > $LOC/$dir/$id.mappingstats.txt\n";
+	print OUTFILE "perl $path $LOC/$dir/$sam_name $LOC/$dir/$id.mappingstats.txt -numreads $num_id\n";
     	close(OUTFILE);
 	if ($bsub eq "true"){
 	    `bsub -q max_mem30 -o $logdir/$id.sam2mappingstats.out -e $logdir/$id.sam2mappingstats.err sh $shfile`;
@@ -100,7 +100,7 @@ if ($total_reads_file eq "false"){
 	$id =~ s/\//_/g;
 	$shfile = "$shdir/m." . $id . "runsam2mappingstats.sh";
 	open(OUTFILE, ">$shfile");
-	print OUTFILE "perl $path $LOC/$dir/$sam_name > $LOC/$dir/$id.mappingstats.txt\n";
+	print OUTFILE "perl $path $LOC/$dir/$sam_name $LOC/$dir/$id.mappingstats.txt\n";
 	close(OUTFILE);
 	if ($bsub eq "true"){
 	    `bsub -q max_mem30 -o $logdir/$id.sam2mappingstats.out -e $logdir/$id.sam2mappingstats.err sh $shfile`;
