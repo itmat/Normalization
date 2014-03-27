@@ -151,25 +151,14 @@ while($forward = <INFILE>) {
 		next;
 	    }
 	}
-    }
-    else{
-	chomp($forward);
-	if($forward eq '') {
-            $forward = <INFILE>;
-            chomp($forward);
-        }
-	@F = split(/\t/,$forward);
-    }
-
-    if(!($F[2] =~ /^chr\d+$/ || $F[2] =~ /^chrX$/ || $F[2] =~ /^chrY$/ || $F[2] =~ /^\d+$/ || $F[2] eq 'Y' || $F[2] eq 'X')) {
-	next;
-    }
-    $id = $F[0];
-
-    if(exists $RIBO_IDs{$id}) {
-	next;
-    }
-    if ($pe eq "true"){
+	if(!($F[2] =~ /^chr\d+$/ || $F[2] =~ /^chrX$/ || $F[2] =~ /^chrY$/ || $F[2] =~ /^\d+$/ || $F[2] eq 'Y' || $F[2] eq 'X')) {
+	    next;
+	}
+	$id = $F[0];
+	
+	if(exists $RIBO_IDs{$id}) {
+	    next;
+	}
 	$Nf = "";
 	$Nr = "";
 	$forward =~ /(N|I)H:i:(\d+)/;
@@ -191,6 +180,20 @@ while($forward = <INFILE>) {
 	}
     }
     else{
+	chomp($forward);
+	if($forward eq '') {
+            $forward = <INFILE>;
+            chomp($forward);
+        }
+	@F = split(/\t/,$forward);
+	if(!($F[2] =~ /^chr\d+$/ || $F[2] =~ /^chrX$/ || $F[2] =~ /^chrY$/ || $F[2] =~ /^\d+$/ || $F[2] eq 'Y' || $F[2] eq 'X')) {
+	    next;
+	}
+	$id = $F[0];
+	
+	if(exists $RIBO_IDs{$id}) {
+	    next;
+	}
 	$Nf = "";
 	$forward =~ /(N|I)H:i:(\d+)/;
         $Nf = $2;

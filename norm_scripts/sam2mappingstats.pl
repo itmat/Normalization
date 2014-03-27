@@ -145,43 +145,54 @@ while($line = <INFILE>) {
 	if(!(defined $U{$a[0]})) {
 	    $CHR_U{$a[2]}++;
 	}
-	if($a[1] & 2**6) {
-	    if($U{$a[0]}+0==0) {
-		$U{$a[0]} = 1;   # 1 means forward found only so far
-	    }
-	    if($U{$a[0]}+0==2) { # 2 means reverse found only so far
-		$U{$a[0]} = 3;   # 3 means both forward and reverse found
-	    }
-	    if($line =~ /XO:A:T/) {
-		$num_OL++;
-	    }
-	    if($line =~ /XO:A:F/) {
-		$num_NOL++;
-	    }
-	} else {
-	    if($U{$a[0]}+0==0) {
-		$U{$a[0]} = 2;   # 2 means reverse found only so far
-	    }
-	    if($U{$a[0]}+0==1) { # 1 means forward found only so far
-		$U{$a[0]} = 3;   # 3 means both forward and reverse found
+	if ($a[1] & 1){
+	    if($a[1] & 2**6) {
+		if($U{$a[0]}+0==0) {
+		    $U{$a[0]} = 1;   # 1 means forward found only so far
+		}
+		if($U{$a[0]}+0==2) { # 2 means reverse found only so far
+		    $U{$a[0]} = 3;   # 3 means both forward and reverse found
+		}
+		if($line =~ /XO:A:T/) {
+		    $num_OL++;
+		}
+		if($line =~ /XO:A:F/) {
+		    $num_NOL++;
+		}
+	    } else {
+		if($U{$a[0]}+0==0) {
+		    $U{$a[0]} = 2;   # 2 means reverse found only so far
+		}
+		if($U{$a[0]}+0==1) { # 1 means forward found only so far
+		    $U{$a[0]} = 3;   # 3 means both forward and reverse found
+		}
 	    }
 	}
-    } else {
-	if($a[1] & 2**6) {
-	    if($NU{$a[0]}+0==0) {
-		$NU{$a[0]} = 1;   # 1 means forward found only so far
+	else {
+	    $U{$a[0]} = 1;
+	}
+    } 
+    else {
+	if ($a[1] & 1){
+	    if($a[1] & 2**6) {
+		if($NU{$a[0]}+0==0) {
+		    $NU{$a[0]} = 1;   # 1 means forward found only so far
+		}
+		if($NU{$a[0]}+0==2) { # 2 means reverse found only so far
+		    $NU{$a[0]} = 3;   # 3 means both forward and reverse found
+		}
+		$CHR_NU{$a[2]}++;
+	    } else {
+		if($NU{$a[0]}+0==0) {
+		    $NU{$a[0]} = 2;   # 2 means reverse found only so far
+		}
+		if($NU{$a[0]}+0==1) { # 1 means forward found only so far
+		    $NU{$a[0]} = 3;   # 3 means both forward and reverse found
+		}
 	    }
-	    if($NU{$a[0]}+0==2) { # 2 means reverse found only so far
-		$NU{$a[0]} = 3;   # 3 means both forward and reverse found
-	    }
-	    $CHR_NU{$a[2]}++;
-	} else {
-	    if($NU{$a[0]}+0==0) {
-		$NU{$a[0]} = 2;   # 2 means reverse found only so far
-	    }
-	    if($NU{$a[0]}+0==1) { # 1 means forward found only so far
-		$NU{$a[0]} = 3;   # 3 means both forward and reverse found
-	    }
+	}
+	else {
+	    $NU{$a[0]} = 1;
 	}
     }
     $numLocs{$n}++;
