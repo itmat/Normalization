@@ -14,6 +14,8 @@ option:
   -nu :  set this if you want to return only non-unique mappers, otherwise by default
          it will return both unique and non-unique mappers.  
 
+  -se :  set this if the data is single end, otherwise by default it will assume it's paired end.
+ 
 This will remove all rows from <sam infile> except those that satisfy all of the following:
 1. Unique mapper / Non-Unique mapper
 2. Both forward and reverse map consistently
@@ -36,6 +38,7 @@ $outfileNU =~ s/.sam$/_nu.sam/;
 
 $NU = "true";
 $U = "true";
+$pe = "true";
 $numargs = 0;
 for($i=3; $i<@ARGV; $i++) {
     $option_found = "false";
@@ -47,6 +50,10 @@ for($i=3; $i<@ARGV; $i++) {
     if($ARGV[$i] eq '-u') {
 	$NU = "false";
 	$numargs++;
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-se'){
+	$pe = "false";
 	$option_found = "true";
     }
     if($option_found eq "false") {
@@ -103,77 +110,107 @@ for($i=0; $i<$cnt; $i++) { # skip header
 $cntU = 0;
 $cntNU = 0;
 while($forward = <INFILE>) {
-    chomp($forward);
-    if($forward eq '') {
-	$forward = <INFILE>;
+    if ($pe eq "true"){
 	chomp($forward);
-    }
-    $reverse = <INFILE>;
-    chomp($reverse);
-    if($reverse eq '') {
+	if($forward eq '') {
+	    $forward = <INFILE>;
+	    chomp($forward);
+	}
 	$reverse = <INFILE>;
 	chomp($reverse);
-    }
-    @F = split(/\t/,$forward);
-    @R = split(/\t/,$reverse);
-    $id2 = $F[0];
-    if($F[0] ne $R[0]) {
-	$len = -1 * (1 + length($reverse));
-	seek(INFILE, $len, 1);
-	next;
-    }
-    if($R[1] & 64) {
-	$temp = $forward;
-	$forward = $reverse;
-	$reverse = $temp;
+	if($reverse eq '') {
+	    $reverse = <INFILE>;
+	    chomp($reverse);
+	}
 	@F = split(/\t/,$forward);
 	@R = split(/\t/,$reverse);
-	if($R[1] & 64) {
-	    print STDERR "Warning: I read two reads consecutive but neither were a reverse read...\n\nforward=$forward\n\nreverse=$reverse\n\nPrevious was id='$id'\n\nI am skipping read '$id2'.\n\n";
-	    $line = <INFILE>;
-	    chomp($line);
-	    @a = split(/\t/,$line);
-	    while($a[0] eq $id2) {
-		$line = <INFILE>;
-		chomp($line);
-		@a = split(/\t/,$line);
-	    }
-	    $len = -1 * (1 + length($line));
+	$id2 = $F[0];
+	if($F[0] ne $R[0]) {
+	    $len = -1 * (1 + length($reverse));
 	    seek(INFILE, $len, 1);
 	    next;
 	}
+	if($R[1] & 64) {
+	    $temp = $forward;
+	    $forward = $reverse;
+	    $reverse = $temp;
+	    @F = split(/\t/,$forward);
+	    @R = split(/\t/,$reverse);
+	    if($R[1] & 64) {
+		print STDERR "Warning: I read two reads consecutive but neither were a reverse read...\n\nforward=$forward\n\nreverse=$reverse\n\nPrevious was id='$id'\n\nI am skipping read '$id2'.\n\n";
+		$line = <INFILE>;
+		chomp($line);
+		@a = split(/\t/,$line);
+		while($a[0] eq $id2) {
+		    $line = <INFILE>;
+		    chomp($line);
+		    @a = split(/\t/,$line);
+		}
+		$len = -1 * (1 + length($line));
+		seek(INFILE, $len, 1);
+		next;
+	    }
+	}
+    }
+    else{
+	chomp($forward);
+	if($forward eq '') {
+            $forward = <INFILE>;
+            chomp($forward);
+        }
+	@F = split(/\t/,$forward);
     }
 
     if(!($F[2] =~ /^chr\d+$/ || $F[2] =~ /^chrX$/ || $F[2] =~ /^chrY$/ || $F[2] =~ /^\d+$/ || $F[2] eq 'Y' || $F[2] eq 'X')) {
 	next;
     }
     $id = $F[0];
+
     if(exists $RIBO_IDs{$id}) {
 	next;
     }
-    $Nf = "";
-    $Nr = "";
-    $forward =~ /(N|I)H:i:(\d+)/;
-    $Nf = $2;
-    $reverse =~ /(N|I)H:i:(\d+)/;
-    $Nr = $2;
+    if ($pe eq "true"){
+	$Nf = "";
+	$Nr = "";
+	$forward =~ /(N|I)H:i:(\d+)/;
+	$Nf = $2;
+	$reverse =~ /(N|I)H:i:(\d+)/;
+	$Nr = $2;
 
-    if($U eq "true") {
-	if($Nf == 1 && $Nr == 1 && $F[5] ne '*' && $R[5] ne '*') {
-	    print OUTFILEU "$forward\n";
-	    $cntU++;
+	if($U eq "true") {
+	    if($Nf == 1 && $Nr == 1 && $F[5] ne '*' && $R[5] ne '*') {
+		print OUTFILEU "$forward\n";
+		$cntU++;
+	    }
+	} 
+	if($NU eq "true") {
+	    if($Nf != 1 && $Nr != 1 && $F[5] ne '*' && $R[5] ne '*') {
+		print OUTFILENU "$forward\n";
+		$cntNU++;
+	    }
 	}
-    } 
-    if($NU eq "true") {
-	if($Nf != 1 && $Nr != 1 && $F[5] ne '*' && $R[5] ne '*') {
-	    print OUTFILENU "$forward\n";
-	    $cntNU++;
+    }
+    else{
+	$Nf = "";
+	$forward =~ /(N|I)H:i:(\d+)/;
+        $Nf = $2;
+	if($U eq "true") {
+            if($Nf == 1  && $F[5] ne '*') {
+                print OUTFILEU "$forward\n";
+		$cntU++;
+            }
+        }
+	if($NU eq "true") {
+            if($Nf != 1 && $F[5] ne '*') {
+                print OUTFILENU "$forward\n";
+                $cntNU++;
+            }
 	}
     }
     if($num_unique > 0) {
 	if($cntU == $num_unique) {
 	    last;
-	}
+	}	
     }
 }
 close(INFILE);

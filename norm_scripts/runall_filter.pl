@@ -8,6 +8,8 @@ option:
   -nu :  set this if you want to return only non-unique mappers, otherwise by default
          it will return both unique and non-unique mappers.  
 
+  -se :  set this if the data is single end, otherwise by default it will assume it's paired end.
+
   -bsub : set this if you want to submit batch jobs to LSF.
 
   -qsub : set this if you want to submit batch jobs to Sun Grid Engine.
@@ -32,6 +34,7 @@ $sam_name = $ARGV[2];
 
 $U = "true";
 $NU = "true";
+$pe = "true";
 $bsub = "false";
 $qsub = "false";
 $numargs_1 = 0;
@@ -58,6 +61,10 @@ for($i=3; $i<@ARGV; $i++) {
 	$qsub = "true";
 	$numargs_2++;
 	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-se'){
+        $pe = "false";
+        $option_found = "true";
     }
     if($option_found eq "false") {
 	die "option \"$ARGV[$i]\" was not recognized.\n";
@@ -100,14 +107,29 @@ while($line = <INFILE>) {
 
     open(OUTFILE, ">$shfile");
     if ($numargs_1 eq "0"){
-	print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile\n";
+	if ($pe eq "true"){
+	    print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile\n";
+	}
+	else {
+	    print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -se \n";
+	}
     }
     else {
 	if($U eq "true") {
-	    print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -u\n";
+	    if ($pe eq "true"){
+		print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -u\n";
+	    }
+	    else{
+		print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -se -u\n";
+	    }
 	}
 	if($NU eq "true") {
-	    print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -nu\n";
+	    if ($pe eq "true"){
+		print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -nu\n";
+	    }
+	    else{
+		print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -se -nu\n";
+	    }
 	}
     }
     close(OUTFILE);
