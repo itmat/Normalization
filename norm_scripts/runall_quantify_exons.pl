@@ -175,6 +175,7 @@ while($line = <INFILE>) {
 	    else {
 		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none -rpf\n";
 	    }
+	}
 	else{
 	    if ($pe eq "true"){
 		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none -NU-only\n";
