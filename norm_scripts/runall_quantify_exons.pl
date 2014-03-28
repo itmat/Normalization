@@ -17,12 +17,15 @@ option:
 
  -depth <n> : by default, it will output 20 exonmappers
 
+ -se  :  set this if the data is single end, otherwise by default it will assume it's a paired end data 
+
 ";
 }
 use Cwd 'abs_path';
 $nuonly = 'false';
 $bsub = "false";
 $qsub = "false";
+$pe = "true";
 $numargs = 0;
 $i_exon = 20;
 for($i=4; $i<@ARGV; $i++) {
@@ -46,7 +49,10 @@ for($i=4; $i<@ARGV; $i++) {
 	$i++;
 	$option_found = "true";
     }
-  
+    if ($ARGV[$i] eq '-se'){
+	$pe = "false";
+	$option_found = "true";
+    }
     if($option_found eq 'false') {
 	die "option \"$ARGV[$i]\" not recognized.\n";
     }
@@ -145,18 +151,37 @@ while($line = <INFILE>) {
     if($outputsam eq "true") {
 	open(OUTFILE, ">$shdir/$shfile");
 		if($nuonly eq 'false') {
-		    print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -depth $i_exon\n";
+		    if ($pe eq "true"){
+			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -depth $i_exon\n";
+		    }
+		    else {
+			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -rpf -depth $i_exon\n";
+		    }
 		} else {
-		    print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -NU-only -depth $i_exon\n";
+		    if ($pe eq "true"){
+			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -NU-only -depth $i_exon\n";
+		    }
+		    else{
+			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -NU-only -rpf -depth $i_exon\n";
+		    }
 		}
     } 
     else {
 	open(OUTFILE, ">$shdir/$shfile2");
 	if($nuonly eq 'false') {
-	    print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none\n";
-	}
+	    if ($pe eq "true"){
+		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none\n";
+	    }
+	    else {
+		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none -rpf\n";
+	    }
 	else{
-	    print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none -NU-only\n";
+	    if ($pe eq "true"){
+		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none -NU-only\n";
+	    }
+	    else{
+		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none -NU-only -rpf\n";
+	    }
 	}
     }
     close(OUTFILE);

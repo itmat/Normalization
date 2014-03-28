@@ -257,7 +257,8 @@ Run the following command with **&lt;output sam?> = false**. By default this wil
 * option:<br>
   **-NU-only** : set this for non-unique mappers<br>
   **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data 
 
 This will output `exonquants` file of all samples to `Unique` and/or `NU` directory in each sample directory.
 
@@ -321,6 +322,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
 * option:<br>
   **-depth &lt;n>** : by default, it will output 20 exonmappers<br>
   **-NU-only** : set this for non-unique mappers<br>
+  **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
   **-bsub** : set this if you want to submit batch jobs to LSF<br>
   **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
 
@@ -485,6 +487,7 @@ Run the following command with **&lt;output sam?> = false**. This will output me
 * &lt;output sam?> : false
 * option:<br>
   **-NU-only** : set this for non-unique mappers<br>
+  **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
   **-bsub** : set this if you want to submit batch jobs to LSF<br>
   **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
   			  
