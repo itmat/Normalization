@@ -86,40 +86,47 @@ while ($line1 = <INFILE>) {
     if(@a < 10) {
 	next;
     }
-    $reverse_only = "false";
-    $forward_only = "false";
-    if ($line1 eq '') {
-	last;
-    }
-    @a = split(/\t/,$line1);
-    $a[0] =~ /(\d+)/;
-    $seqnum1 = $1;
-    $chr = $a[2];
-    if($a[1] & 64) {
-	$type1 = "a";
-    } else {
-	$type1 = "b";
-	$reverse_only = "true";
-    }
-    if($reverse_only eq 'false') {
-	$line2 = <INFILE>;
-	chomp($line2);
-	@b = split(/\t/,$line2);
-	$b[0] =~ /(\d+)/;
-	$seqnum2 = $1;
-	if ($seqnum1 != $seqnum2) {
-	    $len = -1 * (1 + length($line2));
-	    seek(INFILE, $len, 1);
-	    $forward_only = "true";
+    if ($a[1] & 1){
+	$reverse_only = "false";
+	$forward_only = "false";
+	if ($line1 eq '') {
+	    last;
+	}
+	@a = split(/\t/,$line1);
+	$a[0] =~ /(\d+)/;
+	$seqnum1 = $1;
+	$chr = $a[2];
+	if($a[1] & 64) {
+	    $type1 = "a";
 	} else {
-	    if($b[1] & 128) {
-		$type2 = "b";
-	    } else {
-		$forward_only = "true";
+	    $type1 = "b";
+	    $reverse_only = "true";
+	}
+	if($reverse_only eq 'false') {
+	    $line2 = <INFILE>;
+	    chomp($line2);
+	    @b = split(/\t/,$line2);
+	    $b[0] =~ /(\d+)/;
+	    $seqnum2 = $1;
+	    if ($seqnum1 != $seqnum2) {
 		$len = -1 * (1 + length($line2));
 		seek(INFILE, $len, 1);
+		$forward_only = "true";
+	    } else {
+		if($b[1] & 128) {
+		    $type2 = "b";
+		} else {
+		    $forward_only = "true";
+		    $len = -1 * (1 + length($line2));
+		    seek(INFILE, $len, 1);
+		}
 	    }
 	}
+
+    }
+    else {
+	$forward_only = 'true';
+	$reverse_only = 'false';
     }
     if($forward_only eq 'false' && $reverse_only eq 'false') {
 	if($a[5] eq '*' && $b[5] eq '*') {
@@ -136,7 +143,6 @@ while ($line1 = <INFILE>) {
 	    $forward_only = 'true';
 	}
     }
-
     $cigar1 = &removeDs($a[5]);
     $cigar2 = &removeDs($b[5]);
     $spans1 = &cigar2spans($cigar1, $a[3]);

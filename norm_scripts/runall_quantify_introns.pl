@@ -16,8 +16,6 @@ option:
 
  -depth <n> : by default, it will output 10 intronmappers
  
- -se  : set this if the data is single end, otherwise by default it will assume it's a paired end data 
-
 ";
 }
 use Cwd 'abs_path';
@@ -27,7 +25,6 @@ $path =~ s/runall_//;
 $nuonly = 'false';
 $bsub = "false";
 $qsub = "false";
-$pe = "true";
 $numargs = 0;
 $i_intron = 10;
 for($i=4; $i<@ARGV; $i++) {
@@ -50,10 +47,6 @@ for($i=4; $i<@ARGV; $i++) {
 	$i_intron = $ARGV[$i+1];
 	$i++;
 	$option_found = "true";
-    }
-    if ($ARGV[$i] eq '-se'){
-        $pe = "false";
-        $option_found = "true";
     }
     if($option_found eq 'false') {
         die "arg \"$ARGV[$i]\" not recognized.\n";
@@ -119,22 +112,12 @@ while($line = <INFILE>) {
     $outfile =~ s/.sam/_intronquants/;
     if($outputsam eq "true") {
 	open(OUTFILE, ">$shdir/$shfile");
-	if ($pe eq 'true'){
-	    print OUTFILE "perl $path $introns $LOC/$dir/$filename $LOC/$dir/$outfile true -depth $i_intron\n";
-	}
-	else {
-	    print OUTFILE "perl $path $introns $LOC/$dir/$filename $LOC/$dir/$outfile true -depth $i_intron -se\n";	    
-	}
+	print OUTFILE "perl $path $introns $LOC/$dir/$filename $LOC/$dir/$outfile true -depth $i_intron\n";
 	close(OUTFILE);
     } 
     else {
 	open(OUTFILE, ">$shdir/$shfile2");
-	if ($pe eq 'true'){
-	    print OUTFILE "perl $path $introns $final_nexon_dir/$filename $final_nexon_dir/$outfile false\n";
-	}
-	else{
-	    print OUTFILE "perl $path $introns $final_nexon_dir/$filename $final_nexon_dir/$outfile false -se\n";
-	}
+	print OUTFILE "perl $path $introns $final_nexon_dir/$filename $final_nexon_dir/$outfile false\n";
 	close(OUTFILE);
     }
     if($outputsam eq "true") {
