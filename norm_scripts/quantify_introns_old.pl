@@ -15,22 +15,15 @@ option:
 
 -depth <n> : by default, it will output 10 intronmappers
 
--se : set this if the data is single end, otherwise by default it will assume it's a paired end data 
-
 ";
 }
 $i_intron = 10;
-$pe = "true";
 for($i=4; $i<@ARGV; $i++) {
     $arg_recognized = 'false';
     if($ARGV[$i] eq '-depth'){
 	$i_intron = $ARGV[$i+1];
 	$arg_recognized = 'true';
 	$i++;
-    }
-    if($ARGV[$i] eq '-se') {
-        $pe = 'false';
-        $arg_recognized = 'true';
     }
     if($arg_recognized eq 'false') {
 	die "arg \"$ARGV[$i]\" not recognized.\n";
@@ -102,37 +95,31 @@ while ($line1 = <INFILE>) {
     $a[0] =~ /(\d+)/;
     $seqnum1 = $1;
     $chr = $a[2];
-    if ($pe eq 'true'){
-	if($a[1] & 64) {
-	    $type1 = "a";
+    if($a[1] & 64) {
+	$type1 = "a";
+    } else {
+	$type1 = "b";
+	$reverse_only = "true";
+    }
+    if($reverse_only eq 'false') {
+	$line2 = <INFILE>;
+	chomp($line2);
+	@b = split(/\t/,$line2);
+	$b[0] =~ /(\d+)/;
+	$seqnum2 = $1;
+	if ($seqnum1 != $seqnum2) {
+	    $len = -1 * (1 + length($line2));
+	    seek(INFILE, $len, 1);
+	    $forward_only = "true";
 	} else {
-	    $type1 = "b";
-	    $reverse_only = "true";
-	}
-	if($reverse_only eq 'false') {
-	    $line2 = <INFILE>;
-	    chomp($line2);
-	    @b = split(/\t/,$line2);
-	    $b[0] =~ /(\d+)/;
-	    $seqnum2 = $1;
-	    if ($seqnum1 != $seqnum2) {
+	    if($b[1] & 128) {
+		$type2 = "b";
+	    } else {
+		$forward_only = "true";
 		$len = -1 * (1 + length($line2));
 		seek(INFILE, $len, 1);
-		$forward_only = "true";
-	    } else {
-		if($b[1] & 128) {
-		    $type2 = "b";
-		} else {
-		    $forward_only = "true";
-		    $len = -1 * (1 + length($line2));
-		    seek(INFILE, $len, 1);
-		}
 	    }
 	}
-    }
-    else{
-	$forward_only = 'true';
-	$reverse_only = 'false';
     }
     if($forward_only eq 'false' && $reverse_only eq 'false') {
 	if($a[5] eq '*' && $b[5] eq '*') {
