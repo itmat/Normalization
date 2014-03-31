@@ -123,7 +123,7 @@ while($line = <INFILE>) {
 	    print OUTFILE "perl $path $introns $LOC/$dir/$filename $LOC/$dir/$outfile true -depth $i_intron\n";
 	}
 	else {
-	    print OUTFILE "perl $path $introns $LOC/$dir/$filename $LOC/$dir/$outfile true -depth $i_intron\n -se";	    
+	    print OUTFILE "perl $path $introns $LOC/$dir/$filename $LOC/$dir/$outfile true -depth $i_intron -se\n";	    
 	}
 	close(OUTFILE);
     } 
@@ -133,7 +133,7 @@ while($line = <INFILE>) {
 	    print OUTFILE "perl $path $introns $final_nexon_dir/$filename $final_nexon_dir/$outfile false\n";
 	}
 	else{
-	    print OUTFILE "perl $path $introns $final_nexon_dir/$filename $final_nexon_dir/$outfile false\n -se";
+	    print OUTFILE "perl $path $introns $final_nexon_dir/$filename $final_nexon_dir/$outfile false -se\n";
 	}
 	close(OUTFILE);
     }
