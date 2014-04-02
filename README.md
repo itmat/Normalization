@@ -409,8 +409,10 @@ This identifies minimum line count of each type of exonmappers/intronmappers/int
 * option : <br>
   **-bsub** : set this if you want to submit batch jobs to LSF<br>
   **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-depthE &lt;n>** : set the exonmapper depth (by default, n = 20)<br>
-  **-depthI &lt;n>** : set the intronmapper depth (by default, n = 10)
+  **-depthE &lt;n>** : set the exonmapper depth (by default, n = 20). set this to 0 if you only want to return intronmappers and intergenic mappers<br>
+  **-depthI &lt;n>** : set the intronmapper depth (by default, n = 10). set this to 0 if you only want to return exonmappers<br>
+  **-u** : set this if you want to return only unique mappers, otherwise by default it will return both unique and non-uniqe mappers<br>
+  **-nu** :  set this if you want to return only non-unique mappers, otherwise by default it will return both unique and non-uniqe mappers
 
 This will output the same number of rows from each file in each `sample_dir/Unique` and/or `sample_dir/NU` directory of the same type.
 

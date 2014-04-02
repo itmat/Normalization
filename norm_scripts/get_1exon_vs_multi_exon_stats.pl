@@ -22,6 +22,7 @@ for($i=2; $i<@ARGV; $i++) {
     if($ARGV[$i] eq '-nu') {
         $U = "false";
         $option_found = "true";
+	$numargs++;
     }
     if($ARGV[$i] eq '-u') {
         $NU = "false";
@@ -94,8 +95,8 @@ while($line = <INFILE>){
 	    $xU =~ /(\d+)$/;
 	    $tot_nonexonU = $1;
 	    $ratioU = int($tot_exonU / ($tot_exonU + $tot_nonexonU) * 10000) / 100;
-	}
 	    print OUTU "$dir\t$ratioU\n";
+	}
 	if($NU eq "true") {
 	    $xNU = `head -1 $fileNU`;
 	    $xNU =~ /(\d+)$/;

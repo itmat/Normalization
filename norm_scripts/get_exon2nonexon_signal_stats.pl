@@ -23,6 +23,7 @@ for($i=2; $i<@ARGV; $i++) {
     if($ARGV[$i] eq '-nu') {
         $U = "false";
 	$option_found = "true";
+	$numargs++;
     }
     if($ARGV[$i] eq '-u') {
         $NU = "false";

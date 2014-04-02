@@ -21,6 +21,7 @@ for($i=2; $i<@ARGV; $i++) {
     $option_found = "false";
     if($ARGV[$i] eq '-nu') {
         $U = "false";
+	$numargs++;
         $option_found = "true";
     }
     if($ARGV[$i] eq '-u') {
