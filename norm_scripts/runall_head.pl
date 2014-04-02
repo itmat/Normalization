@@ -23,6 +23,10 @@ option:  -u  :  set this if you want to return only unique mappers, otherwise by
 
          -depthI <n> : This is the number of intronmappers file used for normalization.
                        By default, <n> = 10. 
+
+         -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at once.
+                           by default, <n> = 200.
+
 ";
 }
 $bsub = "false";
@@ -33,9 +37,18 @@ $numargs = 0;
 $numargs_n_nu = 0;
 $i_exon = 20;
 $i_intron = 10;
+$njobs = 200;
 for ($i=2; $i<@ARGV; $i++){
     $option_found = "false";
     $option_u_nu = "false";
+    if ($ARGV[$i] eq 'max_jobs'){
+	$option_found = "true";
+	$njobs = $ARGV[$i+1];
+        if ($njobs !~ /(\d+$)/ ){
+            die "-max_jobs <n> : <n> needs to be a number\n";
+        }
+        $i++;
+    }
     if ($ARGV[$i] eq '-u'){
 	$NU = "false";
 	$option_found = "true";
@@ -464,6 +477,10 @@ else{
     
 ##run head
 #exonmappers
+if ($njobs > 200){
+    $njobs = $njobs * 0.75;
+}
+
 for($i=1; $i<=$i_exon; $i++) {
     open(INFILE, $ARGV[0]);
     while($dirname = <INFILE>) {
@@ -487,9 +504,19 @@ for($i=1; $i<=$i_exon; $i++) {
 	    print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	    close(OUTFILEU);
 	    if ($bsub eq "true"){
-		`bsub -o $logdir/$id.exonmappers.u_head.$i.out -e $logdir/$id.exonmappers.u_head.$i.err sh $shfileU[$i]`;
+		$numq = `bjobs | grep "^[0-9]" | wc -l`; 
+		until ($numq < $njobs){
+		    $x = `bjobs | grep "^[0-9]" | wc -l`;
+		    $numq = $x;
+		}
+		`bsub -o $logdir/$id.exonmappers.u_head.$i.out -e $logdir/$id.exonmappers.u_head.$i.err sh $shfileU[$i]`
 	    }
 	    if ($qsub eq "true"){
+		$numq = `qstat | grep "^[0-9]" | wc -l`;
+		until ($numq < $njobs){
+		    $x = `qstat | grep "^[0-9]" | wc -l`;
+                    $numq = $x;
+		}
 		`qsub -cwd -N $dirname.exonmappers.u_head.$i -o $logdir -e $logdir $shfileU[$i]`;
 	    }
 	}
@@ -498,15 +525,27 @@ for($i=1; $i<=$i_exon; $i++) {
 	    print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	    close(OUTFILENU);
 	    if ($bsub eq "true"){
+		$numq = `bjobs | grep "^[0-9]" | wc -l`;
+		until ($numq < $njobs){
+		    $x = `bjobs | grep "^[0-9]" | wc -l`;
+		    $numq = $x;
+		}
 		`bsub -o $logdir/$id.exonmappers.nu_head.$i.out -e $logdir/$id.exonmappers.nu_head.$i.err sh $shfileNU[$i]`;
 	    }
 	    if ($qsub eq "true"){
+		$numq = `qstat | grep "^[0-9]" | wc -l`;
+		until ($numq < $njobs) {
+		    $x = `qstat | grep "^[0-9]" | wc -l`;
+                    $numq = $x;
+		}
 		`qsub -cwd -N $dirname.exonmappers.nu_head.$i -e $logdir -o $logdir $shfileNU[$i]`;
 	    }
 	}
+    
     }
-    close(INFILE);
 }
+close(INFILE);
+
 
 #intronmappers
 for($i=1; $i<=$i_intron; $i++) {
@@ -532,9 +571,19 @@ for($i=1; $i<=$i_intron; $i++) {
 	    print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	    close(OUTFILEU);
 	    if ($bsub eq "true"){
+		$numq = `bjobs | grep "^[0-9]" | wc -l`;
+		until ($numq < $njobs){
+		    $x = `bjobs | grep "^[0-9]" | wc -l`;
+                    $numq = $x;
+                }
 		`bsub -o $logdir/$id.intronmappers.u_head.$i.out -e $logdir/$id.intronmappers.u_head.$i.err sh $shfileU[$i]`;
 	    }
 	    if ($qsub eq "true"){
+		$numq = `qstat | grep "^[0-9]" | wc -l`;
+		until ($numq < $njobs){
+		    $x = `qstat | grep "^[0-9]" | wc -l`;
+		    $numq = $x;
+		}
 		`qsub -cwd -N $dirname.intronmappers.u_head.$i -o $logdir -e $logdir $shfileU[$i]`;
 	    }
 	}
@@ -543,9 +592,19 @@ for($i=1; $i<=$i_intron; $i++) {
 	    print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	    close(OUTFILENU);
 	    if ($bsub eq "true"){
+		$numq = `bjobs | grep "^[0-9]" | wc -l`;
+		until ($numq < $njobs){
+		    $x = `bjobs | grep "^[0-9]" | wc -l`;
+                    $numq = $x;
+                }
 		`bsub -o $logdir/$id.intronmappers.nu_head.$i.out -e $logdir/$id.intronmappers.nu_head.$i.err sh $shfileNU[$i]`;
 	    }
 	    if ($qsub eq "true"){
+		$numq = `qstat | grep "^[0-9]" | wc -l`;
+		until ($numq < $njobs){
+		    $x = `qstat | grep "^[0-9]" | wc -l`;
+		    $numq = $x;
+		}
 		`qsub -cwd -N $dirname.intronmappers.nu_head.$i -o $logdir -e $logdir $shfileNU[$i]`;
 	    }
 	}
@@ -574,9 +633,19 @@ while($dirname = <INFILE>) {
 	print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	close(OUTFILEU);
 	if ($bsub eq "true"){
+	    $numq = `bjobs | grep "^[0-9]" | wc -l`;
+	    until ($numq < $njobs){
+		$x = `bjobs | grep "^[0-9]" | wc -l`;
+		$numq = $x;
+	    }
 	    `bsub -o $logdir/$id.intergenic.u_head.out -e $logdir/$id.intergenic.u_head.err sh $shfileU`;
 	}
 	if ($qsub eq "true"){
+	    $numq = `qstat | grep "^[0-9]" | wc -l`;
+            until ($numq < $njobs){
+                $x = `qstat | grep "^[0-9]" | wc -l`;
+                $numq = $x;
+            }
 	    `qsub -cwd -N $dirname.intergenic.u_head -o $logdir -e $logdir $shfileU`;
 	}
     }
@@ -585,9 +654,19 @@ while($dirname = <INFILE>) {
 	print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	close(OUTFILENU);
 	if ($bsub eq "true"){
+	    $numq = `bjobs | grep "^[0-9]" | wc -l`;
+	    until ($numq < $njobs){
+		$x = `bjobs | grep "^[0-9]" | wc -l`;
+		$numq = $x;
+	    }
 	    `bsub -o $logdir/$id.intergenic.nu_head.out -e $logdir/$id.intergenic.nu_head.err sh $shfileNU`;
 	}
 	if ($qsub eq "true"){
+	    $numq = `qstat | grep "^[0-9]" | wc -l`;
+	    until ($numq < $njobs){
+                $x = `qstat | grep "^[0-9]" | wc -l`;
+                $numq = $x;
+            }
 	    `qsub -cwd -N $dirname.intergenic.nu_head -o $logdir -e $logdir $shfileNU`;
 	}
     }
