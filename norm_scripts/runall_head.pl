@@ -24,7 +24,7 @@ option:  -u  :  set this if you want to return only unique mappers, otherwise by
          -depthI <n> : This is the number of intronmappers file used for normalization.
                        By default, <n> = 10. 
 
-         -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at once.
+         -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                            by default, <n> = 200.
 
 ";
