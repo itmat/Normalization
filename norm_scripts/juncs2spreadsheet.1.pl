@@ -63,7 +63,7 @@ while ($file = <FILES>){
     $id =~ s/.FINAL.norm_u_junctions_all.rum//;
     $id =~ s/.FINAL.norm_u_junctions_all.rum//;
     $id =~ s/Sample_//;
-    $ID[$filecnt] = $1;
+    $ID[$filecnt] = $id;
     open(INFILE, $file);
     while($line = <INFILE>){
 	chomp($line);

@@ -66,10 +66,10 @@ if($type =~ /^exon/){
 	$id = $line;
 	$id =~ s/Sample_//;
 	if($nuonly eq "false"){
-	    print OUT "$exon_dir/Unique/$id.exonmappers.norm_u.exonquants\n";
+	    print OUT "$exon_dir/Unique/$id.exonmappers.norm_u_exonquants\n";
 	}
 	if($nuonly eq "true"){
-            print OUT "$exon_dir/NU/$id.exonmappers.norm_nu.exonquants\n";
+            print OUT "$exon_dir/NU/$id.exonmappers.norm_nu_exonquants\n";
 	}
     }
 }
@@ -81,10 +81,10 @@ if ($type =~ /^intron/){
 	$id = $line;
 	$id =~ s/Sample_//;
 	if($nuonly eq "false"){
-            print OUT "$nexon_dir/Unique/$id.intronmappers.norm_u.intronquants\n";
+            print OUT "$nexon_dir/Unique/$id.intronmappers.norm_u_intronquants\n";
 	}
 	if($nuonly eq "true"){
-	    print OUT "$nexon_dir/NU/$id.intronmappers.norm_nu.intronquants\n";
+	    print OUT "$nexon_dir/NU/$id.intronmappers.norm_nu_intronquants\n";
 	}
     }
 }
@@ -116,21 +116,21 @@ while($file = <FILES>) {
     @fields = split("/",$file);
     $size = @fields;
     $id = $fields[$size-1];
-    $id =~ s/.exonmappers.norm_u.exonquants//;
-    $id =~ s/.exonmappers.norm_nu.exonquants//;
-    $id =~ s/.intronmappers.norm_u.intronquants//;
-    $id =~ s/.intronmappers.norm_nu.intronquants//;
+    $id =~ s/.exonmappers.norm_u_exonquants//;
+    $id =~ s/.exonmappers.norm_nu_exonquants//;
+    $id =~ s/.intronmappers.norm_u_intronquants//;
+    $id =~ s/.intronmappers.norm_nu_intronquants//;
     $id =~ s/Sample_//;
-    $ID[$filecnt] = $1;
-    open(INFILE, $file_wp);
+    $ID[$filecnt] = $id;
+    open(INFILE, $file);
     $firstline = <INFILE>;
     $rowcnt = 0;
     while($line = <INFILE>) {
 	chomp($line);
+	@a = split(/\t/,$line);
 	if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
 	    next;
 	}
-	@a = split(/\t/,$line);
 	$DATA[$filecnt][$rowcnt] = $a[1];
 	$rowcnt++;
     }
