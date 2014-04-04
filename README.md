@@ -571,7 +571,7 @@ This will output `master_list_of_exons_counts` to `STUDY/NORMALIZED_DATA`.
 
 This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts` to `STUDY/NORMALIZED_DATA`.
 
-###8. [optional step] Data Visualization
+###8. Data Visualization
 
 Use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR.
 
@@ -596,6 +596,8 @@ Use sam2cov to create coverage files and upload them to a Genome Browser. Curren
   **-star** : set this if you used STAR to align your reads<br>
   **-bsub** : set this if you want to submit batch jobs to LSF<br>
   **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+
+This will output `*Unique.cov` and `*NU.cov` files of all samples to `STUDY/NORMALIZED_DATA/FINAL_SAM/MERGED` or `STUDY/NORMALIZED_DATA/FINAL_SAM/Unique` or `STUDY/NORMALIZED_DATA/FINAL_SAM/NU`.
 
 ###9. Clean Up
 #####A. Delete Intermediate SAM Files
