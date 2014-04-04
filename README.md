@@ -571,7 +571,33 @@ This will output `master_list_of_exons_counts` to `STUDY/NORMALIZED_DATA`.
 
 This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts` to `STUDY/NORMALIZED_DATA`.
 
-###8. Clean Up
+###8. [optional step] Data Visualization
+
+Use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR.
+
+#####A. Install [sam2cov](https://github.com/khayer/sam2cov/)
+
+     git clone https://github.com/khayer/sam2cov.git
+     cd sam2cov
+     make
+
+#####B. Create Coverage Files
+
+     perl runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov> [options]
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;fai file> : full path of fai file
+* &lt;sam2cov> : full path of sam2cov 
+* option : <br>
+  **-u** : set this if you want to use only unique mappers to generate coverage files, otherwise by default it will use merged(unique+non-unique) mappers<br>
+  **-nu** : set this if you want to use only non-unique mappers to generate coverage files, otherwise by default it will use merged(unique+non-unique) mappers<br>
+  **-rum** : set this if you used RUM to align your reads<br>
+  **-star** : set this if you used STAR to align your reads<br>
+  **-bsub** : set this if you want to submit batch jobs to LSF<br>
+  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+
+###9. Clean Up
 #####A. Delete Intermediate SAM Files
 
      perl cleanup.pl <sample dirs> <loc>
@@ -586,7 +612,7 @@ This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_intr
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * &lt;sam file name> : name of the alignment sam file (e.g. RUM.sam, Aligned.out.sam)
-* &lt;fai file> : fai file 
+* &lt;fai file> : full path of fai file 
 * option : <br>
   **-bsub** : set this if you want to submit batch jobs to LSF<br>
   **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
