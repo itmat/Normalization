@@ -264,6 +264,9 @@ $forwardonlyNU_percent = int($forwardonlyNU / $num_ids * 1000) / 10;
 $reverseonlyNU_percent = int($reverseonlyNU / $num_ids * 1000) / 10;
 $bothmappedNU_formatted = format_large_int($bothmappedNU);
 $bothmappedNU_percent = int($bothmappedNU / $num_ids * 1000) / 10;
+$atleastoneforwardorreverseNU = $bothmappedNU + $forwardonlyNU + $reverseonlyNU;
+$atleastoneforwardorreverseNU_formatted = format_large_int($atleastoneforwardorreverseNU);
+$atleastoneforwardorreverseNU_percent = int($atleastoneforwardorreverseNU / $num_ids * 1000) / 10;
 
 $total_forward = $bothmappedU + $forwardonlyU + $bothmappedNU + $forwardonlyNU;
 $total_forward_formatted = format_large_int($total_forward);
@@ -304,6 +307,7 @@ NON-UNIQUE MAPPERS
 Total number forward only ambiguous: $forwardonlyNU_formatted ($forwardonlyNU_percent%)
 Total number reverse only ambiguous: $reverseonlyNU_formatted ($reverseonlyNU_percent%)
 Total number consistent ambiguous: $bothmappedNU_formatted ($bothmappedNU_percent%)
+At least one of forward or reverse mapped: $atleastoneforwardorreverseNU_formatted ($atleastoneforwardorreverseNU_percent%)
 
 TOTAL
 -----

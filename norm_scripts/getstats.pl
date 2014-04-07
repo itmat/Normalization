@@ -56,6 +56,20 @@ while($dir = <DIRS>) {
     $min_utotal_f_or_r_cons = $UTOTAL_F_or_R_CONS;
     $min_utotal_f_or_r_cons =~ s/,//g;
 
+    $x = `grep "At least one of forward or reverse mapped" $filename | head -2 | tail -1`;
+    chomp($x);
+    $x =~ /([\d,]+)/;
+    $y = $1;
+    $x =~ s/[^\d.%)(]//g;
+    $x =~ s/^(\d+)//;
+    $NUTOTAL_F_or_R = $1;
+    $NUTOTAL_F_or_R =~ s/,//g;
+    $x =~ s/\(//;
+    $x =~ s/\)//;
+    $NUandAtLeastOneMapped{$dir} = "$y ($x)";
+    $min_nutotal_f_or_r = $NUTOTAL_F_or_R;
+    $min_nutotal_f_or_r =~ s/,//g;
+
     $x = `grep "At least one of forward or reverse mapped" $filename | tail -1`;
     chomp($x);
     $x =~ /([\d,]+)/;
@@ -73,10 +87,10 @@ while($dir = <DIRS>) {
     chomp($x);
     $x =~ s/^.*: //;
     $x =~ /^(.*) /;
-    $NUTOTAL_F_or_R = $1;
-    $NUTOTAL_F_or_R =~ s/,//g;
-    $NUandAtLeastOneMapped{$dir} = $x;
-    $min_nutotal = $NUTOTAL_F_or_R;
+    $NUTOTAL_F_and_R = $1;
+    $NUTOTAL_F_and_R =~ s/,//g;
+    $NUandFRconsistently{$dir} = $x;
+    $min_nutotal = $NUTOTAL_F_and_R;
     $min_nutotal =~ s/,//g;
 
     $x = `grep "do overlap" $filename | head -1`;
@@ -111,9 +125,15 @@ while($dir = <DIRS>) {
     @a1 = split(/\t/,$x);
     $a1[1] =~ s/[^\d]//g;
     $x = $a1[1];
+    if ($x eq ''){
+	$x = '0';
+    }
     $y = int($x / $UTOTAL_F_or_R_CONS * 1000) / 10;
     $min_chrm = $x;
     $x2 = &format_large_int($x);
+    if ($x2 eq ''){
+	$x2 = '0';
+    }
     $UchrM{$dir} = "$x2 ($y%)";
 }
 
@@ -126,10 +146,10 @@ $max6 = 0;
 
 $outfile = "$LOC/mappingstats_summary.txt";
 open(OUT, ">$outfile");
-#print OUT "id\ttotal\t!<>\t!<|>\t!chrM(%!)\t\%overlap\t~!<|>\t<|>\n";
-print OUT "id\ttotalreads\tUniqueFWDandREV\tUniqueFWDorREV\tUniqueChrM\t%overlap\tNon-UniqueFWDorREV\tFWDorREVmapped\n";
+#print OUT "id\ttotal\t!<>\t!<|>\t!chrM(%!)\t\%overlap\t~!<>\t~!<|>\t<|>\n";
+print OUT "id\ttotalreads\tUniqueFWDandREV\tUniqueFWDorREV\tUniqueChrM\t%overlap\tNon-UniqueFWDandREV\tNon-UniqueFWDorREV\tFWDorREVmapped\n";
 foreach $dir (keys %UchrM) {
-    print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$UchrM{$dir}\t$Pover{$dir}\%\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped{$dir}\n";
+    print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$UchrM{$dir}\t$Pover{$dir}\%\t$NUandFRconsistently{$dir}\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped{$dir}\n";
     $x = $total{$dir};
     $x =~ s/,//g;
     if($x < $min_total) {
@@ -189,7 +209,7 @@ foreach $dir (keys %UchrM) {
 	$max_pover = $x;
     }
 
-    $x = $NUandAtLeastOneMapped{$dir};
+    $x = $NUandFRconsistently{$dir};
     $x =~ s/ \(.*//;
     $x =~ s/,//g;
     if($x < $min_nutotal) {
@@ -199,6 +219,15 @@ foreach $dir (keys %UchrM) {
 	$max_nutotal = $x;
     }
 
+    $x = $NUandAtLeastOneMapped{$dir};
+    $x =~ s/ \(.*//;
+    $x =~ s/,//g;
+    if($x < $min_nutotal_f_or_r) {
+	$min_nutotal_f_or_r = $x;
+    }
+    if($x > $max_nutotal_f_or_r) {
+	$max_nutotal_f_or_r = $x;
+    }
 
 }
 $min_total = &format_large_int($min_total);
@@ -206,15 +235,17 @@ $min_total_frcons = &format_large_int($min_total_frcons);
 $min_utotal_f_or_r_cons = &format_large_int($min_utotal_f_or_r_cons);
 $min_nutotal = &format_large_int($min_nutotal);
 $min_total_UorNU = &format_large_int($min_total_UorNU);
+$min_nutotal_f_or_r = &format_large_int($min_nutotal_f_or_r);
 $min_chrm = &format_large_int($min_chrm);
-print OUT "mins\t$min_total\t$min_total_frcons\t$min_utotal_f_or_r_cons\t$min_chrm\t$min_pover\%\t$min_nutotal\t$min_total_UorNU\n";
+print OUT "mins\t$min_total\t$min_total_frcons\t$min_utotal_f_or_r_cons\t$min_chrm\t$min_pover\%\t$min_nutotal\t$min_nutotal_f_or_r\t$min_total_UorNU\n";
 $max_total = &format_large_int($max_total);
 $max_total_frcons = &format_large_int($max_total_frcons);
 $max_utotal_f_or_r_cons = &format_large_int($max_utotal_f_or_r_cons);
 $max_nutotal = &format_large_int($max_nutotal);
+$max_nutotal_f_or_r = &format_large_int($max_nutotal_f_or_r);
 $max_total_UorNU = &format_large_int($max_total_UorNU);
 $max_chrm = &format_large_int($max_chrm);
-print OUT "maxs\t$max_total\t$max_total_frcons\t$max_utotal_f_or_r_cons\t$max_chrm\t$max_pover\%\t$max_nutotal\t$max_total_UorNU\n";
+print OUT "maxs\t$max_total\t$max_total_frcons\t$max_utotal_f_or_r_cons\t$max_chrm\t$max_pover\%\t$max_nutotal\t$max_nutotal_f_or_r\t$max_total_UorNU\n";
 
 sub format_large_int () {
     ($int) = @_;
@@ -231,6 +262,7 @@ sub format_large_int () {
     }
     $newint =~ s/^,//;
     return $newint;
+
 }
 
 
