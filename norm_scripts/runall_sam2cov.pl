@@ -134,10 +134,10 @@ while($line =  <INFILE>){
     }
     close(OUTFILE);
     if ($bsub eq "true"){
-	`bsub -o $logdir/$id.sam2cov.out -e $logdir/$id.sam2cov.err sh $shdir/$shfile`;
+	`bsub -q max_mem30 -o $logdir/$id.sam2cov.out -e $logdir/$id.sam2cov.err sh $shdir/$shfile`;
     }
     if ($qsub eq "true"){
-	`qsub -cwd -N $dir.sam2cov -o $logdir -e $logdir $shfile`;
+	`qsub -cwd -l h_vmem=16G -N $dir.sam2cov -o $logdir -e $logdir $shfile`;
     }
 }
 close(INFILE);
