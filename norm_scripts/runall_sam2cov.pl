@@ -89,11 +89,16 @@ $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 @fields = split("/", $LOC);
 $last_dir = $fields[@fields-1];
+$study = $fields[@fields-2];
 $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 $shdir = $study_dir . "shell_scripts";
 $logdir = $study_dir . "logs";
 $norm_dir = $study_dir . "NORMALIZED_DATA";
+$cov_dir = $norm_dir . "/COV";
+unless (-d $cov_dir){
+    `mkdir $cov_dir`;
+}
 $finalsam_dir = "$norm_dir/FINAL_SAM";
 $final_U_dir = "$finalsam_dir/Unique";
 $final_NU_dir = "$finalsam_dir/NU";
@@ -109,35 +114,44 @@ while($line =  <INFILE>){
     $id =~ s/Sample_//;
     if ($numargs_u_nu eq '0'){
 	$filename = "$final_M_dir/$id.FINAL.norm.sam";
-	$prefix = $filename;
+	unless (-d "$cov_dir/MERGED"){
+	    `mkdir "$cov_dir/MERGED"`;
+	}
+	$prefix = "$cov_dir/MERGED/$id.FINAL.norm.sam";
 	$prefix =~ s/norm.sam//;
     }
     else {
 	if ($U eq 'true'){
 	    $filename = "$final_U_dir/$id.FINAL.norm_u.sam";
-	    $prefix = $filename;
+	    unless (-d "$cov_dir/Unique"){
+		`mkdir "$cov_dir/Unique"`;
+	    }
+	    $prefix = "$cov_dir/Unique/$id.FINAL.norm_u.sam";
 	    $prefix =~ s/norm_u.sam//;
 	}
 	if ($NU eq 'true'){
 	    $filename = "$final_NU_dir/$id.FINAL.norm_nu.sam";
-	    $prefix = $filename;
+	    unless (-d "$cov_dir/NU"){
+		`mkdir "$cov_dir/NU"`;
+	    }
+	    $prefix = "$cov_dir/NU/$id.FINAL.norm_nu.sam";
 	    $prefix =~ s/norm_nu.sam//;
 	}
     }
     $shfile = "C.$id.sam2cov.sh";
     open(OUTFILE, ">$shdir/$shfile");
     if ($rum eq 'true'){
-	print OUTFILE "$sam2cov -r 1 -u -p $prefix $fai_file $filename"; 
+	print OUTFILE "$sam2cov -r 1 -e 0 -u -p $prefix $fai_file $filename"; 
     }
     if ($star eq 'true'){
-	print OUTFILE "$sam2cov -u -p $prefix $fai_file $filename"; 
+	print OUTFILE "$sam2cov -u -e 0 -p $prefix $fai_file $filename"; 
     }
     close(OUTFILE);
     if ($bsub eq "true"){
-	`bsub -q max_mem30 -o $logdir/$id.sam2cov.out -e $logdir/$id.sam2cov.err sh $shdir/$shfile`;
+	`bsub -J "$study.sam2cov" -q max_mem30 -o $logdir/$id.sam2cov.out -e $logdir/$id.sam2cov.err sh $shdir/$shfile`;
     }
     if ($qsub eq "true"){
-	`qsub -cwd -l h_vmem=16G -N $dir.sam2cov -o $logdir -e $logdir $shfile`;
+	`qsub -cwd -l h_vmem=16G -N $study.sam2cov.$dir -o $logdir -e $logdir $shfile`;
     }
 }
 close(INFILE);
