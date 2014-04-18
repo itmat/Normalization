@@ -1,39 +1,60 @@
 if (@ARGV<4){
-  die "usage: runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov> [options]
+  $USAGE = "\nUsage: runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov> [options]
 
 <sample dirs> is  a file of sample directories with alignment output without path
 <loc> is where the sample directories are
 <fai file> fai file (full path)
 <sam2cov> is full path of sam2cov
 
-***Sam files produced by aligners other than STAR and RUM are currently not supported
+***Sam files produced by aligners other than STAR and RUM are currently not supported***
 
-option:  -u  :  set this if you want to use only unique mappers to generate coverage files, 
-                otherwise by default it will use merged(unique+non-unique) mappers.
+option:  
+ -u  :  set this if you want to use only unique mappers to generate coverage files, 
+        otherwise by default it will use merged(unique+non-unique) mappers.
 
-         -nu  :  set this if you want to use only non-unique mappers to generate coverage files,
-                 otherwise by default it will use merged(unique+non-unique) mappers.
+ -nu  :  set this if you want to use only non-unique mappers to generate coverage files,
+         otherwise by default it will use merged(unique+non-unique) mappers.
 
-         -rum  :  set this if you used RUM to align your reads 
+ -rum  :  set this if you used RUM to align your reads 
 
-         -star  : set this if you used STAR to align your reads 
+ -star  : set this if you used STAR to align your reads 
 
-         -bsub : set this if you want to submit batch jobs to LSF.
+ -pmacs : set this if you want to submit batch jobs to PMACS cluster (LSF).
 
-         -qsub : set this if you want to submit batch jobs to Sun Grid Engine.
+ -pgfi : set this if you want to submit batch jobs to PGFI cluster (Sun Grid Engine).
 
+ -other <submit> <jobname_option> <request_memory_option> <queue_name_for_15G>:
+        set this if you're not on PMACS (LSF) or PGFI (SGE) cluster.
+
+        <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
+        <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
+        <request_memory_option> : is option for requesting resources for batch job submission command
+                                  (e.g. -q, -l h_vmem=)
+        <queue_name_for_15G> : is queue name for 15G (e.g. max_mem30, 15G)
+
+ -mem <s> : set this if your job requires more memory.
+            <s> is the queue name for required mem.
+            Default: 15G
+
+ -h : print usage
 
 ";
+  die $USAGE;
 }
-$bsub = "false";
-$qsub = "false";
-$numargs = 0;
 $numargs_a = 0;
 $numargs_u_nu = 0;
 $U = "true";
 $NU = "true";
 $star = "false";
 $rum = "false";
+
+$replace_mem = "false";
+$numargs = 0;
+$submit = "";
+$jobname_option = "";
+$request_memory_option = "";
+$mem = "";
+$help = "false";
 for ($i=4; $i<@ARGV; $i++){
     $option_found = "false";
     if($ARGV[$i] eq '-nu') {
@@ -46,16 +67,6 @@ for ($i=4; $i<@ARGV; $i++){
         $numargs_u_nu++;
         $option_found = "true";
     }
-    if ($ARGV[$i] eq '-bsub'){
-	$bsub = "true";
-	$numargs++;
-	$option_found = "true";
-    }
-    if ($ARGV[$i] eq '-qsub'){
-	$qsub = "true";
-	$numargs++;
-	$option_found = "true";
-    }
     if ($ARGV[$i] eq '-star'){
         $star = "true";
         $numargs_a++;
@@ -66,13 +77,69 @@ for ($i=4; $i<@ARGV; $i++){
         $numargs_a++;
         $option_found = "true";
     }
+    if ($ARGV[$i] eq '-h'){
+        $option_found = "true";
+        $help = "true";
+    }
+    if ($ARGV[$i] eq '-pmacs'){
+        $numargs++;
+        $option_found = "true";
+        $submit = "bsub";
+        $jobname_option = "-J";
+	$request_memory_option = "-q";
+        $mem = "max_mem30";
+    }
+    if ($ARGV[$i] eq '-pgfi'){
+        $numargs++;
+        $option_found = "true";
+        $submit = "qsub -cwd";
+        $jobname_option = "-N";
+        $request_memory_option = "-l h_vmem=";
+        $mem = "15G";
+    }
+    if ($ARGV[$i] eq '-other'){
+        $numargs++;
+        $option_found = "true";
+        $submit = $ARGV[$i+1];
+        $jobname_option = $ARGV[$i+2];
+        $request_memory_option = $ARGV[$i+3];
+        $mem = $ARGV[$i+4];
+        $i++;
+	$i++;
+        $i++;
+        $i++;
+        if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem eq ""){
+            die "please provide <submit>, <jobname_option>, and <request_memory_option> <queue_name_for_15G>\n";
+        }
+        if ($submit eq "-pmacs" | $submit eq "-pgfi"){
+            die "you have to specify how you want to submit batch jobs. choose -pmacs, -pgfi, or -other <submit> <jobname_option> <request_memory_option> <queue_name_for_15G>.\n";
+        }
+    }
+    if ($ARGV[$i] eq '-mem'){
+        $option_found = "true";
+        $new_mem = $ARGV[$i+1];
+        $replace_mem = "true";
+        $i++;
+        if ($new_mem eq ""){
+            die "please provide a queue name.\n";
+        }
+    }
     if ($option_found eq "false"){
 	die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
+if ($help eq 'true'){
+    die $USAGE;
+}
+
 if($numargs ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose either -bsub or -qsub.\n
+    die "you have to specify how you want to submit batch jobs. choose -pmacs, -pgfi, or -other <submit> <jobname_option> <request_memory_option> <queue_name_for_15\
+G>.\n
 ";
+}
+
+if ($replace_mem eq "true"){
+    $mem = $new_mem;
 }
 
 if($numargs_u_nu > 1) {
@@ -139,6 +206,8 @@ while($line =  <INFILE>){
 	}
     }
     $shfile = "C.$id.sam2cov.sh";
+    $jobname = "$study.sam2cov";
+    $logname = "$logdir/sam2cov.$id";
     open(OUTFILE, ">$shdir/$shfile");
     if ($rum eq 'true'){
 	print OUTFILE "$sam2cov -r 1 -e 0 -u -p $prefix $fai_file $filename"; 
@@ -147,12 +216,7 @@ while($line =  <INFILE>){
 	print OUTFILE "$sam2cov -u -e 0 -p $prefix $fai_file $filename"; 
     }
     close(OUTFILE);
-    if ($bsub eq "true"){
-	`bsub -J "$study.sam2cov" -q max_mem30 -o $logdir/$id.sam2cov.out -e $logdir/$id.sam2cov.err sh $shdir/$shfile`;
-    }
-    if ($qsub eq "true"){
-	`qsub -cwd -l h_vmem=16G -N $study.sam2cov.$dir -o $logdir -e $logdir $shfile`;
-    }
+    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shdir/$shfile`;
 }
 close(INFILE);
 
