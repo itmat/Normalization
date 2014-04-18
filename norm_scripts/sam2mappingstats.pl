@@ -1,4 +1,4 @@
-
+#!/usr/bin/env perl
 if(@ARGV < 2) {
     die "Usage: perl sam2mappingstats.pl <sam file> <outfilename> [options]
 

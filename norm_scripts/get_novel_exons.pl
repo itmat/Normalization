@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<2) {
     die "Usage: perl get_novel_exons.pl <junctions_all.rum file> <output file>[options]
 

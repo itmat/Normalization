@@ -1,47 +1,61 @@
-if(@ARGV < 2) {
-    die "usage: perl runall_head.pl <dirs> <loc> [options]
+#!/usr/bin/env perl
+
+$USAGE =  "\nUsage: perl runall_head.pl <sample_dirs> <loc> [options]
 
 where
-<dirs> is directory names without path
-<loc> is the path to the sample directories
+<sample_dirs> is the name of a file with the names of the sample directories (no paths)
+<loc> is the path to the dir with the sample dirs
 
 will output the same number of rows from each file in <loc>/<dirs>/Unique
 of the same type. (ditto for NU)
 
 The output file names will be modified from the input file names.
 
-option:  -u  :  set this if you want to return only unique mappers, otherwise by default it will return both unique and non-unique mappers
+option:  
+ -u  :  set this if you want to return only unique mappers, otherwise by default it will return both unique and non-unique mappers
 
-         -nu  :  set this if you want to return only non-unique mappers, otherwise by default it will return both unique and non-unique mappers
+ -nu  :  set this if you want to return only non-unique mappers, otherwise by default it will return both unique and non-unique mappers
 
-         -bsub : set this if you want to submit batch jobs to LSF.
+ -depthE <n> : This is the number of exonmappers file used for normalization.
+               By default, <n> = 20.
 
-         -qsub : set this if you want to submit batch jobs to Sun Grid Engine.
+ -depthI <n> : This is the number of intronmappers file used for normalization.
+               By default, <n> = 10. 
 
-         -depthE <n> : This is the number of exonmappers file used for normalization.
-                       By default, <n> = 20.
+ -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
+                   by default, <n> = 200.
 
-         -depthI <n> : This is the number of intronmappers file used for normalization.
-                       By default, <n> = 10. 
+ -pmacs : set this if you want to submit batch jobs to PMACS cluster (LSF).
 
-         -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
-                           by default, <n> = 200.
+ -pgfi : set this if you want to submit batch jobs to PGFI cluster (Sun Grid Engine).
+
+ -other <submit> <jobname_option>:
+        set this if you're not on PMACS (LSF) or PGFI (SGE) cluster.
+
+        <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
+        <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
+
+ -h : print usage
 
 ";
+if (@ARGV <2){
+    die $USAGE;
 }
-$bsub = "false";
-$qsub = "false";
+
 $U = 'true';
 $NU = 'true';
-$numargs = 0;
 $numargs_n_nu = 0;
 $i_exon = 20;
 $i_intron = 10;
 $njobs = 200;
+
+$submit = "";
+$jobname_option = "";
+$numargs = 0;
 for ($i=2; $i<@ARGV; $i++){
     $option_found = "false";
     $option_u_nu = "false";
-    if ($ARGV[$i] eq 'max_jobs'){
+    if ($ARGV[$i] eq '-max_jobs'){
 	$option_found = "true";
 	$njobs = $ARGV[$i+1];
         if ($njobs !~ /(\d+$)/ ){
@@ -61,16 +75,6 @@ for ($i=2; $i<@ARGV; $i++){
 	$option_u_nu = "true";
 	$numargs_u_nu++;
     }
-    if ($ARGV[$i] eq '-bsub'){
-	$bsub = "true";
-	$numargs++;
-	$option_found = "true";
-    }
-    if ($ARGV[$i] eq '-qsub'){
-	$qsub = "true";
-	$numargs++;
-	$option_found = "true";
-    }
     if ($ARGV[$i] eq '-depthE'){
 	$i_exon = $ARGV[$i+1];
 	if ($i_exon !~ /(\d+$)/ ){
@@ -87,13 +91,42 @@ for ($i=2; $i<@ARGV; $i++){
 	$i++;
 	$option_found = "true";
     }
+    if ($ARGV[$i] eq '-h'){
+        $option_found = "true";
+	die $USAGE;
+    }
+    if ($ARGV[$i] eq '-pmacs'){
+        $numargs++;
+        $option_found = "true";
+        $submit = "bsub";
+        $jobname_option = "-J";
+    }
+    if ($ARGV[$i] eq '-pgfi'){
+        $numargs++;
+        $option_found = "true";
+        $submit = "qsub -cwd";
+	$jobname_option = "-N";
+    }
+    if ($ARGV[$i] eq '-other'){
+        $numargs++;
+        $option_found = "true";
+        $submit = $ARGV[$i+1];
+        $jobname_option = $ARGV[$i+2];
+        $i++;
+        $i++;
+        if ($submit =~ /^-/ | $submit eq "" | $jobname_option eq ""){
+            die "please provide <submit>, <jobname_option>\n";
+        }
+        if ($submit eq "-pmacs" | $submit eq "-pgfi"){
+	    die "you have to specify how you want to submit batch jobs. choose -pmacs, -pgfi, or -other <submit> <jobname_option>.\n";
+        }
+    }
     if ($option_found eq "false"){
 	die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
 if($numargs ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose either -bsub or -qsub.\n
-";
+    die "you have to specify how you want to submit batch jobs. choose -pmacs, -pgfi, or -other <submit> <jobname_option>.\n";
 }
 if($numargs_u_nu > 1) {
     die "you cannot specify both -u and -nu, it will output both unique
@@ -101,12 +134,12 @@ and non-unique by default so if that's what you want don't use either arg
 -u or -nu.
 ";
 }
-#print "$i_exon\t$i_intron\n";
 
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 @fields = split("/", $LOC);
 $last_dir = $fields[@fields-1];
+$study = $fields[@fields-2];
 $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 $shdir = $study_dir . "shell_scripts";
@@ -499,49 +532,33 @@ for($i=1; $i<=$i_exon; $i++) {
 	$dirNU = $dirname . "/NU";
 	$shfileU[$i] = "$shdir/a" . $id . "exonmappers.u_runhead.$i.sh";
 	$shfileNU[$i] = "$shdir/a" . $id . "exonmappers.nu_runhead.$i.sh";
+	$jobname = "$study.head";
+	$lognameU[$i] = "$logdir/exonmappers.$id.u_head.$i";
+	$lognameNU[$i] = "$logdir/exonmappers.$id.nu_head.$i";
 	if($exonuniques eq 'true') {
 	    open(OUTFILEU, ">$shfileU[$i]");
 	    print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	    close(OUTFILEU);
-	    if ($bsub eq "true"){
-		$numq = `bjobs | grep "^[0-9]" | wc -l`; 
-		until ($numq < $njobs){
-		    $x = `bjobs | grep "^[0-9]" | wc -l`;
-		    $numq = $x;
-		}
-		`bsub -o $logdir/$id.exonmappers.u_head.$i.out -e $logdir/$id.exonmappers.u_head.$i.err sh $shfileU[$i]`
+	    $numq = `bjobs | grep "^[0-9]" | wc -l`;
+	    until ($numq < $njobs){
+		$x = `bjobs | grep "^[0-9]" | wc -l`;
+		$numq = $x;
+		sleep(10);
 	    }
-	    if ($qsub eq "true"){
-		$numq = `qstat | grep "^[0-9]" | wc -l`;
-		until ($numq < $njobs){
-		    $x = `qstat | grep "^[0-9]" | wc -l`;
-                    $numq = $x;
-		}
-		`qsub -cwd -N $dirname.exonmappers.u_head.$i -o $logdir -e $logdir $shfileU[$i]`;
-	    }
+	    `$submit $jobname_option $jobname -o $lognameU[$i].out -e $lognameU[$i].err < $shfileU[$i]`;
 	}
 	if($exonnu eq 'true') {
 	    open(OUTFILENU, ">$shfileNU[$i]");
 	    print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	    close(OUTFILENU);
-	    if ($bsub eq "true"){
-		$numq = `bjobs | grep "^[0-9]" | wc -l`;
-		until ($numq < $njobs){
-		    $x = `bjobs | grep "^[0-9]" | wc -l`;
-		    $numq = $x;
-		}
-		`bsub -o $logdir/$id.exonmappers.nu_head.$i.out -e $logdir/$id.exonmappers.nu_head.$i.err sh $shfileNU[$i]`;
-	    }
-	    if ($qsub eq "true"){
-		$numq = `qstat | grep "^[0-9]" | wc -l`;
-		until ($numq < $njobs) {
-		    $x = `qstat | grep "^[0-9]" | wc -l`;
-                    $numq = $x;
-		}
-		`qsub -cwd -N $dirname.exonmappers.nu_head.$i -e $logdir -o $logdir $shfileNU[$i]`;
-	    }
+            $numq = `bjobs | grep "^[0-9]" | wc -l`;
+            until ($numq < $njobs){
+                $x = `bjobs | grep "^[0-9]" | wc -l`;
+                $numq = $x;
+                sleep(10);
+            }
+	    `$submit $jobname_option $jobname -o $lognameNU[$i].out -e $lognameNU[$i].err < $shfileNU[$i]`;
 	}
-    
     }
 }
 close(INFILE);
@@ -566,47 +583,32 @@ for($i=1; $i<=$i_intron; $i++) {
 	$dirNU = $dirname . "/NU";
 	$shfileU[$i] = "$shdir/a" . $id . "intronmappers.u_runhead.$i.sh";
 	$shfileNU[$i] = "$shdir/a" . $id . "intronmappers.nu_runhead.$i.sh";
+	$jobname = "$study.head";
+	$lognameU[$i] = "$logdir/intronmappers.$id.u_head.$i";
+	$lognameNU[$i] = "$logdir/intronmappers.$id.nu_head.$i";
 	if($intronuniques eq 'true') {
 	    open(OUTFILEU, ">$shfileU[$i]");
 	    print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	    close(OUTFILEU);
-	    if ($bsub eq "true"){
-		$numq = `bjobs | grep "^[0-9]" | wc -l`;
-		until ($numq < $njobs){
-		    $x = `bjobs | grep "^[0-9]" | wc -l`;
-                    $numq = $x;
-                }
-		`bsub -o $logdir/$id.intronmappers.u_head.$i.out -e $logdir/$id.intronmappers.u_head.$i.err sh $shfileU[$i]`;
+	    $numq = `bjobs | grep "^[0-9]" | wc -l`;
+	    until ($numq < $njobs){
+		$x = `bjobs | grep "^[0-9]" | wc -l`;
+		$numq = $x;
+		sleep(10);
 	    }
-	    if ($qsub eq "true"){
-		$numq = `qstat | grep "^[0-9]" | wc -l`;
-		until ($numq < $njobs){
-		    $x = `qstat | grep "^[0-9]" | wc -l`;
-		    $numq = $x;
-		}
-		`qsub -cwd -N $dirname.intronmappers.u_head.$i -o $logdir -e $logdir $shfileU[$i]`;
-	    }
+	    `$submit $jobname_option $jobname -o $lognameU[$i].out -e $lognameU[$i].err < $shfileU[$i]`;
 	}
 	if($intronnu eq 'true') {
 	    open(OUTFILENU, ">$shfileNU[$i]");
 	    print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	    close(OUTFILENU);
-	    if ($bsub eq "true"){
-		$numq = `bjobs | grep "^[0-9]" | wc -l`;
-		until ($numq < $njobs){
-		    $x = `bjobs | grep "^[0-9]" | wc -l`;
-                    $numq = $x;
-                }
-		`bsub -o $logdir/$id.intronmappers.nu_head.$i.out -e $logdir/$id.intronmappers.nu_head.$i.err sh $shfileNU[$i]`;
-	    }
-	    if ($qsub eq "true"){
-		$numq = `qstat | grep "^[0-9]" | wc -l`;
-		until ($numq < $njobs){
-		    $x = `qstat | grep "^[0-9]" | wc -l`;
-		    $numq = $x;
-		}
-		`qsub -cwd -N $dirname.intronmappers.nu_head.$i -o $logdir -e $logdir $shfileNU[$i]`;
-	    }
+	    $numq = `bjobs | grep "^[0-9]" | wc -l`;
+            until ($numq < $njobs){
+                $x = `bjobs | grep "^[0-9]" | wc -l`;
+                $numq = $x;
+		sleep(10);
+            }
+            `$submit $jobname_option $jobname -o $lognameNU[$i].out -e $lognameNU[$i].err < $shfileNU[$i]`;
 	}
     }
     close(INFILE);
@@ -628,47 +630,31 @@ while($dirname = <INFILE>) {
     $dirNU = $dirname . "/NU";
     $shfileU = "$shdir/a" . $id . "intergenic.u_runhead.sh";
     $shfileNU = "$shdir/a" . $id . "intergenic.nu_runhead.sh";
+    $jobname = "$study.head";
+    $lognameU = "$logdir/intergenic.$id.u_head";
+    $lognameNU = "$logdir/intergenic.$id.nu_head";
     if($iguniques eq 'true') {
 	open(OUTFILEU, ">$shfileU");
 	print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	close(OUTFILEU);
-	if ($bsub eq "true"){
-	    $numq = `bjobs | grep "^[0-9]" | wc -l`;
-	    until ($numq < $njobs){
-		$x = `bjobs | grep "^[0-9]" | wc -l`;
-		$numq = $x;
-	    }
-	    `bsub -o $logdir/$id.intergenic.u_head.out -e $logdir/$id.intergenic.u_head.err sh $shfileU`;
+	$numq = `bjobs | grep "^[0-9]" | wc -l`;
+	until ($numq < $njobs){
+	    $x = `bjobs | grep "^[0-9]" | wc -l`;
+	    $numq = $x;
+	    sleep(10);
 	}
-	if ($qsub eq "true"){
-	    $numq = `qstat | grep "^[0-9]" | wc -l`;
-            until ($numq < $njobs){
-                $x = `qstat | grep "^[0-9]" | wc -l`;
-                $numq = $x;
-            }
-	    `qsub -cwd -N $dirname.intergenic.u_head -o $logdir -e $logdir $shfileU`;
-	}
+	`$submit $jobname_option $jobname -o $lognameU.out -e $lognameU.err < $shfileU`;
     }
     if($ignu eq 'true') {
 	open(OUTFILENU, ">$shfileNU");
 	print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	close(OUTFILENU);
-	if ($bsub eq "true"){
-	    $numq = `bjobs | grep "^[0-9]" | wc -l`;
-	    until ($numq < $njobs){
-		$x = `bjobs | grep "^[0-9]" | wc -l`;
-		$numq = $x;
-	    }
-	    `bsub -o $logdir/$id.intergenic.nu_head.out -e $logdir/$id.intergenic.nu_head.err sh $shfileNU`;
-	}
-	if ($qsub eq "true"){
-	    $numq = `qstat | grep "^[0-9]" | wc -l`;
-	    until ($numq < $njobs){
-                $x = `qstat | grep "^[0-9]" | wc -l`;
-                $numq = $x;
-            }
-	    `qsub -cwd -N $dirname.intergenic.nu_head -o $logdir -e $logdir $shfileNU`;
-	}
+	until ($numq < $njobs){
+            $x = `bjobs | grep "^[0-9]" | wc -l`;
+            $numq = $x;
+            sleep(10);
+        }
+	`$submit $jobname_option $jobname -o $lognameNU.out -e $lognameNU.err < $shfileNU`;
     }
 }
 close(INFILE);

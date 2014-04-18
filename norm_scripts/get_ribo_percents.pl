@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 $|=1;
 
 if(@ARGV<2) {
@@ -10,6 +11,15 @@ if(@ARGV<2) {
 }
 
 $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+@fields = split("/", $LOC);
+$last_dir = $fields[@fields-1];
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$stats_dir = $study_dir . "STATS";
+unless (-d $stats_dir){
+    `mkdir $stats_dir`;}
+
 if (-e "$LOC/ribosomal_counts.txt"){
     `rm "$LOC/ribosomal_counts.txt"`;
 }
@@ -25,10 +35,9 @@ while($dir = <IN>){
     $i++;
 }
 
-$total_num_file = "$LOC/total_num_reads.txt";
+$total_num_file = "$stats_dir/total_num_reads.txt";
 open(INFILE, "$LOC/ribosomal_counts.txt") or die "file '$LOC/ribosomal_counts.txt' cannot open for reading.\n";
-open(OUTFILE, ">$LOC/ribo_percents.txt") or die "file '$LOC/ribo_percents.txt'\
- cannot open for writing.\n";
+open(OUTFILE, ">$stats_dir/ribo_percents.txt") or die "file '$stats_dir/ribo_percents.txt' cannot open for writing.\n";
 print OUTFILE "#ribo\t#reads\t\%ribo\tname\n";
 $i=0;
 while($line = <INFILE>) {
@@ -48,6 +57,7 @@ while($line = <INFILE>) {
 close(INFILE);
 close(OUTFILE);
 
+`rm $LOC/ribosomal_counts.txt`;
 
 sub format_large_int () {
     ($int) = @_;

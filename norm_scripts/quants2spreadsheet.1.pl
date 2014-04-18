@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<3) {
     die "usage: perl quants2spreadsheet.1.pl <file names> <loc> <type of quants file> [options]
 
@@ -34,9 +35,13 @@ $norm_dir =~ s/$last_dir//;
 $norm_dir = $norm_dir . "NORMALIZED_DATA";
 $exon_dir = $norm_dir . "/exonmappers";
 $nexon_dir = $norm_dir . "/notexonmappers";
+$spread_dir = $norm_dir . "/SPREADSHEETS";
 
+unless (-d $spread_dir){
+    `mkdir $spread_dir`;
+}
 if ($type =~ /^exon/){
-    $out = "$norm_dir/list_of_exons_counts_u.txt";
+    $out = "$spread_dir/list_of_exons_counts_u.txt";
     $sample_name_file = "$norm_dir/file_exonquants_u.txt";
     if ($nuonly eq "true"){
 	$out =~ s/_u.txt/_nu.txt/;
@@ -45,7 +50,7 @@ if ($type =~ /^exon/){
 }
 else{
     if ($type =~ /^intron/){
-        $out = "$norm_dir/master_list_of_introns_counts_u.txt";
+        $out = "$spread_dir/master_list_of_introns_counts_u.txt";
         $sample_name_file = "$norm_dir/file_intronquants_u.txt";
 	if ($nuonly eq "true"){
 	    $out =~ s/_u.txt/_nu.txt/;
@@ -158,3 +163,5 @@ for($i=0; $i<$rowcnt; $i++) {
     print OUTFILE "\n";
 }
 close(OUTFILE);
+
+

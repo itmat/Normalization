@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if (@ARGV < 2){
     die "usage: perl cat_headfiles.pl <sample dirs> <loc> [options]
 

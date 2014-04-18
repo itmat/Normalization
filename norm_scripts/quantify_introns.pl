@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 $|=1;
 if(@ARGV<4) {
     die "Usage: quantify_introns.pl <introns file> <sam file> <output file> <output sam?> [options]

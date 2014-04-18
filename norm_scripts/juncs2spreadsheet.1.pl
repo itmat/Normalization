@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<2) {
     die "usage: perl juncs2spreadsheet.1.pl <sample dirs> <loc> [options]
 
@@ -30,8 +31,13 @@ $last_dir = $fields[@fields-1];
 $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
 $norm_dir = $norm_dir . "NORMALIZED_DATA";
-$junc_dir = $norm_dir . "/Junctions";
-$outfile = "$norm_dir/master_list_of_junctions_counts_u.txt";
+$junc_dir = $norm_dir . "/JUNCTIONS";
+$spread_dir = $norm_dir . "/SPREADSHEETS";
+
+unless (-d $spread_dir){
+    `mkdir $spread_dir`;
+}
+$outfile = "$spread_dir/master_list_of_junctions_counts_u.txt";
 $sample_name_file = "$norm_dir/file_junctions_u.txt";
 if ($nuonly eq "true"){
     $outfile =~ s/_u.txt/_nu.txt/;
@@ -44,10 +50,10 @@ while($line = <INFILE>){
     $id = $line;
     $id =~ s/Sample_//;
     if($nuonly eq "true"){
-	print OUT "$norm_dir/Junctions/$id.FINAL.norm_nu_junctions_all.rum\n";
+	print OUT "$junc_dir/$id.FINAL.norm_nu_junctions_all.rum\n";
     }
     if ($nuonly eq "false"){
-	print OUT "$norm_dir/Junctions/$id.FINAL.norm_u_junctions_all.rum\n";
+	print OUT "$junc_dir/$id.FINAL.norm_u_junctions_all.rum\n";
     }
 }
 close(INFILE);
@@ -95,3 +101,5 @@ foreach $loc (keys %HASH_MIN) {
 	print OUT_MIN "\n";
 }
 close(OUT_MIN);
+
+

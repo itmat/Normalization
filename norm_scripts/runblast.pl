@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<5) {
     die "usage: perl runblast.pl <dir> <loc> <samfile name> <blast dir> <db>
 

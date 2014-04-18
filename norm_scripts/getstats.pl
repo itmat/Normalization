@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<2) {
     die "usage: perl getstats.pl <dirs> <loc>
 
@@ -12,6 +13,15 @@ and output a table with summary info across all samples.
 
 $dirs = $ARGV[0];
 $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+@fields = split("/", $LOC);
+$last_dir = $fields[@fields-1];
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$stats_dir = $study_dir . "STATS";
+unless (-d $stats_dir){
+    `mkdir $stats_dir`;}
+
 $cwd = `pwd`;
 open(DIRS, $dirs) or die "cannot find file '$dirs'\n";
 while($dir = <DIRS>) {
@@ -144,7 +154,7 @@ $max4 = 0;
 $max5 = 0;
 $max6 = 0;
 
-$outfile = "$LOC/mappingstats_summary.txt";
+$outfile = "$stats_dir/mappingstats_summary.txt";
 open(OUT, ">$outfile");
 #print OUT "id\ttotal\t!<>\t!<|>\t!chrM(%!)\t\%overlap\t~!<>\t~!<|>\t<|>\n";
 print OUT "id\ttotalreads\tUniqueFWDandREV\tUniqueFWDorREV\tUniqueChrM\t%overlap\tNon-UniqueFWDandREV\tNon-UniqueFWDorREV\tFWDorREVmapped\n";

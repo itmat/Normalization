@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<3) {
     die "Usage: perl get_total_num_reads.pl <sample dirs> <loc> <file of input forward fa/fq files> [options]
 
@@ -43,6 +44,14 @@ if($numargs ne '1'){
 
 $sample_dirs = $ARGV[0];
 $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+@fields = split("/", $LOC);
+$last_dir = $fields[@fields-1];
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$stats_dir = $study_dir . "STATS";
+unless (-d $stats_dir){
+    `mkdir $stats_dir`;}
 $input_files = $ARGV[2];
 
 open(INFILE, $input_files) or die "cannot find file '$input_files'\n";
@@ -73,7 +82,7 @@ while($line = <INFILE>){
 close(INFILE);
 close(OUT);
 
-$outfile_final = "$LOC/total_num_reads.txt";
+$outfile_final = "$stats_dir/total_num_reads.txt";
 open(DIRS, $sample_dirs) or die "cannot find file '$sample_dirs'\n";
 open(OUTFINAL, ">$outfile_final");
 while($dir = <DIRS>){

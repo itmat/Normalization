@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV < 3) {
     die  "usage: perl filter_high_expressors.pl <sample dirs> <loc> <exons>
 

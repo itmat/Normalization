@@ -1,5 +1,6 @@
-if (@ARGV<4){
-  $USAGE = "\nUsage: runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov> [options]
+#!/usr/bin/env perl
+
+$USAGE = "\nUsage: runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov> [options]
 
 <sample dirs> is  a file of sample directories with alignment output without path
 <loc> is where the sample directories are
@@ -39,6 +40,7 @@ option:
  -h : print usage
 
 ";
+if (@ARGV<4){
   die $USAGE;
 }
 $numargs_a = 0;
@@ -54,7 +56,6 @@ $submit = "";
 $jobname_option = "";
 $request_memory_option = "";
 $mem = "";
-$help = "false";
 for ($i=4; $i<@ARGV; $i++){
     $option_found = "false";
     if($ARGV[$i] eq '-nu') {
@@ -79,7 +80,7 @@ for ($i=4; $i<@ARGV; $i++){
     }
     if ($ARGV[$i] eq '-h'){
         $option_found = "true";
-        $help = "true";
+	die $USAGE;
     }
     if ($ARGV[$i] eq '-pmacs'){
         $numargs++;
@@ -128,10 +129,6 @@ for ($i=4; $i<@ARGV; $i++){
 	die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
-if ($help eq 'true'){
-    die $USAGE;
-}
-
 if($numargs ne '1'){
     die "you have to specify how you want to submit batch jobs. choose -pmacs, -pgfi, or -other <submit> <jobname_option> <request_memory_option> <queue_name_for_15\
 G>.\n

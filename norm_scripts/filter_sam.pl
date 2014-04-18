@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 $| = 1;
 if(@ARGV<3) {
     die "Usage: perl filter_sam.pl <sam infile> <sam outfile> <more ids> [options]

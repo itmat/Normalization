@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<2) {
     die "usage: annotate.pl <annotation file> <features file>
 

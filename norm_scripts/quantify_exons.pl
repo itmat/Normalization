@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 $| = 1;
 
 if(@ARGV<5) {
