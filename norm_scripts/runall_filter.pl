@@ -16,12 +16,12 @@ option:
 
   -se :  set this if the data is single end, otherwise by default it will assume it's a paired end data.
 
-  -pmacs : set this if you want to submit batch jobs to PMACS cluster (LSF).
+  -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
 
-  -pgfi : set this if you want to submit batch jobs to PGFI cluster (Sun Grid Engine).
+  -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI) cluster.
 
   -other <submit> <jobname_option> <request_memory_option> <queue_name_for_4G>:
-         set this if you're not on PMACS (LSF) or PGFI (SGE) cluster.
+         set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
 
          <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
          <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
@@ -83,7 +83,7 @@ for($i=3; $i<@ARGV; $i++) {
         $option_found = "true";
 	die $USAGE;
     }
-    if ($ARGV[$i] eq '-pmacs'){
+    if ($ARGV[$i] eq '-lsf'){
         $numargs++;
         $option_found = "true";
         $submit = "bsub";
@@ -91,7 +91,7 @@ for($i=3; $i<@ARGV; $i++) {
         $request_memory_option = "-q";
         $mem = "plus";
     }
-    if ($ARGV[$i] eq '-pgfi'){
+    if ($ARGV[$i] eq '-sge'){
         $numargs++;
         $option_found = "true";
         $submit = "qsub -cwd";
@@ -113,8 +113,8 @@ for($i=3; $i<@ARGV; $i++) {
         if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem eq ""){
             die "please provide <submit>, <jobname_option>, and <request_memory_option> <queue_name_for_4G>\n";
         }
-        if ($submit eq "-pmacs" | $submit eq "-pgfi"){
-            die "you have to specify how you want to submit batch jobs. choose -pmacs, -pgfi, or -other <submit> <jobname_option> <request_memory_option> <queue_name_for_4G>.\n";
+        if ($submit eq "-lsf" | $submit eq "-sge"){
+            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other <submit> <jobname_option> <request_memory_option> <queue_name_for_4G>.\n";
         }
     }
     if ($ARGV[$i] eq '-mem'){
@@ -137,7 +137,7 @@ and non-unique by default so if that's what you want don't use either arg
 ";
 }
 if($numargs ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose -pmacs, -pgfi, or -other <submit> <jobname_option> <request_memory_option> <queue_name_for_4G>.\n";
+    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other <submit> <jobname_option> <request_memory_option> <queue_name_for_4G>.\n";
 }
 if ($replace_mem eq "true"){
     $mem = $new_mem;

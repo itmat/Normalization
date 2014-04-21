@@ -20,15 +20,15 @@ OPTIONS:
      -cutoff_highexp <n> : is cutoff % value to identify highly expressed exons. 
                            the script will consider exons with exonpercents greater than n(%) as high expressors, 
                            and remove them from the list of exons.
-                           (Default = 100; with the default cutoff, filter high expressors step will be skipped)
+                           (Default = 100; with the default cutoff, exons expressed >10% will be reported)
      -depthE <n> : the pipeline splits filtered sam files into 1,2,3...n exonmappers and downsamples each separately.
                    (Default = 20)
      -depthI <n> : the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.
                    (Default = 10)
-     -cutoff_lowexp <n> : is cutoff % value to identify low expressors in the final spreadsheets (exon, intron and junc).
+     -cutoff_lowexp <n> : is cutoff counts to identify low expressors in the final spreadsheets (exon, intron and junc).
                           the script will consider features with sum of counts for all samples less than <n> as low expressors
-                          and remove them from the final spreadsheets.
-                          (Default = number of samples)
+                          and remove them from all samples for the final spreadsheets.
+                          (Default = 0)
      -h : print usage 
 
 ";
@@ -172,7 +172,7 @@ if ($unaligned ne '1'){
 $dirs = `wc -l $sample_dir`;
 @a = split(" ", $dirs);
 $num_samples = $a[0];
-$cutoff_le = $num_samples;
+$cutoff_le = 0;
 if ($filter_low_expressors eq "true"){
     $cutoff_le = $cutoff_temp;
 }
@@ -237,45 +237,55 @@ if ($CONVERT_SAM2BAM ne ""){
     }
 }
 
-$pmacs = "false";
-$pgfi = "false";
+$lsf = "false";
+$sge = "false";
 $other = "false";
 $num_cluster = 0;
-if ($PGFI_CLUSTER =~ /^true/ | $PGFI_CLUSTER =~ /^TRUE/) {
-    $batchjobs = "qsub -cwd";
-    $jobname = "-N";
-    $status = "qstat -r";
-    $request = "-l h_vmem=";
-    $queue_4G = "4G";
-    $queue_6G = "6G";
-    $queue_10G = "10G";
-    $queue_15G = "15G";
-    $queue_30G = "30G";
-    $submit = "-pgfi";
-    $pgfi = "true";
-    $c_option = $submit;
-    $wait_option = "-hold_jid JOB";
-    $wait_2jobs_option = "-hold_jid JOB1,JOB2";
-    $maxjobs = 200;
+if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
     $num_cluster++;
+    if ($SUBMIT_BATCH_JOBS_sge eq "" | $JOB_NAME_OPTION_sge eq "" | $CHECK_STATUS_FULLNAME_sge eq "" | $REQUEST_RESOURCE_OPTION_sge eq "" | $QUEUE_NAME_4G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $WAIT_OPTION_sge eq "" | $WAIT_2JOBS_OPTION_sge eq "" | $MAX_JOBS_sge eq ""){
+        die "ERROR: please provide all required CLUSTER INFO for SGE_CLUSTER in the $config_file file\n";
+    }
+    else{
+	$batchjobs = $SUBMIT_BATCH_JOBS_sge;
+	$jobname = $JOB_NAME_OPTION_sge;
+	$status = $CHECK_STATUS_FULLNAME_sge;
+	$request = $REQUEST_RESOURCE_OPTION_sge;
+	$queue_4G = $QUEUE_NAME_4G_sge;
+	$queue_6G = $QUEUE_NAME_6G_sge;
+	$queue_10G = $QUEUE_NAME_10G_sge;
+	$queue_15G = $QUEUE_NAME_15G_sge;
+	$queue_30G = $QUEUE_NAME_30G_sge;
+	$submit = "-sge";
+	$sge = "true";
+	$c_option = $submit;
+	$wait_option = $WAIT_OPTION_sge;
+	$wait_2jobs_option = $WAIT_2JOBS_OPTION_sge;
+	$maxjobs = $MAX_JOBS_sge;
+    }
 }
-if ($PMACS_CLUSTER =~ /^true/ | $PMACS_CLUSTER =~ /^TRUE/){
-    $batchjobs = "bsub";
-    $jobname = "-J";
-    $status = "bjobs -w";
-    $request = "-q ";
-    $queue_4G = "plus";
-    $queue_6G = "plus";
-    $queue_10G = "max_mem30";
-    $queue_15G = "max_mem30";
-    $queue_30G = "max_mem30";
-    $submit = "-pmacs";
-    $pmacs = "true";
-    $c_option = $submit;
-    $wait_option = "-w \"done(JOB)\"";
-    $wait_2jobs_option = "-w \"done(JOB1)&&done(JOB2)\"";
-    $max_jobs = 200;
+if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
     $num_cluster++;
+    if ($SUBMIT_BATCH_JOBS_lsf eq "" | $JOB_NAME_OPTION_lsf eq "" | $CHECK_STATUS_FULLNAME_lsf eq "" | $REQUEST_RESOURCE_OPTION_lsf eq "" | $QUEUE_NAME_4G_lsf eq "" | $QUEUE_NAME_6G_lsf eq "" | $QUEUE_NAME_10G_lsf eq "" |  $QUEUE_NAME_15G_lsf eq "" | $QUEUE_NAME_30G_lsf eq "" | $WAIT_OPTION_lsf eq "" | $WAIT_2JOBS_OPTION_lsf eq "" | $MAX_JOBS_lsf eq ""){
+        die "ERROR: please provide all required CLUSTER INFO for LSF_CLUSTER in the $config_file file\n";
+    }
+    else{
+	$batchjobs = $SUBMIT_BATCH_JOBS_lsf;
+	$jobname = $JOB_NAME_OPTION_lsf;
+	$status = $CHECK_STATUS_FULLNAME_lsf;
+	$request = $REQUEST_RESOURCE_OPTION_lsf;
+	$queue_4G = $QUEUE_NAME_4G_lsf;
+	$queue_6G = $QUEUE_NAME_6G_lsf;
+	$queue_10G = $QUEUE_NAME_10G_lsf;
+	$queue_15G = $QUEUE_NAME_15G_lsf;
+	$queue_30G = $QUEUE_NAME_30G_lsf;
+	$submit = "-lsf";
+	$lsf = "true";
+	$c_option = $submit;
+	$wait_option = $WAIT_OPTION_lsf;
+	$wait_2jobs_option = $WAIT_2JOBS_OPTION_lsf;
+	$max_jobs = $MAX_JOBS_lsf;
+    }
 }
 if ($OTHER_CLUSTER =~ /^true/ | $OTHER_CLUSTER =~ /^TRUE/){
     $num_cluster++;
@@ -485,75 +495,78 @@ $date = `date`;
 print LOG "$job_num. started \"$study.runall_get_novel_exons\"\t$date";
 $job_num++;
 
-if ($filter_high_expressors eq "true"){
-    #quantify_exons for filter
-    $to_wait1 = "$study.filtersam";
-    $to_wait2 = "$study.runall_get_novel_exons";
-    $wait = $wait_2jobs_option;
-    $wait =~ s/JOB1/$to_wait1/;
-    $wait =~ s/JOB2/$to_wait2/;
-    if ($other eq "true"){
-	$c_option = "$submit $batchjobs $jobname $request $queue_4G";
-    }
-    `echo "perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $novel_list false $se $c_option" | $batchjobs $wait $jobname "$study.quantifyexons.filter.u" -o $logdir/$study.quantifyexons.filter.u.out -e $logdir/$study.quantifyexons.filter.u.err`;
-    $date = `date`;
-    print LOG "$job_num. started \"$study.quantifyexons.filter.u\"\t$date";
-    $job_num++;
+#quantify_exons for filter
+$to_wait1 = "$study.filtersam";
+$to_wait2 = "$study.runall_get_novel_exons";
+$wait = $wait_2jobs_option;
+$wait =~ s/JOB1/$to_wait1/;
+$wait =~ s/JOB2/$to_wait2/;
+if ($other eq "true"){
+    $c_option = "$submit $batchjobs $jobname $request $queue_4G";
+}
+`echo "perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $novel_list false $se $c_option" | $batchjobs $wait $jobname "$study.quantifyexons.filter.u" -o $logdir/$study.quantifyexons.filter.u.out -e $logdir/$study.quantifyexons.filter.u.err`;
+$date = `date`;
+print LOG "$job_num. started \"$study.quantifyexons.filter.u\"\t$date";
+$job_num++;
 
-    #quantify_exons for filter nu
-    `echo "perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $novel_list false $se -NU-only $c_option" | $batchjobs $wait $jobname "$study.quantifyexons.filter.nu" -o $logdir/$study.quantifyexons.filter.nu.out -e $logdir/$study.quantifyexons.filter.nu.err`;
-    $date = `date`;
-    print LOG "$job_num. started \"$study.quantifyexons.filter.nu\"\t$date";
-    $job_num++;
+#quantify_exons for filter nu
+`echo "perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $novel_list false $se -NU-only $c_option" | $batchjobs $wait $jobname "$study.quantifyexons.filter.nu" -o $logdir/$study.quantifyexons.filter.nu.out -e $logdir/$study.quantifyexons.filter.nu.err`;
+$date = `date`;
+print LOG "$job_num. started \"$study.quantifyexons.filter.nu\"\t$date";
+$job_num++;
 
-    sleep(10);
+sleep(10);
+$check = `$status | grep -C 1 $study.quantifyexons.filter | egrep 'PEND|qw|hqw' | wc -l`;
+chomp($check);
+until ($check eq '0'){
     $check = `$status | grep -C 1 $study.quantifyexons.filter | egrep 'PEND|qw|hqw' | wc -l`;
-    chomp($check);
-    until ($check eq '0'){
-	$check = `$status | grep -C 1 $study.quantifyexons.filter | egrep 'PEND|qw|hqw' | wc -l`;
-	sleep(10);
-	chomp($check);
-    }
     sleep(10);
+    chomp($check);
+}
+sleep(10);
+$check = `$status | grep -C 1 -w $study.quantifyexons2  | wc -l`;
+chomp($check);
+until ($check eq '0'){
     $check = `$status | grep -C 1 -w $study.quantifyexons2  | wc -l`;
+    sleep(10);
     chomp($check);
-    until ($check eq '0'){
-	$check = `$status | grep -C 1 -w $study.quantifyexons2  | wc -l`;
-	sleep(10);
-	chomp($check);
-    }
-    sleep(10);
+}
+sleep(10);
 
-    #get_high_expressors 
-    $to_wait = "$study.quantifyexons2";
-    $wait = $wait_option;
-    $wait =~ s/JOB/$to_wait/;
-    if ($other eq "true"){
-	$c_option = "$submit $batchjobs $jobname $request $queue_15G";
-    }
-    `echo "perl $norm_script_dir/runall_get_high_expressors.pl $sample_dir $LOC $cutoff_he $annot $novel_list $c_option" | $batchjobs $wait $jobname "$study.runall_get_high_expressors" -o $logdir/$study.runall_get_high_expressors.out -e $logdir/$study.runall_get_high_expressors.err`;
-    $date = `date`;
-    print LOG "$job_num. started \"$study.runall_get_high_expressors\"\t$date";
-    $job_num++;
-    
-    sleep(10);
+#get_high_expressors 
+if ($filter_high_expressors eq "false" | $cutoff_he eq '100'){
+    $cutoff_he = 10;
+}
+$to_wait = "$study.quantifyexons2";
+$wait = $wait_option;
+$wait =~ s/JOB/$to_wait/;
+if ($other eq "true"){
+    $c_option = "$submit $batchjobs $jobname $request $queue_15G";
+}
+`echo "perl $norm_script_dir/runall_get_high_expressors.pl $sample_dir $LOC $cutoff_he $annot $novel_list $c_option" | $batchjobs $wait $jobname "$study.runall_get_high_expressors" -o $logdir/$study.runall_get_high_expressors.out -e $logdir/$study.runall_get_high_expressors.err`;
+$date = `date`;
+print LOG "$job_num. started \"$study.runall_get_high_expressors\"\t$date";
+$job_num++;
+
+sleep(10);
+$check = `$status | grep -C 1 -w $study.runall_get_high_expressors | egrep 'PEND|qw|hqw' | wc -l`;
+chomp($check);
+until ($check eq '0'){
     $check = `$status | grep -C 1 -w $study.runall_get_high_expressors | egrep 'PEND|qw|hqw' | wc -l`;
-    chomp($check);
-    until ($check eq '0'){
-	$check = `$status | grep -C 1 -w $study.runall_get_high_expressors | egrep 'PEND|qw|hqw' | wc -l`;
-	sleep(10);
-	chomp($check);
-    }
     sleep(10);
+    chomp($check);
+}
+sleep(10);
+$check = `$status | grep -C 1 -w $study.get_high_expressor  | wc -l`;
+chomp($check);
+until ($check eq '0'){
     $check = `$status | grep -C 1 -w $study.get_high_expressor  | wc -l`;
-    chomp($check);
-    until ($check eq '0'){
-	$check = `$status | grep -C 1 -w $study.get_high_expressor  | wc -l`;
-	sleep(10);
-	chomp($check);
-    }
     sleep(10);
+    chomp($check);
+}
+sleep(10);
 
+if ($filter_high_expressors eq 'true'){
     #filter_high_expressors
     $to_wait = "$study.get_high_expressor";
     $wait = $wait_option;
@@ -562,35 +575,37 @@ if ($filter_high_expressors eq "true"){
     $date = `date`;
     print LOG "$job_num. started \"$study.filter_high_expressors\"\t$date";
     $job_num++;
-    
-    #get_percent_high_expressor
+}
+
+#get_percent_high_expressor
+if ($filter_high_expressors eq "true"){
     $to_wait1 = "$study.get_high_expressor";
     $to_wait2 = "$study.filter_high_expressors";
     $wait = $wait_2jobs_option;
     $wait =~ s/JOB1/$to_wait1/;
     $wait =~ s/JOB2/$to_wait2/;
-    if ($other eq "true"){
-	$c_option = "$submit $batchjobs $jobname $request $queue_4G";
-    }
-    `echo "perl $norm_script_dir/get_percent_high_expressor.pl $sample_dir $LOC" | $batchjobs $wait $jobname "$study.get_percent_high_expressor" -o $logdir/$study.get_percent_high_expressor.out -e $logdir/$study.get_percent_high_expressor.err`;
-    $date = `date`;
-    print LOG "$job_num. started \"$study.get_percent_high_expressor\"\t$date";
-    $job_num++;
 }
-
-#run_quantify_exons unique
-if ($filter_high_expressors eq "true"){
-    $to_wait = "$study.get_percent_high_expressor";
+else{
+    $to_wait = "$study.get_high_expressor";
     $wait = $wait_option;
     $wait =~ s/JOB/$to_wait/;
+}
+if ($other eq "true"){
+    $c_option = "$submit $batchjobs $jobname $request $queue_4G";
+}
+`echo "perl $norm_script_dir/get_percent_high_expressor.pl $sample_dir $LOC" | $batchjobs $wait $jobname "$study.get_percent_high_expressor" -o $logdir/$study.get_percent_high_expressor.out -e $logdir/$study.get_percent_high_expressor.err`;
+$date = `date`;
+print LOG "$job_num. started \"$study.get_percent_high_expressor\"\t$date";
+$job_num++;
+
+#run_quantify_exons unique
+$to_wait = "$study.get_percent_high_expressor";
+$wait = $wait_option;
+$wait =~ s/JOB/$to_wait/;
+if ($filter_high_expressors eq "true"){
     $list_for_quant = $filtered_list;
 }
 else {
-    $to_wait1 = "$study.filtersam";
-    $to_wait2 = "$study.runall_get_novel_exons";
-    $wait = $wait_2jobs_option;
-    $wait =~ s/JOB1/$to_wait1/;
-    $wait =~ s/JOB2/$to_wait2/;
     $list_for_quant = $novel_list;
 }
 if ($other eq "true"){

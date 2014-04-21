@@ -25,12 +25,12 @@ option:
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                    by default, <n> = 200.
 
- -pmacs : set this if you want to submit batch jobs to PMACS cluster (LSF).
+ -lsf : set this if you want to submit batch jobs to LSF (PMACS cluster).
 
- -pgfi : set this if you want to submit batch jobs to PGFI cluster (Sun Grid Engine).
+ -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI cluster).
 
  -other <submit> <jobname_option> <status>:
-        set this if you're not on PMACS (LSF) or PGFI (SGE) cluster.
+        set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
 
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
@@ -96,14 +96,14 @@ for ($i=2; $i<@ARGV; $i++){
         $option_found = "true";
 	die $USAGE;
     }
-    if ($ARGV[$i] eq '-pmacs'){
+    if ($ARGV[$i] eq '-lsf'){
         $numargs++;
         $option_found = "true";
         $submit = "bsub";
         $jobname_option = "-J";
 	$status = "bjobs";
     }
-    if ($ARGV[$i] eq '-pgfi'){
+    if ($ARGV[$i] eq '-sge'){
         $numargs++;
         $option_found = "true";
         $submit = "qsub -cwd";
@@ -123,8 +123,8 @@ for ($i=2; $i<@ARGV; $i++){
 	    print "HERE";
             die "please provide <submit> <jobname_option> <status>\n";
         }
-        if ($submit eq "-pmacs" | $submit eq "-pgfi"){
-	    die "you have to specify how you want to submit batch jobs. choose -pmacs, -pgfi, or -other <submit> <jobname_option> <status>.\n";
+        if ($submit eq "-lsf" | $submit eq "-sge"){
+	    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other <submit> <jobname_option> <status>.\n";
         }
     }
     if ($option_found eq "false"){
@@ -132,7 +132,7 @@ for ($i=2; $i<@ARGV; $i++){
     }
 }
 if($numargs ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose -pmacs, -pgfi, or -other <submit> <jobname_option>.\n";
+    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other <submit> <jobname_option>.\n";
 }
 if($numargs_u_nu > 1) {
     die "you cannot specify both -u and -nu, it will output both unique
