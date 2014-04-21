@@ -34,7 +34,7 @@ option:
 
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
-        <status> : command for checking batch job status followed by option to view full job name (e.g. bjobs -w, qstat -r)
+        <status> : command for checking batch job status (e.g. bjobs, qstat)
 
  -h : print usage
 
@@ -108,18 +108,20 @@ for ($i=2; $i<@ARGV; $i++){
         $option_found = "true";
         $submit = "qsub -cwd";
 	$jobname_option = "-N";
-	$status = "qstat -r";
+	$status = "qstat";
     }
     if ($ARGV[$i] eq '-other'){
         $numargs++;
         $option_found = "true";
         $submit = $ARGV[$i+1];
         $jobname_option = $ARGV[$i+2];
+	$status = $ARGV[$i+3];
         $i++;
         $i++;
 	$i++;
         if ($submit =~ /^-/ | $submit eq "" | $jobname_option eq "" | $status eq ""){
-            die "please provide <submit>, <jobname_option> <status>\n";
+	    print "HERE";
+            die "please provide <submit> <jobname_option> <status>\n";
         }
         if ($submit eq "-pmacs" | $submit eq "-pgfi"){
 	    die "you have to specify how you want to submit batch jobs. choose -pmacs, -pgfi, or -other <submit> <jobname_option> <status>.\n";

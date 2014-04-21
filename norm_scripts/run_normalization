@@ -693,10 +693,12 @@ $date = `date`;
 print LOG "$job_num. started \"$study.get_percent_intergenic\"\t$date";
 $job_num++;
 
-#=cut
 #runall_head
+@s = split(" ", $status);
+$stat = $s[0];
+	      
 if ($other eq "true"){
-    $c_option = "$submit $batchjobs $jobname $status";
+    $c_option = "$submit $batchjobs $jobname $stat";
 }
 $cluster_max = "";
 if ($maxjobs ne '200' && $maxjobs < '200'){
@@ -707,7 +709,7 @@ $date = `date`;
 print LOG "$job_num. started \"$study.runall_head\"\t$date";
 $job_num++;
 
-#=comment
+
 sleep(10);
 $check = `$status | grep -C 1 -w $study.runall_head | egrep 'PEND|qw|hqw' | wc -l`;
 chomp($check);
@@ -957,7 +959,7 @@ if ($convert_sam2bam eq "true"){
     print LOG "$job_num. started \"$study.sam2bam\"\t$date";
 }
 close(LOG);
-#=cut
+
 sub parse_config_file () {
     ($File, $Config) = @_;
     open(CONFIG, "$File") or die "ERROR: Config file not found : $File\n";
