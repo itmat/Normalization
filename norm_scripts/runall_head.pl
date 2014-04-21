@@ -29,11 +29,12 @@ option:
 
  -pgfi : set this if you want to submit batch jobs to PGFI cluster (Sun Grid Engine).
 
- -other <submit> <jobname_option>:
+ -other <submit> <jobname_option> <status>:
         set this if you're not on PMACS (LSF) or PGFI (SGE) cluster.
 
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
+        <status> : command for checking batch job status followed by option to view full job name (e.g. bjobs -w, qstat -r)
 
  -h : print usage
 
@@ -100,12 +101,14 @@ for ($i=2; $i<@ARGV; $i++){
         $option_found = "true";
         $submit = "bsub";
         $jobname_option = "-J";
+	$status = "bjobs";
     }
     if ($ARGV[$i] eq '-pgfi'){
         $numargs++;
         $option_found = "true";
         $submit = "qsub -cwd";
 	$jobname_option = "-N";
+	$status = "qstat -r";
     }
     if ($ARGV[$i] eq '-other'){
         $numargs++;
@@ -114,11 +117,12 @@ for ($i=2; $i<@ARGV; $i++){
         $jobname_option = $ARGV[$i+2];
         $i++;
         $i++;
-        if ($submit =~ /^-/ | $submit eq "" | $jobname_option eq ""){
-            die "please provide <submit>, <jobname_option>\n";
+	$i++;
+        if ($submit =~ /^-/ | $submit eq "" | $jobname_option eq "" | $status eq ""){
+            die "please provide <submit>, <jobname_option> <status>\n";
         }
         if ($submit eq "-pmacs" | $submit eq "-pgfi"){
-	    die "you have to specify how you want to submit batch jobs. choose -pmacs, -pgfi, or -other <submit> <jobname_option>.\n";
+	    die "you have to specify how you want to submit batch jobs. choose -pmacs, -pgfi, or -other <submit> <jobname_option> <status>.\n";
         }
     }
     if ($option_found eq "false"){
@@ -539,9 +543,9 @@ for($i=1; $i<=$i_exon; $i++) {
 	    open(OUTFILEU, ">$shfileU[$i]");
 	    print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	    close(OUTFILEU);
-	    $numq = `bjobs | grep "^[0-9]" | wc -l`;
+	    $numq = `$status | grep "^[0-9]" | wc -l`;
 	    until ($numq < $njobs){
-		$x = `bjobs | grep "^[0-9]" | wc -l`;
+		$x = `$status | grep "^[0-9]" | wc -l`;
 		$numq = $x;
 		sleep(10);
 	    }
@@ -551,9 +555,9 @@ for($i=1; $i<=$i_exon; $i++) {
 	    open(OUTFILENU, ">$shfileNU[$i]");
 	    print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	    close(OUTFILENU);
-            $numq = `bjobs | grep "^[0-9]" | wc -l`;
+            $numq = `$status | grep "^[0-9]" | wc -l`;
             until ($numq < $njobs){
-                $x = `bjobs | grep "^[0-9]" | wc -l`;
+                $x = `$status | grep "^[0-9]" | wc -l`;
                 $numq = $x;
                 sleep(10);
             }
@@ -590,9 +594,9 @@ for($i=1; $i<=$i_intron; $i++) {
 	    open(OUTFILEU, ">$shfileU[$i]");
 	    print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	    close(OUTFILEU);
-	    $numq = `bjobs | grep "^[0-9]" | wc -l`;
+	    $numq = `$status | grep "^[0-9]" | wc -l`;
 	    until ($numq < $njobs){
-		$x = `bjobs | grep "^[0-9]" | wc -l`;
+		$x = `$status | grep "^[0-9]" | wc -l`;
 		$numq = $x;
 		sleep(10);
 	    }
@@ -602,9 +606,9 @@ for($i=1; $i<=$i_intron; $i++) {
 	    open(OUTFILENU, ">$shfileNU[$i]");
 	    print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	    close(OUTFILENU);
-	    $numq = `bjobs | grep "^[0-9]" | wc -l`;
+	    $numq = `$status | grep "^[0-9]" | wc -l`;
             until ($numq < $njobs){
-                $x = `bjobs | grep "^[0-9]" | wc -l`;
+                $x = `$status | grep "^[0-9]" | wc -l`;
                 $numq = $x;
 		sleep(10);
             }
@@ -637,9 +641,9 @@ while($dirname = <INFILE>) {
 	open(OUTFILEU, ">$shfileU");
 	print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	close(OUTFILEU);
-	$numq = `bjobs | grep "^[0-9]" | wc -l`;
+	$numq = `$status | grep "^[0-9]" | wc -l`;
 	until ($numq < $njobs){
-	    $x = `bjobs | grep "^[0-9]" | wc -l`;
+	    $x = `$status | grep "^[0-9]" | wc -l`;
 	    $numq = $x;
 	    sleep(10);
 	}
@@ -650,7 +654,7 @@ while($dirname = <INFILE>) {
 	print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	close(OUTFILENU);
 	until ($numq < $njobs){
-            $x = `bjobs | grep "^[0-9]" | wc -l`;
+            $x = `$status | grep "^[0-9]" | wc -l`;
             $numq = $x;
             sleep(10);
         }

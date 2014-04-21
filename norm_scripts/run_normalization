@@ -337,18 +337,18 @@ print LOG "$job_num. started \"$study.runall_sam2mappingstats\"\t$date";
 $job_num++;
 
 sleep(10);
-$check = `$status | grep -w "$study.runall_sam2mappingstats" | egrep 'PEND|qw|hqw' | wc -l`;
+$check = `$status | grep -C 1 -w "$study.runall_sam2mappingstats" | egrep 'PEND|qw|hqw' | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w "$study.runall_sam2mappingstats" | egrep 'PEND|qw|hqw' | wc -l`;
+    $check = `$status | grep -C 1 -w "$study.runall_sam2mappingstats" | egrep 'PEND|qw|hqw' | wc -l`;
     sleep(10);
     chomp($check);
 }
 sleep(10);
-$check = `$status | grep -w "$study.sam2mappingstats" | wc -l`;
+$check = `$status | grep -C 1 -w "$study.sam2mappingstats" | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w "$study.sam2mappingstats"  | wc -l`;
+    $check = `$status | grep -C 1 -w "$study.sam2mappingstats"  | wc -l`;
     sleep(10);
     chomp($check);
 }
@@ -373,18 +373,18 @@ print LOG "$job_num. started \"$study.runall_runblast\"\t$date";
 $job_num++;
 
 sleep(10);
-$check = `$status | grep -w "$study.runall_runblast" | egrep 'PEND|qw|hqw' | wc -l`;
+$check = `$status | grep -C 1 -w "$study.runall_runblast" | egrep 'PEND|qw|hqw' | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w "$study.runall_runblast" | egrep 'PEND|qw|hqw' | wc -l`;
+    $check = `$status | grep -C 1 -w "$study.runall_runblast" | egrep 'PEND|qw|hqw' | wc -l`;
     sleep(10);
     chomp($check);
 }
 sleep(10);
-$check = `$status | grep -w "$study.runblast"  | wc -l`;
+$check = `$status | grep -C 1 -w "$study.runblast"  | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w "$study.runblast"  | wc -l`;
+    $check = `$status | grep -C 1 -w "$study.runblast"  | wc -l`;
     sleep(10);
     chomp($check);
 }
@@ -415,18 +415,18 @@ print LOG "$job_num. started \"$study.runall_filtersam\"\t$date";
 $job_num++;
 
 sleep(10);
-$check = `$status | grep -w "$study.runall_filtersam" | egrep 'PEND|qw|hqw' | wc -l`;
+$check = `$status | grep -C 1 -w "$study.runall_filtersam" | egrep 'PEND|qw|hqw' | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w "$study.runall_filtersam" | egrep 'PEND|qw|hqw' | wc -l`;
+    $check = `$status | grep -C 1 -w "$study.runall_filtersam" | egrep 'PEND|qw|hqw' | wc -l`;
     sleep(10);
     chomp($check);
 }
 sleep(10);
-$check = `$status | grep -w "$study.filtersam"  | wc -l`;
+$check = `$status | grep -C 1 -w "$study.filtersam"  | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w "$study.filtersam"  | wc -l`;
+    $check = `$status | grep -C 1 -w "$study.filtersam"  | wc -l`;
     sleep(10);
     chomp($check);
 }
@@ -451,18 +451,18 @@ print LOG "$job_num. started \"$study.runall_sam2junctions.samfilename\"\t$date"
 $job_num++;
 
 sleep(10);
-$check = `$status | grep -w "$study.runall_sam2junctions" | egrep 'PEND|qw|hqw' | wc -l`;
+$check = `$status | grep -C 1 -w "$study.runall_sam2junctions" | egrep 'PEND|qw|hqw' | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w "$study.runall_sam2junctions" | egrep 'PEND|qw|hqw' | wc -l`;
+    $check = `$status | grep -C 1 -w "$study.runall_sam2junctions" | egrep 'PEND|qw|hqw' | wc -l`;
     sleep(10);
     chomp($check);
 }
 sleep(10);
-$check = `$status | grep -w "$study.sam2junctions"  | wc -l`;
+$check = `$status | grep -C 1 -w "$study.sam2junctions"  | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w "$study.sam2junctions"  | wc -l`;
+    $check = `$status | grep -C 1 -w "$study.sam2junctions"  | wc -l`;
     sleep(10);
     chomp($check);
 }
@@ -515,10 +515,10 @@ if ($filter_high_expressors eq "true"){
 	chomp($check);
     }
     sleep(10);
-    $check = `$status | grep -w $study.quantifyexons2  | wc -l`;
+    $check = `$status | grep -C 1 -w $study.quantifyexons2  | wc -l`;
     chomp($check);
     until ($check eq '0'){
-	$check = `$status | grep -w $study.quantifyexons2  | wc -l`;
+	$check = `$status | grep -C 1 -w $study.quantifyexons2  | wc -l`;
 	sleep(10);
 	chomp($check);
     }
@@ -537,18 +537,18 @@ if ($filter_high_expressors eq "true"){
     $job_num++;
     
     sleep(10);
-    $check = `$status | grep -w $study.runall_get_high_expressors | egrep 'PEND|qw|hqw' | wc -l`;
+    $check = `$status | grep -C 1 -w $study.runall_get_high_expressors | egrep 'PEND|qw|hqw' | wc -l`;
     chomp($check);
     until ($check eq '0'){
-	$check = `$status | grep -w $study.runall_get_high_expressors | egrep 'PEND|qw|hqw' | wc -l`;
+	$check = `$status | grep -C 1 -w $study.runall_get_high_expressors | egrep 'PEND|qw|hqw' | wc -l`;
 	sleep(10);
 	chomp($check);
     }
     sleep(10);
-    $check = `$status | grep -w $study.get_high_expressor  | wc -l`;
+    $check = `$status | grep -C 1 -w $study.get_high_expressor  | wc -l`;
     chomp($check);
     until ($check eq '0'){
-	$check = `$status | grep -w $study.get_high_expressor  | wc -l`;
+	$check = `$status | grep -C 1 -w $study.get_high_expressor  | wc -l`;
 	sleep(10);
 	chomp($check);
     }
@@ -616,10 +616,10 @@ until ($check eq '0'){
     chomp($check);
 }
 sleep(10);
-$check = `$status | grep -w $study.quantifyexons  | wc -l`;
+$check = `$status | grep -C 1 -w $study.quantifyexons  | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w $study.quantifyexons  | wc -l`;
+    $check = `$status | grep -C 1 -w $study.quantifyexons  | wc -l`;
     sleep(10);
     chomp($check);
 }
@@ -675,10 +675,10 @@ until ($check eq '0'){
     chomp($check);
 }
 sleep(10);
-$check = `$status | grep -w $study.quantify_introns  | wc -l`;
+$check = `$status | grep -C 1 -w $study.quantify_introns  | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w $study.quantify_introns  | wc -l`;
+    $check = `$status | grep -C 1 -w $study.quantify_introns  | wc -l`;
     sleep(10);
     chomp($check);
 }
@@ -696,7 +696,7 @@ $job_num++;
 #=cut
 #runall_head
 if ($other eq "true"){
-    $c_option = "$submit $batchjobs $jobname";
+    $c_option = "$submit $batchjobs $jobname $status";
 }
 $cluster_max = "";
 if ($maxjobs ne '200' && $maxjobs < '200'){
@@ -709,18 +709,18 @@ $job_num++;
 
 #=comment
 sleep(10);
-$check = `$status | grep -w $study.runall_head | egrep 'PEND|qw|hqw' | wc -l`;
+$check = `$status | grep -C 1 -w $study.runall_head | egrep 'PEND|qw|hqw' | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w $study.runall_head | egrep 'PEND|qw|hqw' | wc -l`;
+    $check = `$status | grep -C 1 -w $study.runall_head | egrep 'PEND|qw|hqw' | wc -l`;
     sleep(10);
     chomp($check);
 }
 sleep(10);
-$check = `$status | grep -w $study.head  | wc -l`;
+$check = `$status | grep -C 1 -w $study.head  | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w $study.head  | wc -l`;
+    $check = `$status | grep -C 1 -w $study.head  | wc -l`;
     sleep(10);
     chomp($check);
 }
@@ -829,18 +829,18 @@ print LOG "$job_num. started \"$study.make_final_spreadsheets\"\t$date";
 $job_num++;
 
 sleep(10);
-$check = `$status | grep -w $study.make_final_spreadsheets | egrep 'PEND|qw|hqw' | wc -l`;
+$check = `$status | grep -C 1 -w $study.make_final_spreadsheets | egrep 'PEND|qw|hqw' | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w $study.make_final_spreadsheets | egrep 'PEND|qw|hqw' | wc -l`;
+    $check = `$status | grep -C 1 -w $study.make_final_spreadsheets | egrep 'PEND|qw|hqw' | wc -l`;
     sleep(10);
     chomp($check);
 }
 sleep(10);
-$check = `$status | grep -w $study.final_spreadsheet  | wc -l`;
+$check = `$status | grep -C 1 -w $study.final_spreadsheet  | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w $study.final_spreadsheet  | wc -l`;
+    $check = `$status | grep -C 1 -w $study.final_spreadsheet  | wc -l`;
     sleep(10);
     chomp($check);
 }
@@ -863,18 +863,18 @@ print LOG "$job_num. started \"$study.run_annotate\"\t$date";
 $job_num++;
 
 sleep(10);
-$check = `$status | grep -w $study.run_annotate | egrep 'PEND|qw|hqw' | wc -l`;
+$check = `$status | grep -C 1 -w $study.run_annotate | egrep 'PEND|qw|hqw' | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w $study.run_annotate | egrep 'PEND|qw|hqw' | wc -l`;
+    $check = `$status | grep -C 1 -w $study.run_annotate | egrep 'PEND|qw|hqw' | wc -l`;
     sleep(10);
     chomp($check);
 }
 sleep(10);
-$check = `$status | grep -w $study.annotate  | wc -l`;
+$check = `$status | grep -C 1 -w $study.annotate  | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep -w $study.annotate  | wc -l`;
+    $check = `$status | grep -C 1 -w $study.annotate  | wc -l`;
     sleep(10);
     chomp($check);
 }
@@ -907,18 +907,18 @@ if ($sam2cov eq "true"){
     $job_num++;
 
     sleep(10);
-    $check = `$status | grep -w $study.runall_sam2cov | egrep 'PEND|qw|hqw' | wc -l`;
+    $check = `$status | grep -C 1 -w $study.runall_sam2cov | egrep 'PEND|qw|hqw' | wc -l`;
     chomp($check);
     until ($check eq '0'){
-	$check = `$status | grep -w $study.runall_sam2cov | egrep 'PEND|qw|hqw' | wc -l`;
+	$check = `$status | grep -C 1 -w $study.runall_sam2cov | egrep 'PEND|qw|hqw' | wc -l`;
 	sleep(10);
 	chomp($check);
     }
     sleep(10);
-    $check = `$status | grep -w $study.sam2cov  | wc -l`;
+    $check = `$status | grep -C 1 -w $study.sam2cov  | wc -l`;
     chomp($check);
     until ($check eq '0'){
-	$check = `$status | grep -w $study.sam2cov  | wc -l`;
+	$check = `$status | grep -C 1 -w $study.sam2cov  | wc -l`;
 	sleep(10);
 	chomp($check);
     }
