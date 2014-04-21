@@ -397,7 +397,7 @@ $wait =~ s/JOB/$to_wait/;
 if ($other eq "true"){
     $c_option = "$submit $batchjobs $jobname $request $queue_10G";
 }
-`echo "perl $norm_script_dir/runall_get_ribo_percents.pl $sample_dir $LOC $c_option" | $batchjobs $wait $jobname "$study.runall_getribopercents" -o $logdir/$study.runall_getribopercents.out -e $logidr/$study.runall_getribopercents.err`;
+`echo "perl $norm_script_dir/runall_get_ribo_percents.pl $sample_dir $LOC $c_option" | $batchjobs $wait $jobname "$study.runall_getribopercents" -o $logdir/$study.runall_getribopercents.out -e $logdir/$study.runall_getribopercents.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.ribopercents\"\t$date";
 $job_num++;
