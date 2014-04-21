@@ -507,10 +507,10 @@ if ($filter_high_expressors eq "true"){
     $job_num++;
 
     sleep(10);
-    $check = `$status | grep $study.quantifyexons.filter | egrep 'PEND|qw|hqw' | wc -l`;
+    $check = `$status | grep -C 1 $study.quantifyexons.filter | egrep 'PEND|qw|hqw' | wc -l`;
     chomp($check);
     until ($check eq '0'){
-	$check = `$status | grep $study.quantifyexons.filter | egrep 'PEND|qw|hqw' | wc -l`;
+	$check = `$status | grep -C 1 $study.quantifyexons.filter | egrep 'PEND|qw|hqw' | wc -l`;
 	sleep(10);
 	chomp($check);
     }
@@ -608,10 +608,10 @@ print LOG "$job_num. started \"$study.runall_quantify_exons.true.nu\"\t$date";
 $job_num++;
 
 sleep(10);
-$check = `$status | grep $study.runall_quantify_exons.true | egrep 'PEND|qw|hqw' | wc -l`;
+$check = `$status | grep -C 1 $study.runall_quantify_exons.true | egrep 'PEND|qw|hqw' | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep $study.runall_quantify_exons.true | egrep 'PEND|qw|hqw' | wc -l`;
+    $check = `$status | grep -C 1 $study.runall_quantify_exons.true | egrep 'PEND|qw|hqw' | wc -l`;
     sleep(10);
     chomp($check);
 }
@@ -667,10 +667,10 @@ print LOG "$job_num. started \"$study.runall_quantify_introns.true.nu\"\t$date";
 $job_num++;
 
 sleep(10);
-$check = `$status | grep $study.runall_quantify_introns.true | egrep 'PEND|qw|hqw' | wc -l`;
+$check = `$status | grep -C 1 $study.runall_quantify_introns.true | egrep 'PEND|qw|hqw' | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep $study.runall_quantify_introns.true | egrep 'PEND|qw|hqw' | wc -l`;
+    $check = `$status | grep -C 1 $study.runall_quantify_introns.true | egrep 'PEND|qw|hqw' | wc -l`;
     sleep(10);
     chomp($check);
 }
@@ -798,18 +798,18 @@ print LOG "$job_num. started \"$study.runall_quantify_introns.false.nu\"\t$date"
 $job_num++;
 
 sleep(10);
-$check = `$status | grep $study.runall_quantify_*ons.false | egrep 'PEND|qw|hqw' | wc -l`;
+$check = `$status | grep -C 1 $study.runall_quantify_ | egrep 'PEND|qw|hqw' | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep $study.runall_quantify_*ons.false | egrep 'PEND|qw|hqw' | wc -l`;
+    $check = `$status | grep -C 1 $study.runall_quantify_ | egrep 'PEND|qw|hqw' | wc -l`;
     sleep(10);
     chomp($check);
 }
 sleep(10);
-$check = `$status | grep $study.quantify*ons2  | wc -l`;
+$check = `$status | grep -C 1 $study.quantify  | wc -l`;
 chomp($check);
 until ($check eq '0'){
-    $check = `$status | grep $study.quantify*ons2  | wc -l`;
+    $check = `$status | grep -C 1 $study.quantify | wc -l`;
     sleep(10);
     chomp($check);
 }
