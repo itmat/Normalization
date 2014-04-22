@@ -135,10 +135,10 @@ STUDY
 	 **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_30G>** : <br>
 	 	  set this if you're not on LSF or SGE cluster
 
-  	         &lt;submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)<br>
-       		 &lt;jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)<br>
-		 &lt;request_memory_option> : is option for requesting resources for batch job submission command (e.g. -q, -l h_vmem=)<br>
-		 &lt;queue_name_for_30G> : is queue name for 30G (e.g. max_mem30, 30G)<br>
+  	 * &lt;submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)<br>
+       	 * &lt;jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)<br>
+	 * &lt;request_memory_option> : is option for requesting resources for batch job submission command (e.g. -q, -l h_vmem=)<br>
+	 * &lt;queue_name_for_30G> : is queue name for 30G (e.g. max_mem30, 30G)<br>
 	 **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 30G)
  
  This will output `*mappingstats.txt` file of all samples to each sample directory. The following script will parse the `*mappingstats.txt` files and output a table with summary info across all samples.
