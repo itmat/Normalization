@@ -134,11 +134,6 @@ STUDY
          **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
 	 **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_30G>** : <br>
 	 	  set this if you're not on LSF or SGE cluster
-
-  	 * &lt;submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)<br>
-       	 * &lt;jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)<br>
-	 * &lt;request_memory_option> : is option for requesting resources for batch job submission command (e.g. -q, -l h_vmem=)<br>
-	 * &lt;queue_name_for_30G> : is queue name for 30G (e.g. max_mem30, 30G)<br>
 	 **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 30G)
  
  This will output `*mappingstats.txt` file of all samples to each sample directory. The following script will parse the `*mappingstats.txt` files and output a table with summary info across all samples.
@@ -177,12 +172,8 @@ This will output `mappingstats_summary.txt` file to `STUDY/STATS` directory. Thi
 * option : <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_6G>** : set this if you're not on LSF or SGE clust\
-er<br>
-          &lt;submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)<br>
-          &lt;jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)<br>
-          &lt;request_memory_option> : is option for requesting resources for batch job submission command (e.g. -q, -l h_vmem=)<br>
-          &lt;queue_name_for_6G> : is queue name for 6G (e.g. plus, 6G)<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_6G>** :<br>
+         set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)
 
 This outputs `*ribosomalids.txt` of samples to each sample directory (`STUDY/READS/Sample*/`).
@@ -194,12 +185,15 @@ __[NORMALIZATION FACTOR] Ribo percents__
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * option : <br>
-  **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_10G>** :<br>
+         set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 10G)
 
-It assumes there are files of ribosomal ids output from runblast.pl each with suffix "ribosomalids.txt" in each sample directory. This will output `ribosomal_counts.txt` and `ribo_percents.txt` to `READS` directory.
+It assumes there are files of ribosomal ids output from runblast.pl each with suffix "ribosomalids.txt" in each sample directory. This will output `ribosomal_counts.txt` and `ribo_percents.txt` to `STUDY/STATS` directory.
 
-### 2. Run Filter
+#### 2) Run Filter
 This step removes all rows from input sam file except those that satisfy all of the following:
 
   1. Unique mapper / Non-Unique mapper
@@ -221,12 +215,15 @@ Run the following command. By default it will return both unique and non-unique 
   **-u** : set this if you want to return only unique mappers<br>
   **-nu** :  set this if you want to return only non-unique mappers<br>
   **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
-  **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_4G>** :<br>
+         set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)
 
 This creates directories called `STUDY/READS/Sample*/Unique` and/or `STUDY/READS/Sample*/NU` and outputs `filtered.sam` files of all samples to the directories created. 
 
-### 3. Quantify Exons
+#### 3) Quantify Exons
 ##### A. Create Master List of Exons
 Get master list of exons from a UCSC gene info file.
 
@@ -254,10 +251,13 @@ Create a study-specific master list of exons by adding novel exons from the stud
       **-samfilename &lt;s>** : set this to create junctions files using unfiltered aligned samfile. &lt;s> is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam) and all sam files in each sample directory should have the same name<br>
       **-u**  :  set this if you want to return only unique junctions files, otherwise by default it will return merged(unique+non-unique) junctions files<br>
       **-nu** :  set this if you want to return only non-unique files, otherwise by default it will return merged(unique+non-unique) junctions files<br>
-      **-bsub** : set this if you want to submit batch jobs to LSF<br>
-      **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+      **-lsf** : set this if you want to submit batch jobs to LSF<br>
+      **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+      **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_6G>** :<br>
+             set this if you're not on LSF or SGE cluster<br>
+      **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)
 
- This will output `*junctions_hq.bed`, `*junctions_all.bed` and `*junctions_all.rum` to `Sample*/Unique` and `Sample*/NU` directory of all samples.
+ This will output `*junctions_hq.bed`, `*junctions_all.bed` and `*junctions_all.rum` to `Sample*` directory of all samples.
 
 * **Get Novel Exons**
 
@@ -265,13 +265,12 @@ Create a study-specific master list of exons by adding novel exons from the stud
 
          perl runall_get_novel_exons.pl <sample dirs> <loc> <sam file name> [options]
 
-
     * &lt;sample dirs> : a file with the names of the sample directories
     * &lt;loc> : full path of the directory with the sample directories (`READS`)
     * &lt;sam file name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
     * options : <br>
-     **-min <n>** : size of inferred exon, min is set at 10 by default<br>
-     **-max <n>** : size of inferred exon, max is set at 2000 by default
+     **-min &lt;n>** : size of inferred exon, min is set at 10 by default<br>
+     **-max &lt;n>** : size of inferred exon, max is set at 2000 by default
 
  This outputs `*list_of_novel_exons.txt` file of all samples to each sample directory. It also outputs `master_list_of_exons.*STUDY*.txt` file to `READS` directory.
 
@@ -292,9 +291,12 @@ Run the following command with **&lt;output sam?> = false**. By default this wil
 * &lt;output sam?> : false
 * option:<br>
   **-NU-only** : set this for non-unique mappers<br>
-  **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data 
+  **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_4G>** :<br>
+         set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)
 
 This will output `exonquants` file of all samples to `Unique` and/or `NU` directory in each sample directory.
 
@@ -314,8 +316,11 @@ II. Get High Expressors
 * option:<br>
   **-u**  :  set this if you want to return only unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
   **-nu** :  set this if you want to return only non-unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
-  **-bsub** : set this if you want to submit batch jobs to LSF.<br>
-  **-qsub** : set this if you want to submit batch jobs to Sun Grid Engine.
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_15G>** :<br>
+         set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 15G)
 
 This will output `*exonpercents.txt` and `*high_expressors_annot.txt` files of all samples to each sample directory. It will also output `annotated_master_list_of_exons.*STUDY*.txt` to `STUDY/READS` directory.
 
@@ -339,7 +344,7 @@ __[NORMALIZATION FACTOR] High expressor exonpercent__
  **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
  **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
 
-This will output `percent_high_expressor_Unique.txt` and/or `percent_high_expressor_NU.txt` depending on the option provided to `READS` directory.
+This will output `percent_high_expressor_Unique.txt` and/or `percent_high_expressor_NU.txt` depending on the option provided to `STUDY/STATS` directory.
 
 ##### D. Run quantify exons
 
@@ -359,8 +364,11 @@ Run the following command with **&lt;output sam?> = true**. By default this will
   **-depth &lt;n>** : by default, it will output 20 exonmappers<br>
   **-NU-only** : set this for non-unique mappers<br>
   **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
-  **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_4G>** :<br>
+         set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)
 
 This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam`, `notexonmappers.sam`, and `exonquants` file to `Unique` / `NU` directory inside each sample directory. 
 
@@ -374,7 +382,7 @@ __[NORMALIZATION FACTOR] Exon to nonexon signal__
  **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
  **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
 
-This will output `exon2nonexon_signal_stats_Unique.txt` and/or `exon2nonexon_signal_stats_NU.txt` depending on the option provided to `READS` directory.
+This will output `exon2nonexon_signal_stats_Unique.txt` and/or `exon2nonexon_signal_stats_NU.txt` depending on the option provided to `STUDY/STATS` directory.
 
 
 __[NORMALIZATION FACTOR] One exon vs multi exons__
@@ -387,9 +395,9 @@ __[NORMALIZATION FACTOR] One exon vs multi exons__
  **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
  **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
 
-This will output `1exon_vs_multi_exon_stats_Unique.txt` and/or `1exon_vs_multi_exon_stats_NU.txt` depending on the option provided to `READS` directory.
+This will output `1exon_vs_multi_exon_stats_Unique.txt` and/or `1exon_vs_multi_exon_stats_NU.txt` depending on the option provided to `STUDY/STATS` directory.
 
-### 4. Quantify Introns
+#### 4) Quantify Introns
 ##### A. Create Master List of Introns
 
     perl get_master_list_of_introns_from_geneinfofile.pl <gene info file> <loc>
@@ -416,8 +424,11 @@ Run the following command with **&lt;output sam?> = true**. By default this will
 * option : <br>
   **-depth &lt;n>** : by default, it will output 10 intronmappers<br>
   **-NU-only** : set this for non-unique mappers<br>
-  **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_4G>** :<br>
+         set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)
  
 This outputs multiple files of all samples: `intronmappers.(1, 2, 3, ... n).sam`, `intergenicmappers.sam`, and `intronquants` file to `Unique` / `NU` directory in each sample directory.
 
@@ -431,7 +442,7 @@ __[NORMALIZATION FACTOR] Percent of non-exonic signal that is intergenic (as opp
  **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
  **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
 
-This will output `percent_intergenic_Unique.txt` and/or `percent_intergenic_NU.txt` depending on the option provided to `READS` directory.
+This will output `percent_intergenic_Unique.txt` and/or `percent_intergenic_NU.txt` depending on the option provided to `STUDY/STATS` directory.
 
 ### 5. Downsample
 
@@ -443,13 +454,15 @@ This identifies minimum line count of each type of exonmappers/intronmappers/int
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * option : <br>
-  **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
   **-depthE &lt;n>** : set the exonmapper depth (by default, n = 20). set this to 0 if you only want to return intronmappers and intergenic mappers<br>
   **-depthI &lt;n>** : set the intronmapper depth (by default, n = 10). set this to 0 if you only want to return exonmappers<br>
   **-u** : set this if you want to return only unique mappers, otherwise by default it will return both unique and non-uniqe mappers<br>
   **-nu** :  set this if you want to return only non-unique mappers, otherwise by default it will return both unique and non-uniqe mappers<br>
-  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
+  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;status>** :<br>
+         set this if you're not on LSF or SGE cluster<br>
 
 This will output the same number of rows from each file in each `sample_dir/Unique` and/or `sample_dir/NU` directory of the same type.
 
@@ -494,10 +507,13 @@ By default, this will use merged final sam files as input.
 * option:<br>
   **-u**  :  set this if you want to return only unique junctions files, otherwise by default it will return merged(unique+non-unique) junctions files.<br>
   **-nu** :  set this if you want to return only non-unique files, otherwise by default it will return merged(unique+non-unique) junctions files.<br>
-  **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_6G>** :<br>
+         set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)
  
-This will create `STUDY/NORMALIZED_DATA/Junctions` directory and output `junctions_hq.bed`, `junctions_all.bed` and `junctions_all.rum` files of all samples.
+This will create `STUDY/NORMALIZED_DATA/JUNCTIONS` directory and output `junctions_hq.bed`, `junctions_all.bed` and `junctions_all.rum` files of all samples.
 
 ### 7. Master table of features counts
 #####A. Get Exonquants 
@@ -527,8 +543,11 @@ Run the following command with **&lt;output sam?> = false**. This will output me
 * option:<br>
   **-NU-only** : set this for non-unique mappers<br>
   **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
-  **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_4G>** :<br>
+         set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)
   			  
 This outputs `exonquants` file of all samples to `NORMALIZED_DATA/exonmappers/MERGED` (or `NORMALIZED_DATA/exonmappers/Unique` or `NORMALIZED_DATA/exonmappers/NU`).
 
@@ -546,8 +565,11 @@ Run the following command with **&lt;output sam?> = false**. By default this wil
 * &lt;output sam?> : false
 * option:<br>
   **-NU-only** : set this for non-unique mappers<br>
-  **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_4G>** :<br>
+         set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)
 
 This outputs `intronquants` file of all samples to `NORMALIZED_DATA/notexonmappers/Unique` or `NORMALIZED_DATA/notexonmappers/NU`.
 
@@ -561,10 +583,13 @@ This outputs `intronquants` file of all samples to `NORMALIZED_DATA/notexonmappe
 * option:<br>
   **-u**  :  set this if you want to return only unique, otherwise by default it will return min and max spreadsheets.<br>
   **-nu** :  set this if you want to return only non-unique, otherwise by default it will return min and max spreadsheets.<br>
-  **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_6G> &lt;queue_name_for_10G>** :<br>
+         set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G, 10G)
 
-This will output `list_of_exons_counts`, `master_list_of_introns_counts`, and `master_list_of_junctions_counts` files to `STUDY/NORMALIZED_DATA` directory. 
+This will output `list_of_exons_counts`, `master_list_of_introns_counts`, and `master_list_of_junctions_counts` files to `STUDY/NORMALIZED_DATA/SPREADSHEETS` directory. 
 
 **b. Annotate `list_of_exons_counts`**
      
@@ -582,10 +607,13 @@ This will output `list_of_exons_counts`, `master_list_of_introns_counts`, and `m
 > annotation file for mm9 and hg19 available: `Normalization/norm_scripts/ucsc_known_hg19` and `Normalization/norm_scripts/ucsc_known_hg19`
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * option : <br>
-  **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_15G>** :<br>
+         set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 15G)
 
-This will output `master_list_of_exons_counts` to `STUDY/NORMALIZED_DATA`.
+This will output `master_list_of_exons_counts` to `STUDY/NORMALIZED_DATA/SPREADSHEETS`.
 
 **c. Filter low expressors**
 
@@ -605,7 +633,7 @@ This will output `master_list_of_exons_counts` to `STUDY/NORMALIZED_DATA`.
 * &lt;cutoff> : cutoff value
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 
-This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts` to `STUDY/NORMALIZED_DATA`.
+This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts` to `STUDY/NORMALIZED_DATA/SPREADSHEETS`.
 
 ###8. Data Visualization
 
@@ -630,10 +658,13 @@ Use sam2cov to create coverage files and upload them to a Genome Browser. Curren
   **-nu** : set this if you want to use only non-unique mappers to generate coverage files, otherwise by default it will use merged(unique+non-unique) mappers<br>
   **-rum** : set this if you used RUM to align your reads<br>
   **-star** : set this if you used STAR to align your reads<br>
-  **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_15G>** :<br>
+         set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 15G)
 
-This will output `*Unique.cov` and `*NU.cov` files of all samples to `STUDY/NORMALIZED_DATA/FINAL_SAM/MERGED` or `STUDY/NORMALIZED_DATA/FINAL_SAM/Unique` or `STUDY/NORMALIZED_DATA/FINAL_SAM/NU`.
+This will output `*Unique.cov` and `*NU.cov` files of all samples to `STUDY/NORMALIZED_DATA/COV`.
 
 ###9. Clean Up
 #####A. Delete Intermediate SAM Files
@@ -652,8 +683,11 @@ This will output `*Unique.cov` and `*NU.cov` files of all samples to `STUDY/NORM
 * &lt;sam file name> : name of the alignment sam file (e.g. RUM.sam, Aligned.out.sam)
 * &lt;fai file> : full path of fai file 
 * option : <br>
-  **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_6G>** :<br>
+         set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)
 
 This will covert SAM to BAM and delete the SAM. 
  
