@@ -10,30 +10,31 @@
 - Make sure the alignment outputs(SAM files) are in each sample directory inside the `READS` folder.
 - All alignment files (SAM files) MUST have the same name.
 <pre>
-STUDY					
-└── READS							
+STUDY
+└── READS
     ├── Sample_1
     │   ├── fwd.fq/fa
-    │   ├── rev.fq/fa											
-    │   └── Aligned.sam													  
-    ├── Sample_2													      
+    │   ├── rev.fq/fa
+    │   └── Aligned.sam
+    ├── Sample_2
     │   ├── fwd.fq/fa
-    │   ├── rev.fq/fa											
-    │   └── Aligned.sam													          
-    ├── Sample_3											
+    │   ├── rev.fq/fa
+    │   └── Aligned.sam
+    ├── Sample_3
     │   ├── fwd.fq/fa
-    │   ├── rev.fq/fa														      
-    │   └── Aligned.sam														          
-    └── Sample_4											
-        ├── fwd.fq/fa
-        ├── rev.fq/fa															      
-        └── Aligned.sam															          
+    │   ├── rev.fq/fa
+    │   └── Aligned.sam
+    └── Sample_4
+    	├── fwd.fq/fa
+	├── rev.fq/fa
+	└── Aligned.sam															          
 </pre>
+
 #####C. Configuration File
 Copy `template.cfg` file in `Normalization/norm_script/` to your study directory and modify as you need. Follow the instructions in the config file.
 
 #####D. File of Sample Directories and Unaligned Reads
-###### a. File of Sample Directories
+###### i. File of Sample Directories
 Create a file &lt;sample dirs> with the names of the sample directories (without path, sorted by condition).
 
        e.g. the <sample dirs> file should look like this:
@@ -42,7 +43,7 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
             Sample_3
             Sample_4
 
-###### b. File of Unaligned Reads (Forward only)
+###### ii. File of Unaligned Reads (Forward only)
 Create a file &lt;file of input forward fa/fq files> with full path of input forward fa or forward fq files.
 
        e.g. the <file of input forward fa/fq files> file should look like this:
@@ -113,7 +114,7 @@ STUDY
 	 * &lt;sample dirs> : a file with the names of the sample directories
 	 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 	 * &lt;file of input forward fa/fq files> :  a file with the full path of input forward fa or forward fq files
-         * option:<br>
+	 * option : <br>
 	  **-fa** : set this if the input files are in fasta format <br>
 	  **-fq** : set this if the input files are in fastq format <br>
 	  **-gz** : set this if the input files are compressed
@@ -131,11 +132,12 @@ STUDY
        * option : <br>
          **-lsf** : set this if you want to submit batch jobs to LSF<br>
          **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-	 **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_30G>** : set this if you're not on LSF or SGE cluster<br>
-	         &lt;submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)<br>
-	         &lt;jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)<br>
-		 &lt;request_memory_option> : is option for requesting resources for batch job submission command (e.g. -q, -l h_vmem=)<br>
-		 &lt;queue_name_for_30G> : is queue name for 30G (e.g. max_mem30, 30G)<br>
+	 **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_30G>** : <br>
+	 	  set this if you're not on LSF or SGE cluster<br>
+		  	         &lt;submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)<br>
+	         		 &lt;jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)<br>
+				 &lt;request_memory_option> : is option for requesting resources for batch job submission command (e.g. -q, -l h_vmem=)<br>
+				 &lt;queue_name_for_30G> : is queue name for 30G (e.g. max_mem30, 30G)<br>
 	 **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 30G)
  
  This will output `*mappingstats.txt` file of all samples to each sample directory. The following script will parse the `*mappingstats.txt` files and output a table with summary info across all samples.
