@@ -120,18 +120,20 @@ STUDY
      **-min &lt;n>** : is minimum size of inferred exon for get_novel_exons.pl script (Default = 10)<br>
      **-max &lt;n>** : is maximum size of inferred exon for get_novel_exons.pl script (Default = 2000)<br>
      **-cutoff_highexp &lt;n>** : is cutoff % value to identify highly expressed exons.<br>
-                           the script will consider exons with exonpercents greater than n(%) as high expressors,<br>
-                           and remove them from the list of exons.<br>
+                           the script will consider exons with exonpercents greater than n(%) as high expressors,
+                           and remove them from the list of exons.
                            (Default = 100; with the default cutoff, exons expressed >10% will be reported)<br>
      **-depthE &lt;n>** : the pipeline splits filtered sam files into 1,2,3...n exonmappers and downsamples each separately.
                    (Default = 20)<br>
      **-depthI &lt;n>** : the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.
                    (Default = 10)<br>
-     **-cutoff_lowexp &lt;n>** : is cutoff counts to identify low expressors in the final spreadsheets (exon, intron and junc).<br>
+     **-cutoff_lowexp &lt;n>** : is cutoff counts to identify low expressors in the final spreadsheets (exon, intron and junc).
                           the script will consider features with sum of counts for all samples less than <n> as low expressors
                           and remove them from all samples for the final spreadsheets.
                           (Default = 0)<br>
      **-h** : print usage
+
+========================================================================================================
 
 ### 2. NORMALIZATION STEPS
 #### 1) Run BLAST
