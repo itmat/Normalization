@@ -1,5 +1,4 @@
 # Normalization
-
 ### 0. Setting Up
 
 #####A. Clone the repository
@@ -7,7 +6,9 @@
     git clone https://github.com/itmat/Normalization.git
 
 #####B. Input Directory Structure
-Make sure your fastq/fasta files and alignment outputs(SAM files) are in each sample directory inside the `READS` folder.
+- Give `STUDY` directory a unique name.
+- Make sure the alignment outputs(SAM files) are in each sample directory inside the `READS` folder.
+- All alignment files (SAM files) MUST have the same name.
 <pre>
 STUDY					
 └── READS							
@@ -27,9 +28,37 @@ STUDY
         ├── fwd.fq/fa
         ├── rev.fq/fa															      
         └── Aligned.sam															          
-</pre>	    																	    
+</pre>
+#####C. Configuration File
+Copy `template.cfg` file in `Normalization/norm_script/` to your study directory and modify as you need. Follow the instructions in the config file.
 
-#####C. Output Directory Structure
+#####D. File of Sample Directories and Unaligned Reads
+###### a. File of Sample Directories
+Create a file &lt;sample dirs> with the names of the sample directories (without path, sorted by condition).
+
+       e.g. the <sample dirs> file should look like this:
+            Sample_1
+            Sample_2
+            Sample_3
+            Sample_4
+
+###### b. File of Unaligned Reads (Forward only)
+Create a file &lt;file of input forward fa/fq files> with full path of input forward fa or forward fq files.
+
+       e.g. the <file of input forward fa/fq files> file should look like this:
+            path/to/STUDY/READS/Sample_1/fwd.fq
+            path/to/STUDY/READS/Sample_2/fwd.fq
+            path/to/STUDY/READS/Sample_3/fwd.fq
+            path/to/STUDY/READS/Sample_4/fwd.fq
+
+#####E. Install [sam2cov](https://github.com/khayer/sam2cov/)
+This is an optional step. You can use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR.
+
+     git clone https://github.com/khayer/sam2cov.git
+     cd sam2cov
+     make
+
+#####F. Output Directory Structure
 You will find all log files and shell scripts in `STUDY/logs` and `STUDY/shell_scripts` directory, respectively. Once you complete the normalization pipeline, your directory structure will look like this (before the Clean Up step):
 <pre>
 STUDY
@@ -47,38 +76,36 @@ STUDY
 │       ├── NU
 │       └── Unique
 │
+│── STATS
+│
 │── NORMALIZED_DATA
 │   ├── exonmappers
-│   │   ├── MERGED
-│   │   ├── NU
-│   │   └── Unique
+│   │    ├── MERGED
+│   │    ├── NU
+│   │    └── Unique
 │   ├── notexonmappers
 │   │    ├── MERGED
 │   │    ├── NU
 │   │    └── Unique
 │   ├── FINAL_SAM
-│   │   ├── MERGED
-│   │   ├── NU
-│   │   └── Unique
-│   └── Junctions
+│   │    └── MERGED
+│   ├── COV
+│   │    └── MERGED
+│   ├── SPREADSHEETS
+│   └── JUNCTIONS
 │
 │── logs
 │
 └── shell_scripts
 </pre>
-   					
-### 1. Run BLAST
 
-##### A. File of Sample Directories
-Create a file &lt;sample dirs> with the names of the sample directories (without path, sorted by condition). This file will be used throughout the pipeline.
+### 1. RUN_NORMALIZATION
 
-       e.g. the <sample dirs> file should look like this:
-            Sample_1
-            Sample_2
-            Sample_3
-            Sample_4
 
-##### B. Mapping Statistics
+### 2. NORMALIZATION STEPS
+#### 1) Run BLAST
+
+##### A. Mapping Statistics
 * **Get total number of reads from input fasta or fastq files**
 
          perl get_total_num_reads.pl <sample dirs> <loc> <file of input forward fa/fq files> [options]
@@ -86,19 +113,12 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
 	 * &lt;sample dirs> : a file with the names of the sample directories
 	 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 	 * &lt;file of input forward fa/fq files> :  a file with the full path of input forward fa or forward fq files
-
-           	    e.g. the <file of input forward fa/fq files> file should look like this:
-     		    path/to/STUDY/READS/Sample_1/fwd.fq
-	            path/to/STUDY/READS/Sample_2/fwd.fq
-     		    path/to/STUDY/READS/Sample_3/fwd.fq
-	            path/to/STUDY/READS/Sample_4/fwd.fq
-
-	* option:<br>
+         * option:<br>
 	  **-fa** : set this if the input files are in fasta format <br>
 	  **-fq** : set this if the input files are in fastq format <br>
 	  **-gz** : set this if the input files are compressed
 
- This will output a file called `total_num_reads.txt` to the `STUDY/READS` directory.
+ This will output a file called `total_num_reads.txt` to the `STUDY/STATS` directory.
 
 * **Mapping statistics**
 
@@ -109,8 +129,14 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
        * &lt;sam file name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
        * &lt;total_num_reads?> : if you have the total_num_reads.txt file, use "true" If not, use "false"
        * option : <br>
-         **-bsub** : set this if you want to submit batch jobs to LSF<br>
-         **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+         **-lsf** : set this if you want to submit batch jobs to LSF<br>
+         **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+	 **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_30G>** : set this if you're not on LSF or SGE cluster<br>
+	         &lt;submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)<br>
+	         &lt;jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)<br>
+		 &lt;request_memory_option> : is option for requesting resources for batch job submission command (e.g. -q, -l h_vmem=)<br>
+		 &lt;queue_name_for_30G> : is queue name for 30G (e.g. max_mem30, 30G)<br>
+	 **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 30G)
  
  This will output `*mappingstats.txt` file of all samples to each sample directory. The following script will parse the `*mappingstats.txt` files and output a table with summary info across all samples.
 
@@ -121,14 +147,14 @@ __[NORMALIZATION FACTORS] Mapping stats summary__
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
       	  
-This will output `mappingstats_summary.txt` file to `READS` directory. This file contains the following normalization factors: 
+This will output `mappingstats_summary.txt` file to `STUDY/STATS` directory. This file contains the following normalization factors: 
 
  1. Total number of reads 
  2. Percent mitochondrial 
  3. Percent non-unique mappers 
  4. Percent of forward and reverse reads that overlap
 
-##### C. BLAST
+##### B. BLAST
 
       perl runall_runblast.pl <sample dirs> <loc> <samfile name> <blast dir> <db> [options]
 
@@ -145,9 +171,16 @@ This will output `mappingstats_summary.txt` file to `READS` directory. This file
 
 > ribomouse db is available : `Normalization/norm_scripts/ncbi-blast-2.2.27+/ribomouse`
 
-* option:<br>
-  **-bsub** : set this if you want to submit batch jobs to LSF<br>
-  **-qsub** :  set this if you want to submit batch jobs to Sun Grid Engine
+* option : <br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_6G>** : set this if you're not on LSF or SGE clust\
+er<br>
+          &lt;submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)<br>
+          &lt;jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)<br>
+          &lt;request_memory_option> : is option for requesting resources for batch job submission command (e.g. -q, -l h_vmem=)<br>
+          &lt;queue_name_for_6G> : is queue name for 6G (e.g. plus, 6G)<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)
 
 This outputs `*ribosomalids.txt` of samples to each sample directory (`STUDY/READS/Sample*/`).
 

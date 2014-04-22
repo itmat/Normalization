@@ -1,11 +1,12 @@
 #!/usr/bin/env perl
-$USAGE =  "\nUsage: run_normalization --sample_dirs <file of sample_dirs> --loc <s> --unaligned <file of fa/fqfiles> --samfilename <s> [options]
+$USAGE =  "\nUsage: run_normalization --sample_dirs <file of sample_dirs> --loc <s> --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
 
 where:
 --sample_dirs <file of sample_dirs> : is a file of sample directories with alignment output without path
 --loc <s> : /path/to/directory with the sample directories
 --unaligned <file of fa/fqfiles> : is a file with the full path of input forward fa or forward fq files
 --samfilename <s> : is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam) 
+--cfg <cfg file> : is a cfg file for the study
 
 OPTIONS:
      [data type]
@@ -90,6 +91,15 @@ for($i=0; $i<@ARGV; $i++) {
 	$i++;
 	$required++;
     }
+    if ($ARGV[$i] eq '--cfg'){
+	$option_found = "true";
+	$cfg_file = $ARGV[$i+1];
+	if ($cfg_file =~ /^-/ | $cfg_file eq ""){
+	    die "\nplease provide <cfg file> for --cfg\n";
+	}
+	$i++;
+	$required++;
+    }
     if ($ARGV[$i] eq '-se'){
         $option_found = "true";
 	$se = "-se";
@@ -162,8 +172,8 @@ for($i=0; $i<@ARGV; $i++) {
         die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
-if ($required ne '4'){
-    die "please specify the required parameters: --sample_dirs, --loc, --unaligned, and --samfilename\n";
+if ($required ne '5'){
+    die "please specify the required parameters: --sample_dirs, --loc, --unaligned, --samfilename and --cfg\n";
 }
 if ($unaligned ne '1'){
     die "you have to specify the type of your unaligned files: '-fa' or '-fq'\n"
@@ -183,12 +193,11 @@ $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 $study = $fields[@fields-2];
 
-$config_file = $study_dir . "/$study.cfg";
-unless (-e $config_file){
-    die "ERROR: cannot find file \"$config_file\". please provide a cfg file for the study\n";
+unless (-e $cfg_file){
+    die "ERROR: cannot find file \"$cfg_file\". please provide a cfg file for the study\n";
 }
 
-&parse_config_file ($config_file, \%Config);
+&parse_config_file ($cfg_file, \%Config);
 
 use Cwd 'abs_path';
 $norm_script_dir = abs_path($0);
@@ -203,7 +212,7 @@ if ($SAM2COV =~ /^true/ | $SAM2COV =~ /^TRUE/){
     $sam2cov = "true";
     $num_cov = 0;
     unless (-e $SAM2COV_LOC){
-	die "You need to provide sam2cov location. (#4 DATA VISUALIZATION in your cfg file \"$config_file\")\n";
+	die "You need to provide sam2cov location. (#4 DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
     }
     $sam2cov_loc = $SAM2COV_LOC;
     if ($RUM =~ /^true/ | $RUM =~ /^TRUE/){
@@ -215,7 +224,7 @@ if ($SAM2COV =~ /^true/ | $SAM2COV =~ /^TRUE/){
 	$num_cov++;
     }
     if ($num_cov ne '1'){
-	die "Please specify which aligner was used. (#4 DATA VISUALIZATION in your cfg file \"$config_file\")\n";
+	die "Please specify which aligner was used. (#4 DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
     }
 }
 $delete_int_sam = "true";
@@ -244,7 +253,7 @@ $num_cluster = 0;
 if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
     $num_cluster++;
     if ($SUBMIT_BATCH_JOBS_sge eq "" | $JOB_NAME_OPTION_sge eq "" | $CHECK_STATUS_FULLNAME_sge eq "" | $REQUEST_RESOURCE_OPTION_sge eq "" | $QUEUE_NAME_4G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $WAIT_OPTION_sge eq "" | $WAIT_2JOBS_OPTION_sge eq "" | $MAX_JOBS_sge eq ""){
-        die "ERROR: please provide all required CLUSTER INFO for SGE_CLUSTER in the $config_file file\n";
+        die "ERROR: please provide all required CLUSTER INFO for SGE_CLUSTER in the $cfg_file file\n";
     }
     else{
 	$batchjobs = $SUBMIT_BATCH_JOBS_sge;
@@ -267,7 +276,7 @@ if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
 if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
     $num_cluster++;
     if ($SUBMIT_BATCH_JOBS_lsf eq "" | $JOB_NAME_OPTION_lsf eq "" | $CHECK_STATUS_FULLNAME_lsf eq "" | $REQUEST_RESOURCE_OPTION_lsf eq "" | $QUEUE_NAME_4G_lsf eq "" | $QUEUE_NAME_6G_lsf eq "" | $QUEUE_NAME_10G_lsf eq "" |  $QUEUE_NAME_15G_lsf eq "" | $QUEUE_NAME_30G_lsf eq "" | $WAIT_OPTION_lsf eq "" | $WAIT_2JOBS_OPTION_lsf eq "" | $MAX_JOBS_lsf eq ""){
-        die "ERROR: please provide all required CLUSTER INFO for LSF_CLUSTER in the $config_file file\n";
+        die "ERROR: please provide all required CLUSTER INFO for LSF_CLUSTER in the $cfg_file file\n";
     }
     else{
 	$batchjobs = $SUBMIT_BATCH_JOBS_lsf;
@@ -290,7 +299,7 @@ if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
 if ($OTHER_CLUSTER =~ /^true/ | $OTHER_CLUSTER =~ /^TRUE/){
     $num_cluster++;
     if ($SUBMIT_BATCH_JOBS eq "" | $JOB_NAME_OPTION eq "" | $CHECK_STATUS_FULLNAME eq "" | $REQUEST_RESOURCE_OPTION eq "" | $QUEUE_NAME_4G eq "" | $QUEUE_NAME_6G eq "" | $QUEUE_NAME_10G eq "" |  $QUEUE_NAME_15G eq "" | $QUEUE_NAME_30G eq "" | $WAIT_OPTION eq "" | $WAIT_2JOBS_OPTION eq "" | $MAX_JOBS eq ""){
-	die "ERROR: please provide all required CLUSTER INFO for OTHER_CLUSTER in the $config_file file\n";
+	die "ERROR: please provide all required CLUSTER INFO for OTHER_CLUSTER in the $cfg_file file\n";
     }
     else {
 	$batchjobs = $SUBMIT_BATCH_JOBS;
@@ -310,7 +319,7 @@ if ($OTHER_CLUSTER =~ /^true/ | $OTHER_CLUSTER =~ /^TRUE/){
     }
 }
 if ($num_cluster ne '1'){
-    die "ERROR: please specify which cluster you're using in your $config_file file\n";
+    die "ERROR: please specify which cluster you're using in your $cfg_file file\n";
 }
 
 $novel_list = "$LOC/master_list_of_exons.$study.txt";

@@ -15,7 +15,7 @@ option:
 
  -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI cluster).
 
- -other <submit> <jobname_option> <request_memory_option> <queue_name_for_15G>:
+ -other <submit> <jobname_option> <request_memory_option> <queue_name_for_30G>:
         set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
 
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
