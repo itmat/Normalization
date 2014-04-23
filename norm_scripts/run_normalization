@@ -256,10 +256,10 @@ if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
         die "ERROR: please provide all required CLUSTER INFO for SGE_CLUSTER in the $cfg_file file\n";
     }
     else{
-	$batchjobs = $SUBMIT_BATCH_JOBS_sge;
-	$jobname = $JOB_NAME_OPTION_sge;
-	$status = $CHECK_STATUS_FULLNAME_sge;
-	$request = $REQUEST_RESOURCE_OPTION_sge;
+	$batchjobs = "qsub -cwd";
+	$jobname = "-N";
+	$status = "qstat -r";
+	$request = "-l h_vmem=";
 	$queue_4G = $QUEUE_NAME_4G_sge;
 	$queue_6G = $QUEUE_NAME_6G_sge;
 	$queue_10G = $QUEUE_NAME_10G_sge;
@@ -279,10 +279,10 @@ if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
         die "ERROR: please provide all required CLUSTER INFO for LSF_CLUSTER in the $cfg_file file\n";
     }
     else{
-	$batchjobs = $SUBMIT_BATCH_JOBS_lsf;
-	$jobname = $JOB_NAME_OPTION_lsf;
-	$status = $CHECK_STATUS_FULLNAME_lsf;
-	$request = $REQUEST_RESOURCE_OPTION_lsf;
+	$batchjobs = "bsub";
+	$jobname = "-J";
+	$status = "bjobs -w";
+	$request = "-q";
 	$queue_4G = $QUEUE_NAME_4G_lsf;
 	$queue_6G = $QUEUE_NAME_6G_lsf;
 	$queue_10G = $QUEUE_NAME_10G_lsf;
@@ -293,7 +293,7 @@ if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
 	$c_option = $submit;
 	$wait_option = $WAIT_OPTION_lsf;
 	$wait_2jobs_option = $WAIT_2JOBS_OPTION_lsf;
-	$max_jobs = $MAX_JOBS_lsf;
+	$maxjobs = $MAX_JOBS_lsf;
     }
 }
 if ($OTHER_CLUSTER =~ /^true/ | $OTHER_CLUSTER =~ /^TRUE/){
@@ -335,7 +335,7 @@ unless (-d $logdir){
     `mkdir $logdir`;}
 $job_num = 1;
 open(LOG, ">$logfile");
-
+#=comment
 #get_total_num_reads.pl
 `echo "perl $norm_script_dir/get_total_num_reads.pl $sample_dir $LOC $unaligned_file $unaligned_type $unaligned_z" | $batchjobs $jobname "$study.get_total_num_reads" -o $logdir/$study.get_total_num_reads.out -e $logdir/$study.get_total_num_reads.err`;
 
@@ -349,8 +349,12 @@ $wait = $wait_option;
 $wait =~ s/JOB/$to_wait/;
 if ($other eq "true"){
     $c_option = "$submit $batchjobs $jobname $request $queue_30G";
+    $new_queue = "";
 }
-`echo "perl $norm_script_dir/runall_sam2mappingstats.pl $sample_dir $LOC $samfilename true $c_option" | $batchjobs $wait $jobname "$study.runall_sam2mappingstats" -o $logdir/$study.runall_sam2mappingstats.out -e $logdir/$study.runall_sam2mappingstats.err`;
+else{
+    $new_queue = "-mem $queue_30G";
+}
+`echo "perl $norm_script_dir/runall_sam2mappingstats.pl $sample_dir $LOC $samfilename true $c_option $new_queue" | $batchjobs $wait $jobname "$study.runall_sam2mappingstats" -o $logdir/$study.runall_sam2mappingstats.out -e $logdir/$study.runall_sam2mappingstats.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.runall_sam2mappingstats\"\t$date";
 $job_num++;
@@ -385,8 +389,12 @@ $job_num++;
 #blast
 if ($other eq "true"){
     $c_option = "$submit $batchjobs $jobname $request $queue_6G";
+    $new_queue = "";
 }
-`echo "perl $norm_script_dir/runall_runblast.pl $sample_dir $LOC $samfilename $norm_script_dir/ncbi-blast-2.2.27+ $norm_script_dir/ncbi-blast-2.2.27+/ribomouse $c_option" | $batchjobs $jobname "$study.runall_runblast" -o $logdir/$study.runall_runblast.out -e $logdir/$study.runall_runblast.err`;
+else{
+    $new_queue = "-mem $queue_6G";
+}
+`echo "perl $norm_script_dir/runall_runblast.pl $sample_dir $LOC $samfilename $norm_script_dir/ncbi-blast-2.2.27+ $norm_script_dir/ncbi-blast-2.2.27+/ribomouse $c_option $new_queue" | $batchjobs $jobname "$study.runall_runblast" -o $logdir/$study.runall_runblast.out -e $logdir/$study.runall_runblast.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.runall_runblast\"\t$date";
 $job_num++;
@@ -415,8 +423,12 @@ $wait = $wait_option;
 $wait =~ s/JOB/$to_wait/;
 if ($other eq "true"){
     $c_option = "$submit $batchjobs $jobname $request $queue_10G";
+    $new_queue = "";
 }
-`echo "perl $norm_script_dir/runall_get_ribo_percents.pl $sample_dir $LOC $c_option" | $batchjobs $wait $jobname "$study.runall_getribopercents" -o $logdir/$study.runall_getribopercents.out -e $logdir/$study.runall_getribopercents.err`;
+else{
+    $new_queue = "-mem $queue_10G";
+}
+`echo "perl $norm_script_dir/runall_get_ribo_percents.pl $sample_dir $LOC $c_option $new_mem" | $batchjobs $wait $jobname "$study.runall_getribopercents" -o $logdir/$study.runall_getribopercents.out -e $logdir/$study.runall_getribopercents.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.ribopercents\"\t$date";
 $job_num++;
@@ -427,8 +439,12 @@ $wait = $wait_option;
 $wait =~ s/JOB/$to_wait/;
 if ($other eq "true"){
     $c_option = "$submit $batchjobs $jobname $request $queue_4G";
+    $new_queue = "";
 }
-`echo "perl $norm_script_dir/runall_filter.pl $sample_dir $LOC $samfilename $se $c_option" | $batchjobs $wait $jobname "$study.runall_filtersam" -o $logdir/$study.runall_filtersam.out -e $logdir/$study.runall_filtersam.err`;
+else{
+    $new_queue = "-mem $queue_4G";
+}
+`echo "perl $norm_script_dir/runall_filter.pl $sample_dir $LOC $samfilename $se $c_option $new_queue" | $batchjobs $wait $jobname "$study.runall_filtersam" -o $logdir/$study.runall_filtersam.out -e $logdir/$study.runall_filtersam.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.runall_filtersam\"\t$date";
 $job_num++;
@@ -463,8 +479,12 @@ $wait = $wait_option;
 $wait =~ s/JOB/$to_wait/;
 if ($other eq "true"){
     $c_option = "$submit $batchjobs $jobname $request $queue_6G";
+    $new_queue = "";
 }
-`echo "perl $norm_script_dir/runall_sam2junctions.pl $sample_dir $LOC $geneinfo $genome -samfilename $samfilename $c_option" | $batchjobs $wait $jobname "$study.runall_sam2junctions.samfilename" -o $logdir/$study.runall_sam2junctions.samfilename.out -e $logdir/$study.runall_sam2junctions.samfilename.err`;
+else{
+    $new_queue = "-mem $queue_6G";
+}
+`echo "perl $norm_script_dir/runall_sam2junctions.pl $sample_dir $LOC $geneinfo $genome -samfilename $samfilename $c_option $new_queue" | $batchjobs $wait $jobname "$study.runall_sam2junctions.samfilename" -o $logdir/$study.runall_sam2junctions.samfilename.out -e $logdir/$study.runall_sam2junctions.samfilename.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.runall_sam2junctions.samfilename\"\t$date";
 $job_num++;
@@ -512,14 +532,18 @@ $wait =~ s/JOB1/$to_wait1/;
 $wait =~ s/JOB2/$to_wait2/;
 if ($other eq "true"){
     $c_option = "$submit $batchjobs $jobname $request $queue_4G";
+    $new_queue = "";
 }
-`echo "perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $novel_list false $se $c_option" | $batchjobs $wait $jobname "$study.quantifyexons.filter.u" -o $logdir/$study.quantifyexons.filter.u.out -e $logdir/$study.quantifyexons.filter.u.err`;
+else{
+    $new_queue = "-mem $queue_4G";
+}
+`echo "perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $novel_list false $se $c_option $new_queue" | $batchjobs $wait $jobname "$study.quantifyexons.filter.u" -o $logdir/$study.quantifyexons.filter.u.out -e $logdir/$study.quantifyexons.filter.u.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.quantifyexons.filter.u\"\t$date";
 $job_num++;
 
 #quantify_exons for filter nu
-`echo "perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $novel_list false $se -NU-only $c_option" | $batchjobs $wait $jobname "$study.quantifyexons.filter.nu" -o $logdir/$study.quantifyexons.filter.nu.out -e $logdir/$study.quantifyexons.filter.nu.err`;
+`echo "perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $novel_list false $se -NU-only $c_option $new_queue" | $batchjobs $wait $jobname "$study.quantifyexons.filter.nu" -o $logdir/$study.quantifyexons.filter.nu.out -e $logdir/$study.quantifyexons.filter.nu.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.quantifyexons.filter.nu\"\t$date";
 $job_num++;
@@ -551,8 +575,12 @@ $wait = $wait_option;
 $wait =~ s/JOB/$to_wait/;
 if ($other eq "true"){
     $c_option = "$submit $batchjobs $jobname $request $queue_15G";
+    $new_queue = "";
 }
-`echo "perl $norm_script_dir/runall_get_high_expressors.pl $sample_dir $LOC $cutoff_he $annot $novel_list $c_option" | $batchjobs $wait $jobname "$study.runall_get_high_expressors" -o $logdir/$study.runall_get_high_expressors.out -e $logdir/$study.runall_get_high_expressors.err`;
+else{
+    $new_queue = "-mem $queue_15G";
+}
+`echo "perl $norm_script_dir/runall_get_high_expressors.pl $sample_dir $LOC $cutoff_he $annot $novel_list $c_option $new_queue" | $batchjobs $wait $jobname "$study.runall_get_high_expressors" -o $logdir/$study.runall_get_high_expressors.out -e $logdir/$study.runall_get_high_expressors.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.runall_get_high_expressors\"\t$date";
 $job_num++;
@@ -599,9 +627,6 @@ else{
     $wait = $wait_option;
     $wait =~ s/JOB/$to_wait/;
 }
-if ($other eq "true"){
-    $c_option = "$submit $batchjobs $jobname $request $queue_4G";
-}
 `echo "perl $norm_script_dir/get_percent_high_expressor.pl $sample_dir $LOC" | $batchjobs $wait $jobname "$study.get_percent_high_expressor" -o $logdir/$study.get_percent_high_expressor.out -e $logdir/$study.get_percent_high_expressor.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.get_percent_high_expressor\"\t$date";
@@ -619,14 +644,18 @@ else {
 }
 if ($other eq "true"){
     $c_option = "$submit $batchjobs $jobname $request $queue_4G";
+    $new_queue = "";
 }
-`echo "perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant true $se $c_option -depth $i_exon" | $batchjobs $wait $jobname "$study.runall_quantify_exons.true.u" -o $logdir/$study.runall_quantify_exons.true.u.out -e $logdir/$study.runall_quantify_exons.true.u.err`;
+else{
+    $new_queue = "-mem $queue_4G";
+}
+`echo "perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant true $se $c_option -depth $i_exon $new_queue" | $batchjobs $wait $jobname "$study.runall_quantify_exons.true.u" -o $logdir/$study.runall_quantify_exons.true.u.out -e $logdir/$study.runall_quantify_exons.true.u.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.runall_quantify_exons.true.u\"\t$date";
 $job_num++;
 
 #run_quantify_exons nu
-`echo "perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant true $se $c_option -NU-only -depth $i_exon" | $batchjobs $wait $jobname "$study.runall_quantify_exons.true.nu" -o $logdir/$study.runall_quantify_exons.true.nu.out -e $logdir/$study.runall_quantify_exons.true.nu.err`;
+`echo "perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant true $se $c_option -NU-only -depth $i_exon $new_queue" | $batchjobs $wait $jobname "$study.runall_quantify_exons.true.nu" -o $logdir/$study.runall_quantify_exons.true.nu.out -e $logdir/$study.runall_quantify_exons.true.nu.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.runall_quantify_exons.true.nu\"\t$date";
 $job_num++;
@@ -678,14 +707,18 @@ $wait =~ s/JOB1/$to_wait1/;
 $wait =~ s/JOB2/$to_wait2/;
 if ($other eq "true"){
     $c_option = "$submit $batchjobs $jobname $request $queue_4G";
+    $new_queue = "";
 }
-`echo "perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt true $c_option -depth $i_intron" | $batchjobs $wait $jobname "$study.runall_quantify_introns.true.u" -o $logdir/$study.runall_quantify_introns.true.u.out -e $logdir/$study.runall_quantify_introns.true.u.err`;
+else{
+    $new_queue = "-mem $queue_4G";
+}
+`echo "perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt true $c_option -depth $i_intron $new_queue" | $batchjobs $wait $jobname "$study.runall_quantify_introns.true.u" -o $logdir/$study.runall_quantify_introns.true.u.out -e $logdir/$study.runall_quantify_introns.true.u.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.runall_quantify_introns.true.u\"\t$date";
 $job_num++;
 
 #run_quantify_introns nu
-`echo "perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt true $c_option -NU-only -depth $i_intron" | $batchjobs $wait $jobname "$study.runall_quantify_introns.true.nu" -o $logdir/$study.runall_quantify_introns.true.nu.out -e $logdir/$study.runall_quantify_introns.true.nu.err`;
+`echo "perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt true $c_option -NU-only -depth $i_intron $new_queue" | $batchjobs $wait $jobname "$study.runall_quantify_introns.true.nu" -o $logdir/$study.runall_quantify_introns.true.nu.out -e $logdir/$study.runall_quantify_introns.true.nu.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.runall_quantify_introns.true.nu\"\t$date";
 $job_num++;
@@ -716,11 +749,10 @@ $wait =~ s/JOB/$to_wait/;
 $date = `date`;
 print LOG "$job_num. started \"$study.get_percent_intergenic\"\t$date";
 $job_num++;
-
+#=cut
 #runall_head
 @s = split(" ", $status);
 $stat = $s[0];
-	      
 if ($other eq "true"){
     $c_option = "$submit $batchjobs $jobname $stat";
 }
@@ -728,11 +760,12 @@ $cluster_max = "";
 if ($maxjobs ne '200' && $maxjobs < '200'){
     $cluster_max = "-max_jobs $maxjobs";
 }
+#=comment
 `echo "perl $norm_script_dir/runall_head.pl $sample_dir $LOC $c_option $cluster_max -depthE $i_exon -depthI $i_intron" | $batchjobs $wait $jobname "$study.runall_head" -o $logdir/$study.runall_head.out -e $logdir/$study.runall_head.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.runall_head\"\t$date";
 $job_num++;
-
+#=comment
 
 sleep(10);
 $check = `$status | grep -C 1 -w $study.runall_head | egrep 'PEND|qw|hqw' | wc -l`;
@@ -776,8 +809,12 @@ $wait = $wait_option;
 $wait =~ s/JOB/$to_wait/;
 if ($other eq "true"){
     $c_option = "$submit $batchjobs $jobname $request $queue_6G";
+    $new_queue = "";
 }
-`echo "perl $norm_script_dir/runall_sam2junctions.pl $sample_dir $LOC $geneinfo $genome $c_option" | $batchjobs $wait $jobname "$study.runall_sam2junctions" -o $logdir/$study.runall_sam2junctions.out -e $logdir/$study.runall_sam2junctions.err`;
+else{
+    $new_queue = "-mem $queue_6G";
+}
+`echo "perl $norm_script_dir/runall_sam2junctions.pl $sample_dir $LOC $geneinfo $genome $c_option $new_queue" | $batchjobs $wait $jobname "$study.runall_sam2junctions" -o $logdir/$study.runall_sam2junctions.out -e $logdir/$study.runall_sam2junctions.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.runall_sam2junctions\"\t$date";
 $job_num++;
@@ -797,8 +834,12 @@ $wait = $wait_option;
 $wait =~ s/JOB/$to_wait/;
 if ($other eq "true"){
     $c_option = "$submit $batchjobs $jobname $request $queue_4G";
+    $new_queue = "";
 }
-`echo "perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant false $se $c_option" | $batchjobs $wait $jobname "$study.runall_quantify_exons.false" -o $logdir/$study.runall_quantify_exons.false.out -e $logdir/$study.runall_quantify_exons.false.err`;
+else{
+    $new_queue = "-mem $queue_4G";
+}
+`echo "perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant false $se $c_option $new_queue" | $batchjobs $wait $jobname "$study.runall_quantify_exons.false" -o $logdir/$study.runall_quantify_exons.false.out -e $logdir/$study.runall_quantify_exons.false.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.runall_quantify_exons.false\"\t$date";
 $job_num++;
@@ -807,16 +848,14 @@ $job_num++;
 $to_wait = "$study.cat_headfiles";
 $wait = $wait_option;
 $wait =~ s/JOB/$to_wait/;
-if ($other eq "true"){
-    $c_option = "$submit $batchjobs $jobname $request $queue_4G";
-}
-`echo "perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt false $c_option" | $batchjobs $wait $jobname "$study.runall_quantify_introns.false.u" -o $logdir/$study.runall_quantify_introns.false.u.out -e $logdir/$study.runall_quantify_introns.false.u.err`;
+
+`echo "perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt false $c_option $new_queue" | $batchjobs $wait $jobname "$study.runall_quantify_introns.false.u" -o $logdir/$study.runall_quantify_introns.false.u.out -e $logdir/$study.runall_quantify_introns.false.u.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.runall_quantify_introns.false.u\"\t$date";
 $job_num++;
 
 #runall_quantify_introns nu
-`echo "perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt false $c_option -NU-only" | $batchjobs $wait $jobname "$study.runall_quantify_introns.false.nu" -o $logdir/$study.runall_quantify_introns.false.nu.out -e $logdir/$study.runall_quantify_introns.false.nu.err`;
+`echo "perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt false $c_option -NU-only $new_queue" | $batchjobs $wait $jobname "$study.runall_quantify_introns.false.nu" -o $logdir/$study.runall_quantify_introns.false.nu.out -e $logdir/$study.runall_quantify_introns.false.nu.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.runall_quantify_introns.false.nu\"\t$date";
 $job_num++;
@@ -847,8 +886,12 @@ $wait =~ s/JOB1/$to_wait1/;
 $wait =~ s/JOB2/$to_wait2/;
 if ($other eq "true"){
     $c_option = "$submit $batchjobs $jobname $request $queue_6G $queue_10G";
+    $new_queue = "";
 }
-`echo "perl $norm_script_dir/make_final_spreadsheets.pl $sample_dir $LOC $c_option" | $batchjobs $wait $jobname "$study.make_final_spreadsheets" -o $logdir/$study.make_final_spreadsheets.out -e $logdir/$study.make_final_spreadsheets.err`;
+else{
+    $new_queue = "-mem $queue_10G";
+}
+`echo "perl $norm_script_dir/make_final_spreadsheets.pl $sample_dir $LOC $c_option $new_queue" | $batchjobs $wait $jobname "$study.make_final_spreadsheets" -o $logdir/$study.make_final_spreadsheets.out -e $logdir/$study.make_final_spreadsheets.err`;
 
 $date = `date`;
 print LOG "$job_num. started \"$study.make_final_spreadsheets\"\t$date";
@@ -882,8 +925,12 @@ $wait = $wait_option;
 $wait =~ s/JOB/$to_wait/;
 if ($other eq "true"){
     $c_option = "$submit $batchjobs $jobname $request $queue_15G";
+    $new_queue = "";
 }
-`echo "perl $norm_script_dir/run_annotate.pl $to_annotate $annot $LOC $c_option" | $batchjobs $wait $jobname "$study.run_annotate" -o $logdir/$study.run_annotate.out -e $logdir/$study.run_annotate.err`;
+else{
+    $new_queue = "-mem $queue_15G";
+}
+`echo "perl $norm_script_dir/run_annotate.pl $to_annotate $annot $LOC $c_option $new_queue" | $batchjobs $wait $jobname "$study.run_annotate" -o $logdir/$study.run_annotate.out -e $logdir/$study.run_annotate.err`;
 $date = `date`;
 print LOG "$job_num. started \"$study.run_annotate\"\t$date";
 $job_num++;
@@ -926,8 +973,12 @@ if ($sam2cov eq "true"){
     $wait =~ s/JOB/$to_wait/;
     if ($other eq "true"){
 	$c_option = "$submit $batchjobs $jobname $request $queue_15G";
+        $new_queue = "";
     }
-    `echo "perl $norm_script_dir/runall_sam2cov.pl $sample_dir $LOC $fai $sam2cov_loc $aligner $c_option" | $batchjobs $wait $jobname "$study.runall_sam2cov" -o $logdir/$study.runall_sam2cov.out -e $logdir/$study.runall_sam2cov.err`;
+    else{
+	$new_queue = "-mem $queue_15G";
+    }
+    `echo "perl $norm_script_dir/runall_sam2cov.pl $sample_dir $LOC $fai $sam2cov_loc $aligner $c_option $new_queue" | $batchjobs $wait $jobname "$study.runall_sam2cov" -o $logdir/$study.runall_sam2cov.out -e $logdir/$study.runall_sam2cov.err`;
     $date = `date`;
     print LOG "$job_num. started \"$study.runall_sam2cov\"\t$date";
     $job_num++;
@@ -977,13 +1028,17 @@ if ($convert_sam2bam eq "true"){
     $wait =~ s/JOB/$to_wait/;
     if ($other eq "true"){
 	$c_option = "$submit $batchjobs $jobname $request $queue_15G";
+        $new_queue = "";
     }
-    `echo "perl $norm_script_dir/runall_sam2bam.pl $sample_dir $LOC $samfilename $fai $c_option" | $batchjobs $wait $jobname "$study.sam2bam" -o $logdir/$study.sam2bam.out -e $logdir/$study.sam2bam.err`;
+    else{
+	$new_queue = "-mem $queue_15G";
+    }
+    `echo "perl $norm_script_dir/runall_sam2bam.pl $sample_dir $LOC $samfilename $fai $c_option $new_queue" | $batchjobs $wait $jobname "$study.sam2bam" -o $logdir/$study.sam2bam.out -e $logdir/$study.sam2bam.err`;
     $date = `date`;
     print LOG "$job_num. started \"$study.sam2bam\"\t$date";
 }
 close(LOG);
-
+#=cut
 sub parse_config_file () {
     ($File, $Config) = @_;
     open(CONFIG, "$File") or die "ERROR: Config file not found : $File\n";

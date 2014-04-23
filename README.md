@@ -9,25 +9,23 @@
 - Give `STUDY` directory a unique name.
 - Make sure the alignment outputs(SAM files) are in each sample directory inside the `READS` folder.
 - All alignment files (SAM files) MUST have the same name.
+
 <pre>
 STUDY
 └── READS
-    ├── Sample_1
-    │   ├── fwd.fq/fa
-    │   ├── rev.fq/fa
-    │   └── Aligned.sam
-    ├── Sample_2
-    │   ├── fwd.fq/fa
-    │   ├── rev.fq/fa
-    │   └── Aligned.sam
-    ├── Sample_3
-    │   ├── fwd.fq/fa
-    │   ├── rev.fq/fa
-    │   └── Aligned.sam
-    └── Sample_4
-    	├── fwd.fq/fa
-	├── rev.fq/fa
-	└── Aligned.sam															          
+    ├── Sample_1
+    │   ├── fq/fa files
+    │   └── Aligned.sam
+    ├── Sample_2
+    │   ├── fq/fa files
+    │   └── Aligned.sam
+    ├──	Sample_3
+    │   ├── fq/fa files
+    │   └── Aligned.sam
+    └── Sample_4
+        ├── fq/fa files
+        └── Aligned.sam
+
 </pre>
 
 #####C. Configuration File
