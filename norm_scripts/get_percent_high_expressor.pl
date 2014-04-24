@@ -65,10 +65,21 @@ foreach $dir (@dirs){
     close(IN);
     foreach $exon (@exons){
 	chomp($exon);
+	if ($exon =~ /^exon/){
+	    next;
+	}
 	@e = split(" ", $exon);
 	$name = $e[0];
-	$symbol = $e[3];
-	$HIGH_EXON{$name} = $symbol if ($exon =~ /^exon:/);
+	$symbol_list = $e[4];
+	@s = split(',' , $symbol_list);
+	@symbol = ();
+	for ($i=0;$i<@s;$i++){
+	    push(@symbol,$s[$i]);
+	}
+	my %hash = map {$_ => 1} @symbol;
+	@list = keys %hash;
+	$symlist = join(',',@list);
+	$HIGH_EXON{$name} =  $symlist;
     }
 }
 

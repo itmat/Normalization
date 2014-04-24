@@ -85,7 +85,7 @@ while ($file = <FILES>){
 close(FILES);
 
 open(OUT_MIN, ">$outfile");
-print OUT_MIN "junctions:loc";
+print OUT_MIN "loc";
 
 for($i=0; $i<@ID; $i++) {
     print OUT_MIN "\t$ID[$i]";
@@ -93,7 +93,7 @@ for($i=0; $i<@ID; $i++) {
 print OUT_MIN "\n";
 
 foreach $loc (keys %HASH_MIN) {
-    print OUT_MIN $loc;
+    print OUT_MIN "junction:$loc";
     for($i=0; $i<@ID; $i++) {
 	$val = $HASH_MIN{$loc}[$i] + 0;
 	print OUT_MIN "\t$val";

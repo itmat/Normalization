@@ -29,7 +29,7 @@ STUDY
 </pre>
 
 #####C. Configuration File
-Obtain the `template.cfg` file from `Normalization/norm_script/` and modify as you need. Follow the instructions in the config file.
+Obtain the `template.cfg` file from `Normalization/` and modify as you need. Follow the instructions in the config file.
 
 #####D. File of Sample Directories and Unaligned Reads
 ###### i. File of Sample Directories
@@ -117,19 +117,22 @@ STUDY
      [normalization parameters]<br>
      **-min &lt;n>** : is minimum size of inferred exon for get_novel_exons.pl script (Default = 10)<br>
      **-max &lt;n>** : is maximum size of inferred exon for get_novel_exons.pl script (Default = 2000)<br>
-     **-cutoff_highexp &lt;n>** : is cutoff % value to identify highly expressed exons.<br>
+     **-cutoff_highexp &lt;n>** : <br>is cutoff % value to identify highly expressed exons.<br>
                            the script will consider exons with exonpercents greater than n(%) as high expressors,
                            and remove them from the list of exons.
-                           (Default = 100; with the default cutoff, exons expressed >10% will be reported)<br>
-     **-depthE &lt;n>** : the pipeline splits filtered sam files into 1,2,3...n exonmappers and downsamples each separately.
+                           (Default = 100; with the default cutoff, exons expressed >10% will be reported, but will not remove any exons from the list)<br>
+     **-depthE &lt;n>** : <br>the pipeline splits filtered sam files into 1,2,3...n exonmappers and downsamples each separately.
                    (Default = 20)<br>
-     **-depthI &lt;n>** : the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.
+     **-depthI &lt;n>** : <br>the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.
                    (Default = 10)<br>
-     **-cutoff_lowexp &lt;n>** : is cutoff counts to identify low expressors in the final spreadsheets (exon, intron and junc).
-                          the script will consider features with sum of counts for all samples less than <n> as low expressors
-                          and remove them from all samples for the final spreadsheets.
-                          (Default = 0)<br>
+     **-cutoff_lowexp &lt;n>** : <br>is cutoff counts to identify low expressors in the final spreadsheets (exon, intron and junc).<br>
+                          the script will remove features with sum of counts less than <n> from all samples.
+                          (Default = 0; with the default cutoff, features with sum of counts = 0 will be removed from all samples)<br>
      **-h** : print usage
+
+
+This creates `runall_normalization.sh` file in `STUDY/shell_scripts` directory and runs the entire normalization pipeline. In addition to the STDOUT and STDERR files in `STUDY/logs`, this will create a log file called `STUDY/logs/run_normalization.log`, which you can use to check the status.
+
 
 ========================================================================================================
 
@@ -338,7 +341,8 @@ II. Get High Expressors
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * &lt;cutoff> : cutoff % value 
-* &lt;annotation file> : downloaded from UCSC known-gene track including at minimum name, chrom, strand, exonStarts, exonEnds, all kgXref fields and hgnc, spDisease, protein and gene fields from the Linked Tables table
+* &lt;annotation file> : should be downloaded from UCSC known-gene track including at minimum the following suffixes: name (this should correspond to your main identifier, typically some kind of transcript id), chrom, exonStarts, exonEnds; and, optionally, the suffix
+es: geneSymbol, and description.
 
 > annotation file for mm9 and hg19 available: `Normalization/norm_scripts/ucsc_known_hg19` and `Normalization/norm_scripts/ucsc_known_hg19`
 
@@ -619,7 +623,7 @@ This outputs `intronquants` file of all samples to `NORMALIZED_DATA/notexonmappe
          set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G, 10G)
 
-This will output `list_of_exons_counts`, `master_list_of_introns_counts`, and `master_list_of_junctions_counts` files to `STUDY/NORMALIZED_DATA/SPREADSHEETS` directory. 
+This will output `master_list_of_exons_counts`, `master_list_of_introns_counts`, and `master_list_of_junctions_counts` files to `STUDY/NORMALIZED_DATA/SPREADSHEETS` directory. 
 
 **b. Annotate `list_of_exons_counts`**
      
@@ -630,10 +634,15 @@ This will output `list_of_exons_counts`, `master_list_of_introns_counts`, and `m
 * &lt;file of features files> : a file with the names of the features files to be annotated
 
        	   e.g. the <file of feature files> file should look like this:
-           	 list_of_exons_counts_MIN.txt
-	    	 list_of_exons_counts_MAX.txt
+           	 master_list_of_exons_counts_MIN.txt
+	    	 master_list_of_exons_counts_MAX.txt
+           	 master_list_of_introns_counts_MIN.txt
+	    	 master_list_of_introns_counts_MAX.txt
+           	 master_list_of_junctions_counts_MIN.txt
+	    	 master_list_of_junctions_counts_MAX.txt
 	
-* &lt;annotation file> : should be downloaded from UCSC known-gene track including at minimum name, chrom, strand, exonStarts, exonEnds, all kgXref fields and hgnc, spDisease, protein and gene fields from the Linked Tables table
+* &lt;annotation file> : should be downloaded from UCSC known-gene track including at minimum the following suffixes: name (this should correspond to your main identifier, typically some kind of transcript id), chrom, exonStarts, exonEnds; and, optionally, the suffix
+es: geneSymbol, and description.
 > annotation file for mm9 and hg19 available: `Normalization/norm_scripts/ucsc_known_hg19` and `Normalization/norm_scripts/ucsc_known_hg19`
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * option : <br>
@@ -652,12 +661,12 @@ This will output `master_list_of_exons_counts` to `STUDY/NORMALIZED_DATA/SPREADS
 * &lt;file of quants files> : a file with the names of the quants file
 
          e.g. the <file of quants files> file should look like this:
-	      master_list_of_exons_counts_MIN.txt
-	      master_list_of_exons_counts_MAX.txt
-	      master_list_of_introns_counts_MIN.txt
-	      master_list_of_introns_counts_MAX.txt
-	      master_list_of_junctions_counts_MIN.txt
-	      master_list_of_junctions_counts_MAX.txt
+	      annotated_master_list_of_exons_counts_MIN.txt
+	      annotated_master_list_of_exons_counts_MAX.txt
+	      annotated_master_list_of_introns_counts_MIN.txt
+	      annotated_master_list_of_introns_counts_MAX.txt
+	      annotated_master_list_of_junctions_counts_MIN.txt
+	      annotated_master_list_of_junctions_counts_MAX.txt
 
 * &lt;number_of_samples> : number of samples
 * &lt;cutoff> : cutoff value
@@ -704,20 +713,24 @@ This will output `*Unique.cov` and `*NU.cov` files of all samples to `STUDY/NORM
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 
-#####B. Convert SAM to BAM
+This will delete intermediate files.
 
-     perl runall_sam2bam.pl <sample dirs> <loc> <sam file name> <fai file> [options]
+#####B. Compress Files
+
+     perl runall_compress.pl <sample dirs> <loc> <sam file name> <fai file> [options]
 
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * &lt;sam file name> : name of the alignment sam file (e.g. RUM.sam, Aligned.out.sam)
 * &lt;fai file> : full path of fai file 
 * option : <br>
+  **-dont_cov : set this if you DO NOT want to gzip the coverage files (By default, it will gzip the coverage files) <br>
+  **-dont_bam : set this if you DO NOT conver SAM to bam (By default, it will conver sam to bam) <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
   **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_6G>** :<br>
          set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)
 
-This will covert SAM to BAM and delete the SAM. 
+This will covert SAM to BAM, delete the SAM, and gzip the coverage files. 
  

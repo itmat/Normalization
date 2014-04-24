@@ -10,6 +10,8 @@ protein and gene fields from the Linked Tables table.
 <loc> is the path to the sample directories.
 
 option: 
+ -outputdesc : set this if you don't want to output description. it will print the description by default.
+
  -lsf : set this if you want to submit batch jobs to LSF cluster (PMACS).
 
  -sge : set this if you want to submit batch jobs to Sun Grid Engine cluster (PGFI).
@@ -41,11 +43,16 @@ $submit = "";
 $jobname_option = "";
 $request_memory_option = "";
 $mem = "";
+$outputdesc = "";
 for($i=3; $i<@ARGV; $i++) {
     $option_found = 'false';
     if ($ARGV[$i] eq '-h'){
 	$option_found = "true";
 	die $USAGE;
+    }
+    if($ARGV[$i] eq '-outputdesc') {
+	$option_found = 'true';
+	$outputdesc = "-outputdesc";
     }
     if ($ARGV[$i] eq '-lsf'){
 	$numargs++;
@@ -134,7 +141,7 @@ while ($line = <INFILE>){
     $jobname = "$study.annotate";
     $logname = "$logdir/annotate.$line";
     open(OUT, ">$shfile");
-    print OUT "perl $path/annotate.pl $annot_file $spread_dir/$line > $spread_dir/master_$line";
+    print OUT "perl $path/annotate.pl $annot_file $spread_dir/$line $outputdesc > $spread_dir/annotated_$line";
     close(OUT);
     `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
 }

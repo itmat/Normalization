@@ -27,8 +27,8 @@ unless (-d $spread_dir){
 }
 
 if ($type =~ /^exon/){
-    $out_MIN = "$spread_dir/list_of_exons_counts_MIN.txt";
-    $out_MAX = "$spread_dir/list_of_exons_counts_MAX.txt";
+    $out_MIN = "$spread_dir/master_list_of_exons_counts_MIN.txt";
+    $out_MAX = "$spread_dir/master_list_of_exons_counts_MAX.txt";
     $sample_name_file = "$norm_dir/file_exonquants_minmax.txt";
 }
 else{
@@ -199,8 +199,8 @@ print OUT_MAX "\n";
 
 for($i=0; $i<$rowcnt; $i++) {
     if ($type =~ /^exon/){
-	print OUT_MIN "$id[$i]";
-	print OUT_MAX "$id[$i]";
+	print OUT_MIN "exon:$id[$i]";
+	print OUT_MAX "exon:$id[$i]";
     }
     if ($type =~ /^intron/){
 	print OUT_MIN "intron:$id[$i]";

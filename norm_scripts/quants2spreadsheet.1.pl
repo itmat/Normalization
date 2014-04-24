@@ -41,7 +41,7 @@ unless (-d $spread_dir){
     `mkdir $spread_dir`;
 }
 if ($type =~ /^exon/){
-    $out = "$spread_dir/list_of_exons_counts_u.txt";
+    $out = "$spread_dir/master_list_of_exons_counts_u.txt";
     $sample_name_file = "$norm_dir/file_exonquants_u.txt";
     if ($nuonly eq "true"){
 	$out =~ s/_u.txt/_nu.txt/;
@@ -152,7 +152,7 @@ for($i=0; $i<@ID; $i++) {
 print OUTFILE "\n";
 for($i=0; $i<$rowcnt; $i++) {
     if ($type =~ /^exon/){
-	print OUTFILE "$id[$i]";
+	print OUTFILE "exon:$id[$i]";
     }
     if ($type =~ /^intron/){
 	print OUTFILE "intron:$id[$i]";

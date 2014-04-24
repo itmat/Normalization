@@ -32,6 +32,8 @@ unless (-d $spread_dir){
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){
     chomp($line);
-    `perl $path $spread_dir/$line $num_samples $cutoff > $spread_dir/FINAL_$line`;
+    $final_file = $line;
+    $final_file =~ s/annotated_//g;
+    `perl $path $spread_dir/$line $num_samples $cutoff > $spread_dir/FINAL_$final_file`;
 }
 close(INFILE);
