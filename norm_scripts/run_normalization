@@ -16,6 +16,8 @@ OPTIONS:
      -gz : set this if the unaligned files are compressed
 
      [normalization parameters]
+     -novel_off : set this if you DO NOT want to generate/use a study-specific master list of exons 
+                  (By default, the pipeline will add inferred exons to the list of exons)
      -min <n> : is minimum size of inferred exon for get_novel_exons.pl script (Default = 10)
      -max <n> : is maximum size of inferred exon for get_novel_exons.pl script (Default = 2000)
      -cutoff_highexp <n> : is cutoff % value to identify highly expressed exons. 
@@ -50,6 +52,7 @@ $filter_high_expressors = "false";
 $i_exon = 20;
 $i_intron = 10;
 $filter_low_expressors = "false";
+$novel = "true";
 for($i=0; $i<@ARGV; $i++) {
     $option_found = "false";
     if ($ARGV[$i] eq '-h'){
@@ -64,6 +67,10 @@ for($i=0; $i<@ARGV; $i++) {
 	}
 	$i++;
 	$required++;
+    }
+    if ($ARGV[$i] eq '-novel_off'){
+	$option_found = "true";
+	$novel = "false";
     }
     if ($ARGV[$i] eq '--loc'){
 	$option_found = "true";
@@ -194,6 +201,7 @@ $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 $study = $fields[@fields-2];
 
+#check_config file
 unless (-e $cfg_file){
     die "ERROR: cannot find file \"$cfg_file\". please provide a cfg file for the study\n";
 }
@@ -345,17 +353,23 @@ if ($num_cluster ne '1'){
     die "ERROR: please specify which cluster you're using in your configuration file \"$cfg_file\"\n";
 }
 
-$novel_list = "$LOC/master_list_of_exons.$study.txt";
-$filtered_list = $novel_list;
-$filtered_list =~ s/master_list/filtered_master_list/;
 $shdir = $study_dir . "shell_scripts";
-$normdir = $study_dir . "NORMALIZED_DATA";
 $logdir = $study_dir . "logs";
 $logfile = $logdir . "/$study.run_normalization.log";
 unless (-d $shdir){
     `mkdir $shdir`;}
 unless (-d $logdir){
     `mkdir $logdir`;}
+
+#check if the sam files exist
+open(IN, $sample_dir);
+while ($line = <IN>){
+    chomp($line);
+    $file_loc = "$LOC/$line/$samfilename";
+    unless (-e $file_loc){
+	die "ERROR: SAM file \"$file_loc\" does not exist. Please double check --sample_dir, --loc, and --samfilename\n";
+    }
+}
 
 $runall_shfile = $shdir . "/runall_normalization.sh";
 open(SH, ">$runall_shfile");
@@ -373,8 +387,10 @@ sub parse_config_file () {
         $config_line =~ s/\s*$//;
         if ( ($config_line !~ /^#/) && ($config_line ne "") ){
 	    my ($Name, $Value) = split(/\s*=\s*/, $config_line);
-	    $Value =~ s/^"//;
-	    $Value =~ s/"$//;
+	    if ($Value =~ /^"/){
+		$Value =~ s/^"//;
+		$Value =~ s/"$//;
+	    }
 	    $Config{$Name} = $Value;
 	    $$Name = $Value;
 	}

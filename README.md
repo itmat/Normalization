@@ -115,23 +115,24 @@ STUDY
      **-gz** : set this if the unaligned files are compressed<br>
 
      [normalization parameters]<br>
+     **-novel_off** : set this if you DO NOT want to generate/use a study-specific master list of exons<br> (By default, the pipeline will add inferred exons to the list of exons) <br>
      **-min &lt;n>** : is minimum size of inferred exon for get_novel_exons.pl script (Default = 10)<br>
      **-max &lt;n>** : is maximum size of inferred exon for get_novel_exons.pl script (Default = 2000)<br>
      **-cutoff_highexp &lt;n>** : <br>is cutoff % value to identify highly expressed exons.<br>
                            the script will consider exons with exonpercents greater than n(%) as high expressors,
-                           and remove them from the list of exons.
+                           and remove them from the list of exons.<br>
                            (Default = 100; with the default cutoff, exons expressed >10% will be reported, but will not remove any exons from the list)<br>
-     **-depthE &lt;n>** : <br>the pipeline splits filtered sam files into 1,2,3...n exonmappers and downsamples each separately.
+     **-depthE &lt;n>** : <br>the pipeline splits filtered sam files into 1,2,3...n exonmappers and downsamples each separately.<br>
                    (Default = 20)<br>
-     **-depthI &lt;n>** : <br>the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.
+     **-depthI &lt;n>** : <br>the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.<br>
                    (Default = 10)<br>
      **-cutoff_lowexp &lt;n>** : <br>is cutoff counts to identify low expressors in the final spreadsheets (exon, intron and junc).<br>
-                          the script will remove features with sum of counts less than <n> from all samples.
+                          the script will remove features with sum of counts less than <n> from all samples.<br>
                           (Default = 0; with the default cutoff, features with sum of counts = 0 will be removed from all samples)<br>
      **-h** : print usage
 
 
-This creates `runall_normalization.sh` file in `STUDY/shell_scripts` directory and runs the entire normalization pipeline. In addition to the STDOUT and STDERR files in `STUDY/logs`, this will create a log file called `STUDY/logs/run_normalization.log`, which you can use to check the status.
+This creates `runall_normalization.sh` file in `STUDY/shell_scripts` directory and runs the entire normalization pipeline. In addition to the STDOUT and STDERR files in `STUDY/logs`, this will create a log file called `STUDY/logs/$study.run_normalization.log`, which you can use to check the status.
 
 
 ========================================================================================================

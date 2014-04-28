@@ -1,4 +1,5 @@
 #!/usr/bin/env perl
+
 if(@ARGV < 2) {
     die "Usage: perl sam2mappingstats.pl <sam file> <outfilename> [options]
 
@@ -24,7 +25,7 @@ $outfile = $ARGV[1];
 $cov = "";
 $num_ids = 0;
 for($i=2; $i<@ARGV; $i++) {
-    $argument_recognized = 0;
+     $argument_recognized = 0;
     if($ARGV[$i] eq '-numreads') {
 	$num_ids = $ARGV[$i+1];
 	$i++;
@@ -110,7 +111,33 @@ if($covNU =~ /\S/) {
     }
     close(INFILE);
 }
-
+#check length of sequence name
+open(SAM, $sam_in) or die "cannot find file \"$sam_in\"\n";
+while (<SAM>){
+    if (1..100){
+	if ($_ =~ /^@/){
+	    next;
+	}
+	@a = split (/\t/, $_);
+	$seqname = $a[0];
+	$seqname =~ s/[^A-Za-z0-9 ]//g;
+	push(@NAME, $seqname);
+	$length = length $seqname;
+    }
+}
+close(SAM);
+$common_str = "";
+#if length of sequence name > 10, find the longest common substring.
+if ($length > 10){
+    @tail = &last_x_lines($sam_in, 100);
+    for $seq (@tail){
+        @a = split (/\t/, $seq);
+        $seqname = $a[0];
+        $seqname =~ s/[^A-Za-z0-9 ]//g;
+        push(@NAME, $seqname);
+    }
+    $common_str = &LCP(@NAME);
+}
 open(INFILE, $sam_in);
 $linecnt = 0;
 $num_OL = 0;
@@ -126,6 +153,9 @@ while($line = <INFILE>) {
 	next;
     }
     @a = split(/\t/,$line);
+    $seqname = $a[0];
+    $seqname =~ s/[^A-Za-z0-9 ]//g;
+    $seqname =~ s/$common_str//g;
     if($a[5] eq '*' || $a[5] eq '.') {
 	next;
     }
@@ -142,16 +172,16 @@ while($line = <INFILE>) {
 	$num_alignments = $n;
     }
     if($num_alignments == 1) {
-	if(!(defined $U{$a[0]})) {
+	if(!(defined $U{$seqname})) {
 	    $CHR_U{$a[2]}++;
 	}
 	if ($a[1] & 1){
 	    if($a[1] & 2**6) {
-		if($U{$a[0]}+0==0) {
-		    $U{$a[0]} = 1;   # 1 means forward found only so far
+		if($U{$seqname}+0==0) {
+		    $U{$seqname} = 1;   # 1 means forward found only so far
 		}
-		if($U{$a[0]}+0==2) { # 2 means reverse found only so far
-		    $U{$a[0]} = 3;   # 3 means both forward and reverse found
+		if($U{$seqname}+0==2) { # 2 means reverse found only so far
+		    $U{$seqname} = 3;   # 3 means both forward and reverse found
 		}
 		if($line =~ /XO:A:T/) {
 		    $num_OL++;
@@ -160,39 +190,39 @@ while($line = <INFILE>) {
 		    $num_NOL++;
 		}
 	    } else {
-		if($U{$a[0]}+0==0) {
-		    $U{$a[0]} = 2;   # 2 means reverse found only so far
+		if($U{$seqname}+0==0) {
+		    $U{$seqname} = 2;   # 2 means reverse found only so far
 		}
-		if($U{$a[0]}+0==1) { # 1 means forward found only so far
-		    $U{$a[0]} = 3;   # 3 means both forward and reverse found
+		if($U{$seqname}+0==1) { # 1 means forward found only so far
+		    $U{$seqname} = 3;   # 3 means both forward and reverse found
 		}
 	    }
 	}
 	else {
-	    $U{$a[0]} = 1;
+	    $U{$seqname} = 1;
 	}
     } 
     else {
 	if ($a[1] & 1){
 	    if($a[1] & 2**6) {
-		if($NU{$a[0]}+0==0) {
-		    $NU{$a[0]} = 1;   # 1 means forward found only so far
+		if($NU{$seqname}+0==0) {
+		    $NU{$seqname} = 1;   # 1 means forward found only so far
 		}
-		if($NU{$a[0]}+0==2) { # 2 means reverse found only so far
-		    $NU{$a[0]} = 3;   # 3 means both forward and reverse found
+		if($NU{$seqname}+0==2) { # 2 means reverse found only so far
+		    $NU{$seqname} = 3;   # 3 means both forward and reverse found
 		}
 		$CHR_NU{$a[2]}++;
 	    } else {
-		if($NU{$a[0]}+0==0) {
-		    $NU{$a[0]} = 2;   # 2 means reverse found only so far
+		if($NU{$seqname}+0==0) {
+		    $NU{$seqname} = 2;   # 2 means reverse found only so far
 		}
-		if($NU{$a[0]}+0==1) { # 1 means forward found only so far
-		    $NU{$a[0]} = 3;   # 3 means both forward and reverse found
+		if($NU{$seqname}+0==1) { # 1 means forward found only so far
+		    $NU{$seqname} = 3;   # 3 means both forward and reverse found
 		}
 	    }
 	}
 	else {
-	    $NU{$a[0]} = 1;
+	    $NU{$seqname} = 1;
 	}
     }
     $numLocs{$n}++;
@@ -203,7 +233,7 @@ $forwardonlyU = 0;
 $reverseonlyU = 0;
 $linecnt = 0;
 $Nids = 0;
-foreach $key (keys %U) {
+foreach  $key (keys  %U) {
     $Nids++;
     $linecnt++;
     if($linecnt % 1000000 == 0) {
@@ -361,7 +391,56 @@ foreach $n (sort {$a<=>$b} keys %numLocs) {
     print OUT "$n\t$numLocs{$n}\n";
 }
 
+sub last_x_lines {
+    my ($filename, $lineswanted) = @_;
+    my ($line, $filesize, $seekpos, $numread, @lines);
 
+    open F, $filename or die "Can't read $filename: $!\n";
+
+    $filesize = -s $filename;
+    $seekpos = 50 * $lineswanted;
+    $numread = 0;
+
+    while ($numread < $lineswanted) {
+        @lines = ();
+        $numread = 0;
+        seek(F, $filesize - $seekpos, 0);
+        <F> if $seekpos < $filesize; # Discard probably fragmentary line
+        while (defined($line = <F>)) {
+            push @lines, $line;
+            shift @lines if ++$numread > $lineswanted;
+        }
+        if ($numread < $lineswanted) {
+            # We didn't get enough lines. Double the amount of space to read from next time.
+            if ($seekpos >= $filesize) {
+                die "There aren't even $lineswanted lines in $filename - I got $numread\n";
+            }
+            $seekpos *= 2;
+            $seekpos = $filesize if $seekpos >= $filesize;
+        }
+    }
+    close F;
+    return @lines;
+}
+
+sub LCP {
+    return '' unless @_;
+    return $_[0] if @_ == 1;
+     $i          = 0;
+     $first      = shift;
+     $min_length = length($first);
+    foreach (@_) {
+        $min_length = length($_) if length($_) < $min_length;
+    }
+  INDEX: foreach  $ch ( split //, $first ) {
+      last INDEX unless $i < $min_length;
+      foreach  $string (@_) {
+	  last INDEX if substr($string, $i, 1) ne $ch;
+      }
+  }
+    continue { $i++ }
+    return substr $first, 0, $i;
+}
 
 sub format_large_int () {
     ($int) = @_;
@@ -644,7 +723,7 @@ sub clean () {
 }
 
 sub removefirst () {
-    ($n_1, $spans_1, $seq_1) = @_;
+    ($n_1,  $spans_1,  $seq_1) = @_;
     $seq_1 =~ s/://g;
     @a_1 = split(/, /, $spans_1);
     $length_1 = 0;
@@ -671,7 +750,7 @@ sub removefirst () {
 }
 
 sub removelast () {
-    ($n_1, $spans_1, $seq_1) = @_;
+    ($n_1,  $spans_1,  $seq_1) = @_;
     $seq_1 =~ s/://g;
     @a_1 = split(/, /, $spans_1);
     @b_1 = split(/-/,$a_1[@a_1-1]);
@@ -697,7 +776,7 @@ sub removelast () {
 }
 
 sub trimleft () {
-    ($seq1_2, $seq2_2, $spans_2) = @_;
+    ($seq1_2,  $seq2_2,  $spans_2) = @_;
     # seq2_2 is the one that gets modified and returned
 
     $seq1_2 =~ s/://g;
@@ -782,7 +861,7 @@ sub trimright () {
 }
 
 sub addJunctionsToSeq () {
-    ($seq_in, $spans_in) = @_;
+    ($seq_in,  $spans_in) = @_;
     @s1 = split(//,$seq_in);
     @b1 = split(/, /,$spans_in);
     $seq_out = "";
@@ -802,7 +881,7 @@ sub addJunctionsToSeq () {
 }
 
 sub countmismatches () {
-    ($seq1m, $seq2m) = @_;
+    ($seq1m,  $seq2m) = @_;
     # seq2m is the "read"
 
     $seq1m =~ s/://g;
@@ -823,28 +902,28 @@ sub countmismatches () {
 sub isroman($) {
     $arg = shift;
     $arg ne '' and
-      $arg =~ /^(?: M{0,3})
+	$arg =~ /^(?: M{0,3})
                 (?: D?C{0,3} | C[DM])
                 (?: L?X{0,3} | X[LC])
                 (?: V?I{0,3} | I[VX])$/ix;
 }
 
 sub arabic($) {
-    $arg = shift;
-    %roman2arabic = qw(I 1 V 5 X 10 L 50 C 100 D 500 M 1000);
-    %roman_digit = qw(1 IV 10 XL 100 CD 1000 MMMMMM);
-    @figure = reverse sort keys %roman_digit;
-    $roman_digit{$_} = [split(//, $roman_digit{$_}, 2)] foreach @figure;
-    isroman $arg or return undef;
-    ($last_digit) = 1000;
-    $arabic=0;
-    ($arabic);
-    foreach (split(//, uc $arg)) {
-        ($digit) = $roman2arabic{$_};
-        $arabic -= 2 * $last_digit if $last_digit < $digit;
-        $arabic += ($last_digit = $digit);
-    }
-    $arabic;
+     $arg = shift;
+     %roman2arabic = qw(I 1 V 5 X 10 L 50 C 100 D 500 M 1000);
+     %roman_digit = qw(1 IV 10 XL 100 CD 1000 MMMMMM);
+     @figure = reverse sort keys %roman_digit;
+     $roman_digit{$_} = [split(//, $roman_digit{$_}, 2)] foreach @figure;
+     isroman $arg or return undef;
+     ($last_digit) = 1000;
+     $arabic=0;
+     ($arabic);
+     foreach (split(//, uc $arg)) {
+	 ($digit) = $roman2arabic{$_};
+	 $arabic -= 2 * $last_digit if $last_digit < $digit;
+	 $arabic += ($last_digit = $digit);
+     }
+     $arabic;
 }
 
 sub Roman($) {
@@ -857,7 +936,7 @@ sub Roman($) {
     $roman="";
     ($x, $roman);
     foreach (@figure) {
-        ($digit, $i, $v) = (int($arg / $_), @{$roman_digit{$_}});
+        ($digit,  $i,  $v) = (int($arg / $_), @{$roman_digit{$_}});
         if (1 <= $digit and $digit <= 3) {
             $roman .= $i x $digit;
         } elsif ($digit == 4) {
