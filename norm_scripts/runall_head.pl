@@ -29,8 +29,9 @@ option:
 
  -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI cluster).
 
- -other <submit> <jobname_option> <status>:
+ -other \"<submit>, <jobname_option>, <status>\":
         set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
+        **make sure the arguments are comma separated inside the quotes**
 
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
@@ -113,18 +114,17 @@ for ($i=2; $i<@ARGV; $i++){
     if ($ARGV[$i] eq '-other'){
         $numargs++;
         $option_found = "true";
-        $submit = $ARGV[$i+1];
-        $jobname_option = $ARGV[$i+2];
-	$status = $ARGV[$i+3];
-        $i++;
-        $i++;
+	$argv_all = $ARGV[$i+1];
+        @a = split(",", $argv_all);
+        $submit = $a[0];
+        $jobname_option = $a[1];
+        $status = $a[2];
 	$i++;
         if ($submit =~ /^-/ | $submit eq "" | $jobname_option eq "" | $status eq ""){
-	    print "HERE";
-            die "please provide <submit> <jobname_option> <status>\n";
+            die "please provide \"<submit>, <jobname_option>, <status>\"\n";
         }
         if ($submit eq "-lsf" | $submit eq "-sge"){
-	    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other <submit> <jobname_option> <status>.\n";
+	    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option>, <status>\".\n";
         }
     }
     if ($option_found eq "false"){
@@ -132,7 +132,7 @@ for ($i=2; $i<@ARGV; $i++){
     }
 }
 if($numargs ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other <submit> <jobname_option>.\n";
+    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option>\".\n";
 }
 if($numargs_u_nu > 1) {
     die "you cannot specify both -u and -nu, it will output both unique

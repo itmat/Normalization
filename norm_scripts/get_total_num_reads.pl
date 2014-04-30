@@ -59,6 +59,9 @@ $outfile_all = "$LOC/total_reads_temp.txt";
 open(OUT, ">$outfile_all");
 while($line = <INFILE>){
     chomp($line);
+    unless (-e $line){
+	die "ERROR: cannot find \"$line\"\n";
+    }
     if ($gz eq "true"){
 	$lc = `zcat $line | wc -l`;
 	$num = $lc;

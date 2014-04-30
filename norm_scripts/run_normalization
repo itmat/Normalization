@@ -362,7 +362,7 @@ unless (-d $logdir){
     `mkdir $logdir`;}
 
 #check if the sam files exist
-open(IN, $sample_dir);
+open(IN, $sample_dir) or die "cannot find file \"$sample_dir\"\n";
 while ($line = <IN>){
     chomp($line);
     $file_loc = "$LOC/$line/$samfilename";
@@ -370,6 +370,16 @@ while ($line = <IN>){
 	die "ERROR: SAM file \"$file_loc\" does not exist. Please double check --sample_dir, --loc, and --samfilename\n";
     }
 }
+close(IN);
+#check if the fq/fa files exist
+open(IN, $unaligned_file) or die "cannot find file \"$unaligned_file\"\n";
+while ($line = <IN>){
+    chomp($line);
+    unless (-e $line){
+	die "ERROR: Unaligned file \"$line\" does not exit.\n";
+    }
+}
+close(IN);
 
 $runall_shfile = $shdir . "/runall_normalization.sh";
 open(SH, ">$runall_shfile");
