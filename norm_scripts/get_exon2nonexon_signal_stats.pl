@@ -122,3 +122,4 @@ while($line = <INFILE>){
 close(INFILE);
 close(OUTU);
 close(OUTNU);
+print "got here\n";

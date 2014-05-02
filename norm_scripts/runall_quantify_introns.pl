@@ -144,11 +144,14 @@ while($line = <INFILE>) {
     $dir = $line;
     $id = $line;
     $id =~ s/Sample_//;
+    $logname = "$logdir/quantifyintrons.$id";
+    $logname2 = "$logdir/quantifyintrons2.$id";
     if($outputsam eq "true"){
 	$filename = "$id.filtered_u_notexonmappers.sam";
 	if ($nuonly eq "true"){
 	    $filename =~ s/u_notexonmappers.sam$/nu_notexonmappers.sam/;
 	    $dir = $dir . "/NU";
+	    $logname = "$logdir/nu.quantifyintrons.$id";
 	}
 	if ($nuonly eq "false"){
 	    $dir = $dir . "/Unique";
@@ -168,6 +171,7 @@ while($line = <INFILE>) {
 	if ($nuonly eq "true"){
 	    $filename =~ s/norm_u.sam$/norm_nu.sam/;
 	    $final_nexon_dir = $nu_nexon_dir;
+	    $logname2 = "$logdir/nu.quantifyintrons2.$id";
 	}
     }
 
@@ -175,8 +179,6 @@ while($line = <INFILE>) {
     $shfile2 = "IQ" . $filename . ".2.sh";
     $jobname = "$study.quantifyintrons";
     $jobname2 = "$study.quantifyintrons2";
-    $logname = "$logdir/quantifyintrons.$id";
-    $logname2 = "$logdir/quantifyintrons2.$id";
     $outfile = $filename;
     $outfile =~ s/.sam/_intronquants/;
     if($outputsam eq "true") {
@@ -197,3 +199,4 @@ while($line = <INFILE>) {
     }
 }
 close(INFILE);
+print "got here\n";

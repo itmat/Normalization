@@ -225,6 +225,7 @@ while($line = <INFILE>) {
 			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -rpf -depth $i_exon\n";
 		    }
 		} else {
+		    $logname = "$logdir/nu.quantifyexons.$id";
 		    if ($pe eq "true"){
 			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -NU-only -depth $i_exon\n";
 		    }
@@ -244,6 +245,7 @@ while($line = <INFILE>) {
 	    }
 	}
 	else{
+	    $logname2 = "$logdir/nu.quantifyexons2.$id";
 	    if ($pe eq "true"){
 		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none -NU-only\n";
 	    }
@@ -261,3 +263,4 @@ while($line = <INFILE>) {
     }
 }
 close(INFILE);
+print "got here\n";

@@ -141,8 +141,9 @@ while ($line = <INFILE>){
     $jobname = "$study.annotate";
     $logname = "$logdir/annotate.$line";
     open(OUT, ">$shfile");
-    print OUT "perl $path/annotate.pl $annot_file $spread_dir/$line $outputdesc > $spread_dir/annotated_$line";
+    print OUT "perl $path/annotate.pl $annot_file $spread_dir/$line $outputdesc $spread_dir/annotated_$line";
     close(OUT);
     `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
 }
 close(INFILE);
+print "got here\n";

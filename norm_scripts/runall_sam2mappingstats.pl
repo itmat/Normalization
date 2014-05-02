@@ -10,6 +10,9 @@ where:
 <total_num_reads> if you have the total_num_reads.txt file,
                   use \"true\". If not, use \"false\".
 
+**If you have > 150,000,000 reads, use -mem option to request 45G mem. 
+**If you have > 200,000,000 reads, use -mem option to request 60G mem. 
+
 option:  
  -lsf : set this if you want to submit batch jobs to LSF (PMACS cluster).
 
@@ -170,4 +173,4 @@ if ($total_reads_file eq "false"){
     }
 }
 close(INFILE);
-
+print "got here\n";

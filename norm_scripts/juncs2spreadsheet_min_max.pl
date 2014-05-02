@@ -13,6 +13,7 @@ $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 $type = $ARGV[2];
 @fields = split("/", $LOC);
+$study = $fields[@fields-2];
 $last_dir = $fields[@fields-1];
 $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
@@ -25,8 +26,8 @@ unless (-d $spread_dir){
 }
 
 $outfile = "$spread_dir/master_list_of_junctions_counts";
-$out_MIN = $outfile . "_MIN.txt";
-$out_MAX = $outfile . "_MAX.txt";
+$out_MIN = $outfile . "_MIN.$study.txt";
+$out_MAX = $outfile . "_MAX.$study.txt";
 $sample_name_file = "$norm_dir/file_junctions_minmax.txt";
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
@@ -98,3 +99,4 @@ foreach $loc (keys %HASH_MAX) {
 close(OUT_MAX);
 
 
+print "got here\n";

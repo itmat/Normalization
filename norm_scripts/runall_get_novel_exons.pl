@@ -90,3 +90,4 @@ foreach $exon (keys %EXON_LIST){
     print OUT "$exon\n";
 }
 close(OUT);
+print "got here\n";

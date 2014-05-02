@@ -215,3 +215,4 @@ else{
         `$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameJ.out -e $lognameJ.err < $sh_junctions`;
     }
 }
+print "got here\n";

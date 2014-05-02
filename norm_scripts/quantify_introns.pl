@@ -620,3 +620,4 @@ sub by_location ($$) {
     ($c->{end}    || 0) <=> ($d->{end}    || 0) ||
     ($c->{entry} || 0) cmp ($d->{entry} || 0);
 }
+print "got here\n";

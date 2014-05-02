@@ -781,3 +781,4 @@ sub cigar2spans {
 }
 }
 1;
+print "got here\n";

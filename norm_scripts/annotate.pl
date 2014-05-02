@@ -1,7 +1,7 @@
 use strict; 
 
-if(@ARGV<2) { 
-    die "usage: annotate.pl <annotation file> <features file> [option]
+if(@ARGV<3) { 
+    die "usage: annotate.pl <annotation file> <features file> <outputfile> [option]
 
 the <annotation file> should be downloaded from UCSC known-gene track including
 at minimum the following suffixes: name (this should correspond to your main identifier, typically some kind of transcript id), chrom, exonStarts, exonEnds; and, optionally, the suffixes: geneSymbol, and description.
@@ -22,6 +22,7 @@ option:
 
 my $annotation_file = $ARGV[0];
 my $features_file = $ARGV[1];
+my $output_file = $ARGV[2];
 
 my $onecol = 'false'; 
 my $outputdesc = 'true'; 
@@ -35,6 +36,7 @@ for(my $i=2; $i<@ARGV; $i++) {
 }
 
 open(INFILE, $annotation_file) or die "file '$annotation_file' cannot open for reading.\n";
+open(OUT, ">$output_file");
 my $line = <INFILE>;
 chomp($line);
 my @ANNOTHEADER = split(/\t/,$line);
@@ -175,7 +177,7 @@ while($line = <INFILE>) {
   my $delim;
   chomp($line);
   if(!($line =~ /[^\s:,;]+:\d+-\d+/)) {
-    print "$line\n";
+    print OUT "$line\n";
     next;
   }
   $line =~ /([^\s:,;]+:\d+-\d+)/;
@@ -189,7 +191,7 @@ while($line = <INFILE>) {
   } else {
     $delim = "\t";
   }
-  print "$line\t"; 
+  print OUT "$line\t"; 
   my $thing;
   if(defined $NAME->{$feature}) {
     $thing = $feature;
@@ -261,32 +263,33 @@ while($line = <INFILE>) {
       }
     }
     if($flag == 1 && $min <= 100000) {
-      print "$annotN";
+      print OUT "$annotN";
       if (defined $genesymbolcol) {
-	print "$delim$annotS";
+	print OUT "$delim$annotS";
       }
       if(defined $descriptioncol && $outputdesc eq 'true') {
-	print "$delim$annotD";
+	print OUT "$delim$annotD";
       }
     }
     if($flag == 1 && $min > 100000) {
-      print "$min bases from: $annotN";
+      print OUT "$min bases from: $annotN";
       if (defined $genesymbolcol) { 
-	print "$delim$annotS";
+	print OUT "$delim$annotS";
       }
       if(defined $descriptioncol && $outputdesc eq 'true') {
-	print "$delim$annotD";
+	print OUT "$delim$annotD";
       }
     }
-    print "\n";
+    print OUT "\n";
     next;
   }
-  print  join(',', @{$NAME->{$thing}});
+  print OUT  join(',', @{$NAME->{$thing}});
   if (defined $genesymbolcol) { 
-    print $delim . join(',', @{$SYMBOL->{$thing}});
+    print OUT $delim . join(',', @{$SYMBOL->{$thing}});
   }
   if(defined $descriptioncol && $outputdesc eq 'true') {
-    print $delim . join(' [|] ', @{$DESC->{$thing}});
+    print OUT $delim . join(' [|] ', @{$DESC->{$thing}});
   }
-  print "\n";
+  print OUT "\n";
 }
+print "got here\n";

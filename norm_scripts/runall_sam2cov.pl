@@ -215,5 +215,5 @@ while($line =  <INFILE>){
     `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shdir/$shfile`;
 }
 close(INFILE);
-
+print "got here\n";
 

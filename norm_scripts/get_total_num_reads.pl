@@ -12,7 +12,6 @@ option:  -fa : set this if the input files are in fasta format
 
 ";
 }
-
 $fa = "false";
 $fq = "false";
 $gz = "false";
@@ -97,4 +96,5 @@ while($dir = <DIRS>){
 }
 close(DIRS);
 close(OUTFINAL);
+print "got here\n";
 `rm $outfile_all`;

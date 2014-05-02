@@ -51,3 +51,4 @@ foreach $intron (keys %INTRONS) {
     print OUTFILE "$intron\n";
 }
 close(OUTFILE);
+print "got here\n";

@@ -70,3 +70,4 @@ foreach $exon (keys %MASTER_EXON){
     print NEW "$exon\n";
 }
 close(NEW);
+print "got here\n";

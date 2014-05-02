@@ -68,7 +68,7 @@ while($line = <INFILE>){
 }
 close(INFILE);
 close(OUTFILE);
-
+print "got here\n";
 
 
 

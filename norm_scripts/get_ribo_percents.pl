@@ -75,3 +75,4 @@ sub format_large_int () {
     $newint =~ s/^,//;
     return $newint;
 }
+print "got here\n";

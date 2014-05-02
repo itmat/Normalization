@@ -62,3 +62,4 @@ while($line = <INFILE>){
     }
 
 }
+print "got here\n";

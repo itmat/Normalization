@@ -172,7 +172,7 @@ $master_sh = "$shdir/annotate_master_list_of_exons.sh";
 $master_jobname = "$study.get_high_expressor";
 $master_logname = "$logdir/masterexon.annotate";
 open(OUTFILE, ">$master_sh");
-print OUTFILE "perl $path/annotate.pl $annot_file $exons > $annotated_exons\n";
+print OUTFILE "perl $path/annotate.pl $annot_file $exons $annotated_exons\n";
 close(OUTFILE);
 `$submit $jobname_option $master_jobname $request_memory_option$mem -o $master_logname.out -e $master_logname.err < $master_sh`;
 
@@ -200,10 +200,11 @@ while($line = <INFILE>){
 	    print OUT "perl $path/get_exonpercents.pl $sampledir $cutoff $outfile -nu \n";
 	}
     }
-    print OUT "perl $path/annotate.pl $annot_file $highfile > $annotated\n";
+    print OUT "perl $path/annotate.pl $annot_file $highfile $annotated\n";
     print OUT "rm $highfile";
     close(OUT);
     `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
 }
 close(INFILE);
 
+print "got here\n";

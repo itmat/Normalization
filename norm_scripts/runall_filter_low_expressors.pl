@@ -37,3 +37,4 @@ while ($line = <INFILE>){
     `perl $path $spread_dir/$line $num_samples $cutoff > $spread_dir/FINAL_$final_file`;
 }
 close(INFILE);
+print "got here\n";

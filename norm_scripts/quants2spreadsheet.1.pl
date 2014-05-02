@@ -29,6 +29,7 @@ $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 $type = $ARGV[2];
 @fields = split("/", $LOC);
+$study = $fields[@fields-2];
 $last_dir = $fields[@fields-1];
 $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
@@ -41,19 +42,19 @@ unless (-d $spread_dir){
     `mkdir $spread_dir`;
 }
 if ($type =~ /^exon/){
-    $out = "$spread_dir/master_list_of_exons_counts_u.txt";
+    $out = "$spread_dir/master_list_of_exons_counts_u.$study.txt";
     $sample_name_file = "$norm_dir/file_exonquants_u.txt";
     if ($nuonly eq "true"){
-	$out =~ s/_u.txt/_nu.txt/;
+	$out =~ s/_u.$study.txt/_nu.$study.txt/;
 	$sample_name_file = s/_u.txt/_nu.txt/;
     }
 }
 else{
     if ($type =~ /^intron/){
-        $out = "$spread_dir/master_list_of_introns_counts_u.txt";
+        $out = "$spread_dir/master_list_of_introns_counts_u.$study.txt";
         $sample_name_file = "$norm_dir/file_intronquants_u.txt";
 	if ($nuonly eq "true"){
-	    $out =~ s/_u.txt/_nu.txt/;
+	    $out =~ s/_u.$study.txt/_nu.$study.txt/;
 	    $sample_name_file = s/_u.txt/_nu.txt/;
 	}
     }
@@ -165,3 +166,4 @@ for($i=0; $i<$rowcnt; $i++) {
 close(OUTFILE);
 
 
+print "got here\n";

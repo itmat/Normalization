@@ -27,6 +27,7 @@ $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 $type = $ARGV[2];
 @fields = split("/", $LOC);
+$study = $fields[@fields-2];
 $last_dir = $fields[@fields-1];
 $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
@@ -37,10 +38,10 @@ $spread_dir = $norm_dir . "/SPREADSHEETS";
 unless (-d $spread_dir){
     `mkdir $spread_dir`;
 }
-$outfile = "$spread_dir/master_list_of_junctions_counts_u.txt";
+$outfile = "$spread_dir/master_list_of_junctions_counts_u.$study.txt";
 $sample_name_file = "$norm_dir/file_junctions_u.txt";
 if ($nuonly eq "true"){
-    $outfile =~ s/_u.txt/_nu.txt/;
+    $outfile =~ s/_u.$study.txt/_nu.$study.txt/;
     $sample_name_file =~ s/_u.txt/_nu.txt/;
 }
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
@@ -103,3 +104,4 @@ foreach $loc (keys %HASH_MIN) {
 close(OUT_MIN);
 
 
+print "got here\n";

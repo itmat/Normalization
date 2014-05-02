@@ -544,6 +544,7 @@ for($i=1; $i<=$i_exon; $i++) {
 	if($exonuniques eq 'true') {
 	    open(OUTFILEU, ">$shfileU[$i]");
 	    print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
+	    print OUTFILEU "echo \"got here\n\"";
 	    close(OUTFILEU);
 	    $numq = `$status | grep "^[0-9]" | wc -l`;
 	    until ($numq < $njobs){
@@ -556,6 +557,7 @@ for($i=1; $i<=$i_exon; $i++) {
 	if($exonnu eq 'true') {
 	    open(OUTFILENU, ">$shfileNU[$i]");
 	    print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
+	    print OUTFILENU "echo \"got here\"";;
 	    close(OUTFILENU);
             $numq = `$status | grep "^[0-9]" | wc -l`;
             until ($numq < $njobs){
@@ -595,6 +597,7 @@ for($i=1; $i<=$i_intron; $i++) {
 	if($intronuniques eq 'true') {
 	    open(OUTFILEU, ">$shfileU[$i]");
 	    print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
+	    print OUTFILEU "echo \"got here\"";;
 	    close(OUTFILEU);
 	    $numq = `$status | grep "^[0-9]" | wc -l`;
 	    until ($numq < $njobs){
@@ -607,6 +610,7 @@ for($i=1; $i<=$i_intron; $i++) {
 	if($intronnu eq 'true') {
 	    open(OUTFILENU, ">$shfileNU[$i]");
 	    print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
+	    print OUTFILENU "echo \"got here\"";;
 	    close(OUTFILENU);
 	    $numq = `$status | grep "^[0-9]" | wc -l`;
             until ($numq < $njobs){
@@ -642,6 +646,7 @@ while($dirname = <INFILE>) {
     if($iguniques eq 'true') {
 	open(OUTFILEU, ">$shfileU");
 	print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
+	print OUTFILEU "echo \"got here\"";;
 	close(OUTFILEU);
 	$numq = `$status | grep "^[0-9]" | wc -l`;
 	until ($numq < $njobs){
@@ -654,6 +659,7 @@ while($dirname = <INFILE>) {
     if($ignu eq 'true') {
 	open(OUTFILENU, ">$shfileNU");
 	print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
+	print OUTFILENU "echo \"got here\"";;
 	close(OUTFILENU);
 	until ($numq < $njobs){
             $x = `$status | grep "^[0-9]" | wc -l`;
@@ -664,3 +670,4 @@ while($dirname = <INFILE>) {
     }
 }
 close(INFILE);
+print "got here\n";

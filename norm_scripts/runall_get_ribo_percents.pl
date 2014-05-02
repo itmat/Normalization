@@ -122,3 +122,4 @@ open(OUT, ">$shfile");
 print OUT "perl $path $sampledirs $LOC\n";
 close(OUT);
 `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
+print "got here\n";

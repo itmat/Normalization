@@ -95,3 +95,4 @@ while($line = <INFILE>) {
 #open(OUT, ">$total_num_reads");
 #print OUT "total = $cnt_total\n";
 
+print "got here\n";

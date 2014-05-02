@@ -14,16 +14,12 @@
 STUDY
 └── READS
     ├── Sample_1
-    │   ├── fq/fa files
     │   └── Aligned.sam
     ├── Sample_2
-    │   ├── fq/fa files
     │   └── Aligned.sam
-    ├──	Sample_3
-    │   ├── fq/fa files
+    ├── Sample_3
     │   └── Aligned.sam
     └── Sample_4
-        ├── fq/fa files
         └── Aligned.sam
 
 </pre>
@@ -45,13 +41,13 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
 Create a file &lt;file of input forward fa/fq files> with full path of input forward fa or forward fq files.
 
        e.g. the <file of input forward fa/fq files> file should look like this:
-            path/to/STUDY/READS/Sample_1/fwd.fq
-            path/to/STUDY/READS/Sample_2/fwd.fq
-            path/to/STUDY/READS/Sample_3/fwd.fq
-            path/to/STUDY/READS/Sample_4/fwd.fq
+            path/to/Sample_1.fwd.fq/fa
+            path/to/Sample_2.fwd.fq/fa
+            path/to/Sample_3.fwd.fq/fa
+            path/to/Sample_4.fwd.fq/fa
 
 #####E. Install [sam2cov](https://github.com/khayer/sam2cov/)
-This is an optional step. You can use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR.
+This is an optional step. You can use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR. Please make sure you have the lastest version of sam2cov.
 
      git clone https://github.com/khayer/sam2cov.git
      cd sam2cov
@@ -100,12 +96,13 @@ STUDY
 
 ### 1. RUN_NORMALIZATION
 
-    run_normalization --sample_dirs <file of sample_dirs> --loc <s> --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
+    run_normalization --sample_dirs <file of sample_dirs> --loc <s> \
+    --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
 
 * --sample_dirs &lt;file of sample dirs> : a file with the names of the sample directories
 * --loc &lt;s> : full path of the directory with the sample directories (`READS`)
-* --unaligned &lt;file of fa/fqfiles> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
-* --samfilename &lt;s> : full path of the blast directory
+* --unaligned &lt;file of fa/fqfiles> : file of fa/fqfiles
+* --samfilename &lt;s> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
 * --cfg <cfg file> : configuration file for the study
 * option : <br>
      [data type]<br>
@@ -169,6 +166,8 @@ This creates `runall_normalization.sh` file in `STUDY/shell_scripts` directory a
 	 **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_30G>** : <br>
 	 	  set this if you're not on LSF or SGE cluster
 	 **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 30G)
+	 **If you have > 150,000,000 reads, use -mem option to request 45G mem.
+	 **If you have > 200,000,000 reads, use -mem option to request 60G mem.
  
  This will output `*mappingstats.txt` file of all samples to each sample directory. The following script will parse the `*mappingstats.txt` files and output a table with summary info across all samples.
 
@@ -635,12 +634,12 @@ This will output `master_list_of_exons_counts`, `master_list_of_introns_counts`,
 * &lt;file of features files> : a file with the names of the features files to be annotated
 
        	   e.g. the <file of feature files> file should look like this:
-           	 master_list_of_exons_counts_MIN.txt
-	    	 master_list_of_exons_counts_MAX.txt
-           	 master_list_of_introns_counts_MIN.txt
-	    	 master_list_of_introns_counts_MAX.txt
-           	 master_list_of_junctions_counts_MIN.txt
-	    	 master_list_of_junctions_counts_MAX.txt
+           	 master_list_of_exons_counts_MIN.STUDY.txt
+	    	 master_list_of_exons_counts_MAX.STUDY.txt
+           	 master_list_of_introns_counts_MIN.STUDY.txt
+	    	 master_list_of_introns_counts_MAX.STUDY.txt
+           	 master_list_of_junctions_counts_MIN.STUDY.txt
+	    	 master_list_of_junctions_counts_MAX.STUDY.txt
 	
 * &lt;annotation file> : should be downloaded from UCSC known-gene track including at minimum the following suffixes: name (this should correspond to your main identifier, typically some kind of transcript id), chrom, exonStarts, exonEnds; and, optionally, the suffix
 es: geneSymbol, and description.
@@ -662,12 +661,12 @@ This will output `master_list_of_exons_counts` to `STUDY/NORMALIZED_DATA/SPREADS
 * &lt;file of quants files> : a file with the names of the quants file
 
          e.g. the <file of quants files> file should look like this:
-	      annotated_master_list_of_exons_counts_MIN.txt
-	      annotated_master_list_of_exons_counts_MAX.txt
-	      annotated_master_list_of_introns_counts_MIN.txt
-	      annotated_master_list_of_introns_counts_MAX.txt
-	      annotated_master_list_of_junctions_counts_MIN.txt
-	      annotated_master_list_of_junctions_counts_MAX.txt
+	      annotated_master_list_of_exons_counts_MIN.STUDY.txt
+	      annotated_master_list_of_exons_counts_MAX.STUDY.txt
+	      annotated_master_list_of_introns_counts_MIN.STUDY.txt
+	      annotated_master_list_of_introns_counts_MAX.STUDY.txt
+	      annotated_master_list_of_junctions_counts_MIN.STUDY.txt
+	      annotated_master_list_of_junctions_counts_MAX.STUDY.txt
 
 * &lt;number_of_samples> : number of samples
 * &lt;cutoff> : cutoff value

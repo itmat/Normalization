@@ -268,7 +268,7 @@ $other = "false";
 $num_cluster = 0;
 if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
     $num_cluster++;
-    if ($QUEUE_NAME_4G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $WAIT_OPTION_sge eq "" | $WAIT_2JOBS_OPTION_sge eq "" | $MAX_JOBS_sge eq ""){
+    if ($QUEUE_NAME_4G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $QUEUE_NAME_45G_sge eq "" | $QUEUE_NAME_60G_sge eq "" | $WAIT_OPTION_sge eq "" | $WAIT_2JOBS_OPTION_sge eq "" | $MAX_JOBS_sge eq ""){
         die "ERROR: please provide all required CLUSTER INFO for SGE_CLUSTER in the $cfg_file file\n";
     }
     else{
@@ -281,19 +281,19 @@ if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
 	$queue_10G = $QUEUE_NAME_10G_sge;
 	$queue_15G = $QUEUE_NAME_15G_sge;
 	$queue_30G = $QUEUE_NAME_30G_sge;
+	$queue_45G = $QUEUE_NAME_45G_sge;
+	$queue_60G = $QUEUE_NAME_60G_sge;
 	$submit = "-sge";
 	$sge = "true";
 	$c_option = $submit;
 	$wait_option = $WAIT_OPTION_sge;
 	$wait_2jobs_option = $WAIT_2JOBS_OPTION_sge;
-	$exit_code = $JOB_EXIT_STATUS_sge;
-	$done = $JOB_DONE_sge;
 	$maxjobs = $MAX_JOBS_sge;
     }
 }
 if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
     $num_cluster++;
-    if ($QUEUE_NAME_4G_lsf eq "" | $QUEUE_NAME_6G_lsf eq "" | $QUEUE_NAME_10G_lsf eq "" |  $QUEUE_NAME_15G_lsf eq "" | $QUEUE_NAME_30G_lsf eq "" | $WAIT_OPTION_lsf eq "" | $WAIT_2JOBS_OPTION_lsf eq "" | $MAX_JOBS_lsf eq ""){
+    if ($QUEUE_NAME_4G_lsf eq "" | $QUEUE_NAME_6G_lsf eq "" | $QUEUE_NAME_10G_lsf eq "" |  $QUEUE_NAME_15G_lsf eq "" | $QUEUE_NAME_30G_lsf eq "" | $QUEUE_NAME_45G_lsf eq "" | $QUEUE_NAME_60G_lsf eq "" |$WAIT_OPTION_lsf eq "" | $WAIT_2JOBS_OPTION_lsf eq "" | $MAX_JOBS_lsf eq ""){
         die "ERROR: please provide all required CLUSTER INFO for LSF_CLUSTER in the $cfg_file file\n";
     }
     else{
@@ -306,19 +306,19 @@ if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
 	$queue_10G = $QUEUE_NAME_10G_lsf;
 	$queue_15G = $QUEUE_NAME_15G_lsf;
 	$queue_30G = $QUEUE_NAME_30G_lsf;
+	$queue_45G = $QUEUE_NAME_45G_lsf;
+	$queue_60G = $QUEUE_NAME_60G_lsf;
 	$submit = "-lsf";
 	$lsf = "true";
 	$c_option = $submit;
 	$wait_option = $WAIT_OPTION_lsf;
 	$wait_2jobs_option = $WAIT_2JOBS_OPTION_lsf;
 	$maxjobs = $MAX_JOBS_lsf;
-        $exit_code = "";
-        $done = "";
     }
 }
 if ($OTHER_CLUSTER =~ /^true/ | $OTHER_CLUSTER =~ /^TRUE/){
     $num_cluster++;
-    if ($SUBMIT_BATCH_JOBS eq "" | $JOB_NAME_OPTION eq "" | $CHECK_STATUS_FULLNAME eq "" | $REQUEST_RESOURCE_OPTION eq "" | $QUEUE_NAME_4G eq "" | $QUEUE_NAME_6G eq "" | $QUEUE_NAME_10G eq "" |  $QUEUE_NAME_15G eq "" | $QUEUE_NAME_30G eq "" | $WAIT_OPTION eq "" | $WAIT_2JOBS_OPTION eq "" | $MAX_JOBS eq ""){
+    if ($SUBMIT_BATCH_JOBS eq "" | $JOB_NAME_OPTION eq "" | $CHECK_STATUS_FULLNAME eq "" | $REQUEST_RESOURCE_OPTION eq "" | $QUEUE_NAME_4G eq "" | $QUEUE_NAME_6G eq "" | $QUEUE_NAME_10G eq "" |  $QUEUE_NAME_15G eq "" | $QUEUE_NAME_30G eq "" | $QUEUE_NAME_45G eq "" | $QUEUE_NAME_60G eq "" |$WAIT_OPTION eq "" | $WAIT_2JOBS_OPTION eq "" | $MAX_JOBS eq ""){
 	die "ERROR: please provide all required CLUSTER INFO for OTHER_CLUSTER in the $cfg_file file\n";
     }
     else {
@@ -331,13 +331,13 @@ if ($OTHER_CLUSTER =~ /^true/ | $OTHER_CLUSTER =~ /^TRUE/){
 	$queue_10G = $QUEUE_NAME_10G;
 	$queue_15G = $QUEUE_NAME_15G;
 	$queue_30G = $QUEUE_NAME_30G;
+	$queue_45G = $QUEUE_NAME_45G;
+	$queue_60G = $QUEUE_NAME_60G;
 	$submit = "-other";
 	$other = "true";
 	$wait_option = $WAIT_OPTION;
 	$wait_2jobs_option = $WAIT_2JOBS_OPTION;
 	$maxjobs = $MAX_JOBS;
-        $exit_code = $JOB_EXIT_STATUS;
-        $done = $JOB_DONE;
     }
 }
 if ($num_cluster ne '1'){
@@ -368,9 +368,7 @@ $job = "echo \"perl $norm_script_dir/get_total_num_reads.pl $sample_dir $LOC $un
 $name_of_job = "$study.get_total_num_reads";
 $err_name = "$name_of_job.err";
 &onejob($job, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_onejob($job, $name_of_job, $job_num);
-}
+&check_exit_onejob($job, $name_of_job, $job_num);
 &check_err ($name_of_job, $err_name, $job_num);
 $job_num++;
 
@@ -378,6 +376,10 @@ $job_num++;
 $to_wait = "$study.get_total_num_reads";
 $wait = $wait_option;
 $wait =~ s/JOB/$to_wait/;
+$total = "$study_dir/STATS/total_num_reads.txt";
+$sorted = `cut -f 2 $total | sort`;
+@a = split (/\n/, $sorted);
+$max = $a[@a-1];
 if ($other eq "true"){
     $c_option = "$submit \\\"$batchjobs,$jobname,$request,$queue_30G\\\"";
     $new_queue = "";
@@ -385,8 +387,14 @@ if ($other eq "true"){
 else{
     $new_queue = "-mem $queue_30G";
 }
-print $c_option;
-
+if ($max > 200000000){
+    $new_queue = "-mem 60G";
+}
+else{
+    if ($max > 150000000){
+	$new_queue = "-mem 45G";
+    }
+}
 $numq = `$stat | grep "^[0-9]" | wc -l`;
 $qneeded = $numq + $num_samples;
 until ($qneeded < $maxjobs){
@@ -400,10 +408,8 @@ $job = "echo \"perl $norm_script_dir/runall_sam2mappingstats.pl $sample_dir $LOC
 $name_of_alljob = "$study.runall_sam2mappingstats";
 $name_of_job = "$study.sam2mappingstats";
 $err_name = "sam2mappingstats.*.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -421,9 +427,7 @@ $job = "echo \"perl $norm_script_dir/getstats.pl $sample_dir $LOC\" | $batchjobs
 $name_of_job = "$study.getstats";
 $err_name = "$name_of_job.err";
 &onejob($job, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_onejob($job, $name_of_job, $job_num);
-}
+&check_exit_onejob($job, $name_of_job, $job_num);
 &check_err ($name_of_job, $err_name, $job_num);
 $job_num++;
 
@@ -443,15 +447,12 @@ until ($qneeded < $maxjobs){
     sleep(10);
 }
 $job = "echo \"perl $norm_script_dir/runall_runblast.pl $sample_dir $LOC $samfilename $norm_script_dir/ncbi-blast-2.2.27+ $norm_script_dir/ncbi-blast-2.2.27+/ribomouse $c_option $new_queue\" | $batchjobs $jobname \"$study.runall_runblast\" -o $logdir/$study.runall_runblast.out -e $logdir/$study.runall_runblast.err";
-print "$c_option\n$job\n\n";
 
 $name_of_alljob = "$study.runall_runblast";
 $name_of_job = "$study.runblast";
 $err_name = "runblast.*.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -476,10 +477,8 @@ $job = "echo \"perl $norm_script_dir/runall_get_ribo_percents.pl $sample_dir $LO
 $name_of_alljob = "$study.runall_getribopercents";
 $name_of_job = "$study.getribopercents";
 $err_name = "$name_of_job.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -505,10 +504,8 @@ $job = "echo \"perl $norm_script_dir/runall_filter.pl $sample_dir $LOC $samfilen
 $name_of_alljob = "$study.runall_filtersam";
 $name_of_job = "$study.filtersam";
 $err_name = "filtersam.*.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -524,9 +521,7 @@ $job = "echo \"perl $norm_script_dir/get_master_list_of_exons_from_geneinfofile.
 $name_of_job = "$study.get_master_list_of_exons_from_geneinfofile";
 $err_name = "$name_of_job.err";
 &onejob($job, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_onejob($job, $name_of_job, $job_num);
-}
+&check_exit_onejob($job, $name_of_job, $job_num);
 &check_err ($name_of_job, $err_name, $job_num);
 $job_num++;
 
@@ -555,10 +550,8 @@ if ($novel eq "true"){
     $name_of_alljob = "$study.runall_sam2junctions.samfilename";
     $name_of_job = "$study.sam2junctions";
     $err_name = "sam2junctions.*.err";
-    &runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-    unless ($exit_code eq ""){
-	&check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-    }
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
     &check_err ($name_of_alljob, $err_name, $job_num);
     $job_num++;
 
@@ -585,9 +578,7 @@ if ($novel eq "true"){
     $name_of_job = "$study.runall_get_novel_exons";
     $err_name = "$name_of_job.err";
     &onejob($job, $name_of_job, $job_num);
-    unless ($exit_code eq ""){
-	&check_exit_onejob($job, $name_of_job, $job_num);
-    }
+    &check_exit_onejob($job, $name_of_job, $job_num);
     &check_err ($name_of_job, $err_name, $job_num);
     $job_num++;
 }    
@@ -629,10 +620,8 @@ $job = "echo \"perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $
 $name_of_alljob = "$study.quantifyexons.filter.u";
 $name_of_job = "$study.quantifyexons2";
 $err_name = "quantifyexons2.*.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -648,11 +637,9 @@ $job = "echo \"perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $
 
 $name_of_alljob = "$study.quantifyexons.filter.nu";
 $name_of_job = "$study.quantifyexons2";
-$err_name = "quantifyexons2.*.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+$err_name = "nu.quantifyexons2.*.err";
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -682,10 +669,8 @@ $job = "echo \"perl $norm_script_dir/runall_get_high_expressors.pl $sample_dir $
 $name_of_alljob = "$study.runall_get_high_expressors";
 $name_of_job = "$study.get_high_expressor";
 $err_name = "*annotate*.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob,  $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -705,9 +690,7 @@ if ($filter_high_expressors eq 'true'){
     $name_of_job = "$study.filter_high_expressors";
     $err_name = "$name_of_job.err";
     &onejob($job, $name_of_job, $job_num);
-    unless ($exit_code eq ""){
-        &check_exit_onejob($job, $name_of_job, $job_num);
-    }
+    &check_exit_onejob($job, $name_of_job, $job_num);
     &check_err ($name_of_job, $err_name, $job_num);
     $job_num++;
 }
@@ -736,9 +719,7 @@ $job = "echo \"perl $norm_script_dir/get_percent_high_expressor.pl $sample_dir $
 $name_of_job = "$study.get_percent_high_expressor";
 $err_name = "$name_of_job.err";
 &onejob($job, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_onejob($job, $name_of_job, $job_num);
-}
+&check_exit_onejob($job, $name_of_job, $job_num);
 &check_err ($name_of_job, $err_name, $job_num);
 $job_num++;
 
@@ -773,10 +754,8 @@ $job = "echo \"perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $
 $name_of_alljob = "$study.runall_quantify_exons.true.u";
 $name_of_job = "$study.quantifyexons";
 $err_name = "quantifyexons.*.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -793,11 +772,9 @@ $job = "echo \"perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $
 
 $name_of_alljob = "$study.runall_quantify_exons.true.nu";
 $name_of_job = "$study.quantifyexons";
-$err_name = "quantifyexons.*.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+$err_name = "nu.quantifyexons.*.err";
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -816,9 +793,7 @@ $job = "echo \"perl $norm_script_dir/get_exon2nonexon_signal_stats.pl $sample_di
 $name_of_job = "$study.get_exon2nonexon_stats";
 $err_name = "$name_of_job.err";
 &onejob($job, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_onejob($job, $name_of_job, $job_num);
-}
+&check_exit_onejob($job, $name_of_job, $job_num);
 &check_err ($name_of_job, $err_name, $job_num);
 $job_num++;
 
@@ -834,9 +809,7 @@ $job = "echo \"perl $norm_script_dir/get_1exon_vs_multi_exon_stats.pl $sample_di
 $name_of_job = "$study.get_1exonvsmultiexons_stats";
 $err_name = "$name_of_job.err";
 &onejob($job, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_onejob($job, $name_of_job, $job_num);
-}
+&check_exit_onejob($job, $name_of_job, $job_num);
 &check_err ($name_of_job, $err_name, $job_num);
 $job_num++;
 
@@ -852,9 +825,7 @@ $job = "echo \"perl $norm_script_dir/get_master_list_of_introns_from_geneinfofil
 $name_of_job = "$study.get_master_list_of_introns_from_geneinfofile";
 $err_name = "$name_of_job.err";
 &onejob($job, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_onejob($job, $name_of_job, $job_num);
-}
+&check_exit_onejob($job, $name_of_job, $job_num);
 &check_err ($name_of_job, $err_name, $job_num);
 $job_num++;
 
@@ -883,10 +854,8 @@ $job = "echo \"perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC
 $name_of_alljob = "$study.runall_quantify_introns.true.u";
 $name_of_job = "$study.quantifyintrons";
 $err_name = "quantifyintrons.*.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -902,11 +871,9 @@ $job = "echo \"perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC
 
 $name_of_alljob = "$study.runall_quantify_introns.true.nu";
 $name_of_job = "$study.quantifyintrons";
-$err_name = "quantifyintrons.*.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+$err_name = "nu.quantifyintrons.*.err";
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -925,9 +892,7 @@ $job = "echo \"perl $norm_script_dir/get_percent_intergenic.pl $sample_dir $LOC\
 $name_of_job = "$study.get_percent_intergenic";
 $err_name = "$name_of_job.err";
 &onejob($job, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_onejob($job, $name_of_job, $job_num);
-}
+&check_exit_onejob($job, $name_of_job, $job_num);
 &check_err ($name_of_job, $err_name, $job_num);
 $job_num++;
 
@@ -950,10 +915,8 @@ $job = "echo \"perl $norm_script_dir/runall_head.pl $sample_dir $LOC $c_option $
 $name_of_alljob = "$study.runall_head";
 $name_of_job = "$study.head";
 $err_name = "*_head.*.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -972,9 +935,7 @@ $job = "echo \"perl $norm_script_dir/cat_headfiles.pl $sample_dir $LOC\" | $batc
 $name_of_job = "$study.cat_headfiles";
 $err_name = "$name_of_job.err";
 &onejob($job, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_onejob($job, $name_of_job, $job_num);
-}
+&check_exit_onejob($job, $name_of_job, $job_num);
 &check_err ($name_of_job, $err_name, $job_num);
 $job_num++;
 
@@ -993,9 +954,7 @@ $job = "echo \"perl $norm_script_dir/make_final_samfile.pl $sample_dir $LOC\" | 
 $name_of_job = "$study.make_final_samfile";
 $err_name = "$name_of_job.err";
 &onejob($job, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_onejob($job, $name_of_job, $job_num);
-}
+&check_exit_onejob($job, $name_of_job, $job_num);
 &check_err ($name_of_job, $err_name, $job_num);
 $job_num++;
 
@@ -1023,10 +982,8 @@ $job = "echo \"perl $norm_script_dir/runall_sam2junctions.pl $sample_dir $LOC $g
 $name_of_alljob = "$study.runall_sam2junctions";
 $name_of_job = "$study.sam2junctions";
 $err_name = "sam2junctions.*.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -1045,9 +1002,7 @@ $job = "echo \"perl $norm_script_dir/cat_exonmappers_Unique_NU.pl $sample_dir $L
 $name_of_job = "$study.cat_exonmappers";
 $err_name = "$name_of_job.err";
 &onejob($job, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_onejob($job, $name_of_job, $job_num);
-}
+&check_exit_onejob($job, $name_of_job, $job_num);
 &check_err ($name_of_job, $err_name, $job_num);
 $job_num++;
 
@@ -1075,10 +1030,8 @@ $job = "echo \"perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $
 $name_of_alljob = "$study.runall_quantify_exons.false";
 $name_of_job = "$study.quantifyexons2";
 $err_name = "quantifyexons2.*.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -1098,10 +1051,8 @@ $job = "echo \"perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC
 $name_of_alljob = "$study.runall_quantify_introns.false.u";
 $name_of_job = "$study.quantifyintrons2";
 $err_name = "quantifyintrons2.*.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -1117,11 +1068,9 @@ $job = "echo \"perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC
 
 $name_of_alljob = "$study.runall_quantify_introns.false.nu";
 $name_of_job = "$study.quantifyintrons2";
-$err_name = "quantifyintrons2.*.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+$err_name = "nu.quantifyintrons2.*.err";
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
@@ -1152,17 +1101,15 @@ $job = "echo \"perl $norm_script_dir/make_final_spreadsheets.pl $sample_dir $LOC
 $name_of_alljob = "$study.make_final_spreadsheets";
 $name_of_job = "$study.final_spreadsheet";
 $err_name = "*2spreadsheet_min_max.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
 #run_annotate
 $to_annotate = "$study_dir/NORMALIZED_DATA/to_annotate.txt";
 open(out, ">$to_annotate");
-print out "master_list_of_exons_counts_MIN.txt\nmaster_list_of_exons_counts_MAX.txt\nmaster_list_of_introns_counts_MIN.txt\nmaster_list_of_introns_counts_MAX.txt\nmaster_list_of_junctions_counts_MIN.txt\nmaster_list_of_junctions_counts_MAX.txt\n";
+print out "master_list_of_exons_counts_MIN.$study.txt\nmaster_list_of_exons_counts_MAX.$study.txt\nmaster_list_of_introns_counts_MIN.$study.txt\nmaster_list_of_introns_counts_MAX.$study.txt\nmaster_list_of_junctions_counts_MIN.$study.txt\nmaster_list_of_junctions_counts_MAX.$study.txt\n";
 close(out);
 $to_wait = "$study.final_spreadsheet";
 $wait = $wait_option;
@@ -1186,17 +1133,15 @@ $job = "echo \"perl $norm_script_dir/run_annotate.pl $to_annotate $annot $LOC $c
 $name_of_alljob = "$study.run_annotate";
 $name_of_job = "$study.annotate";
 $err_name = "annotate.*.txt.err";
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-}
+&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 &check_err ($name_of_alljob, $err_name, $job_num);
 $job_num++;
 
 #filter_low_expressors
 $to_filter = "$study_dir/NORMALIZED_DATA/to_filter.txt";
 open(out, ">$to_filter");
-print out "annotated_master_list_of_exons_counts_MIN.txt\nannotated_master_list_of_exons_counts_MAX.txt\nannotated_master_list_of_introns_counts_MIN.txt\nannotated_master_list_of_introns_counts_MAX.txt\nannotated_master_list_of_junctions_counts_MIN.txt\nannotated_master_list_of_junctions_counts_MAX.txt\n";
+print out "annotated_master_list_of_exons_counts_MIN.$study.txt\nannotated_master_list_of_exons_counts_MAX.$study.txt\nannotated_master_list_of_introns_counts_MIN.$study.txt\nannotated_master_list_of_introns_counts_MAX.$study.txt\nannotated_master_list_of_junctions_counts_MIN.$study.txt\nannotated_master_list_of_junctions_counts_MAX.$study.txt\n";
 close(out);
 $to_wait = "$study.annotate";
 $wait = $wait_option;
@@ -1214,9 +1159,7 @@ $job = "echo \"perl $norm_script_dir/runall_filter_low_expressors.pl $to_filter 
 $name_of_job = "$study.filter_low_expressors";
 $err_name = "$name_of_job.err";
 &onejob($job, $name_of_job, $job_num);
-unless ($exit_code eq ""){
-    &check_exit_onejob($job, $name_of_job, $job_num);
-}
+&check_exit_onejob($job, $name_of_job, $job_num);
 &check_err ($name_of_job, $err_name, $job_num);
 $job_num++;
 
@@ -1244,10 +1187,8 @@ if ($sam2cov eq "true"){
     $name_of_alljob = "$study.runall_sam2cov";
     $name_of_job = "$study.sam2cov";
     $err_name = "sam2cov.*.err";
-    &runalljob($job, $name_of_alljob, $name_of_job, $job_num);
-    unless ($exit_code eq ""){
-	&check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-    }
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
     &check_err ($name_of_alljob, $err_name, $job_num);
     $job_num++;
 }
@@ -1273,9 +1214,7 @@ if ($delete_int_sam eq "true"){
     $name_of_job = "$study.cleanup";
     $err_name = "$name_of_job.err";
     &onejob($job, $name_of_job, $job_num);
-    unless ($exit_code eq ""){
-	&check_exit_onejob($job, $name_of_job, $job_num);
-    }
+    &check_exit_onejob($job, $name_of_job, $job_num);
     &check_err ($name_of_job, $err_name, $job_num);
     $job_num++;
 }
@@ -1314,14 +1253,12 @@ if ($convert_sam2bam eq "true" | $gzip_cov eq "true"){
     $name_of_job = "$study.compress";
     $err_name = "$name_of_job.err";
     &onejob($job, $name_of_job, $job_num);
-    unless ($exit_code eq ""){
-        &check_exit_onejob($job, $name_of_job, $job_num);
-    }
+    &check_exit_onejob($job, $name_of_job, $job_num);
     &check_err ($name_of_job, $err_name, $job_num);
     $job_num++;
 }
 close(LOG);
-#=cut
+
 sub parse_config_file () {
     ($File, $Config) = @_;
     open(CONFIG, "$File") or die "ERROR: Config file not found : $File\n";
@@ -1360,7 +1297,9 @@ sub onejob {
 }
 
 sub runalljob{
-    my ($job, $name_of_alljob, $name_of_job, $job_num) =@_;
+    my ($job, $name_of_alljob, $name_of_job, $job_num, $err_name) =@_;
+    $out_name = $err_name;
+    $out_name =~ s/err/out/g;
     `$job`;
     $date = `date`;
     print LOG "$job_num  \"$name_of_alljob\"\n\tSTARTED: $date";
@@ -1394,91 +1333,132 @@ sub runalljob{
     
 sub check_exit_onejob {
     my ($job, $name_of_job, $job_num) = @_;
-    $exit_stat = $exit_code;
-    $exit_stat =~ s/JOB/$name_of_job/;
-    $check_exit = `$exit_stat`;
-    @e = split(/\n/, $check_exit);
-    $last = $e[@e-1];
-    $last =~ s/[^0-9]//g;
-    if ($done ne $last){
+    $outfile = "$logdir/$name_of_job.out";
+    $check_out = `grep "got here" $outfile | grep -v echo | wc -l`;
+    chomp($check_out);
+    if ($check_out eq '0'){
 	if (-e "$logdir/$name_of_job.err"){
 	    `rm $logdir/$name_of_job.err`;
 	}
-	$jobnum_rep = "\t\t*Job exited with code : $last\n \tretrying";
+	$jobnum_rep = "\t**Job exited before completing\n\tretrying...";
 	&onejob($job, $name_of_job, $jobnum_rep);
     }
 }
 
 sub check_exit_alljob{
-    my ($job, $name_of_alljob, $name_of_job, $job_num, $err_name) = @_;
-    $exit_stat_all = $exit_code;
-    $exit_stat_all =~ s/JOB/$name_of_alljob/;
-    $check_exit_all = `$exit_stat_all`;
-    @e_all = split(/\n/, $check_exit_all);
-    $last_all = $e_all[@e_all-1];
-    $last_all =~ s/[^0-9]//g;
-    if ($done ne $last_all){
+    my ($job, $name_of_alljob, $job_num, $err_name) = @_;
+    $outfile_all = "$logdir/$name_of_alljob.out";
+    $check_out_all = `grep "got here" $outfile_all | grep -v echo | wc -l`;
+    chomp($check_out_all);
+    if ($check_out_all eq '0'){
 	if (-e "$logdir/$name_of_alljob.err"){
 	    `rm $logdir/$name_of_alljob.err`;
 	}
-	$jobnum_rep = "\t*Job exited with code :  $last_all\n \tretrying";
-        &runalljob($job, $name_of_alljob, $name_of_job, $jobnum_rep);
+	$err_count = `ls $logdir/$err_name | wc -l`;
+	chomp($err_count);
+	if ($err_count ne '0'){
+	    `rm $logdir/$err_name`;
+	}
+	if (-e "$logdir/$name_of_alljob.out"){
+            `rm $logdir/$name_of_alljob.out`;
+        }
+	$out_count = `ls $logdir/$out_name | wc -l`;
+	chomp($out_count);
+	if ($out_count ne '0'){
+	    `rm $logdir/$out_name`;
+	}
+	$jobnum_rep = "\t**Job exited before completing\n\tretrying...";
+        &runalljob($job, $name_of_alljob, $name_of_job, $jobnum_rep, $err_name);
     }
     else{
-	for ($i=0;$i<$num_samples;$i++){
-	    $exit_stat = $exit_code;
-	    $exit_stat =~ s/JOB/$name_of_job/;
-	    $check_exit = `$exit_stat`;
-	    @e = split(/\n/, $check_exit);
-	    $last = $e[@e-1-$i];
-	    $last =~ s/[^0-9]//g;
-	    if ($done ne $last){
-		if (-e "$logdir/$err_name"){
-		    `rm $logdir/$err_name"`;
-		}
-		$jobnum_rep = "\t*Job exited with code : $last\n \tretrying";
-		&runalljob($job, $name_of_alljob, $name_of_job, $jobnum_rep);
+	$out_name = $err_name;
+	$out_name =~ s/err/out/g;
+	$wc_out = `ls $logdir/$out_name | wc -l`;
+	$check_out = `grep "got here" $logdir/$out_name | grep -v echo | wc -l`;
+	chomp($wc_out);
+	chomp($check_out);
+	if ($check_out ne $wc_out){
+	    if (-e "$logdir/$name_of_alljob.err"){
+		`rm $logdir/$name_of_alljob.err`;
 	    }
+	    if (-e "$logdir/$name_of_alljob.out"){
+                `rm $logdir/$name_of_alljob.out`;
+            }
+	    $out_count = `ls $logdir/$out_name | wc -l`;
+	    chomp($out_count);
+	    if ($out_count ne '0'){
+		`rm $logdir/$out_name`;
+	    }
+	    $err_count = `ls $logdir/$err_name | wc -l`;
+	    chomp($err_count);
+	    if ($err_count ne '0'){
+		`rm $logdir/$err_name`;
+	    }
+	    $jobnum_rep = "\t**Job exited before completing\n\tretrying...";
+	    &runalljob($job, $name_of_alljob, $name_of_job, $jobnum_rep, $err_name);
 	}
     }
 }
 
 sub check_err {
     my ($name_of_job, $err_name, $job_num) = @_;
-    $wc_err = `wc -l $logdir/$name_of_job.err`;
-    @wc = split(/\n/, $wc_err);
-    $last_wc = $wc[@wc-1];
-    @w = split(" ", $last_wc);
-    $wc_num = $w[0];
-    $err = `cat $logdir/$name_of_job.err`;
-    if ($wc_num ne '0'){
-	die "\nERROR: \"$job_num $name_of_job\"\n$err\nlogfile: $logdir/$name_of_job.err";
+    $out_name = $err_name;
+    $out_name =~ s/err/out/g;
+    $outfile = "$logdir/$name_of_job.out";
+    $check_out = `grep "got here" $outfile | grep -v echo | wc -l`;
+    chomp($check_out);
+    $file_count = 1;
+    $finish_count = $check_out;
+    if ($out_name ne "$name_of_job.out"){ 
+	$out_count = `ls $logdir/$out_name | wc -l`;
+	chomp($out_count);
+	$check_out_count = `grep "got here" $logdir/$out_name | grep -v echo | wc -l`;
+	chomp($check_out_count);
+	$file_count = $out_count + 1;
+	$finish_count = $check_out_count + $check_out;
+    }
+    if ($file_count ne $finish_count){
+	$date = `date`;
+	print LOG "***Job killed:\tjob exited before completing\t$date\n";
+	die "\nERROR: \"$job_num\t\"$name_of_job\" exited before completing\n";
     }
     else{
-	if ("$name_of_job.err" ne "$err_name"){
-	    $wc_err_sample = `wc -l $logdir/$err_name`;
-	    @wc = split(/\n/, $wc_err);
-	    $sum = 0;
-	    $log = "";
-	    for($i=0;$i<$num_sample;$i++){
-		$last_wc = $wc[@wc-1-$i];
-		@w = split(" ", $last_wc);
-		$wc_num = $w[0];
-		$sum = $sum + $wc_num;
-		$err = `cat $logdir/$err_name`;
-		$log = $log . $err;
-	    }
-	    if ($sum ne '0'){
-		die "\nERROR: \"$job_num $name_of_job\"\n$log\nlogfile: $logdir/$err_name";
+	$wc_err = `wc -l $logdir/$name_of_job.err`;
+	@wc = split(/\n/, $wc_err);
+	$last_wc = $wc[@wc-1];
+	@w = split(" ", $last_wc);
+	$wc_num = $w[0];
+	$err = `cat $logdir/$name_of_job.err`;
+	if ($wc_num ne '0'){
+	    print LOG "***Job killed:\n\n$err\nstderr: $logdir/$name_of_job.err\n";
+	    die "\nERROR: \"$job_num $name_of_job\"\n$err\nstderr: $logdir/$name_of_job.err";
+	}
+	else{
+	    if ("$name_of_job.err" ne "$err_name"){
+		$wc_err_sample = `wc -l $logdir/$err_name`;
+		@wc = split(/\n/, $wc_err_sample);
+		$sum = 0;
+		$log = `cat $logdir/$err_name`;
+		for($i=0;$i<@wc;$i++){
+		    $last_wc = $wc[@wc-1-$i];
+		    @w = split(" ", $last_wc);
+		    $wc_num = $w[0];
+		    $sum = $sum + $wc_num;
+		}
+		if ($sum ne '0'){
+		    print LOG "***Job Killed:\n\n$log\nstderr: $logdir/$err_name\n";
+		    die "\nERROR: \"$job_num $name_of_job\"\n$log\nstderr: $logdir/$err_name";
+		}
+		else{
+		    $date =`date`;
+		    print LOG "\tCOMPLETED: $date";
+		}
 	    }
 	    else{
 		$date =`date`;
 		print LOG "\tCOMPLETED: $date";
 	    }
 	}
-	else{
-	    $date =`date`;
-	    print LOG "\tCOMPLETED: $date";
-	}
     }
 }
+print LOG "\n\nNormailzation completed successfully.\n";
