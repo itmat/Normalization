@@ -283,7 +283,7 @@ $other = "false";
 $num_cluster = 0;
 if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
     $num_cluster++;
-    if ($QUEUE_NAME_4G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $WAIT_OPTION_sge eq "" | $WAIT_2JOBS_OPTION_sge eq "" | $MAX_JOBS_sge eq ""){
+    if ($QUEUE_NAME_4G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $QUEUE_NAME_45G_sge eq "" | $QUEUE_NAME_30G_sge eq ""| $WAIT_OPTION_sge eq "" | $WAIT_2JOBS_OPTION_sge eq "" | $MAX_JOBS_sge eq ""){
         die "ERROR: please provide all required CLUSTER INFO for SGE_CLUSTER in the config file \"$cfg_file\"\n";
     }
     else{
@@ -296,6 +296,8 @@ if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
 	$queue_10G = $QUEUE_NAME_10G_sge;
 	$queue_15G = $QUEUE_NAME_15G_sge;
 	$queue_30G = $QUEUE_NAME_30G_sge;
+	$queue_45G = $QUEUE_NAME_45G_sge;
+	$queue_60G = $QUEUE_NAME_60G_sge;
 	$submit = "-sge";
 	$sge = "true";
 	$c_option = $submit;
@@ -306,7 +308,7 @@ if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
 }
 if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
     $num_cluster++;
-    if ($QUEUE_NAME_4G_lsf eq "" | $QUEUE_NAME_6G_lsf eq "" | $QUEUE_NAME_10G_lsf eq "" |  $QUEUE_NAME_15G_lsf eq "" | $QUEUE_NAME_30G_lsf eq "" | $WAIT_OPTION_lsf eq "" | $WAIT_2JOBS_OPTION_lsf eq "" | $MAX_JOBS_lsf eq ""){
+    if ($QUEUE_NAME_4G_lsf eq "" | $QUEUE_NAME_6G_lsf eq "" | $QUEUE_NAME_10G_lsf eq "" |  $QUEUE_NAME_15G_lsf eq "" | $QUEUE_NAME_30G_lsf eq "" | $QUEUE_NAME_45G_lsf eq "" | $QUEUE_NAME_60G_lsf eq "" |$WAIT_OPTION_lsf eq "" | $WAIT_2JOBS_OPTION_lsf eq "" | $MAX_JOBS_lsf eq ""){
         die "ERROR: please provide all required CLUSTER INFO for LSF_CLUSTER in the config file \"$cfg_file\"\n";
     }
     else{
@@ -319,6 +321,8 @@ if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
 	$queue_10G = $QUEUE_NAME_10G_lsf;
 	$queue_15G = $QUEUE_NAME_15G_lsf;
 	$queue_30G = $QUEUE_NAME_30G_lsf;
+	$queue_45G = $QUEUE_NAME_45G_lsf;
+	$queue_60G = $QUEUE_NAME_60G_lsf;
 	$submit = "-lsf";
 	$lsf = "true";
 	$c_option = $submit;
@@ -329,8 +333,8 @@ if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
 }
 if ($OTHER_CLUSTER =~ /^true/ | $OTHER_CLUSTER =~ /^TRUE/){
     $num_cluster++;
-    if ($SUBMIT_BATCH_JOBS eq "" | $JOB_NAME_OPTION eq "" | $CHECK_STATUS_FULLNAME eq "" | $REQUEST_RESOURCE_OPTION eq "" | $QUEUE_NAME_4G eq "" | $QUEUE_NAME_6G eq "" | $QUEUE_NAME_10G eq "" |  $QUEUE_NAME_15G eq "" | $QUEUE_NAME_30G eq "" | $WAIT_OPTION eq "" | $WAIT_2JOBS_OPTION eq "" | $MAX_JOBS eq ""){
-	die "ERROR: please provide all required CLUSTER INFO for OTHER_CLUSTER in the config file \"$cfg_file\:\n";
+    if ($SUBMIT_BATCH_JOBS eq "" | $JOB_NAME_OPTION eq "" | $CHECK_STATUS_FULLNAME eq "" | $REQUEST_RESOURCE_OPTION eq "" | $QUEUE_NAME_4G eq "" | $QUEUE_NAME_6G eq "" | $QUEUE_NAME_10G eq "" |  $QUEUE_NAME_15G eq "" | $QUEUE_NAME_30G eq "" | $QUEUE_NAME_45G eq "" | $QUEUE_NAME_60G eq "" | $WAIT_OPTION eq "" | $WAIT_2JOBS_OPTION eq "" | $MAX_JOBS eq ""){
+	die "ERROR: please provide all required CLUSTER INFO for OTHER_CLUSTER in the config file \"$cfg_file\"\n";
     }
     else {
 	$batchjobs = $SUBMIT_BATCH_JOBS;

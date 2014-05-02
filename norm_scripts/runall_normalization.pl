@@ -318,7 +318,7 @@ if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
 }
 if ($OTHER_CLUSTER =~ /^true/ | $OTHER_CLUSTER =~ /^TRUE/){
     $num_cluster++;
-    if ($SUBMIT_BATCH_JOBS eq "" | $JOB_NAME_OPTION eq "" | $CHECK_STATUS_FULLNAME eq "" | $REQUEST_RESOURCE_OPTION eq "" | $QUEUE_NAME_4G eq "" | $QUEUE_NAME_6G eq "" | $QUEUE_NAME_10G eq "" |  $QUEUE_NAME_15G eq "" | $QUEUE_NAME_30G eq "" | $QUEUE_NAME_45G eq "" | $QUEUE_NAME_60G eq "" |$WAIT_OPTION eq "" | $WAIT_2JOBS_OPTION eq "" | $MAX_JOBS eq ""){
+    if ($SUBMIT_BATCH_JOBS eq "" | $JOB_NAME_OPTION eq "" | $CHECK_STATUS_FULLNAME eq "" | $REQUEST_RESOURCE_OPTION eq "" | $QUEUE_NAME_4G eq "" | $QUEUE_NAME_6G eq "" | $QUEUE_NAME_10G eq "" |  $QUEUE_NAME_15G eq "" | $QUEUE_NAME_30G eq "" | $QUEUE_NAME_45G eq "" | $QUEUE_NAME_60G eq "" | $WAIT_OPTION eq "" | $WAIT_2JOBS_OPTION eq "" | $MAX_JOBS eq ""){
 	die "ERROR: please provide all required CLUSTER INFO for OTHER_CLUSTER in the $cfg_file file\n";
     }
     else {
