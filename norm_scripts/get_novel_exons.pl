@@ -55,7 +55,7 @@ while($line = <INFILE>){
     if ($score > 5){
 	foreach $exon_start (keys %EXON_START){
 	    $diff = $start - $exon_start;
-	    if ($diff > $min && $diff < $max){
+	    if (($diff > $min) && ($diff < $max)){
 		print OUTFILE "$chr:$exon_start-$start\n";
 	    }
 	    if ($diff > $max){
