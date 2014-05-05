@@ -94,6 +94,8 @@ STUDY
 └── shell_scripts
 </pre>
 
+========================================================================================================
+
 ### 1. RUN_NORMALIZATION
 
 This runs the Normalization pipeline. <br>
