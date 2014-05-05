@@ -96,6 +96,10 @@ STUDY
 
 ### 1. RUN_NORMALIZATION
 
+This runs the Normalization pipeline. <br>
+You can also run it step by step using the scripts documented in [#2. NORMALIZATION STEPS].
+
+
     run_normalization --sample_dirs <file of sample_dirs> --loc <s> \
     --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
 
@@ -164,9 +168,9 @@ This creates `runall_normalization.sh` file in `STUDY/shell_scripts` directory a
          **-lsf** : set this if you want to submit batch jobs to LSF<br>
          **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
 	 **-other &lt;submit> &lt;jobname_option> &lt;request_memory_option> &lt;queue_name_for_30G>** : <br>
-	 	  set this if you're not on LSF or SGE cluster<br>
-	 **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 30G) <br>
-	 **If you have > 150,000,000 reads, use -mem option to request 45G mem.<br>
+	 	  set this if you're not on LSF or SGE cluster
+	 **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 30G)
+	 **If you have > 150,000,000 reads, use -mem option to request 45G mem.
 	 **If you have > 200,000,000 reads, use -mem option to request 60G mem.
  
  This will output `*mappingstats.txt` file of all samples to each sample directory. The following script will parse the `*mappingstats.txt` files and output a table with summary info across all samples.
