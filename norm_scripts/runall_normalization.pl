@@ -1209,7 +1209,6 @@ if ($sam2cov eq "true"){
     $err_name = "sam2cov.*.err";
     $count = 0;
     &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name, $count);
-    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
     &only_err ($name_of_alljob, $err_name, $job_num);
     $job_num++;
 }
