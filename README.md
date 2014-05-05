@@ -99,7 +99,7 @@ STUDY
 ### 1. RUN_NORMALIZATION
 
 This runs the Normalization pipeline. <br>
-You can also run it step by step using the scripts documented in [#2. NORMALIZATION STEPS].
+You can also run it step by step using the scripts documented in [#2. NORMALIZATION STEPS](https://github.com/itmat/Normalization/tree/master#2-normalization-steps).
 
 
     run_normalization --sample_dirs <file of sample_dirs> --loc <s> \
