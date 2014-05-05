@@ -1,11 +1,12 @@
-if(@ARGV<4) {
-    die "usage: runall_sam2junctions.pl <sample dirs> <loc> <genes> <genome> [options]
+#!/usr/bin/env perl
+
+$USAGE =  "\nUsage: runall_sam2junctions.pl <sample dirs> <loc> <genes> <genome> [options]
 
 where:
-<sample dirs> is the name of a file with the names of the sample directories (no paths)
-<loc> is the path to the dir with the sample directories
-<genes> is the RUM gene info file (with full path)
-<genome> is the RUM genome sequene fasta file (with full path)
+<sample dirs> is a file with the names of the sample directories
+<loc> is the directory with the sample directories
+<genes> is the gene info file (with full path)
+<genome> is the genome sequene fasta file (with full path)
 
 option:
  -samfilename <s> : set this to create junctions files using unfiltered aligned samfile.
@@ -18,11 +19,29 @@ option:
  -nu :  set this if you want to return only non-unique junctions, otherwise by default
          it will return merged(unique+non-unique) junctions.
 
- -bsub : set this if you want to submit batch jobs to LSF.
+ -lsf : set this if you want to submit batch jobs to LSF cluster (PMACS).
 
- -qsub : set this if you want to submit batch jobs to Sun Grid Engine.
+ -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI).
+
+ -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_6G>\":
+        set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
+        **make sure the arguments are comma separated inside the quotes**
+
+        <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
+        <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
+        <request_memory_option> : is option for requesting resources for batch job submission command
+                                  (e.g. -q, -l h_vmem=)
+        <queue_name_for_6G> : is queue name for 6G (e.g. plus, 6G)
+
+ -mem <s> : set this if your job requires more memory.
+            <s> is the queue name for required mem.
+            Default: 6G
+
+ -h : print usage
 
 ";
+if(@ARGV<4) {
+    die $USAGE;
 }
 
 use Cwd 'abs_path';
@@ -31,11 +50,14 @@ $path =~ s/\/runall_sam2junctions.pl//;
 $U = "true";
 $NU = "true";
 $numargs = 0;
-$option_found = "false";
-$bsub = "false";
-$qsub = "false";
-$numargs_b = 0;
 $samfilename = "false";
+
+$numargs_c = 0;
+$replace_mem = "false";
+$submit = "";
+$jobname_option = "";
+$request_memory_option = "";
+$mem = "";
 for($i=4; $i<@ARGV; $i++) {
     $option_found = "false";
     if ($ARGV[$i] eq '-samfilename'){
@@ -54,15 +76,51 @@ for($i=4; $i<@ARGV; $i++) {
         $numargs++;
         $option_found = "true";
     }
-    if ($ARGV[$i] eq '-bsub'){
-	$bsub = "true";
-	$numargs_b++;
-	$option_found = "true";
+    if ($ARGV[$i] eq '-h'){
+        $option_found = "true";
+	die $USAGE;
     }
-    if ($ARGV[$i] eq '-qsub'){
-	$qsub = "true";
-	$numargs_b++;
+    if ($ARGV[$i] eq '-lsf'){
+        $numargs_c++;
 	$option_found = "true";
+        $submit = "bsub";
+        $jobname_option = "-J";
+        $request_memory_option = "-q";
+        $mem = "plus";
+    }
+    if ($ARGV[$i] eq '-sge'){
+        $numargs_c++;
+        $option_found = "true";
+        $submit = "qsub -cwd";
+	$jobname_option = "-N";
+	$request_memory_option = "-l h_vmem=";
+        $mem = "6G";
+    }
+    if ($ARGV[$i] eq '-other'){
+	$numargs_c++;
+        $option_found = "true";
+        $argv_all = $ARGV[$i+1];
+        @a = split(",", $argv_all);
+        $submit = $a[0];
+        $jobname_option = $a[1];
+        $request_memory_option = $a[2];
+        $mem = $a[3];
+        $i++;
+        if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem eq ""){
+            die "please provide \"<submit>, <jobname_option>, and <request_memory_option> <queue_name_for_6G>\"\n";
+        }
+        if ($submit eq "-lsf" | $submit eq "-sge"){
+            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit> <jobname_option> <request_memory_option> <queue_name_for_6G>\".\n";
+        }
+    }
+    if ($ARGV[$i] eq '-mem'){
+        $option_found = "true";
+        $new_mem = $ARGV[$i+1];
+        $replace_mem = "true";
+        $i++;
+        if ($new_mem eq ""){
+            die "please provide a queue name.\n";
+        }
     }
     if($option_found eq "false") {
         die "option \"$ARGV[$i]\" was not recognized.\n";
@@ -72,15 +130,18 @@ if($numargs > 1) {
     die "you cannot specify both -u and -nu. 
 ";
 }
-if($numargs_b ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose either -bsub or -qsub.\n
-";
+if($numargs_c ne '1'){
+    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit> <jobname_option> <request_memory_option> <queue_name_for_6G>\".\n";
+}
+if ($replace_mem eq "true"){
+    $mem = $new_mem;
 }
 
 open(INFILE, $ARGV[0]);
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 @fields = split("/", $LOC);
+$study = $fields[@fields-2];
 $last_dir = $fields[@fields-1];
 $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
@@ -95,7 +156,7 @@ $finalsam_dir = "$norm_dir/FINAL_SAM";
 $final_U_dir = "$finalsam_dir/Unique";
 $final_NU_dir = "$finalsam_dir/NU";
 $final_M_dir = "$finalsam_dir/MERGED";
-$junctions_dir = "$norm_dir/Junctions";
+$junctions_dir = "$norm_dir/JUNCTIONS";
 
 $genes = $ARGV[2];
 $genome = $ARGV[3];
@@ -128,21 +189,19 @@ while($line = <INFILE>) {
 	    }
 	}
     }
-    $shfile = "J" . $id . $filename . ".sh";
+    $shfile = "$shdir/J" . $id . $filename . ".sh";
+    $jobname = "$study.sam2junctions";
+    $logname = "$logdir/sam2junctions.$id";
     $outfile1 = $filename;
     $outfile1 =~ s/.sam/_junctions_all.rum/;
     $outfile2 = $filename;
     $outfile2 =~ s/.sam/_junctions_all.bed/;
     $outfile3 = $filename;
     $outfile3 =~ s/.sam/_junctions_hq.bed/;
-    open(OUTFILE, ">$shdir/$shfile");
+    open(OUTFILE, ">$shfile");
     print OUTFILE "perl $path/rum-2.0.5_05/bin/make_RUM_junctions_file.pl --genes $genes --sam-in $final_dir/$filename --genome $genome --all-rum-out $junctions_dir/$outfile1 --all-bed-out $junctions_dir/$outfile2 --high-bed-out $junctions_dir/$outfile3 -faok\n";
     close(OUTFILE);
-    if($bsub eq "true"){
-	`bsub -q plus -o $logdir/$id.sam2junctions.out -e $logdir/$id.sam2junctions.err sh $shdir/$shfile`;
-    }
-    if ($qsub eq "true"){
-	`qsub -cwd -N $dir.sam2junctions -o $logdir -e $logdir -l h_vmem=6G $shdir/$shfile`;
-    }
+    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
 }
 close(INFILE);
+print "got here\n";

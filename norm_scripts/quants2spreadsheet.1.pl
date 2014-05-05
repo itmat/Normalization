@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<3) {
     die "usage: perl quants2spreadsheet.1.pl <file names> <loc> <type of quants file> [options]
 
@@ -28,27 +29,32 @@ $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 $type = $ARGV[2];
 @fields = split("/", $LOC);
+$study = $fields[@fields-2];
 $last_dir = $fields[@fields-1];
 $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
 $norm_dir = $norm_dir . "NORMALIZED_DATA";
 $exon_dir = $norm_dir . "/exonmappers";
 $nexon_dir = $norm_dir . "/notexonmappers";
+$spread_dir = $norm_dir . "/SPREADSHEETS";
 
+unless (-d $spread_dir){
+    `mkdir $spread_dir`;
+}
 if ($type =~ /^exon/){
-    $out = "$norm_dir/list_of_exons_counts_u.txt";
+    $out = "$spread_dir/master_list_of_exons_counts_u.$study.txt";
     $sample_name_file = "$norm_dir/file_exonquants_u.txt";
     if ($nuonly eq "true"){
-	$out =~ s/_u.txt/_nu.txt/;
+	$out =~ s/_u.$study.txt/_nu.$study.txt/;
 	$sample_name_file = s/_u.txt/_nu.txt/;
     }
 }
 else{
     if ($type =~ /^intron/){
-        $out = "$norm_dir/master_list_of_introns_counts_u.txt";
+        $out = "$spread_dir/master_list_of_introns_counts_u.$study.txt";
         $sample_name_file = "$norm_dir/file_intronquants_u.txt";
 	if ($nuonly eq "true"){
-	    $out =~ s/_u.txt/_nu.txt/;
+	    $out =~ s/_u.$study.txt/_nu.$study.txt/;
 	    $sample_name_file = s/_u.txt/_nu.txt/;
 	}
     }
@@ -147,7 +153,7 @@ for($i=0; $i<@ID; $i++) {
 print OUTFILE "\n";
 for($i=0; $i<$rowcnt; $i++) {
     if ($type =~ /^exon/){
-	print OUTFILE "$id[$i]";
+	print OUTFILE "exon:$id[$i]";
     }
     if ($type =~ /^intron/){
 	print OUTFILE "intron:$id[$i]";
@@ -158,3 +164,6 @@ for($i=0; $i<$rowcnt; $i++) {
     print OUTFILE "\n";
 }
 close(OUTFILE);
+
+
+print "got here\n";

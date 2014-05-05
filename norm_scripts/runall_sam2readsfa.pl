@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV < 3) {
     die "Usage: perl runall_sam2readsfa.pl <sample dirs> <loc> <sam file name> [options]
 

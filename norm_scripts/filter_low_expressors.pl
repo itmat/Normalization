@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV < 3) {
     die  "usage: perl filter_low_expressors.pl <file> <number_of_samples> <cutoff>
 
@@ -31,3 +32,4 @@ while($line = <INFILE>) {
     }
 }
 close(INFILE);
+print "got here\n";

@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV < 4) {
     die  "usage: perl runall_filter_low_expressors.pl <file of quants files> <number_of_samples> <cutoff> <loc>
 
@@ -22,10 +23,18 @@ $last_dir = $fields[@fields-1];
 $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
 $norm_dir = $norm_dir . "NORMALIZED_DATA";
+$spread_dir = $norm_dir . "/SPREADSHEETS";
+
+unless (-d $spread_dir){
+    `mkdir $spread_dir`;
+}
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){
     chomp($line);
-    `perl $path $norm_dir/$line $num_samples $cutoff > $norm_dir/FINAL_$line`;
+    $final_file = $line;
+    $final_file =~ s/annotated_//g;
+    `perl $path $spread_dir/$line $num_samples $cutoff > $spread_dir/FINAL_$final_file`;
 }
 close(INFILE);
+print "got here\n";

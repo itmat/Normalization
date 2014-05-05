@@ -111,10 +111,10 @@ if($covNU =~ /\S/) {
     }
     close(INFILE);
 }
-#check length of sequence name
-open(SAM, $sam_in);
+
+open(SAM, $sam_in) or die "cannot find file \"$sam_in\"\n";
 while (<SAM>){
-    if (1..100){
+    if (1..1000){
 	if ($_ =~ /^@/){
 	    next;
 	}
@@ -127,17 +127,16 @@ while (<SAM>){
 }
 close(SAM);
 $common_str = "";
-#if length of sequence name > 10, find the longest common substring.
-if ($length > 10){
-    @tail = &last_x_lines($sam_in, 100);
-    for $seq (@tail){
-        @a = split (/\t/, $seq);
-        $seqname = $a[0];
-        $seqname =~ s/[^A-Za-z0-9 ]//g;
-        push(@NAME, $seqname);
-    }
-    $common_str = &LCP(@NAME);
+
+@tail = &last_x_lines($sam_in, 1000);
+for $seq (@tail){
+    @a = split (/\t/, $seq);
+    $seqname = $a[0];
+    $seqname =~ s/[^A-Za-z0-9 ]//g;
+    push(@NAME, $seqname);
 }
+$common_str = &LCP(@NAME);
+
 open(INFILE, $sam_in);
 $linecnt = 0;
 $num_OL = 0;
@@ -957,3 +956,4 @@ sub Roman($) {
 sub roman($) {
     lc Roman shift;
 }
+print "got here\n";

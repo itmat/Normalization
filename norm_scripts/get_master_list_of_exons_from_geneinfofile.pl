@@ -53,3 +53,4 @@ foreach $exon (keys %EXONS) {
     print OUTFILE "$exon\n";
 }
 close(OUTFILE);
+print "got here\n";

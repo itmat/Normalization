@@ -1,0 +1,412 @@
+#!/usr/bin/env perl
+$USAGE =  "\nUsage: run_normalization --sample_dirs <file of sample_dirs> --loc <s> --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
+
+where:
+--sample_dirs <file of sample_dirs> : is a file of sample directories with alignment output without path
+--loc <s> : /path/to/directory with the sample directories
+--unaligned <file of fa/fqfiles> : is a file with the full path of input forward fa or forward fq files
+--samfilename <s> : is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam) 
+--cfg <cfg file> : is a cfg file for the study
+
+OPTIONS:
+     [data type]
+     -se : set this if the data is single end, otherwise by default it will assume it's a paired end data
+     -fa : set this if the unaligned files are in fasta format 
+     -fq : set this if the unaligned files are in fastq format 
+     -gz : set this if the unaligned files are compressed
+
+     [normalization parameters]
+     -novel_off : set this if you DO NOT want to generate/use a study-specific master list of exons 
+                  (By default, the pipeline will add inferred exons to the list of exons)
+     -min <n> : is minimum size of inferred exon for get_novel_exons.pl script (Default = 10)
+     -max <n> : is maximum size of inferred exon for get_novel_exons.pl script (Default = 2000)
+     -cutoff_highexp <n> : is cutoff % value to identify highly expressed exons. 
+                           the script will consider exons with exonpercents greater than n(%) as high expressors, 
+                           and remove them from the list of exons.
+                           (Default = 100; with the default cutoff, exons expressed >10% will be reported)
+     -depthE <n> : the pipeline splits filtered sam files into 1,2,3...n exonmappers and downsamples each separately.
+                   (Default = 20)
+     -depthI <n> : the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.
+                   (Default = 10)
+     -cutoff_lowexp <n> : is cutoff counts to identify low expressors in the final spreadsheets (exon, intron and junc).
+                          the script will consider features with sum of counts for all samples less than <n> as low expressors
+                          and remove them from all samples for the final spreadsheets.
+                          (Default = 0; this will remove features with sum of counts = 0)
+     -h : print usage 
+
+";
+
+
+if(@ARGV < 8) {
+    die $USAGE;
+}
+
+$required = 0;
+$unaligned = 0;
+$se = "";
+$unaligned_z = "";
+$min = 10;
+$max = 2000;
+$cutoff_he = 100;
+$filter_high_expressors = "false";
+$i_exon = 20;
+$i_intron = 10;
+$filter_low_expressors = "false";
+$novel = "true";
+for($i=0; $i<@ARGV; $i++) {
+    $option_found = "false";
+    if ($ARGV[$i] eq '-h'){
+	$option_found = "true";
+	die $USAGE;
+    }
+    if ($ARGV[$i] eq '--sample_dirs'){
+	$option_found = "true";
+	$sample_dir = $ARGV[$i+1];
+	if ($sample_dir =~ /^-/ | $sample_dir eq ""){
+	    die "\nplease provide <file of sample_dirs> for --sample_dirs\n";
+	}
+	$i++;
+	$required++;
+    }
+    if ($ARGV[$i] eq '-novel_off'){
+	$option_found = "true";
+	$novel = "false";
+    }
+    if ($ARGV[$i] eq '--loc'){
+	$option_found = "true";
+        $LOC = $ARGV[$i+1];
+	if ($LOC =~ /^-/ | $LOC eq ""){
+	    die "\nplease provide '/path/to/directory with the sample directories' for --loc\n";
+	}
+        $i++;
+	$required++;
+    }
+    if ($ARGV[$i] eq '--unaligned'){
+	$option_found = "true";
+        $unaligned_file = $ARGV[$i+1];
+	if ($unalgined_file =~ /^-/ | $unaligned_file eq ""){
+	    die "\nplease provide <file of fa/fqfiles> for --unaligned\n";
+	}
+        $i++;
+	$required++;
+    }
+    if ($ARGV[$i] eq '--samfilename'){
+	$option_found = "true";
+	$samfilename = $ARGV[$i+1];
+	if ($samfilename =~ /^-/ | $samfilename eq ""){
+	    die "\nplease provide the 'name of aligned samfile' for --samfilename\n";
+	}
+	$i++;
+	$required++;
+    }
+    if ($ARGV[$i] eq '--cfg'){
+	$option_found = "true";
+	$cfg_file = $ARGV[$i+1];
+	if ($cfg_file =~ /^-/ | $cfg_file eq ""){
+	    die "\nplease provide <cfg file> for --cfg\n";
+	}
+	$i++;
+	$required++;
+    }
+    if ($ARGV[$i] eq '-se'){
+        $option_found = "true";
+	$se = "-se";
+    }
+    if ($ARGV[$i] eq '-fa'){
+        $option_found = "true";
+	$unaligned++;
+	$unaligned_type = "-fa";
+    }
+    if ($ARGV[$i] eq '-fq'){
+        $option_found = "true";
+	$unaligned++;
+	$unaligned_type = "-fq";
+    }
+    if ($ARGV[$i] eq '-gz'){
+        $option_found = "true";
+        $unaligned_z = "-gz";
+    }
+    if($ARGV[$i] eq '-min') {
+	$min = $ARGV[$i+1];
+	$i++;
+	$option_found = "true";
+        if ($min !~ /(\d+$)/ ){
+            die "-min <n> : <n> needs to be a number\n";
+        }
+    }
+    if($ARGV[$i] eq '-max') {
+	$max = $ARGV[$i+1];
+	$i++;
+	$option_found = "true";
+        if ($max !~ /(\d+$)/ ){
+            die "-max <n> : <n> needs to be a number\n";
+        }
+    }
+    if($ARGV[$i] eq '-cutoff_highexp') {
+        $cutoff_he = $ARGV[$i+1];
+        $i++;
+        $option_found = "true";
+	$filter_high_expressors = "true";
+        if ($cutoff_he !~ /(\d+$)/ ){
+            die "-cutoff_highexp <n> : <n> needs to be a number\n";
+        }
+    }
+    if ($ARGV[$i] eq '-depthE'){
+	$i_exon = $ARGV[$i+1];
+	if ($i_exon !~ /(\d+$)/ ){
+	    die "-depthE <n> : <n> needs to be a number\n";
+	}
+	$i++;
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-depthI'){
+	$i_intron = $ARGV[$i+1];
+	if ($i_intron !~ /(\d+$)/ ){
+	    die "-depthI <n> : <n> needs to be a number\n";
+	}
+	$i++;
+	$option_found = "true";
+    }
+    if($ARGV[$i] eq '-cutoff_lowexp') {
+        $cutoff_temp = $ARGV[$i+1];
+        $i++;
+        $option_found = "true";
+        $filter_low_expressors = "true";
+        if ($cutoff_temp !~ /(\d+$)/ ){
+            die "-cutoff_lowexp <n> : <n> needs to be a number\n";
+        }
+    }
+    if($option_found eq "false") {
+        die "option \"$ARGV[$i]\" was not recognized.\n";
+    }
+}
+if ($required ne '5'){
+    die "please specify the required parameters: --sample_dirs, --loc, --unaligned, --samfilename and --cfg\n";
+}
+if ($unaligned ne '1'){
+    die "you have to specify the type of your unaligned files: '-fa' or '-fq'\n"
+}
+
+$dirs = `wc -l $sample_dir`;
+@a = split(" ", $dirs);
+$num_samples = $a[0];
+$cutoff_le = 0;
+if ($filter_low_expressors eq "true"){
+    $cutoff_le = $cutoff_temp;
+}
+$LOC =~ s/\/$//;
+@fields = split("/", $LOC);
+$last_dir = $fields[@fields-1];
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$study = $fields[@fields-2];
+
+#check_config file
+unless (-e $cfg_file){
+    die "ERROR: cannot find file \"$cfg_file\". please provide a cfg file for the study\n";
+}
+
+&parse_config_file ($cfg_file, \%Config);
+
+use Cwd 'abs_path';
+$norm_script_dir = abs_path($0);
+$norm_script_dir =~ s/\/run_normalization//;
+
+$geneinfo = $GENE_INFO_FILE;
+unless (-e $geneinfo){
+    die "ERROR: cannot find file \"$geneinfo\"\nYou need to provide [1] gene information file (#2 GENOME INFO in your cfg file \"$cfg_file\")\n\n";
+}
+$genome = $GENOME_FA;
+unless (-e $genome){
+    die "ERROR: cannot find file \"$genome\"\nYou need to provide [2] genome sequence one-line fasta file (#2 GENOME INFO in your cfg file \"$cfg_file\")\n\n";
+}
+$fai = $GENOME_FAI;
+unless (-e $fai){
+    die "ERROR: cannot find file \"$fai\"\nYou need to provide [3] FASTA index file (#2 GENOME INFO in your cfg file \"$cfg_file\")\n\n";
+}
+$annot = $ANNOTATION_FILE;
+unless (-e $annot){
+    die "ERROR: cannot find file \"$annot\"\nYou need to provide annotation file (#3 ANNOTATION INFO in your cfg file \"$cfg_file\")\n\n";
+}
+
+$sam2cov = "false";
+if ($SAM2COV =~ /^true/ | $SAM2COV =~ /^TRUE/){
+    $sam2cov = "true";
+    $num_cov = 0;
+    unless (-e $SAM2COV_LOC){
+	die "You need to provide sam2cov location. (#4 DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
+    }
+    $sam2cov_loc = $SAM2COV_LOC;
+    if ($RUM =~ /^true/ | $RUM =~ /^TRUE/){
+	$aligner = "-rum";
+	$num_cov++;
+    }
+    if ($STAR =~ /^true/ | $STAR =~ /^TRUE/){
+	$aligner = "-star";
+	$num_cov++;
+    }
+    if ($num_cov ne '1'){
+	die "Please specify which aligner was used. (#4 DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
+    }
+}
+$delete_int_sam = "true";
+$convert_sam2bam = "false";
+$gzip_cov = "false";
+if ($DELETE_INT_SAM ne ""){
+    if ($DELETE_INT_SAM =~ /^true/ | $DELETE_INT_SAM =~ /^TRUE/){
+	$delete_int_sam = "true";
+    }
+    if ($DELETE_INT_SAM=~ /^false/ | $DELETE_INT_SAM =~/^FALSE/){
+	$delete_int_sam = "false";
+    }
+}
+if ($CONVERT_SAM2BAM ne ""){
+    if ($CONVERT_SAM2BAM =~ /^true/ | $CONVERT_SAM2BAM =~ /^TRUE/){
+	$convert_sam2bam = "true";
+    }
+    if ($CONVERT_SAM2BAM =~ /^false/ | $CONVERT_SAM2BAM =~ /^FALSE/){
+	$convert_sam2bam= "false";
+    }
+}
+if ($GZIP_COV ne ""){
+    if ($GZIP_COV =~ /^true/ | $GZIP_COV =~ /^TRUE/){
+	$gzip_cov = "true";
+    }
+    if ($GZIP_COV =~ /^false/ | $GZIP_COV =~ /^FALSE/){
+	$gzip_cov = "false";
+    }
+}
+
+$lsf = "false";
+$sge = "false";
+$other = "false";
+$num_cluster = 0;
+if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
+    $num_cluster++;
+    if ($QUEUE_NAME_4G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $QUEUE_NAME_45G_sge eq "" | $QUEUE_NAME_30G_sge eq ""| $WAIT_OPTION_sge eq "" | $WAIT_2JOBS_OPTION_sge eq "" | $MAX_JOBS_sge eq ""){
+        die "ERROR: please provide all required CLUSTER INFO for SGE_CLUSTER in the config file \"$cfg_file\"\n";
+    }
+    else{
+	$batchjobs = "qsub -cwd";
+	$jobname = "-N";
+	$status = "qstat -r";
+	$request = "-l h_vmem=";
+	$queue_4G = $QUEUE_NAME_4G_sge;
+	$queue_6G = $QUEUE_NAME_6G_sge;
+	$queue_10G = $QUEUE_NAME_10G_sge;
+	$queue_15G = $QUEUE_NAME_15G_sge;
+	$queue_30G = $QUEUE_NAME_30G_sge;
+	$queue_45G = $QUEUE_NAME_45G_sge;
+	$queue_60G = $QUEUE_NAME_60G_sge;
+	$submit = "-sge";
+	$sge = "true";
+	$c_option = $submit;
+	$wait_option = $WAIT_OPTION_sge;
+	$wait_2jobs_option = $WAIT_2JOBS_OPTION_sge;
+	$maxjobs = $MAX_JOBS_sge;
+    }
+}
+if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
+    $num_cluster++;
+    if ($QUEUE_NAME_4G_lsf eq "" | $QUEUE_NAME_6G_lsf eq "" | $QUEUE_NAME_10G_lsf eq "" |  $QUEUE_NAME_15G_lsf eq "" | $QUEUE_NAME_30G_lsf eq "" | $QUEUE_NAME_45G_lsf eq "" | $QUEUE_NAME_60G_lsf eq "" |$WAIT_OPTION_lsf eq "" | $WAIT_2JOBS_OPTION_lsf eq "" | $MAX_JOBS_lsf eq ""){
+        die "ERROR: please provide all required CLUSTER INFO for LSF_CLUSTER in the config file \"$cfg_file\"\n";
+    }
+    else{
+	$batchjobs = "bsub";
+	$jobname = "-J";
+	$status = "bjobs -w";
+	$request = "-q";
+	$queue_4G = $QUEUE_NAME_4G_lsf;
+	$queue_6G = $QUEUE_NAME_6G_lsf;
+	$queue_10G = $QUEUE_NAME_10G_lsf;
+	$queue_15G = $QUEUE_NAME_15G_lsf;
+	$queue_30G = $QUEUE_NAME_30G_lsf;
+	$queue_45G = $QUEUE_NAME_45G_lsf;
+	$queue_60G = $QUEUE_NAME_60G_lsf;
+	$submit = "-lsf";
+	$lsf = "true";
+	$c_option = $submit;
+	$wait_option = $WAIT_OPTION_lsf;
+	$wait_2jobs_option = $WAIT_2JOBS_OPTION_lsf;
+	$maxjobs = $MAX_JOBS_lsf;
+    }
+}
+if ($OTHER_CLUSTER =~ /^true/ | $OTHER_CLUSTER =~ /^TRUE/){
+    $num_cluster++;
+    if ($SUBMIT_BATCH_JOBS eq "" | $JOB_NAME_OPTION eq "" | $CHECK_STATUS_FULLNAME eq "" | $REQUEST_RESOURCE_OPTION eq "" | $QUEUE_NAME_4G eq "" | $QUEUE_NAME_6G eq "" | $QUEUE_NAME_10G eq "" |  $QUEUE_NAME_15G eq "" | $QUEUE_NAME_30G eq "" | $QUEUE_NAME_45G eq "" | $QUEUE_NAME_60G eq "" | $WAIT_OPTION eq "" | $WAIT_2JOBS_OPTION eq "" | $MAX_JOBS eq ""){
+	die "ERROR: please provide all required CLUSTER INFO for OTHER_CLUSTER in the config file \"$cfg_file\"\n";
+    }
+    else {
+	$batchjobs = $SUBMIT_BATCH_JOBS;
+	$jobname = $JOB_NAME_OPTION;
+	$status = $CHECK_STATUS_FULLNAME;
+	$request = $REQUEST_RESOURCE_OPTION;
+	$queue_4G = $QUEUE_NAME_4G;
+	$queue_6G = $QUEUE_NAME_6G;
+	$queue_10G = $QUEUE_NAME_10G;
+	$queue_15G = $QUEUE_NAME_15G;
+	$queue_30G = $QUEUE_NAME_30G;
+	$submit = "-other";
+	$other = "true";
+	$wait_option = $WAIT_OPTION;
+	$wait_2jobs_option = $WAIT_2JOBS_OPTION;
+	$maxjobs = $MAX_JOBS;
+    }
+}
+if ($num_cluster ne '1'){
+    die "ERROR: please specify which cluster you're using in your configuration file \"$cfg_file\"\n";
+}
+
+$shdir = $study_dir . "shell_scripts";
+$logdir = $study_dir . "logs";
+$logfile = $logdir . "/$study.run_normalization.log";
+unless (-d $shdir){
+    `mkdir $shdir`;}
+unless (-d $logdir){
+    `mkdir $logdir`;}
+
+#check if the sam files exist
+open(IN, $sample_dir) or die "cannot find file \"$sample_dir\"\n";
+while ($line = <IN>){
+    chomp($line);
+    $file_loc = "$LOC/$line/$samfilename";
+    unless (-e $file_loc){
+	die "ERROR: SAM file \"$file_loc\" does not exist. Please double check --sample_dir, --loc, and --samfilename\n";
+    }
+}
+close(IN);
+#check if the fq/fa files exist
+open(IN, $unaligned_file) or die "cannot find file \"$unaligned_file\"\n";
+while ($line = <IN>){
+    chomp($line);
+    unless (-e $line){
+	die "ERROR: Unaligned file \"$line\" does not exit.\n";
+    }
+}
+close(IN);
+
+$runall_shfile = $shdir . "/runall_normalization.sh";
+open(SH, ">$runall_shfile");
+$argv = join(" ",@ARGV);
+print SH "perl $norm_script_dir/runall_normalization.pl $argv";
+close(SH);
+`$batchjobs $jobname "$study.RUNALL_NORMALIZATION" -o $logdir/$study.runall_normalization.out -e $logdir/$study.runall_normalization.err < $runall_shfile`;
+
+sub parse_config_file () {
+    ($File, $Config) = @_;
+    open(CONFIG, "$File") or die "ERROR: Config file not found : $File\n";
+    while ($config_line = <CONFIG>) {
+	chomp($config_line);
+        $config_line =~ s/^\s*//;
+        $config_line =~ s/\s*$//;
+        if ( ($config_line !~ /^#/) && ($config_line ne "") ){
+	    my ($Name, $Value) = split(/\s*=\s*/, $config_line);
+	    if ($Value =~ /^"/){
+		$Value =~ s/^"//;
+		$Value =~ s/"$//;
+	    }
+	    $Config{$Name} = $Value;
+	    $$Name = $Value;
+	}
+    }
+}

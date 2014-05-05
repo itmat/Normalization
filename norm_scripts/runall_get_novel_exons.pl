@@ -1,16 +1,19 @@
+#!/usr/bin/env perl
 if(@ARGV<3){
-    die "usage: perl runall_get_novel_exons.pl <sample dirs> <loc> <sam file name> [options]
+    $USAGE = "\nUsage: perl runall_get_novel_exons.pl <sample dirs> <loc> <sam file name> [options]
 
 where:
 <sample dirs> is  a file of sample directories with alignment output without path
 <loc> is where the sample directories are
 <sam file name> name of the aligned sam file
 
-options: -min <n> : min is set at 10 by default
+options: 
+-min <n> : min is set at 10 by default
 
-         -max <n> : max is set at 2000 by default
+-max <n> : max is set at 2000 by default
 
 ";
+    die $USAGE;
 }
 
 $min = 10;
@@ -87,3 +90,4 @@ foreach $exon (keys %EXON_LIST){
     print OUT "$exon\n";
 }
 close(OUT);
+print "got here\n";

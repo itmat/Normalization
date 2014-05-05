@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<2) {
     die "Usage: perl get_novel_exons.pl <junctions_all.rum file> <output file>[options]
 
@@ -54,7 +55,7 @@ while($line = <INFILE>){
     if ($score > 5){
 	foreach $exon_start (keys %EXON_START){
 	    $diff = $start - $exon_start;
-	    if ($diff > $min && $diff < $max){
+	    if (($diff > $min) && ($diff < $max)){
 		print OUTFILE "$chr:$exon_start-$start\n";
 	    }
 	    if ($diff > $max){
@@ -67,7 +68,7 @@ while($line = <INFILE>){
 }
 close(INFILE);
 close(OUTFILE);
-
+print "got here\n";
 
 
 

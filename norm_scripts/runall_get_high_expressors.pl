@@ -1,5 +1,6 @@
-if(@ARGV<5) {
-    die "Usage: perl runall_get_high_expressors.pl <sample dirs> <loc> <cutoff> <annotation file> <exons>[options]
+#!/usr/bin/env perl
+
+$USAGE =  "\nUsage: perl runall_get_high_expressors.pl <sample dirs> <loc> <cutoff> <annotation file> <exons>[options]
 
 where:
 <sample dir> is the name of a file with the names of sample directories (no paths)
@@ -17,34 +18,46 @@ option:
   -nu :  set this if you want to return only non-unique exonpercents, otherwise by default
          it will return both unique and non-unique exonpercents.
 
- -bsub : set this if you want to submit batch jobs to LSF.
+ -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
 
- -qsub : set this if you want to submit batch jobs to Sun Grid Engine.
+ -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI) cluster.
+
+ -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_15G>\":
+        set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
+        **make sure the arguments are comma separated inside the quotes**
+
+        <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
+        <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
+        <request_memory_option> : is option for requesting resources for batch job submission command
+                                  (e.g. -q, -l h_vmem=)
+        <queue_name_for_15G> : is queue name for 15G (e.g. max_mem30, 15G)
+
+ -mem <s> : set this if your job requires more memory.
+            <s> is the queue name for required mem.
+            Default: 15G
+
+ -h : print usage
 
 ";
+if(@ARGV<5) {
+    die $USAGE;
 }
 use Cwd 'abs_path';
 $path = abs_path($0);
 $path =~ s/runall_get_high_expressors.pl//;
 
-$bsub = "false";
-$qsub = "false";
 $U = "true";
 $NU = "true";
-$numargs = 0;
 $numargs_2 = 0;
+
+$replace_mem = "false";
+$submit = "";
+$jobname_option = "";
+$request_memory_option = "";
+$mem = "";
+$numargs = 0;
 for($i=5; $i<@ARGV; $i++) {
     $option_found = 'false';
-    if ($ARGV[$i] eq '-bsub'){
-	$bsub = "true";
-	$numargs++;
-	$option_found = "true";
-    }
-    if ($ARGV[$i] eq '-qsub'){
-	$qsub = "true";
-	$numargs++;
-	$option_found = "true";
-    }
     if($ARGV[$i] eq '-nu') {
         $U = "false";
         $option_found = "true";
@@ -55,13 +68,59 @@ for($i=5; $i<@ARGV; $i++) {
         $numargs_2++;
         $option_found = "true";
     }
+    if ($ARGV[$i] eq '-h'){
+	$option_found = "true";
+	die $USAGE;
+    }
+    if ($ARGV[$i] eq '-lsf'){
+        $numargs++;
+        $option_found = "true";
+        $submit = "bsub";
+        $jobname_option = "-J";
+        $request_memory_option = "-q";
+        $mem = "max_mem30";
+    }
+    if ($ARGV[$i] eq '-sge'){
+        $numargs++;
+        $option_found = "true";
+        $submit = "qsub -cwd";
+        $jobname_option = "-N";
+	$request_memory_option = "-l h_vmem=";
+        $mem = "15G";
+    }
+    if ($ARGV[$i] eq '-other'){
+        $numargs++;
+        $option_found = "true";
+	$argv_all = $ARGV[$i+1];
+        @a = split(",", $argv_all);
+        $submit = $a[0];
+        $jobname_option = $a[1];
+        $request_memory_option = $a[2];
+        $mem = $a[3];
+        $i++;
+        if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem eq ""){
+            die "please provide \"<submit>, <jobname_option>, <request_memory_option> ,<queue_name_for_15G>\"\n";
+        }
+        if ($submit eq "-lsf" | $submit eq "-sge"){
+            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit> ,<jobname_option>, <request_memory_option>, <queue_name_for_15G>\".\n";
+        }
+    }
+    if ($ARGV[$i] eq '-mem'){
+        $option_found = "true";
+        $new_mem = $ARGV[$i+1];
+        $replace_mem = "true";
+        $i++;
+        if ($new_mem eq ""){
+            die "please provide a queue name.\n";
+        }
+    }
+    if ($ARGV[$i] eq '-h'){
+        $option_found = "true";
+        die $USAGE;
+    }
     if($option_found eq 'false') {
         die "arg \"$ARGV[$i]\" not recognized.\n";
     }
-}
-if($numargs ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose either -bsub or -qsub.\n
-";
 }
 if($numargs_2 > 1) {
     die "you cannot specify both -u and -nu, it will output both unique
@@ -70,10 +129,19 @@ and non-unique by default so if that's what you want don't use either arg
 ";
 }
 
+if($numargs ne '1'){
+    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option> ,<request_memory_option>, <queue_name_for_15G>\".\n";
+}
+if ($replace_mem eq "true"){
+    $mem = $new_mem;
+}
+
+
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 $LOC =~ s/\/$//;
 @fields = split("/", $LOC);
+$study = $fields[@fields-2];
 $last_dir = $fields[@fields-1];
 $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
@@ -101,15 +169,12 @@ $exons = $ARGV[4];
 $annotated_exons = $exons;
 $annotated_exons =~ s/master_list/annotated_master_list/;
 $master_sh = "$shdir/annotate_master_list_of_exons.sh";
+$master_jobname = "$study.get_high_expressor";
+$master_logname = "$logdir/masterexon.annotate";
 open(OUTFILE, ">$master_sh");
-print OUTFILE "perl $path/annotate.pl $annot_file $exons > $annotated_exons\n";
+print OUTFILE "perl $path/annotate.pl $annot_file $exons $annotated_exons\n";
 close(OUTFILE);
-if($bsub eq "true"){
-    `bsub -q max_mem30 -o $logdir/masterexon.annotate.out -e $logdir/masterexon.annotate.err sh $master_sh`;
-}
-if ($qsub eq "true"){
-    `qsub -cwd -N masterexon.annotate -o $logdir -e $logdir -l h_vmem=6G $master_sh`;
-}
+`$submit $jobname_option $master_jobname $request_memory_option$mem -o $master_logname.out -e $master_logname.err < $master_sh`;
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while($line = <INFILE>){
@@ -121,6 +186,8 @@ while($line = <INFILE>){
     $highfile = "$LOC/$line/$id.high_expressors.txt";
     $annotated = "$LOC/$line/$id.high_expressors_annot.txt";
     $shfile = "$shdir/$id.highexpressor.annotate.sh";
+    $jobname = "$study.get_high_expressor";
+    $logname = "$logdir/$id.highexpressor.annotate";
     open(OUT, ">$shfile");
     if ($numargs_2 eq "0"){
 	print OUT "perl $path/get_exonpercents.pl $sampledir $cutoff $outfile\n";
@@ -133,15 +200,11 @@ while($line = <INFILE>){
 	    print OUT "perl $path/get_exonpercents.pl $sampledir $cutoff $outfile -nu \n";
 	}
     }
-    print OUT "perl $path/annotate.pl $annot_file $highfile > $annotated\n";
+    print OUT "perl $path/annotate.pl $annot_file $highfile $annotated\n";
     print OUT "rm $highfile";
     close(OUT);
-    if ($bsub eq "true"){
-	`bsub -q max_mem30 -o $logdir/$id.highexpressor.annotate.out -e $logdir/$id.highexpressor.annotate.err sh $shfile`;
-    }
-    if ($qsub eq "true"){
-	`qsub -cwd -N $line.highexpressor.annotate -o $logdir -e $logdir -l h_vmem=6G $shfile`;
-    }
+    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
 }
 close(INFILE);
 
+print "got here\n";

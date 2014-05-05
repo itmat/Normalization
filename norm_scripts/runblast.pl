@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<5) {
     die "usage: perl runblast.pl <dir> <loc> <samfile name> <blast dir> <db>
 
@@ -94,3 +95,4 @@ while($line = <INFILE>) {
 #open(OUT, ">$total_num_reads");
 #print OUT "total = $cnt_total\n";
 
+print "got here\n";

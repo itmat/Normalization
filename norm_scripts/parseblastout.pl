@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 open(INFILE, $ARGV[0]);
 
 while($line = <INFILE>) {

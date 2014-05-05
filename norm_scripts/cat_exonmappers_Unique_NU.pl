@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<1) {
     die "usage: perl cat_exonmappers_Unique_NU.pl <sample dirs> <loc>
 
@@ -30,3 +31,4 @@ while ($line = <INFILE>){
 }
 close(INFILE);
 
+print "got here\n";

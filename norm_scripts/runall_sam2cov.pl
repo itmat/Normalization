@@ -1,5 +1,6 @@
-if (@ARGV<4){
-  $USAGE = "\nUsage: runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov> [options]
+#!/usr/bin/env perl
+
+$USAGE = "\nUsage: runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov> [options]
 
 <sample dirs> is  a file of sample directories with alignment output without path
 <loc> is where the sample directories are
@@ -19,12 +20,13 @@ option:
 
  -star  : set this if you used STAR to align your reads 
 
- -pmacs : set this if you want to submit batch jobs to PMACS cluster (LSF).
+ -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
 
- -pgfi : set this if you want to submit batch jobs to PGFI cluster (Sun Grid Engine).
+ -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI) cluster.
 
- -other <submit> <jobname_option> <request_memory_option> <queue_name_for_15G>:
-        set this if you're not on PMACS (LSF) or PGFI (SGE) cluster.
+ -other \"<submit>,<jobname_option>,<request_memory_option>,<queue_name_for_15G>\":
+        set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
+        **make sure the arguments are comma separated inside the quotes**
 
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
@@ -39,6 +41,7 @@ option:
  -h : print usage
 
 ";
+if (@ARGV<4){
   die $USAGE;
 }
 $numargs_a = 0;
@@ -54,7 +57,6 @@ $submit = "";
 $jobname_option = "";
 $request_memory_option = "";
 $mem = "";
-$help = "false";
 for ($i=4; $i<@ARGV; $i++){
     $option_found = "false";
     if($ARGV[$i] eq '-nu') {
@@ -79,9 +81,9 @@ for ($i=4; $i<@ARGV; $i++){
     }
     if ($ARGV[$i] eq '-h'){
         $option_found = "true";
-        $help = "true";
+	die $USAGE;
     }
-    if ($ARGV[$i] eq '-pmacs'){
+    if ($ARGV[$i] eq '-lsf'){
         $numargs++;
         $option_found = "true";
         $submit = "bsub";
@@ -89,7 +91,7 @@ for ($i=4; $i<@ARGV; $i++){
 	$request_memory_option = "-q";
         $mem = "max_mem30";
     }
-    if ($ARGV[$i] eq '-pgfi'){
+    if ($ARGV[$i] eq '-sge'){
         $numargs++;
         $option_found = "true";
         $submit = "qsub -cwd";
@@ -100,19 +102,18 @@ for ($i=4; $i<@ARGV; $i++){
     if ($ARGV[$i] eq '-other'){
         $numargs++;
         $option_found = "true";
-        $submit = $ARGV[$i+1];
-        $jobname_option = $ARGV[$i+2];
-        $request_memory_option = $ARGV[$i+3];
-        $mem = $ARGV[$i+4];
-        $i++;
-	$i++;
-        $i++;
+	$argv_all = $ARGV[$i+1];
+        @a = split(",", $argv_all);
+        $submit = $a[0];
+        $jobname_option = $a[1];
+        $request_memory_option = $a[2];
+        $mem = $a[3];
         $i++;
         if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem eq ""){
-            die "please provide <submit>, <jobname_option>, and <request_memory_option> <queue_name_for_15G>\n";
+            die "please provide \"<submit>, <jobname_option>, and <request_memory_option> <queue_name_for_15G>\"\n";
         }
-        if ($submit eq "-pmacs" | $submit eq "-pgfi"){
-            die "you have to specify how you want to submit batch jobs. choose -pmacs, -pgfi, or -other <submit> <jobname_option> <request_memory_option> <queue_name_for_15G>.\n";
+        if ($submit eq "-lsf" | $submit eq "-sge"){
+            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option> ,<request_memory_option> ,<queue_name_for_15G>\".\n";
         }
     }
     if ($ARGV[$i] eq '-mem'){
@@ -128,13 +129,8 @@ for ($i=4; $i<@ARGV; $i++){
 	die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
-if ($help eq 'true'){
-    die $USAGE;
-}
-
 if($numargs ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose -pmacs, -pgfi, or -other <submit> <jobname_option> <request_memory_option> <queue_name_for_15\
-G>.\n
+    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>,<jobname_option>,<request_memory_option>,<queue_name_for_15G>\".\n
 ";
 }
 
@@ -219,5 +215,5 @@ while($line =  <INFILE>){
     `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shdir/$shfile`;
 }
 close(INFILE);
-
+print "got here\n";
 

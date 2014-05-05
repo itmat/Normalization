@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<3) {
     die "Usage: perl get_exonpercents.pl <sample directory> <cutoff> <outfile> [options]
 

@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<3) {
     die "usage: perl quants2spreadsheet_min_max.pl <sample dirs> <loc> <type of quants file>
 
@@ -13,22 +14,28 @@ $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 $type = $ARGV[2];
 @fields = split("/", $LOC);
+$study = $fields[@fields-2];
 $last_dir = $fields[@fields-1];
 $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
 $norm_dir = $norm_dir . "NORMALIZED_DATA";
 $exon_dir = $norm_dir . "/exonmappers";
 $nexon_dir = $norm_dir . "/notexonmappers";
+$spread_dir = $norm_dir . "/SPREADSHEETS";
+
+unless (-d $spread_dir){
+    `mkdir $spread_dir`;
+}
 
 if ($type =~ /^exon/){
-    $out_MIN = "$norm_dir/list_of_exons_counts_MIN.txt";
-    $out_MAX = "$norm_dir/list_of_exons_counts_MAX.txt";
+    $out_MIN = "$spread_dir/master_list_of_exons_counts_MIN.$study.txt";
+    $out_MAX = "$spread_dir/master_list_of_exons_counts_MAX.$study.txt";
     $sample_name_file = "$norm_dir/file_exonquants_minmax.txt";
 }
 else{
     if ($type =~ /^intron/){
-	$out_MIN = "$norm_dir/master_list_of_introns_counts_MIN.txt";
-	$out_MAX = "$norm_dir/master_list_of_introns_counts_MAX.txt";
+	$out_MIN = "$spread_dir/master_list_of_introns_counts_MIN.$study.txt";
+	$out_MAX = "$spread_dir/master_list_of_introns_counts_MAX.$study.txt";
 	$sample_name_file = "$norm_dir/file_intronquants_minmax.txt";
 	$merged_dir = $nexon_dir . "/MERGED";
 	unless (-d $merged_dir){
@@ -193,8 +200,8 @@ print OUT_MAX "\n";
 
 for($i=0; $i<$rowcnt; $i++) {
     if ($type =~ /^exon/){
-	print OUT_MIN "$id[$i]";
-	print OUT_MAX "$id[$i]";
+	print OUT_MIN "exon:$id[$i]";
+	print OUT_MAX "exon:$id[$i]";
     }
     if ($type =~ /^intron/){
 	print OUT_MIN "intron:$id[$i]";
@@ -209,3 +216,5 @@ for($i=0; $i<$rowcnt; $i++) {
 }
 close(OUT_MIN);
 close(OUT_MAX);
+print "got here\n";
+

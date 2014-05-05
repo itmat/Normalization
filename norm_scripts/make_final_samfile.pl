@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<2) {
     die "usage: perl make_final_samfile.pl <sample dirs> <loc> [options]
 
@@ -191,3 +192,4 @@ while ($line = <INFILE>){
     }
 }
 close(INFILE);
+print "got here\n";

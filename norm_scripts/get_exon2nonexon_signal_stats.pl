@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<2) {
     die "Usage: perl get_exon2nonexon_signal_stats.pl <sample dirs> <loc> [option]
 
@@ -42,9 +43,16 @@ and non-unique by default so if that's what you want don't use either arg
 }
 
 $LOC = $ARGV[1];
-
-$outfileU = "$LOC/exon2nonexon_signal_stats_Unique.txt";
-$outfileNU = "$LOC/exon2nonexon_signal_stats_NU.txt";
+$LOC =~ s/\/$//;
+@fields = split("/", $LOC);
+$last_dir = $fields[@fields-1];
+$study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+$stats_dir = $study_dir . "STATS";
+unless (-d $stats_dir){
+    `mkdir $stats_dir`;}
+$outfileU = "$stats_dir/exon2nonexon_signal_stats_Unique.txt";
+$outfileNU = "$stats_dir/exon2nonexon_signal_stats_NU.txt";
 
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; 
@@ -114,3 +122,4 @@ while($line = <INFILE>){
 close(INFILE);
 close(OUTU);
 close(OUTNU);
+print "got here\n";

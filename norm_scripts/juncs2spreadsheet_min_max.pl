@@ -1,3 +1,4 @@
+#!/usr/bin/env perl
 if(@ARGV<2) {
     die "usage: perl juncs2spreadsheet_min_max.pl <sample dirs> <loc>
 
@@ -12,14 +13,21 @@ $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 $type = $ARGV[2];
 @fields = split("/", $LOC);
+$study = $fields[@fields-2];
 $last_dir = $fields[@fields-1];
 $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
 $norm_dir = $norm_dir . "NORMALIZED_DATA";
-$junc_dir = $norm_dir . "/Junctions";
-$outfile = "$norm_dir/master_list_of_junctions_counts";
-$out_MIN = $outfile . "_MIN.txt";
-$out_MAX = $outfile . "_MAX.txt";
+$junc_dir = $norm_dir . "/JUNCTIONS";
+$spread_dir = $norm_dir. "/SPREADSHEETS";
+
+unless (-d $spread_dir){
+    `mkdir $spread_dir`;
+}
+
+$outfile = "$spread_dir/master_list_of_junctions_counts";
+$out_MIN = $outfile . "_MIN.$study.txt";
+$out_MAX = $outfile . "_MAX.$study.txt";
 $sample_name_file = "$norm_dir/file_junctions_minmax.txt";
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
@@ -28,7 +36,7 @@ while($line = <INFILE>){
     chomp($line);
     $id = $line;
     $id =~ s/Sample_//;
-    print OUT "$norm_dir/Junctions/$id.FINAL.norm_junctions_all.rum\n";
+    print OUT "$junc_dir/$id.FINAL.norm_junctions_all.rum\n";
 }
 close(INFILE);
 close(OUT);
@@ -89,3 +97,6 @@ foreach $loc (keys %HASH_MAX) {
     print OUT_MAX "\n";
 }
 close(OUT_MAX);
+
+
+print "got here\n";

@@ -1,9 +1,10 @@
-if(@ARGV<4) {
-    die "usage: runall_quantify_exons.pl <sample dir> <loc> <exons> <output sam?> [options]
+#!/usr/bin/env perl
+
+$USAGE = "\nUsage: runall_quantify_exons.pl <sample dir> <loc> <exons> <output sam?> [options]
 
 where:
-<sample dir> is the name of a file with the names of sample directories (no paths)
-<loc> is the path to the dir with the sample directories
+<sample dirs> is a file with the names of the sample directories
+<loc> is the directory with the sample directories
 <exons> is the name (with full path) of a file with exons, one per line as chr:start-end
 <output sam?> is \"true\" or \"false\" depending on whether you want to output the
 sam files of exon mappers, etc...
@@ -11,38 +12,50 @@ sam files of exon mappers, etc...
 option:
  -NU-only
 
- -bsub : set this if you want to submit batch jobs to LSF.
-
- -qsub : set this if you want to submit batch jobs to Sun Grid Engine.
-
  -depth <n> : by default, it will output 20 exonmappers
 
  -se  :  set this if the data is single end, otherwise by default it will assume it's a paired end data 
 
+ -lsf : set this if you want to submit batch jobs to LSF (PMACS cluster).
+
+ -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI cluster).
+
+ -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_4G>\":
+        set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
+        **make sure the arguments are comma separated inside the quotes**
+
+        <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
+        <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
+        <request_memory_option> : is option for requesting resources for batch job submission command
+                                  (e.g. -q, -l h_vmem=)
+        <queue_name_for_4G> : is queue name for 4G (e.g. plus, 4G)
+
+ -mem <s> : set this if your job requires more memory.
+            <s> is the queue name for required mem.
+            Default: 4G
+
+ -h : print usage
+
 ";
+if(@ARGV<4) {
+   die $USAGE;
 }
 use Cwd 'abs_path';
 $nuonly = 'false';
-$bsub = "false";
-$qsub = "false";
 $pe = "true";
-$numargs = 0;
 $i_exon = 20;
+
+$replace_mem = "false";
+$submit = "";
+$jobname_option = "";
+$request_memory_option = "";
+$mem = "";
+$numargs = 0;
 for($i=4; $i<@ARGV; $i++) {
     $option_found = 'false';
     if($ARGV[$i] eq '-NU-only') {
 	$nuonly = 'true';
 	$option_found = 'true';
-    }
-    if ($ARGV[$i] eq '-bsub'){
-	$bsub = "true";
-	$numargs++;
-	$option_found = "true";
-    }
-    if ($ARGV[$i] eq '-qsub'){
-	$qsub = "true";
-	$numargs++;
-	$option_found = "true";
     }
     if ($ARGV[$i] eq '-depth'){
 	$i_exon = $ARGV[$i+1];
@@ -53,14 +66,63 @@ for($i=4; $i<@ARGV; $i++) {
 	$pe = "false";
 	$option_found = "true";
     }
+    if ($ARGV[$i] eq '-h'){
+	$option_found = "true";
+	die $USAGE;
+    }
+    if ($ARGV[$i] eq '-lsf'){
+        $numargs++;
+        $option_found = "true";
+        $submit = "bsub";
+        $jobname_option = "-J";
+        $request_memory_option = "-q";
+        $mem = "plus";
+    }
+    if ($ARGV[$i] eq '-sge'){
+        $numargs++;
+        $option_found = "true";
+        $submit = "qsub -cwd";
+        $jobname_option = "-N";
+        $request_memory_option = "-l h_vmem=";
+        $mem = "4G";
+    }
+    if ($ARGV[$i] eq '-other'){
+        $numargs++;
+        $option_found = "true";
+	$argv_all = $ARGV[$i+1];
+        @a = split(",", $argv_all);
+        $submit = $a[0];
+        $jobname_option = $a[1];
+        $request_memory_option = $a[2];
+        $mem = $a[3];
+        $i++;
+        if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem eq ""){
+            die "please provide \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_4G>\"\n";
+        }
+        if ($submit eq "-lsf" | $submit eq "-sge"){
+            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option> ,<request_memory_option>, <queue_name_for_4G>\".\n";
+        }
+    }
+    if ($ARGV[$i] eq '-mem'){
+        $option_found = "true";
+        $new_mem = $ARGV[$i+1];
+        $replace_mem = "true";
+        $i++;
+        if ($new_mem eq ""){
+            die "please provide a queue name.\n";
+        }
+    }
     if($option_found eq 'false') {
 	die "option \"$ARGV[$i]\" not recognized.\n";
     }
 }
 if($numargs ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose either -bsub or -qsub.\n
-";
+    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_4G>\".\n";
 }
+if ($replace_mem eq "true"){
+    $mem = $new_mem;
+}
+
 
 $path = abs_path($0);
 $path =~ s/runall_//;
@@ -70,6 +132,7 @@ $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 $LOC =~ s/\/$//;
 @fields = split("/", $LOC);
+$study = $fields[@fields-2];
 $last_dir = $fields[@fields-1];
 $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
@@ -142,6 +205,10 @@ while($line = <INFILE>) {
 
     $shfile = "EQ" . $filename . ".sh";
     $shfile2 = "EQ" . $filename . ".2.sh";
+    $jobname = "$study.quantifyexons";
+    $jobname2 = "$study.quantifyexons2";
+    $logname = "$logdir/quantifyexons.$id";
+    $logname2 = "$logdir/quantifyexons2.$id";
     $outfile = $filename;
     $outfile =~ s/.sam/_exonquants/;
     $exonsamoutfile = $filename;
@@ -158,6 +225,7 @@ while($line = <INFILE>) {
 			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -rpf -depth $i_exon\n";
 		    }
 		} else {
+		    $logname = "$logdir/nu.quantifyexons.$id";
 		    if ($pe eq "true"){
 			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -NU-only -depth $i_exon\n";
 		    }
@@ -177,6 +245,7 @@ while($line = <INFILE>) {
 	    }
 	}
 	else{
+	    $logname2 = "$logdir/nu.quantifyexons2.$id";
 	    if ($pe eq "true"){
 		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none -NU-only\n";
 	    }
@@ -187,20 +256,11 @@ while($line = <INFILE>) {
     }
     close(OUTFILE);
     if($outputsam eq "true") {
-	if ($bsub eq "true"){
-	    `bsub -q plus -e $logdir/$id.quantifyexons.err -o $logdir/$id.quantifyexons.out sh $shdir/$shfile`;
-	}
-	if ($qsub eq "true"){
-	    `qsub -cwd -N $line.quantifyexons -o $logdir -e $logdir -l h_vmem=4G $shdir/$shfile`;
-	}
+	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shdir/$shfile`;
     }
     if($outputsam eq "false") {
-	if ($bsub eq "true"){
-	    `bsub -q plus -e $logdir/$id.quantifyexons_2.err -o $logdir/$id.quantifyexons_2.out sh $shdir/$shfile2`;
-	}
-	if ($qsub eq "true"){
-	    `qsub -cwd -N $line.quantifyexons2 -o $logdir -e $logdir -l h_vmem=4G $shdir/$shfile2`;
-	}
+	`$submit $jobname_option $jobname2 $request_memory_option$mem -o $logname2.out -e $logname2.err < $shdir/$shfile2`;
     }
 }
 close(INFILE);
+print "got here\n";
