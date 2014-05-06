@@ -36,7 +36,7 @@ OPTIONS:
 
 ";
 
-if(@ARGV < 8) {
+if(@ARGV < 10) {
     die $USAGE;
 }
 
@@ -606,7 +606,6 @@ if ($novel eq "true"){
     $min_option = "";
     $max_option = "";
     $mem = "$request$queue_4G";
-    print "$mem\n";
     if ($min ne '10'){
 	$min_option = "-min $min";
     }
@@ -1544,7 +1543,6 @@ sub check_err {
     $out_name = $err_name;
     $out_name =~ s/err/out/g;
     $outfile = "$logdir/$name_of_job.out";
-    print "checkerr\n";
     $check_out = `grep "got here" $outfile | grep -v echo | wc -l`;
     chomp($check_out);
     $file_count = 1;
@@ -1570,7 +1568,7 @@ sub check_err {
 	$wc_num = $w[0];
 	$err = `cat $logdir/$name_of_job.err`;
 	if ($wc_num ne '0'){
-	    print LOG "***Job killed:\n\n$err\nstderr: $logdir/$name_of_job.err\n";
+	    print LOG "***Job killed:\nstderr: $logdir/$name_of_job.err\n";
 	    die "\nERROR: \"$job_num $name_of_job\"\n$err\nstderr: $logdir/$name_of_job.err";
 	}
 	else{
@@ -1586,7 +1584,7 @@ sub check_err {
 		    $sum = $sum + $wc_num;
 		}
 		if ($sum ne '0'){
-		    print LOG "***Job Killed:\n\n$log\nstderr: $logdir/$err_name\n";
+		    print LOG "***Job Killed:\nstderr: $logdir/$err_name\n";
 		    die "\nERROR: \"$job_num $name_of_job\"\n$log\nstderr: $logdir/$err_name";
 		}
 		else{
@@ -1611,7 +1609,7 @@ sub only_err{
     $wc_num = $w[0];
     $err = `cat $logdir/$name_of_job.err`;
     if ($wc_num ne '0'){
-	print LOG "***Job killed:\n\n$err\nstderr: $logdir/$name_of_job.err\n";
+	print LOG "***Job killed:\nstderr: $logdir/$name_of_job.err\n";
 	die "\nERROR: \"$job_num $name_of_job\"\n$err\nstderr: $logdir/$name_of_job.err";
     }
     else{
@@ -1627,7 +1625,7 @@ sub only_err{
 		$sum = $sum + $wc_num;
 	    }
 	    if ($sum ne '0'){
-		print LOG "***Job Killed:\n\n$log\nstderr: $logdir/$err_name\n";
+		print LOG "***Job Killed:\nstderr: $logdir/$err_name\n";
 		die "\nERROR: \"$job_num $name_of_job\"\n$log\nstderr: $logdir/$err_name";
 	    }
 	    else{
