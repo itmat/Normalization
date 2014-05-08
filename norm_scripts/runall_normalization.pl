@@ -363,10 +363,19 @@ if ($maxjobs > 200){
 @s = split(" ", $status);
 $stat = $s[0];
 
+if (-e "$logdir/$study.runall_normalization.out"){
+    `rm $logdir/$study.runall_normalization.out`;
+}
+if (-e "$logdir/$study.runall_normalization.err"){
+    `rm $logdir/$study.runall_normalization.err`;
+}
+
 #get_total_num_reads.pl
 $name_of_job = "$study.get_total_num_reads";
 $err_name = "$name_of_job.err";
-if (glob("$logdir/$err_name")){
+
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_job, $err_name);
 }
 
@@ -382,7 +391,8 @@ $name_of_alljob = "$study.runall_sam2mappingstats";
 $name_of_job = "$study.sam2mappingstats";
 $err_name = "sam2mappingstats.*.err";
 
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 
@@ -427,7 +437,8 @@ $job_num++;
 $name_of_job = "$study.getstats";
 $err_name = "$name_of_job.err";
 
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_job, $err_name);
 }
 
@@ -451,7 +462,8 @@ $job_num++;
 $name_of_alljob = "$study.runall_runblast";
 $name_of_job = "$study.runblast";
 $err_name = "runblast.*.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 
@@ -480,7 +492,8 @@ $job_num++;
 $name_of_alljob = "$study.runall_getribopercents";
 $name_of_job = "$study.getribopercents";
 $err_name = "$name_of_job.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 
@@ -511,7 +524,8 @@ $job_num++;
 $name_of_alljob = "$study.runall_filtersam";
 $name_of_job = "$study.filtersam";
 $err_name = "filtersam.*.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 
@@ -542,7 +556,8 @@ $job_num++;
 #get_master_list_of_exons
 $name_of_job = "$study.get_master_list_of_exons_from_geneinfofile";
 $err_name = "$name_of_job.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_job, $err_name);
 }
 
@@ -564,7 +579,8 @@ if ($novel eq "true"){
     $name_of_alljob = "$study.runall_sam2junctions.samfilename";
     $name_of_job = "$study.sam2junctions";
     $err_name = "sam2junctions.*.err";
-    if (glob("$logdir/$err_name")){
+    @g = glob("$logdir/$err_name");
+    if (@g ne '0'){
 	&clear_log($name_of_alljob, $err_name);
     }
 
@@ -596,7 +612,8 @@ if ($novel eq "true"){
     #novel_exons 
     $name_of_job = "$study.runall_get_novel_exons";
     $err_name = "$name_of_job.err";
-    if (glob("$logdir/$err_name")){
+    @g = glob("$logdir/$err_name");
+    if (@g ne '0'){
 	&clear_log($name_of_job, $err_name);
     }
 
@@ -630,7 +647,8 @@ if ($novel eq "true"){
 $name_of_alljob = "$study.quantifyexons.filter.u";
 $name_of_job = "$study.quantifyexons2";
 $err_name = "quantifyexons2.*.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 
@@ -676,7 +694,8 @@ $job_num++;
 $name_of_alljob = "$study.quantifyexons.filter.nu";
 $name_of_job = "$study.quantifyexons2";
 $err_name = "nu.quantifyexons2.*.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 
@@ -698,7 +717,8 @@ $job_num++;
 $name_of_alljob = "$study.runall_get_high_expressors";
 $name_of_job = "$study.get_high_expressor";
 $err_name = "*annotate*.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 
@@ -733,7 +753,8 @@ if ($filter_high_expressors eq 'true'){
     #filter_high_expressors
     $name_of_job = "$study.filter_high_expressors";
     $err_name = "$name_of_job.err";
-    if (glob("$logdir/$err_name")){
+    @g = glob("$logdir/$err_name");
+    if (@g ne '0'){
 	&clear_log($name_of_job, $err_name);
     }
 
@@ -757,7 +778,8 @@ if ($filter_high_expressors eq 'true'){
 #get_percent_high_expressor
 $name_of_job = "$study.get_percent_high_expressor";
 $err_name = "$name_of_job.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_job, $err_name);
 }
 
@@ -790,7 +812,8 @@ $job_num++;
 $name_of_alljob = "$study.runall_quantify_exons.true.u";
 $name_of_job = "$study.quantifyexons";
 $err_name = "quantifyexons.*.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 
@@ -830,7 +853,8 @@ $job_num++;
 $name_of_alljob = "$study.runall_quantify_exons.true.nu";
 $name_of_job = "$study.quantifyexons";
 $err_name = "nu.quantifyexons.*.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 
@@ -852,7 +876,8 @@ $job_num++;
 #exon2nonexon
 $name_of_job = "$study.get_exon2nonexon_stats";
 $err_name = "$name_of_job.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_job, $err_name);
 }
 
@@ -875,7 +900,8 @@ $job_num++;
 #1exonvsmultiexons
 $name_of_job = "$study.get_1exonvsmultiexons_stats";
 $err_name = "$name_of_job.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_job, $err_name);
 }
 
@@ -895,7 +921,8 @@ $job_num++;
 #get_master_list_of_introns
 $name_of_job = "$study.get_master_list_of_introns_from_geneinfofile";
 $err_name = "$name_of_job.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_job, $err_name);
 }
 
@@ -916,7 +943,8 @@ $job_num++;
 $name_of_alljob = "$study.runall_quantify_introns.true.u";
 $name_of_job = "$study.quantifyintrons";
 $err_name = "quantifyintrons.*.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 
@@ -950,7 +978,8 @@ $job_num++;
 $name_of_alljob = "$study.runall_quantify_introns.true.nu";
 $name_of_job = "$study.quantifyintrons";
 $err_name = "nu.quantifyintrons.*.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 
@@ -971,7 +1000,8 @@ $job_num++;
 #get_percent_intergenic
 $name_of_job = "$study.get_percent_intergenic";
 $err_name = "$name_of_job.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_job, $err_name);
 }
 
@@ -995,7 +1025,8 @@ $job_num++;
 $name_of_alljob = "$study.runall_head";
 $name_of_job = "$study.head";
 $err_name = "*_head.*.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 if ($other eq "true"){
@@ -1021,7 +1052,8 @@ $job_num++;
 #cat_headfiles
 $name_of_job = "$study.cat_headfiles";
 $err_name = "$name_of_job.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_job, $err_name);
 }
 $to_wait = "$study.head";
@@ -1043,7 +1075,8 @@ $job_num++;
 #make_final_samfile
 $name_of_job = "$study.make_final_samfile";
 $err_name = "$name_of_job.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_job, $err_name);
 }
 $to_wait = "$study.cat_headfiles";
@@ -1055,7 +1088,7 @@ until ($numq < $maxjobs){
     $numq = $x;
     sleep(10);
 }
-$job = "echo \"perl $norm_script_dir/make_final_samfile.pl $sample_dir $LOC\" | $batchjobs $wait $jobname \"$study.make_final_samfile\" -o $logdir/$study.make_final_samfile.out -e $logdir/$study.make_final_samfile.err";
+$job = "echo \"perl $norm_script_dir/make_final_samfile.pl $sample_dir $LOC $samfilename\" | $batchjobs $wait $jobname \"$study.make_final_samfile\" -o $logdir/$study.make_final_samfile.out -e $logdir/$study.make_final_samfile.err";
 
 &onejob($job, $name_of_job, $job_num);
 &check_exit_onejob($job, $name_of_job, $job_num);
@@ -1066,7 +1099,8 @@ $job_num++;
 $name_of_alljob = "$study.runall_sam2junctions";
 $name_of_job = "$study.sam2junctions";
 $err_name = "sam2junctions.*.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 $to_wait = "$study.make_final_samfile";
@@ -1097,7 +1131,8 @@ $job_num++;
 #cat_exonmappers
 $name_of_job = "$study.cat_exonmappers";
 $err_name = "$name_of_job.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_job, $err_name);
 }
 $to_wait = "$study.cat_headfiles";
@@ -1120,7 +1155,8 @@ $job_num++;
 $name_of_alljob = "$study.runall_quantify_exons.false";
 $name_of_job = "$study.quantifyexons2";
 $err_name = "quantifyexons2.*.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 $to_wait = "$study.cat_exonmappers";
@@ -1152,7 +1188,8 @@ $job_num++;
 $name_of_alljob = "$study.runall_quantify_introns.false.u";
 $name_of_job = "$study.quantifyintrons2";
 $err_name = "quantifyintrons2.*.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 $to_wait = "$study.cat_headfiles";
@@ -1176,7 +1213,8 @@ $job_num++;
 $name_of_alljob = "$study.runall_quantify_introns.false.nu";
 $name_of_job = "$study.quantifyintrons2";
 $err_name = "nu.quantifyintrons2.*.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 $numq = `$stat | grep "^[0-9]" | wc -l`;
@@ -1197,7 +1235,8 @@ $job_num++;
 $name_of_alljob = "$study.make_final_spreadsheets";
 $name_of_job = "$study.final_spreadsheet";
 $err_name = "*2spreadsheet_min_max.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 $to_wait1 = "$study.quantifyexons2";
@@ -1232,7 +1271,8 @@ $job_num++;
 $name_of_alljob = "$study.run_annotate";
 $name_of_job = "$study.annotate";
 $err_name = "annotate.*.txt.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 $to_annotate = "$study_dir/NORMALIZED_DATA/to_annotate.txt";
@@ -1266,7 +1306,8 @@ $job_num++;
 #filter_low_expressors
 $name_of_job = "$study.filter_low_expressors";
 $err_name = "$name_of_job.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_job, $err_name);
 }
 $to_filter = "$study_dir/NORMALIZED_DATA/to_filter.txt";
@@ -1295,7 +1336,8 @@ $job_num++;
 $name_of_alljob = "$study.runall_sam2cov";
 $name_of_job = "$study.sam2cov";
 $err_name = "sam2cov.*.err";
-if (glob("$logdir/$err_name")){
+@g = glob("$logdir/$err_name");
+if (@g ne '0'){
     &clear_log($name_of_alljob, $err_name);
 }
 if ($sam2cov eq "true"){
@@ -1327,7 +1369,8 @@ if ($sam2cov eq "true"){
 $name_of_job = "$study.cleanup";
 $err_name = "$name_of_job.err";
 if ($delete_int_sam eq "true"){
-    if (glob("$logdir/$err_name")){
+    @g = glob("$logdir/$err_name");
+    if (@g ne '0'){
 	&clear_log($name_of_job, $err_name);
     }
     if ($sam2cov eq "true"){
@@ -1356,7 +1399,8 @@ if ($delete_int_sam eq "true"){
 $name_of_job = "$study.compress";
 $err_name = "$name_of_job.err";
 if ($convert_sam2bam eq "true" | $gzip_cov eq "true"){
-    if (glob("$logdir/$err_name")){
+    @g = glob("$logdir/$err_name");
+    if (@g ne '0'){
 	&clear_log($name_of_job, $err_name);
     }
     $option = "-dont_cov -dont_bam";
@@ -1503,10 +1547,12 @@ sub check_exit_alljob{
 	if (-e "$logdir/$name_of_alljob.out"){
 	    `rm $logdir/$name_of_alljob.out`;
 	}
-	if (glob("$logdir/$out_name")){
+	@g = glob("$logdir/$out_name");
+	if (@g ne '0'){
 	    `rm $logdir/$out_name`;
 	}
-	if (glob("$logdir/err_name")){
+	@g = glob("$logdir/$err_name");
+	if (@g ne '0'){
 	    `rm $logdir/$err_name`;
 	}
 	$jobnum_rep = "\t**Job exited before completing\n\tretrying...";
@@ -1526,10 +1572,12 @@ sub check_exit_alljob{
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    if (glob("$logdir/$out_name")){
+	    @g = glob("$logdir/$out_name");
+	    if (@g ne '0'){
 		`rm $logdir/$out_name`;
 	    }
-	    if (glob("$logdir/err_name")){
+	    @g = glob("$logdir/$err_name");
+	    if (@g ne '0'){
 		`rm $logdir/$err_name`;
 	    }
 	    $jobnum_rep = "\t**Job exited before completing\n\tretrying...";
@@ -1644,8 +1692,14 @@ sub clear_log{
     my ($name_of_job, $err_name) = @_;
     $out_name = $err_name;
     $out_name =~ s/err/out/g;
-    `rm $logdir/$out_name`;
-    `rm $logdir/$err_name`;
+    @g = glob("$logdir/$out_name*");
+    if (@g ne '0'){
+	`rm $logdir/$out_name`;
+    }
+    @g = glob("$logdir/$err_name*");
+    if (@g ne '0'){
+	`rm $logdir/$err_name`;
+    }
     if (-e "$logdir/$name_of_job.err"){
 	`rm $logdir/$name_of_job.err`;
     }

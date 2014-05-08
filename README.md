@@ -522,10 +522,11 @@ This will create `STUDY/NORMALIZED_DATA`, `STUDY/NORMALIZED_DATA/exonmappers`, a
 
 ##### C. Merge normalized SAM files
 
-      perl make_final_samfile.pl <sample dirs> <loc> [options]
+      perl make_final_samfile.pl <sample dirs> <loc> <sam file name> [options]
 
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;sam file name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
 * option:<br>
   **-u**  :  set this if you want to return only unique mappers, otherwise by default
          it will return merged final sam.<br>

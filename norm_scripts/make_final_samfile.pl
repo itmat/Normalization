@@ -1,10 +1,11 @@
 #!/usr/bin/env perl
-if(@ARGV<2) {
-    die "usage: perl make_final_samfile.pl <sample dirs> <loc> [options]
+if(@ARGV<3) {
+    die "usage: perl make_final_samfile.pl <sample dirs> <loc> <samfilename> [options]
 
 where:
 <sample dirs> is  a file of sample directories with alignment output without path
 <loc> is where the sample directories are
+<samfilename> is name of samfile
 
 option:
   -u  :  set this if you want to return only unique mappers, otherwise by default
@@ -18,7 +19,7 @@ $U = "true";
 $NU = "true";
 $numargs = 0;
 $option_found = "false";
-for($i=2; $i<@ARGV; $i++) {
+for($i=3; $i<@ARGV; $i++) {
     $option_found = "false";
     if($ARGV[$i] eq '-nu') {
         $U = "false";
@@ -40,7 +41,7 @@ and non-unique to merged file by default so if that's what you want don't
 use either arg -u or -nu.
 ";
 }
-
+$samfilename = $ARGV[2];
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 @fields = split("/", $LOC);
@@ -61,6 +62,8 @@ open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){
     chomp($line);
     $dir = $line;
+    $original = "$LOC/$dir/$samfilename";
+    $header = `grep ^@ $original`;
     $id = $line;
     $id =~ s/Sample_//;
     $in_UE = "$exon_dir/Unique/$id.exonmappers.norm_u.sam";
@@ -78,6 +81,7 @@ while ($line = <INFILE>){
 	}
 	#merged
 	open(OUTM, ">$out_M");
+	print OUTM $header;
 	open(INUE, $in_UE);
 	while($line = <INUE>){
 	    chomp($line);
@@ -134,6 +138,7 @@ while ($line = <INFILE>){
 	    }
 	    #unique 
 	    open(OUTU, ">$out_U");
+	    print OUTU $header;
 	    open(INUE, $in_UE);
 	    while($line = <INUE>){
 		chomp($line);
@@ -166,6 +171,7 @@ while ($line = <INFILE>){
             }
 	    #non-unique
 	    open(OUTNU, ">$out_NU");
+	    print OUTNU $header;
 	    open(INNUE, $in_NUE);
 	    while($line = <INNUE>){
 		chomp($line);
