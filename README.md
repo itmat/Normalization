@@ -311,7 +311,7 @@ Create a study-specific master list of exons by adding novel exons from the stud
      **-min &lt;n>** : size of inferred exon, min is set at 10 by default<br>
      **-max &lt;n>** : size of inferred exon, max is set at 2000 by default
 
- This outputs `*list_of_novel_exons.txt` file of all samples to each sample directory. It also outputs `master_list_of_exons.*STUDY*.txt` file to `READS` directory.
+ This outputs `*list_of_inferred_exons.txt` file of all samples to each sample directory. It also outputs `master_list_of_exons.*STUDY*.txt` file to `READS` directory.
 
 ##### C. [optional step] : Filter Other High Expressors
 This is an extra filter step that removes highly expressed exons.
@@ -484,7 +484,7 @@ __[NORMALIZATION FACTOR] Percent of non-exonic signal that is intergenic (as opp
 
 This will output `percent_intergenic_Unique.txt` and/or `percent_intergenic_NU.txt` depending on the option provided to `STUDY/STATS` directory.
 
-### 5. Downsample
+#### 5) Downsample
 
 ##### A. Run head 
 This identifies minimum line count of each type of exonmappers/intronmappers/intergenicmappers and downsamples each file by taking the minimum line count of rows from each file.
@@ -535,7 +535,7 @@ This will create `STUDY/NORMALIZED_DATA`, `STUDY/NORMALIZED_DATA/exonmappers`, a
 
 This will create `FINAL_SAM`. Then, depending on the option given, it will make `FINAL_SAM/Unique`, `FINAL_SAM/NU`, or `FINAL_SAM/MERGED` directory and output final sam files to the directories created. A tag will be added to each sequence indicating its type (XT:A:E for exonmappers, XT:A:I for intronmapper, and XT:A:G for intergenicmappers).
 
-### 6. Run sam2junctions
+#### 6) Run sam2junctions
 
 By default, this will use merged final sam files as input. 
  
@@ -556,7 +556,7 @@ By default, this will use merged final sam files as input.
  
 This will create `STUDY/NORMALIZED_DATA/JUNCTIONS` directory and output `junctions_hq.bed`, `junctions_all.bed` and `junctions_all.rum` files of all samples.
 
-### 7. Master table of features counts
+#### 7) Master table of features counts
 #####A. Get Exonquants 
 **a. Concatenate unique and non-unique normalized exonmappers**
 
@@ -681,7 +681,7 @@ This will output `master_list_of_exons_counts` to `STUDY/NORMALIZED_DATA/SPREADS
 
 This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts` to `STUDY/NORMALIZED_DATA/SPREADSHEETS`.
 
-###8. Data Visualization
+#### 8) Data Visualization
 
 Use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR.
 
@@ -712,7 +712,7 @@ Use sam2cov to create coverage files and upload them to a Genome Browser. Curren
 
 This will output `*Unique.cov` and `*NU.cov` files of all samples to `STUDY/NORMALIZED_DATA/COV`.
 
-###9. Clean Up
+#### 9) Clean Up
 #####A. Delete Intermediate SAM Files
 
      perl cleanup.pl <sample dirs> <loc>

@@ -44,7 +44,9 @@ while($line = <INFILE>){
     @a = split(/\t/, $line);
     $intron = $a[0];
     $score = $a[2];
-    ($chr, $start, $end) = $intron =~  /^(.*):(\d*)-(\d*)$/g;
+    ($chr, $st, $en) = $intron =~  /^(.*):(\d*)-(\d*)$/g;
+    $start = $st - 1;
+    $end = $en + 1;
     $chr_n = $chr;
     $chr_n =~ s/chr//;
     if ($current_n ne $chr_n){
@@ -54,7 +56,7 @@ while($line = <INFILE>){
     }
     if ($score > 5){
 	foreach $exon_start (keys %EXON_START){
-	    $diff = $start - $exon_start;
+	    $diff = $start - $exon_start + 1;
 	    if (($diff > $min) && ($diff < $max)){
 		print OUTFILE "$chr:$exon_start-$start\n";
 	    }

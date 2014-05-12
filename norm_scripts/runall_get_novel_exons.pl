@@ -50,7 +50,6 @@ $junc_name =~ s/.sam/_junctions_all.rum/;
 $sorted_junc = $junc_name;
 $sorted_junc =~ s/.rum/.sorted.rum/;
 $master_list = "$LOC/master_list_of_exons.txt";
-$filtered_list = "$LOC/filtered_master_list_of_exons.txt";
 $final_list = "$LOC/master_list_of_exons.$study.txt";
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
@@ -59,7 +58,7 @@ while ($line = <INFILE>){
     $dir = $line;
     $id = $line;
     $id =~ s/Sample_//;
-    $outfile = "$id.list_of_novel_exons.txt";
+    $outfile = "$id.list_of_inferred_exons.txt";
     `perl $path/rum-2.0.5_05/bin/sort_by_location.pl --skip 1 -o $LOC/$dir/$sorted_junc --location 1 $LOC/$dir/$junc_name`;
     `perl $path/get_novel_exons.pl $LOC/$dir/$sorted_junc $LOC/$dir/$outfile -min $min -max $max`;
     open(IN, "<$LOC/$dir/$outfile") or die "cannot find file '$LOC/$dir/$outfile'\n";
@@ -71,6 +70,12 @@ while ($line = <INFILE>){
     }
 }
 close(INFILE);
+
+open(INF, ">$LOC/$study.list_of_inferred_exons.txt");
+foreach $exon (keys %EXON_LIST){
+    print INF "$exon\n";
+}
+close(INF);
 
 if (-e $master_list){
     open(IN, "<$master_list");
