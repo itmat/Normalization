@@ -26,10 +26,14 @@ option:
         <request_memory_option> : is option for requesting resources for batch job submission command
                                   (e.g. -q, -l h_vmem=)
         <queue_name_for_6G> : is queue name for 6G (e.g. plus, 6G)
+        <status> : command for checking batch job status (e.g. bjobs, qstat)
 
  -mem <s> : set this if your job requires more memory.
             <s> is the queue name for required mem.
             Default: 6G
+
+ -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
+                   by default, <n> = 200.
 
  -h : print usage
 
@@ -48,6 +52,14 @@ $sam2bam = 'true';
 
 for ($i=4; $i<@ARGV; $i++){
     $option_found = "false";
+    if ($ARGV[$i] eq '-max_jobs'){
+        $option_found = "true";
+        $njobs = $ARGV[$i+1];
+        if ($njobs !~ /(\d+$)/ ){
+            die "-max_jobs <n> : <n> needs to be a number\n";
+        }
+        $i++;
+    }
     if ($ARGV[$i] eq '-h'){
         $option_found = "true";
 	die $USAGE;
@@ -67,6 +79,7 @@ for ($i=4; $i<@ARGV; $i++){
         $jobname_option = "-J";
         $request_memory_option = "-q";
         $mem = "plus";
+	$status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
         $numargs++;
@@ -75,6 +88,7 @@ for ($i=4; $i<@ARGV; $i++){
         $jobname_option = "-N";
         $request_memory_option = "-l h_vmem=";
         $mem = "6G";
+	$status = "qstat";
     }
     if ($ARGV[$i] eq '-other'){
         $numargs++;
@@ -85,12 +99,13 @@ for ($i=4; $i<@ARGV; $i++){
         $jobname_option = $a[1];
         $request_memory_option = $a[2];
         $mem = $a[3];
+	$status = $a[4];
         $i++;
         if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem eq ""){
-            die "please provide \"<submit>, <jobname_option>,<request_memory_option>, <queue_name_for_6G>\"\n";
+            die "please provide \"<submit>, <jobname_option>,<request_memory_option>, <queue_name_for_6G>,<status>\"\n";
         }
         if ($submit eq "-lsf" | $submit eq "-sge"){
-            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option> ,<request_memory_option> ,<queue_name_for_6G>\".\n";
+            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option> ,<request_memory_option> ,<queue_name_for_6G>,<status>\".\n";
         }
     }
     if ($ARGV[$i] eq '-mem'){
@@ -107,7 +122,7 @@ for ($i=4; $i<@ARGV; $i++){
     }
 }
 if($numargs ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit> ,<jobname_option>, <request_memory_option>, <queue_name_for_6G>\".\n";
+    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit> ,<jobname_option>, <request_memory_option>, <queue_name_for_6G>,<status>\".\n";
 }
 if ($replace_mem eq "true"){
     $mem = $new_mem;
@@ -153,12 +168,18 @@ if ($sam2bam eq 'true'){
 	    print OUT "samtools view -bt $fai_file $LOC/$line/$sam_name > $LOC/$line/$bam_name\n";
 	    print OUT "rm $LOC/$line/$sam_name\n";
 	    close(OUT);
+	    while (qx{$status | wc -l} > $njobs){
+		sleep(10);
+	    }
 	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
 	    if (-e "$final_M_dir/$id.FINAL.norm.sam"){
 		open(OUT2, ">$norm_shfile");
 		print OUT2 "samtools view -bt $fai_file $final_M_dir/$id.FINAL.norm.sam > $final_M_dir/$id.FINAL.norm.bam\n";
 		print OUT2 "rm $final_M_dir/$id.FINAL.norm.sam\n";
 		close(OUT2);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
 		`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_norm.out -e $logname_norm.err < $norm_shfile`;
 	    }
 	    else{
@@ -167,6 +188,9 @@ if ($sam2bam eq 'true'){
 		    print OUT2 "samtools view -bt $fai_file $final_U_dir/$id.FINAL.norm_u.sam > $final_U_dir/$id.FINAL.norm_u.bam\n";
 		    print OUT2 "rm $final_U_dir/$id.FINAL.norm_u.sam\n";
 		    close(OUT2);
+		    while (qx{$status | wc -l} > $njobs){
+			sleep(10);
+		    }
 		    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_norm.out -e $logname_norm.err < $norm_shfile`;
 		}
 		if (-e "$final_NU_dir/$id.FINAL.norm_nu.sam"){
@@ -174,6 +198,9 @@ if ($sam2bam eq 'true'){
 		    print OUT2 "samtools view -bt $fai_file $final_NU_dir/$id.FINAL.norm_nu.sam > $final_NU_dir/$id.FINAL.norm_nu.bam\n";
 		    print OUT2 "rm $final_NU_dir/$id.FINAL.norm_nu.sam\n";
 		    close(OUT2);
+		    while (qx{$status | wc -l} > $njobs){
+			sleep(10);
+		    }
 		    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_norm.out -e $logname_norm.err < $norm_shfile`;
 		}
 		else{

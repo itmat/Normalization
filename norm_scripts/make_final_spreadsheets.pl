@@ -17,7 +17,7 @@ options:
 
  -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI cluster).
 
- -other \"<submit> ,<jobname_option>, <request_memory_option>, <queue_name_for_6G>, <queue_name_for_10G>\":
+ -other \"<submit> ,<jobname_option>, <request_memory_option>, <queue_name_for_6G>, <queue_name_for_10G>,<status>\":
         set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
         **make sure the arguments are comma separated inside the quotes**
 
@@ -27,10 +27,14 @@ options:
                                   (e.g. -q, -l h_vmem=)
         <queue_name_for_6G> : is queue name for 6G (e.g. plus, 6G)
         <queue_name_for_10G> : is queue name for 10G (e.g. max_mem30, 10G)
+        <status> : command for checking batch job status (e.g. bjobs, qstat)
 
  -mem <s> : set this if your job requires more memory. this will replace queue name of both 6G and 10G
             <s> is the queue name for required mem.
             Default: 6G, 10G
+
+ -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
+                   by default, <n> = 200.
 
  -h : print usage
 
@@ -42,7 +46,7 @@ if(@ARGV<2) {
 $U = "true";
 $NU = "true";
 $numargs = 0;
-
+$njobs =200;
 $numargs_c = 0;
 $replace_mem = "false";
 $submit = "";
@@ -52,6 +56,14 @@ $mem6 = "";
 $mem10 = "";
 for($i=2; $i<@ARGV; $i++) {
     $option_found = "false";
+    if ($ARGV[$i] eq '-max_jobs'){
+        $option_found = "true";
+        $njobs = $ARGV[$i+1];
+        if ($njobs !~ /(\d+$)/ ){
+            die "-max_jobs <n> : <n> needs to be a number\n";
+        }
+        $i++;
+    }
     if($ARGV[$i] eq '-nu') {
         $U = "false";
 	$numargs++;
@@ -70,6 +82,7 @@ for($i=2; $i<@ARGV; $i++) {
         $request_memory_option = "-q";
         $mem6 = "plus";
 	$mem10 = "max_mem30";
+	$status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
         $numargs_c++;
@@ -79,6 +92,7 @@ for($i=2; $i<@ARGV; $i++) {
         $request_memory_option = "-l h_vmem=";
         $mem6 = "6G";
 	$mem10 = "10G";
+	$status = "qstat";
     }
     if ($ARGV[$i] eq '-h'){
         $option_found = "true";
@@ -94,12 +108,13 @@ for($i=2; $i<@ARGV; $i++) {
         $request_memory_option = $a[2];
         $mem6 = $a[3];
 	$mem10 = $a[4];
+	$status = $a[5];
         $i++;
-        if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem6 eq "" | $mem10 eq ""){
-            die "please provide \"<submit>, <jobname_option>,<request_memory_option>, <queue_name_for_6G>, <queue_name_for_10G>\"\n";
+        if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem6 eq "" | $mem10 eq ""| $status eq ""){
+            die "please provide \"<submit>, <jobname_option>,<request_memory_option>, <queue_name_for_6G>, <queue_name_for_10G>,<status>\"\n";
         }
         if ($submit eq "-lsf" | $submit eq "-sge"){
-	    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_6G>, <queue_name_for_10G>\".\n";
+	    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_6G>, <queue_name_for_10G>,<status>\".\n";
         }
     }
     if ($ARGV[$i] eq '-mem'){
@@ -167,8 +182,17 @@ if ($numargs eq "0"){
     $lognameE = "$logdir/exonquants2spreadsheet_min_max";
     $lognameI = "$logdir/intronquants2spreadsheet_min_max";
     $lognameJ = "$logdir/juncs2spreadsheet_min_max";
+    while (qx{$status | wc -l} > $njobs){
+	sleep(10);
+    }
     `$submit $jobname_option $jobname $request_memory_option$mem10 -o $lognameE.out -e $lognameE.err < $sh_exon`;
+    while (qx{$status | wc -l} > $njobs){
+	sleep(10);
+    }
     `$submit $jobname_option $jobname $request_memory_option$mem10 -o $lognameI.out -e $lognameI.err < $sh_intron`;
+    while (qx{$status | wc -l} > $njobs){
+	sleep(10);
+    }
     `$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameJ.out -e $lognameJ.err < $sh_junctions`;
 }
 else{
@@ -189,8 +213,17 @@ else{
 	$lognameE ="$logdir/exonquants2spreadsheet.u";
 	$lognameI ="$logdir/intronquants2spreadsheet.u";
 	$lognameJ ="$logdir/juncs2spreadsheet.u";
+	while (qx{$status | wc -l} > $njobs){
+	    sleep(10);
+	}
 	`$submit $jobname_option $jobname $request_memory_option$mem10 -o $lognameE.out -e $lognameE.err < $sh_exon`;
+	while (qx{$status | wc -l} > $njobs){
+	    sleep(10);
+	}
 	`$submit $jobname_option $jobname $request_memory_option$mem10 -o $lognameI.out -e $lognameI.err < $sh_intron`;
+	while (qx{$status | wc -l} > $njobs){
+	    sleep(10);
+	}
 	`$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameJ.out -e $lognameJ.err < $sh_junctions`;
     }
     if ($NU eq "true"){
@@ -210,8 +243,17 @@ else{
         $lognameE ="$logdir/exonquants2spreadsheet.nu";
         $lognameI ="$logdir/intronquants2spreadsheet.nu";
         $lognameJ ="$logdir/juncs2spreadsheet.nu";
+	while (qx{$status | wc -l} > $njobs){
+	    sleep(10);
+	}
         `$submit $jobname_option $jobname $request_memory_option$mem10 -o $lognameE.out -e $lognameE.err < $sh_exon`;
+	while (qx{$status | wc -l} > $njobs){
+	    sleep(10);
+	}
         `$submit $jobname_option $jobname $request_memory_option$mem10 -o $lognameI.out -e $lognameI.err < $sh_intron`;
+	while (qx{$status | wc -l} > $njobs){
+	    sleep(10);
+	}
         `$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameJ.out -e $lognameJ.err < $sh_junctions`;
     }
 }

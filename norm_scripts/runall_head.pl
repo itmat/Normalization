@@ -546,10 +546,7 @@ for($i=1; $i<=$i_exon; $i++) {
 	    print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	    print OUTFILEU "echo \"got here\n\"";
 	    close(OUTFILEU);
-	    $numq = `$status | grep "^[0-9]" | wc -l`;
-	    until ($numq < $njobs){
-		$x = `$status | grep "^[0-9]" | wc -l`;
-		$numq = $x;
+	    while(qx{$status | wc -l} > $njobs){
 		sleep(10);
 	    }
 	    `$submit $jobname_option $jobname -o $lognameU[$i].out -e $lognameU[$i].err < $shfileU[$i]`;
@@ -559,11 +556,8 @@ for($i=1; $i<=$i_exon; $i++) {
 	    print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	    print OUTFILENU "echo \"got here\"";;
 	    close(OUTFILENU);
-            $numq = `$status | grep "^[0-9]" | wc -l`;
-            until ($numq < $njobs){
-                $x = `$status | grep "^[0-9]" | wc -l`;
-                $numq = $x;
-                sleep(10);
+	    while(qx{$status | wc -l} > $njobs){
+		sleep(10);
             }
 	    `$submit $jobname_option $jobname -o $lognameNU[$i].out -e $lognameNU[$i].err < $shfileNU[$i]`;
 	}
@@ -599,12 +593,9 @@ for($i=1; $i<=$i_intron; $i++) {
 	    print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	    print OUTFILEU "echo \"got here\"";;
 	    close(OUTFILEU);
-	    $numq = `$status | grep "^[0-9]" | wc -l`;
-	    until ($numq < $njobs){
-		$x = `$status | grep "^[0-9]" | wc -l`;
-		$numq = $x;
+	    while(qx{$status | wc -l} > $njobs){
 		sleep(10);
-	    }
+            }
 	    `$submit $jobname_option $jobname -o $lognameU[$i].out -e $lognameU[$i].err < $shfileU[$i]`;
 	}
 	if($intronnu eq 'true') {
@@ -612,11 +603,8 @@ for($i=1; $i<=$i_intron; $i++) {
 	    print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
 	    print OUTFILENU "echo \"got here\"";;
 	    close(OUTFILENU);
-	    $numq = `$status | grep "^[0-9]" | wc -l`;
-            until ($numq < $njobs){
-                $x = `$status | grep "^[0-9]" | wc -l`;
-                $numq = $x;
-		sleep(10);
+            while(qx{$status | wc -l} > $njobs){
+                sleep(10);
             }
             `$submit $jobname_option $jobname -o $lognameNU[$i].out -e $lognameNU[$i].err < $shfileNU[$i]`;
 	}
@@ -648,10 +636,7 @@ while($dirname = <INFILE>) {
 	print OUTFILEU "head -$numU $LOC/$dirU/$filenameU > $LOC/$dirU/$outfileU\n";
 	print OUTFILEU "echo \"got here\"";;
 	close(OUTFILEU);
-	$numq = `$status | grep "^[0-9]" | wc -l`;
-	until ($numq < $njobs){
-	    $x = `$status | grep "^[0-9]" | wc -l`;
-	    $numq = $x;
+	while(qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
 	`$submit $jobname_option $jobname -o $lognameU.out -e $lognameU.err < $shfileU`;
@@ -659,13 +644,11 @@ while($dirname = <INFILE>) {
     if($ignu eq 'true') {
 	open(OUTFILENU, ">$shfileNU");
 	print OUTFILENU "head -$numNU $LOC/$dirNU/$filenameNU > $LOC/$dirNU/$outfileNU\n";
-	print OUTFILENU "echo \"got here\"";;
+	print OUTFILENU "echo \"got here\"";
 	close(OUTFILENU);
-	until ($numq < $njobs){
-            $x = `$status | grep "^[0-9]" | wc -l`;
-            $numq = $x;
-            sleep(10);
-        }
+	while(qx{$status | wc -l} > $njobs){
+	    sleep(10);
+	}
 	`$submit $jobname_option $jobname -o $lognameNU.out -e $lognameNU.err < $shfileNU`;
     }
 }

@@ -9,6 +9,10 @@ where:
 --cfg <cfg file> : is a cfg file for the study
 
 OPTIONS:
+     [pipeline options]
+     -preprocess_only : set this if you want to run steps in \"1) Preprocess\" only.
+     -skip_preprocess : set this if you've already run all steps in \"1) Preprocess\" and want to skip them. 
+
      [data type]
      -se : set this if the data is single end, otherwise by default it will assume it's a paired end data
      -fa : set this if the unaligned files are in fasta format 
@@ -42,6 +46,7 @@ if(@ARGV < 10) {
 
 $required = 0;
 $unaligned = 0;
+$count_b = 0;
 $se = "";
 $unaligned_z = "";
 $min = 10;
@@ -52,8 +57,22 @@ $i_exon = 20;
 $i_intron = 10;
 $filter_low_expressors = "false";
 $novel = "true";
+$run_blast = "true";
+$run_norm = "true";
 for($i=0; $i<@ARGV; $i++) {
     $option_found = "false";
+    if ($ARGV[$i] eq '-preprocess_only'){
+	$option_found = "true";
+	$run_blast = "true";
+	$run_norm = "false";
+	$count_b++;
+    }
+    if ($ARGV[$i] eq '-skip_preprocess'){
+	$option_found = "true";
+	$run_blast = "false";
+	$run_norm = "true";
+	$count_b++;
+    }
     if ($ARGV[$i] eq '-h'){
 	$option_found = "true";
 	die $USAGE;
@@ -185,6 +204,9 @@ if ($required ne '5'){
 if ($unaligned ne '1'){
     die "you have to specify the type of your unaligned files: '-fa' or '-fq'\n"
 }
+if ($count_b > 1){
+    die "you cannot set both -preprocess_only and -skip_preprocess\n";
+}
 
 $dirs = `wc -l $sample_dir`;
 @a = split(" ", $dirs);
@@ -268,7 +290,7 @@ $other = "false";
 $num_cluster = 0;
 if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
     $num_cluster++;
-    if ($QUEUE_NAME_4G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $QUEUE_NAME_45G_sge eq "" | $QUEUE_NAME_60G_sge eq "" | $WAIT_OPTION_sge eq "" | $WAIT_2JOBS_OPTION_sge eq "" | $MAX_JOBS_sge eq ""){
+    if ($QUEUE_NAME_4G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $QUEUE_NAME_45G_sge eq "" | $QUEUE_NAME_60G_sge eq "" | $MAX_JOBS_sge eq ""){
         die "ERROR: please provide all required CLUSTER INFO for SGE_CLUSTER in the $cfg_file file\n";
     }
     else{
@@ -286,14 +308,12 @@ if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
 	$submit = "-sge";
 	$sge = "true";
 	$c_option = $submit;
-	$wait_option = $WAIT_OPTION_sge;
-	$wait_2jobs_option = $WAIT_2JOBS_OPTION_sge;
 	$maxjobs = $MAX_JOBS_sge;
     }
 }
 if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
     $num_cluster++;
-    if ($QUEUE_NAME_4G_lsf eq "" | $QUEUE_NAME_6G_lsf eq "" | $QUEUE_NAME_10G_lsf eq "" |  $QUEUE_NAME_15G_lsf eq "" | $QUEUE_NAME_30G_lsf eq "" | $QUEUE_NAME_45G_lsf eq "" | $QUEUE_NAME_60G_lsf eq "" |$WAIT_OPTION_lsf eq "" | $WAIT_2JOBS_OPTION_lsf eq "" | $MAX_JOBS_lsf eq ""){
+    if ($QUEUE_NAME_4G_lsf eq "" | $QUEUE_NAME_6G_lsf eq "" | $QUEUE_NAME_10G_lsf eq "" |  $QUEUE_NAME_15G_lsf eq "" | $QUEUE_NAME_30G_lsf eq "" | $QUEUE_NAME_45G_lsf eq "" | $QUEUE_NAME_60G_lsf eq "" | $MAX_JOBS_lsf eq ""){
         die "ERROR: please provide all required CLUSTER INFO for LSF_CLUSTER in the $cfg_file file\n";
     }
     else{
@@ -311,14 +331,12 @@ if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
 	$submit = "-lsf";
 	$lsf = "true";
 	$c_option = $submit;
-	$wait_option = $WAIT_OPTION_lsf;
-	$wait_2jobs_option = $WAIT_2JOBS_OPTION_lsf;
 	$maxjobs = $MAX_JOBS_lsf;
     }
 }
 if ($OTHER_CLUSTER =~ /^true/ | $OTHER_CLUSTER =~ /^TRUE/){
     $num_cluster++;
-    if ($SUBMIT_BATCH_JOBS eq "" | $JOB_NAME_OPTION eq "" | $CHECK_STATUS_FULLNAME eq "" | $REQUEST_RESOURCE_OPTION eq "" | $QUEUE_NAME_4G eq "" | $QUEUE_NAME_6G eq "" | $QUEUE_NAME_10G eq "" |  $QUEUE_NAME_15G eq "" | $QUEUE_NAME_30G eq "" | $QUEUE_NAME_45G eq "" | $QUEUE_NAME_60G eq "" | $WAIT_OPTION eq "" | $WAIT_2JOBS_OPTION eq "" | $MAX_JOBS eq ""){
+    if ($SUBMIT_BATCH_JOBS eq "" | $JOB_NAME_OPTION eq "" | $CHECK_STATUS_FULLNAME eq "" | $REQUEST_RESOURCE_OPTION eq "" | $QUEUE_NAME_4G eq "" | $QUEUE_NAME_6G eq "" | $QUEUE_NAME_10G eq "" |  $QUEUE_NAME_15G eq "" | $QUEUE_NAME_30G eq "" | $QUEUE_NAME_45G eq "" | $QUEUE_NAME_60G eq "" | $MAX_JOBS eq ""){
 	die "ERROR: please provide all required CLUSTER INFO for OTHER_CLUSTER in the $cfg_file file\n";
     }
     else {
@@ -335,8 +353,6 @@ if ($OTHER_CLUSTER =~ /^true/ | $OTHER_CLUSTER =~ /^TRUE/){
 	$queue_60G = $QUEUE_NAME_60G;
 	$submit = "-other";
 	$other = "true";
-	$wait_option = $WAIT_OPTION;
-	$wait_2jobs_option = $WAIT_2JOBS_OPTION;
 	$maxjobs = $MAX_JOBS;
     }
 }
@@ -354,1090 +370,813 @@ unless (-d $shdir){
     `mkdir $shdir`;}
 unless (-d $logdir){
     `mkdir $logdir`;}
-$job_num = 1;
-open(LOG, ">$logfile");
 
-if ($maxjobs > 200){
-    $maxjobs = $maxjobs * 0.75;
+$cluster_max = "";
+if ($maxjobs ne '200'){
+    $cluster_max = "-max_jobs $maxjobs";
 }
+
+
 @s = split(" ", $status);
 $stat = $s[0];
 
+$input = `cat $shdir/runall_normalization.sh`;
+
+
+open(LOG, ">>$logfile");
+print LOG "\n*************\n$input\n*************\n";
 if (-e "$logdir/$study.runall_normalization.out"){
     `rm $logdir/$study.runall_normalization.out`;
+
 }
 if (-e "$logdir/$study.runall_normalization.err"){
     `rm $logdir/$study.runall_normalization.err`;
 }
 
+if ($run_blast eq "true"){
+    $job_num = 1;
+    print LOG "\nPreprocessing\n-------------\n";
+
 #get_total_num_reads.pl
-$name_of_job = "$study.get_total_num_reads";
-$err_name = "$name_of_job.err";
-
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
+    $name_of_job = "$study.get_total_num_reads";
+    $err_name = "$name_of_job.err";
+    
     &clear_log($name_of_job, $err_name);
-}
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
 
-$job = "echo \"perl $norm_script_dir/get_total_num_reads.pl $sample_dir $LOC $unaligned_file $unaligned_type $unaligned_z\" | $batchjobs $jobname \"$study.get_total_num_reads\" -o $logdir/$study.get_total_num_reads.out -e $logdir/$study.get_total_num_reads.err";
-
-&onejob($job, $name_of_job, $job_num);
-&check_exit_onejob($job, $name_of_job, $job_num);
-&check_err ($name_of_job, $err_name, $job_num);
-$job_num++;
+    $job = "echo \"perl $norm_script_dir/get_total_num_reads.pl $sample_dir $LOC $unaligned_file $unaligned_type $unaligned_z\" | $batchjobs $jobname \"$study.get_total_num_reads\" -o $logdir/$study.get_total_num_reads.out -e $logdir/$study.get_total_num_reads.err";
+    &onejob($job, $name_of_job, $job_num);
+    &check_exit_onejob($job, $name_of_job, $job_num);
+    &check_err ($name_of_job, $err_name, $job_num);
+    $job_num++;
 
 #sam2mappingstats.pl
-$name_of_alljob = "$study.runall_sam2mappingstats";
-$name_of_job = "$study.sam2mappingstats";
-$err_name = "sam2mappingstats.*.err";
-
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
+    $name_of_alljob = "$study.runall_sam2mappingstats";
+    $name_of_job = "$study.sam2mappingstats";
+    $err_name = "sam2mappingstats.*.err";
     &clear_log($name_of_alljob, $err_name);
-}
 
-$to_wait = "$study.get_total_num_reads";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-$total = "$study_dir/STATS/total_num_reads.txt";
-$sorted = `cut -f 2 $total | sort`;
-@a = split (/\n/, $sorted);
-$max = $a[@a-1];
-if ($other eq "true"){
-    $c_option = "$submit \\\"$batchjobs,$jobname,$request,$queue_30G\\\"";
-    $new_queue = "";
-}
-else{
-    $new_queue = "-mem $queue_30G";
-}
-if ($max > 200000000){
-    $new_queue = "-mem 60G";
-}
-else{
-    if ($max > 150000000){
-	$new_queue = "-mem 45G";
-    }
-}
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + $num_samples;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + $num_samples;
-    sleep(10);
-}
-
-$job = "echo \"perl $norm_script_dir/runall_sam2mappingstats.pl $sample_dir $LOC $samfilename true $c_option $new_queue\" | $batchjobs $wait $jobname \"$study.runall_sam2mappingstats\" -o $logdir/$study.runall_sam2mappingstats.out -e $logdir/$study.runall_sam2mappingstats.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#getstats.pl
-$name_of_job = "$study.getstats";
-$err_name = "$name_of_job.err";
-
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_job, $err_name);
-}
-
-$to_wait = "$study.get_total_num_reads";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-$numq =`$stat | grep "^[0-9]" | wc -l`;
-until ($numq < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $numq = $x;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/getstats.pl $sample_dir $LOC\" | $batchjobs $wait $jobname \"$study.getstats\" -o $logdir/$study.getstats.out -e $logdir/$study.getstats.err";
-
-&onejob($job, $name_of_job, $job_num);
-&check_exit_onejob($job, $name_of_job, $job_num);
-&check_err ($name_of_job, $err_name, $job_num);
-$job_num++;
-
-#blast
-$name_of_alljob = "$study.runall_runblast";
-$name_of_job = "$study.runblast";
-$err_name = "runblast.*.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-
-if ($other eq "true"){
-    $c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_6G\\\"";
-    $new_queue = "";
-}
-else{
-    $new_queue = "-mem $queue_6G";
-}
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + $num_samples;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + $num_samples;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/runall_runblast.pl $sample_dir $LOC $samfilename $norm_script_dir/ncbi-blast-2.2.27+ $norm_script_dir/ncbi-blast-2.2.27+/ribomouse $c_option $new_queue\" | $batchjobs $jobname \"$study.runall_runblast\" -o $logdir/$study.runall_runblast.out -e $logdir/$study.runall_runblast.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#ribopercents
-$name_of_alljob = "$study.runall_getribopercents";
-$name_of_job = "$study.getribopercents";
-$err_name = "$name_of_job.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-
-$to_wait = "$study.runblast";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-if ($other eq "true"){
-    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_10G\\\"";
-    $new_queue = "";
-}
-else{
-    $new_queue = "-mem $queue_10G";
-}
-$numq =`$stat | grep "^[0-9]" | wc -l`;
-until ($numq < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $numq = $x;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/runall_get_ribo_percents.pl $sample_dir $LOC $c_option $new_mem\" | $batchjobs $wait $jobname \"$study.runall_getribopercents\" -o $logdir/$study.runall_getribopercents.out -e $logdir/$study.runall_getribopercents.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#filter_sam
-$name_of_alljob = "$study.runall_filtersam";
-$name_of_job = "$study.filtersam";
-$err_name = "filtersam.*.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-
-$to_wait = "$study.runblast";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-if ($other eq "true"){
-    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_4G\\\"";
-    $new_queue = "";
-}
-else{
-    $new_queue = "-mem $queue_4G";
-}
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + $num_samples;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + $num_samples;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/runall_filter.pl $sample_dir $LOC $samfilename $se $c_option $new_queue\" | $batchjobs $wait $jobname \"$study.runall_filtersam\" -o $logdir/$study.runall_filtersam.out -e $logdir/$study.runall_filtersam.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#get_master_list_of_exons
-$name_of_job = "$study.get_master_list_of_exons_from_geneinfofile";
-$err_name = "$name_of_job.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_job, $err_name);
-}
-
-$numq =`$stat | grep "^[0-9]" | wc -l`;
-until ($numq < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $numq = $x;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/get_master_list_of_exons_from_geneinfofile.pl $geneinfo $LOC\" | $batchjobs $jobname \"$study.get_master_list_of_exons_from_geneinfofile\" -o $logdir/$study.get_master_list_of_exons_from_geneinfofile.out -e $logdir/$study.get_master_list_of_exons_from_geneinfofile.err";
-
-&onejob($job, $name_of_job, $job_num);
-&check_exit_onejob($job, $name_of_job, $job_num);
-&check_err ($name_of_job, $err_name, $job_num);
-$job_num++;
-
-if ($novel eq "true"){
-    #junctions
-    $name_of_alljob = "$study.runall_sam2junctions.samfilename";
-    $name_of_job = "$study.sam2junctions";
-    $err_name = "sam2junctions.*.err";
-    @g = glob("$logdir/$err_name");
-    if (@g ne '0'){
-	&clear_log($name_of_alljob, $err_name);
-    }
-
-    $to_wait = "$study.get_master_list_of_exons_from_geneinfofile";
-    $wait = $wait_option;
-    $wait =~ s/JOB/$to_wait/;
+    $total = "$study_dir/STATS/total_num_reads.txt";
+    $sorted = `cut -f 2 $total | sort`;
+    @a = split (/\n/, $sorted);
+    $max = $a[@a-1];
     if ($other eq "true"){
-	$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G\\\"";
+	$c_option = "$submit \\\"$batchjobs,$jobname,$request,$queue_30G,$stat\\\"";
 	$new_queue = "";
     }
     else{
-	$new_queue = "-mem $queue_6G";
+	$new_queue = "-mem $queue_30G";
     }
-
-    $numq = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $numq + $num_samples;
-    until ($qneeded < $maxjobs){
-	$x = `$stat | grep "^[0-9]" | wc -l`;
-	$qneeded = $x + $num_samples;
-	sleep(10);
+    if ($max > 200000000){
+	$new_queue = "-mem 60G";
     }
-    $job = "echo \"perl $norm_script_dir/runall_sam2junctions.pl $sample_dir $LOC $geneinfo $genome -samfilename $samfilename $c_option $new_queue\" | $batchjobs $wait $jobname \"$study.runall_sam2junctions.samfilename\" -o $logdir/$study.runall_sam2junctions.samfilename.out -e $logdir/$study.runall_sam2junctions.samfilename.err";
+    else{
+	if ($max > 150000000){
+	    $new_queue = "-mem 45G";
+	}
+    }
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_sam2mappingstats.pl $sample_dir $LOC $samfilename true $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_sam2mappingstats\" -o $logdir/$study.runall_sam2mappingstats.out -e $logdir/$study.runall_sam2mappingstats.err";
 
     &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
     &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
     &check_err ($name_of_alljob, $err_name, $job_num);
     $job_num++;
 
-    #novel_exons 
-    $name_of_job = "$study.runall_get_novel_exons";
+#getstats.pl
+    $name_of_job = "$study.getstats";
     $err_name = "$name_of_job.err";
-    @g = glob("$logdir/$err_name");
-    if (@g ne '0'){
-	&clear_log($name_of_job, $err_name);
-    }
-
-    $to_wait = "$study.sam2junctions";
-    $wait = $wait_option;
-    $wait =~ s/JOB/$to_wait/;
-    $min_option = "";
-    $max_option = "";
-    $mem = "$request$queue_4G";
-    if ($min ne '10'){
-	$min_option = "-min $min";
-    }
-    if ($max ne '2000'){
-	$max_option = "-max $max";
-    }
-    $numq =`$stat | grep "^[0-9]" | wc -l`;
-    until ($numq < $maxjobs){
-	$x = `$stat | grep "^[0-9]" | wc -l`;
-	$numq = $x;
-	sleep(10);
-    }
-    $job = "echo \"perl $norm_script_dir/runall_get_novel_exons.pl $sample_dir $LOC $samfilename $min_option $max_option\" | $batchjobs $wait $jobname \"$study.runall_get_novel_exons\" $mem -o $logdir/$study.runall_get_novel_exons.out -e $logdir/$study.runall_get_novel_exons.err";
-
-    &onejob($job, $name_of_job, $job_num);
-    &check_exit_onejob($job, $name_of_job, $job_num);
-    &check_err ($name_of_job, $err_name, $job_num);
-    $job_num++;
-}    
-
-#quantify_exons for filter
-$name_of_alljob = "$study.quantifyexons.filter.u";
-$name_of_job = "$study.quantifyexons2";
-$err_name = "quantifyexons2.*.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-
-if ($novel eq "true"){
-    $to_wait1 = "$study.filtersam";
-    $to_wait2 = "$study.runall_get_novel_exons";
-    $wait = $wait_2jobs_option;
-    $wait =~ s/JOB1/$to_wait1/;
-    $wait =~ s/JOB2/$to_wait2/;
-    $list_for_quant = $novel_list;
-}
-if ($novel eq "false"){
-    $to_wait1 = "$study.filtersam";
-    $to_wait2 = "$study.get_master_list_of_exons_from_geneinfofile";
-    $wait = $wait_2jobs_option;
-    $wait =~ s/JOB1/$to_wait1/;
-    $wait =~ s/JOB2/$to_wait2/;
-    $list_for_quant = $exon_list;
-}
-if ($other eq "true"){
-    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_4G\\\"";
-    $new_queue = "";
-}
-else{
-    $new_queue = "-mem $queue_4G";
-}
-
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + $num_samples;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + $num_samples;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant false $se $c_option $new_queue\" | $batchjobs $wait $jobname \"$study.quantifyexons.filter.u\" -o $logdir/$study.quantifyexons.filter.u.out -e $logdir/$study.quantifyexons.filter.u.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#quantify_exons for filter nu
-$name_of_alljob = "$study.quantifyexons.filter.nu";
-$name_of_job = "$study.quantifyexons2";
-$err_name = "nu.quantifyexons2.*.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + $num_samples;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + $num_samples;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant false $se -NU-only $c_option $new_queue\" | $batchjobs $wait $jobname \"$study.quantifyexons.filter.nu\" -o $logdir/$study.quantifyexons.filter.nu.out -e $logdir/$study.quantifyexons.filter.nu.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#get_high_expressors 
-$name_of_alljob = "$study.runall_get_high_expressors";
-$name_of_job = "$study.get_high_expressor";
-$err_name = "*annotate*.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-
-if ($filter_high_expressors eq "false" | $cutoff_he eq '100'){
-    $cutoff_he = 10;
-}
-$to_wait = "$study.quantifyexons2";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-if ($other eq "true"){
-    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G\\\"";
-    $new_queue = "";
-}
-else{
-    $new_queue = "-mem $queue_15G";
-}
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + $num_samples;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + $num_samples;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/runall_get_high_expressors.pl $sample_dir $LOC $cutoff_he $annot $list_for_quant $c_option $new_queue\" | $batchjobs $wait $jobname \"$study.runall_get_high_expressors\" -o $logdir/$study.runall_get_high_expressors.out -e $logdir/$study.runall_get_high_expressors.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob,  $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-if ($filter_high_expressors eq 'true'){
-    #filter_high_expressors
-    $name_of_job = "$study.filter_high_expressors";
-    $err_name = "$name_of_job.err";
-    @g = glob("$logdir/$err_name");
-    if (@g ne '0'){
-	&clear_log($name_of_job, $err_name);
-    }
-
-    $to_wait = "$study.get_high_expressor";
-    $wait = $wait_option;
-    $wait =~ s/JOB/$to_wait/;
-    $numq =`$stat | grep "^[0-9]" | wc -l`;
-    until ($numq < $maxjobs){
-	$x = `$stat | grep "^[0-9]" | wc -l`;
-	$numq = $x;
-	sleep(10);
-    }
-    $job = "echo \"perl $norm_script_dir/filter_high_expressors.pl $sample_dir $LOC $list_for_quant\" | $batchjobs $wait $jobname \"$study.filter_high_expressors\" -o $logdir/$study.filter_high_expressors.out -e $logdir/$study.filter_high_expressors.err";
-
-    &onejob($job, $name_of_job, $job_num);
-    &check_exit_onejob($job, $name_of_job, $job_num);
-    &check_err ($name_of_job, $err_name, $job_num);
-    $job_num++;
-}
-
-#get_percent_high_expressor
-$name_of_job = "$study.get_percent_high_expressor";
-$err_name = "$name_of_job.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_job, $err_name);
-}
-
-if ($filter_high_expressors eq "true"){
-    $to_wait1 = "$study.get_high_expressor";
-    $to_wait2 = "$study.filter_high_expressors";
-    $wait = $wait_2jobs_option;
-    $wait =~ s/JOB1/$to_wait1/;
-    $wait =~ s/JOB2/$to_wait2/;
-}
-else{
-    $to_wait = "$study.get_high_expressor";
-    $wait = $wait_option;
-    $wait =~ s/JOB/$to_wait/;
-}
-$numq =`$stat | grep "^[0-9]" | wc -l`;
-until ($numq < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $numq = $x;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/get_percent_high_expressor.pl $sample_dir $LOC\" | $batchjobs $wait $jobname \"$study.get_percent_high_expressor\" -o $logdir/$study.get_percent_high_expressor.out -e $logdir/$study.get_percent_high_expressor.err";
-
-&onejob($job, $name_of_job, $job_num);
-&check_exit_onejob($job, $name_of_job, $job_num);
-&check_err ($name_of_job, $err_name, $job_num);
-$job_num++;
-
-#run_quantify_exons unique
-$name_of_alljob = "$study.runall_quantify_exons.true.u";
-$name_of_job = "$study.quantifyexons";
-$err_name = "quantifyexons.*.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-
-$to_wait = "$study.get_percent_high_expressor";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-$filtered_list = $list_for_quant;
-$filtered_list =~ s/master_list/filtered_master_list/g;
-if ($filter_high_expressors eq "true"){
-    $list_for_quant2 = $filtered_list;
-}
-else {
-    $list_for_quant2 = $list_for_quant;
-}
-if ($other eq "true"){
-    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_4G\\\"";
-    $new_queue = "";
-}
-else{
-    $new_queue = "-mem $queue_4G";
-}
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + $num_samples;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + $num_samples;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant2 true $se $c_option -depth $i_exon $new_queue\" | $batchjobs $wait $jobname \"$study.runall_quantify_exons.true.u\" -o $logdir/$study.runall_quantify_exons.true.u.out -e $logdir/$study.runall_quantify_exons.true.u.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#run_quantify_exons nu
-$name_of_alljob = "$study.runall_quantify_exons.true.nu";
-$name_of_job = "$study.quantifyexons";
-$err_name = "nu.quantifyexons.*.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + $num_samples;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + $num_samples;
-    sleep(10);
-}
-
-$job = "echo \"perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant2 true $se $c_option -NU-only -depth $i_exon $new_queue\" | $batchjobs $wait $jobname \"$study.runall_quantify_exons.true.nu\" -o $logdir/$study.runall_quantify_exons.true.nu.out -e $logdir/$study.runall_quantify_exons.true.nu.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#exon2nonexon
-$name_of_job = "$study.get_exon2nonexon_stats";
-$err_name = "$name_of_job.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_job, $err_name);
-}
-
-$to_wait = "$study.quantifyexons";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-$numq =`$stat | grep "^[0-9]" | wc -l`;
-until ($numq < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $numq = $x;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/get_exon2nonexon_signal_stats.pl $sample_dir $LOC\" | $batchjobs $wait $jobname \"$study.get_exon2nonexon_stats\" -o $logdir/$study.get_exon2nonexon_stats.out -e $logdir/$study.get_exon2nonexon_stats.err";
-
-&onejob($job, $name_of_job, $job_num);
-&check_exit_onejob($job, $name_of_job, $job_num);
-&check_err ($name_of_job, $err_name, $job_num);
-$job_num++;
-
-#1exonvsmultiexons
-$name_of_job = "$study.get_1exonvsmultiexons_stats";
-$err_name = "$name_of_job.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_job, $err_name);
-}
-
-$numq =`$stat | grep "^[0-9]" | wc -l`;
-until ($numq < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $numq = $x;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/get_1exon_vs_multi_exon_stats.pl $sample_dir $LOC\" | $batchjobs $wait $jobname \"$study.get_1exonvsmultiexons_stats\" -o $logdir/$study.get_1exonvsmultiexons_stats.out -e $logdir/$study.get_1exonvsmultiexons_stats.err";
-
-&onejob($job, $name_of_job, $job_num);
-&check_exit_onejob($job, $name_of_job, $job_num);
-&check_err ($name_of_job, $err_name, $job_num);
-$job_num++;
-
-#get_master_list_of_introns
-$name_of_job = "$study.get_master_list_of_introns_from_geneinfofile";
-$err_name = "$name_of_job.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_job, $err_name);
-}
-
-$numq =`$stat | grep "^[0-9]" | wc -l`;
-until ($numq < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $numq = $x;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/get_master_list_of_introns_from_geneinfofile.pl $geneinfo $LOC\" | $batchjobs $wait $jobname \"$study.get_master_list_of_introns_from_geneinfofile\" -o $logdir/$study.get_master_list_of_introns_from_geneinfofile.out -e $logdir/$study.get_master_list_of_introns_from_geneinfofile.err";
-
-&onejob($job, $name_of_job, $job_num);
-&check_exit_onejob($job, $name_of_job, $job_num);
-&check_err ($name_of_job, $err_name, $job_num);
-$job_num++;
-
-#run_quantify_introns unique 
-$name_of_alljob = "$study.runall_quantify_introns.true.u";
-$name_of_job = "$study.quantifyintrons";
-$err_name = "quantifyintrons.*.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-
-$to_wait1 = "$study.quantifyexons";
-$to_wait2 = "$study.get_master_list_of_introns_from_geneinfofile";
-$wait = $wait_2jobs_option;
-$wait =~ s/JOB1/$to_wait1/;
-$wait =~ s/JOB2/$to_wait2/;
-if ($other eq "true"){
-    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_4G\\\"";
-    $new_queue = "";
-}
-else{
-    $new_queue = "-mem $queue_4G";
-}
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + $num_samples;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + $num_samples;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt true $c_option -depth $i_intron $new_queue\" | $batchjobs $wait $jobname \"$study.runall_quantify_introns.true.u\" -o $logdir/$study.runall_quantify_introns.true.u.out -e $logdir/$study.runall_quantify_introns.true.u.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#run_quantify_introns nu
-$name_of_alljob = "$study.runall_quantify_introns.true.nu";
-$name_of_job = "$study.quantifyintrons";
-$err_name = "nu.quantifyintrons.*.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + $num_samples;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + $num_samples;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt true $c_option -NU-only -depth $i_intron $new_queue\" | $batchjobs $wait $jobname \"$study.runall_quantify_introns.true.nu\" -o $logdir/$study.runall_quantify_introns.true.nu.out -e $logdir/$study.runall_quantify_introns.true.nu.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#get_percent_intergenic
-$name_of_job = "$study.get_percent_intergenic";
-$err_name = "$name_of_job.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_job, $err_name);
-}
-
-$to_wait = "$study.quantifyintrons";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-$numq =`$stat | grep "^[0-9]" | wc -l`;
-until ($numq < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $numq = $x;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/get_percent_intergenic.pl $sample_dir $LOC\" | $batchjobs $wait $jobname \"$study.get_percent_intergenic\" -o $logdir/$study.get_percent_intergenic.out -e $logdir/$study.get_percent_intergenic.err ";
-
-&onejob($job, $name_of_job, $job_num);
-&check_exit_onejob($job, $name_of_job, $job_num);
-&check_err ($name_of_job, $err_name, $job_num);
-$job_num++;
-
-#runall_head
-$name_of_alljob = "$study.runall_head";
-$name_of_job = "$study.head";
-$err_name = "*_head.*.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-if ($other eq "true"){
-    $c_option = "$submit \\\"$batchjobs, $jobname, $stat\\\"";
-}
-$cluster_max = "";
-if ($maxjobs ne '200' && $maxjobs < '200'){
-    $cluster_max = "-max_jobs $maxjobs";
-}
-$numq =`$stat | grep "^[0-9]" | wc -l`;
-until ($numq < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $numq = $x;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/runall_head.pl $sample_dir $LOC $c_option $cluster_max -depthE $i_exon -depthI $i_intron\" | $batchjobs $wait $jobname \"$study.runall_head\" -o $logdir/$study.runall_head.out -e $logdir/$study.runall_head.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#cat_headfiles
-$name_of_job = "$study.cat_headfiles";
-$err_name = "$name_of_job.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_job, $err_name);
-}
-$to_wait = "$study.head";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-$numq =`$stat | grep "^[0-9]" | wc -l`;
-until ($numq < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $numq = $x;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/cat_headfiles.pl $sample_dir $LOC\" | $batchjobs $wait $jobname \"$study.cat_headfiles\" -o $logdir/$study.cat_headfiles.out -e $logdir/$study.cat_headfiles.err";
-
-&onejob($job, $name_of_job, $job_num);
-&check_exit_onejob($job, $name_of_job, $job_num);
-&check_err ($name_of_job, $err_name, $job_num);
-$job_num++;
-
-#make_final_samfile
-$name_of_job = "$study.make_final_samfile";
-$err_name = "$name_of_job.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_job, $err_name);
-}
-$to_wait = "$study.cat_headfiles";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-$numq =`$stat | grep "^[0-9]" | wc -l`;
-until ($numq < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $numq = $x;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/make_final_samfile.pl $sample_dir $LOC $samfilename\" | $batchjobs $wait $jobname \"$study.make_final_samfile\" -o $logdir/$study.make_final_samfile.out -e $logdir/$study.make_final_samfile.err";
-
-&onejob($job, $name_of_job, $job_num);
-&check_exit_onejob($job, $name_of_job, $job_num);
-&check_err ($name_of_job, $err_name, $job_num);
-$job_num++;
-
-#runall_sam2junctions
-$name_of_alljob = "$study.runall_sam2junctions";
-$name_of_job = "$study.sam2junctions";
-$err_name = "sam2junctions.*.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-$to_wait = "$study.make_final_samfile";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-if ($other eq "true"){
-    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G\\\"";
-    $new_queue = "";
-}
-else{
-    $new_queue = "-mem $queue_6G";
-}
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + $num_samples;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + $num_samples;
-    sleep(10);
-}
-
-$job = "echo \"perl $norm_script_dir/runall_sam2junctions.pl $sample_dir $LOC $geneinfo $genome $c_option $new_queue\" | $batchjobs $wait $jobname \"$study.runall_sam2junctions\" -o $logdir/$study.runall_sam2junctions.out -e $logdir/$study.runall_sam2junctions.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#cat_exonmappers
-$name_of_job = "$study.cat_exonmappers";
-$err_name = "$name_of_job.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_job, $err_name);
-}
-$to_wait = "$study.cat_headfiles";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-$numq =`$stat | grep "^[0-9]" | wc -l`;
-until ($numq < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $numq = $x;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/cat_exonmappers_Unique_NU.pl $sample_dir $LOC\" | $batchjobs $wait $jobname \"$study.cat_exonmappers\" -o $logdir/$study.cat_exonmappers.out -e $logdir/$study.cat_exonmappers.err";
-
-&onejob($job, $name_of_job, $job_num);
-&check_exit_onejob($job, $name_of_job, $job_num);
-&check_err ($name_of_job, $err_name, $job_num);
-$job_num++;
-
-#runall_quantify_exons (merged/unique)
-$name_of_alljob = "$study.runall_quantify_exons.false";
-$name_of_job = "$study.quantifyexons2";
-$err_name = "quantifyexons2.*.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-$to_wait = "$study.cat_exonmappers";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-if ($other eq "true"){
-    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_4G\\\"";
-    $new_queue = "";
-}
-else{
-    $new_queue = "-mem $queue_4G";
-}
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + $num_samples;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + $num_samples;
-    sleep(10);
-}
-
-$job = "echo \"perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant2 false $se $c_option $new_queue\" | $batchjobs $wait $jobname \"$study.runall_quantify_exons.false\" -o $logdir/$study.runall_quantify_exons.false.out -e $logdir/$study.runall_quantify_exons.false.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#runall_quantify_introns unique
-$name_of_alljob = "$study.runall_quantify_introns.false.u";
-$name_of_job = "$study.quantifyintrons2";
-$err_name = "quantifyintrons2.*.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-$to_wait = "$study.cat_headfiles";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + $num_samples;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + $num_samples;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt false $c_option $new_queue\" | $batchjobs $wait $jobname \"$study.runall_quantify_introns.false.u\" -o $logdir/$study.runall_quantify_introns.false.u.out -e $logdir/$study.runall_quantify_introns.false.u.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#runall_quantify_introns nu
-$name_of_alljob = "$study.runall_quantify_introns.false.nu";
-$name_of_job = "$study.quantifyintrons2";
-$err_name = "nu.quantifyintrons2.*.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + $num_samples;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + $num_samples;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt false $c_option -NU-only $new_queue\" | $batchjobs $wait $jobname \"$study.runall_quantify_introns.false.nu\" -o $logdir/$study.runall_quantify_introns.false.nu.out -e $logdir/$study.runall_quantify_introns.false.nu.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#make_final_spreadsheets
-$name_of_alljob = "$study.make_final_spreadsheets";
-$name_of_job = "$study.final_spreadsheet";
-$err_name = "*2spreadsheet_min_max.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-$to_wait1 = "$study.quantifyexons2";
-$to_wait2 = "$study.quantifyintrons2";
-$wait = $wait_2jobs_option;
-$wait =~ s/JOB1/$to_wait1/;
-$wait =~ s/JOB2/$to_wait2/;
-if ($other eq "true"){
-    $c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_6G, $queue_10G\\\"";
-    $new_queue = "";
-}
-else{
-    $new_queue = "-mem $queue_10G";
-}
-
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + 3;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + 3;
-    sleep(10);
-}
-
-$job = "echo \"perl $norm_script_dir/make_final_spreadsheets.pl $sample_dir $LOC $c_option $new_queue\" | $batchjobs $wait $jobname \"$study.make_final_spreadsheets\" -o $logdir/$study.make_final_spreadsheets.out -e $logdir/$study.make_final_spreadsheets.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#run_annotate
-$name_of_alljob = "$study.run_annotate";
-$name_of_job = "$study.annotate";
-$err_name = "annotate.*.txt.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-$to_annotate = "$study_dir/NORMALIZED_DATA/to_annotate.txt";
-open(out, ">$to_annotate");
-print out "master_list_of_exons_counts_MIN.$study.txt\nmaster_list_of_exons_counts_MAX.$study.txt\nmaster_list_of_introns_counts_MIN.$study.txt\nmaster_list_of_introns_counts_MAX.$study.txt\nmaster_list_of_junctions_counts_MIN.$study.txt\nmaster_list_of_junctions_counts_MAX.$study.txt\n";
-close(out);
-$to_wait = "$study.final_spreadsheet";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-if ($other eq "true"){
-    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G\\\"";
-    $new_queue = "";
-}
-else{
-    $new_queue = "-mem $queue_15G";
-}
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + 6;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + 6;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/run_annotate.pl $to_annotate $annot $LOC $c_option $new_queue\" | $batchjobs $wait $jobname \"$study.run_annotate\" -o $logdir/$study.run_annotate.out -e $logdir/$study.run_annotate.err";
-
-&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-&check_err ($name_of_alljob, $err_name, $job_num);
-$job_num++;
-
-#filter_low_expressors
-$name_of_job = "$study.filter_low_expressors";
-$err_name = "$name_of_job.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_job, $err_name);
-}
-$to_filter = "$study_dir/NORMALIZED_DATA/to_filter.txt";
-open(out, ">$to_filter");
-print out "annotated_master_list_of_exons_counts_MIN.$study.txt\nannotated_master_list_of_exons_counts_MAX.$study.txt\nannotated_master_list_of_introns_counts_MIN.$study.txt\nannotated_master_list_of_introns_counts_MAX.$study.txt\nannotated_master_list_of_junctions_counts_MIN.$study.txt\nannotated_master_list_of_junctions_counts_MAX.$study.txt\n";
-close(out);
-$to_wait = "$study.annotate";
-$wait = $wait_option;
-$wait =~ s/JOB/$to_wait/;
-$numq =`$stat | grep "^[0-9]" | wc -l`;
-$numq = `$stat | grep "^[0-9]" | wc -l`;
-$qneeded = $numq + 6;
-until ($qneeded < $maxjobs){
-    $x = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $x + 6;
-    sleep(10);
-}
-$job = "echo \"perl $norm_script_dir/runall_filter_low_expressors.pl $to_filter $num_samples $cutoff_le $LOC\" | $batchjobs $wait $jobname \"$study.filter_low_expressors\" -o $logdir/$study.filter_low_expressors.out -e $logdir/$study.filter_low_expressors.err";
-
-&onejob($job, $name_of_job, $job_num);
-&check_exit_onejob($job, $name_of_job, $job_num);
-&check_err ($name_of_job, $err_name, $job_num);
-$job_num++;
-
-#runall_sam2cov
-$name_of_alljob = "$study.runall_sam2cov";
-$name_of_job = "$study.sam2cov";
-$err_name = "sam2cov.*.err";
-@g = glob("$logdir/$err_name");
-if (@g ne '0'){
-    &clear_log($name_of_alljob, $err_name);
-}
-if ($sam2cov eq "true"){
-    $to_wait = "$study.make_final_samfile";
-    $wait = $wait_option;
-    $wait =~ s/JOB/$to_wait/;
-    if ($other eq "true"){
-	$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G\\\"";
-        $new_queue = "";
-    }
-    else{
-	$new_queue = "-mem $queue_15G";
-    }
-    $numq = `$stat | grep "^[0-9]" | wc -l`;
-    $qneeded = $numq + $num_samples;
-    until ($qneeded < $maxjobs){
-	$x = `$stat | grep "^[0-9]" | wc -l`;
-	$qneeded = $x + $num_samples;
-	sleep(10);
-    }
-    $job = "echo \"perl $norm_script_dir/runall_sam2cov.pl $sample_dir $LOC $fai $sam2cov_loc $aligner $c_option $new_queue\" | $batchjobs $wait $jobname \"$study.runall_sam2cov\" -o $logdir/$study.runall_sam2cov.out -e $logdir/$study.runall_sam2cov.err";
-
-    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-    &only_err ($name_of_alljob, $err_name, $job_num);
-    $job_num++;
-}
-
-#cleanup: delete intermediate sam
-$name_of_job = "$study.cleanup";
-$err_name = "$name_of_job.err";
-if ($delete_int_sam eq "true"){
-    @g = glob("$logdir/$err_name");
-    if (@g ne '0'){
-	&clear_log($name_of_job, $err_name);
-    }
-    if ($sam2cov eq "true"){
-	$to_wait = "$study.sam2cov";
-    }
-    else {
-	$to_wait = "$study.filter_low_expressors";
-    }
-    $wait = $wait_option;
-    $wait =~ s/JOB/$to_wait/;
-    $numq =`$stat | grep "^[0-9]" | wc -l`;
-    until ($numq < $maxjobs){
-	$x = `$stat | grep "^[0-9]" | wc -l`;
-	$numq = $x;
-	sleep(10);
-    }
-    $job = "echo \"perl $norm_script_dir/cleanup.pl $sample_dir $LOC\" | $batchjobs $wait $jobname \"$study.cleanup\" -o $logdir/$study.cleanup.out -e $logdir/$study.cleanup.err";
     
+    &clear_log($name_of_job, $err_name);
+        
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+
+    $job = "echo \"perl $norm_script_dir/getstats.pl $sample_dir $LOC\" | $batchjobs  $jobname \"$study.getstats\" -o $logdir/$study.getstats.out -e $logdir/$study.getstats.err";
+
     &onejob($job, $name_of_job, $job_num);
     &check_exit_onejob($job, $name_of_job, $job_num);
     &check_err ($name_of_job, $err_name, $job_num);
     $job_num++;
-}
 
-#cleanup: compress 
-$name_of_job = "$study.compress";
-$err_name = "$name_of_job.err";
-if ($convert_sam2bam eq "true" | $gzip_cov eq "true"){
-    @g = glob("$logdir/$err_name");
-    if (@g ne '0'){
-	&clear_log($name_of_job, $err_name);
-    }
-    $option = "-dont_cov -dont_bam";
-    if ($convert_sam2bam eq "true"){
-	$option =~ s/-dont_bam//g;
-    }
-    if ($gzip_cov eq 'true'){
-	$option =~ s/-dont_cov//g;
-    }
-    if ($sam2cov eq "true"){
-	$to_wait = "$study.sam2cov";
-    }
-    else {
-        $to_wait = "$study.filter_low_expressors";
-    }
-    $wait = $wait_option;
-    $wait =~ s/JOB/$to_wait/;
+#blast
+    $name_of_alljob = "$study.runall_runblast";
+    $name_of_job = "$study.runblast";
+    $err_name = "runblast.*.err";
+    &clear_log($name_of_alljob, $err_name);
+    
     if ($other eq "true"){
-	$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G\\\"";
-        $new_queue = "";
+	$c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_6G, $stat\\\"";
+	$new_queue = "";
     }
     else{
 	$new_queue = "-mem $queue_6G";
     }
-    $numq =`$stat | grep "^[0-9]" | wc -l`;
-    until ($numq < $maxjobs){
-	$x = `$stat | grep "^[0-9]" | wc -l`;
-	$numq = $x;
-	sleep(10);
+
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
     }
-    $job = "echo \"perl $norm_script_dir/runall_compress.pl $sample_dir $LOC $samfilename $fai $c_option $new_queue\" | $batchjobs $wait $jobname \"$study.compress\" -o $logdir/$study.compress.out -e $logdir/$study.compress.err ";
+
+    $job = "echo \"perl $norm_script_dir/runall_runblast.pl $sample_dir $LOC $samfilename $norm_script_dir/ncbi-blast-2.2.27+ $norm_script_dir/ncbi-blast-2.2.27+/ribomouse $c_option $new_queue $cluster_max\" | $batchjobs $jobname \"$study.runall_runblast\" -o $logdir/$study.runall_runblast.out -e $logdir/$study.runall_runblast.err";
+
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+
+#ribopercents
+    $name_of_alljob = "$study.runall_getribopercents";
+    $name_of_job = "$study.getribopercents";
+    $err_name = "$name_of_job.err";
+    &clear_log($name_of_alljob, $err_name);
+    if ($other eq "true"){
+	$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_10G, $stat\\\"";
+	$new_queue = "";
+    }
+    else{
+	$new_queue = "-mem $queue_10G";
+    }
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_get_ribo_percents.pl $sample_dir $LOC $c_option $new_mem $cluster_max \" | $batchjobs  $jobname \"$study.runall_getribopercents\" -o $logdir/$study.runall_getribopercents.out -e $logdir/$study.runall_getribopercents.err";
+
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+
+#predict_num_reads
+    $name_of_job = "$study.predict_num_reads";
+    $err_name = "$name_of_job.err";
+    &clear_log($name_of_job, $err_name);
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/predict_num_reads.pl $sample_dir $LOC $se\" | $batchjobs $jobname \"$study.predict_num_reads\" -o $logdir/$name_of_job.out -e $logdir/$name_of_job.err";
 
     &onejob($job, $name_of_job, $job_num);
     &check_exit_onejob($job, $name_of_job, $job_num);
     &check_err ($name_of_job, $err_name, $job_num);
     $job_num++;
+    $exp_num_reads = `grep Expected $study_dir/STATS/expected_num_reads.txt`;
+    print LOG "\n* $exp_num_reads\n";
 }
+
+if ($run_norm eq "true"){
+
+    $job_num = 1;
+    print LOG "\nNormalization\n-------------\n";
+#filter_sam
+    $name_of_alljob = "$study.runall_filtersam";
+    $name_of_job = "$study.filtersam";
+    $err_name = "filtersam.*.err";
+    &clear_log($name_of_alljob, $err_name);
+    if ($other eq "true"){
+	$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_4G, $stat\\\"";
+	$new_queue = "";
+    }
+    else{
+	$new_queue = "-mem $queue_4G";
+    }
+    while(qx{$stat | wc -l} > $maxjobs){
+	sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_filter.pl $sample_dir $LOC $samfilename $se $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_filtersam\" -o $logdir/$study.runall_filtersam.out -e $logdir/$study.runall_filtersam.err";
+    
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+
+#get_master_list_of_exons
+    $name_of_job = "$study.get_master_list_of_exons_from_geneinfofile";
+    $err_name = "$name_of_job.err";
+    &clear_log($name_of_job, $err_name);
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/get_master_list_of_exons_from_geneinfofile.pl $geneinfo $LOC\" | $batchjobs $jobname \"$study.get_master_list_of_exons_from_geneinfofile\" -o $logdir/$study.get_master_list_of_exons_from_geneinfofile.out -e $logdir/$study.get_master_list_of_exons_from_geneinfofile.err";
+
+    &onejob($job, $name_of_job, $job_num);
+    &check_exit_onejob($job, $name_of_job, $job_num);
+    &check_err ($name_of_job, $err_name, $job_num);
+    $job_num++;
+    
+    if ($novel eq "true"){
+    #junctions
+	$name_of_alljob = "$study.runall_sam2junctions.samfilename";
+	$name_of_job = "$study.sam2junctions";
+	$err_name = "sam2junctions.*.err";
+	&clear_log($name_of_alljob, $err_name);
+	if ($other eq "true"){
+	    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
+	    $new_queue = "";
+	}
+	else{
+	    $new_queue = "-mem $queue_6G";
+	}
+	while(qx{$stat | wc -l} > $maxjobs){
+	    sleep(10);
+	}	
+	$job = "echo \"perl $norm_script_dir/runall_sam2junctions.pl $sample_dir $LOC $geneinfo $genome -samfilename $samfilename $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_sam2junctions.samfilename\" -o $logdir/$study.runall_sam2junctions.samfilename.out -e $logdir/$study.runall_sam2junctions.samfilename.err";
+
+	&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+	&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+	&check_err ($name_of_alljob, $err_name, $job_num);
+	$job_num++;
+    
+    #novel_exons 
+	$name_of_job = "$study.runall_get_novel_exons";
+	$err_name = "$name_of_job.err";
+	&clear_log($name_of_job, $err_name);
+	$min_option = "";
+	$max_option = "";
+	$mem = "$request$queue_4G";
+	if ($min ne '10'){
+	    $min_option = "-min $min";
+	}
+	if ($max ne '2000'){
+	    $max_option = "-max $max";
+	}
+        while(qx{$stat | wc -l} > $maxjobs){
+            sleep(10);
+        }
+	$job = "echo \"perl $norm_script_dir/runall_get_novel_exons.pl $sample_dir $LOC $samfilename $min_option $max_option\" | $batchjobs  $jobname \"$study.runall_get_novel_exons\" $mem -o $logdir/$study.runall_get_novel_exons.out -e $logdir/$study.runall_get_novel_exons.err";
+
+	&onejob($job, $name_of_job, $job_num);
+	&check_exit_onejob($job, $name_of_job, $job_num);
+	&check_err ($name_of_job, $err_name, $job_num);
+	$job_num++;
+    }    
+
+#quantify_exons for filter
+    $name_of_alljob = "$study.quantifyexons.filter.u";
+    $name_of_job = "$study.quantifyexons2";
+    $err_name = "quantifyexons2.*.err";
+    &clear_log($name_of_alljob, $err_name);
+
+    if ($novel eq "true"){
+	$list_for_quant = $novel_list;
+    }
+    if ($novel eq "false"){
+	$list_for_quant = $exon_list;
+    }
+    if ($other eq "true"){
+	$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_4G, $stat\\\"";
+	$new_queue = "";
+    }
+    else{
+	$new_queue = "-mem $queue_4G";
+    }
+    while(qx{$stat | wc -l} > $maxjobs){
+	sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant false $se $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.quantifyexons.filter.u\" -o $logdir/$study.quantifyexons.filter.u.out -e $logdir/$study.quantifyexons.filter.u.err";
+
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+    
+#quantify_exons for filter nu
+    $name_of_alljob = "$study.quantifyexons.filter.nu";
+    $name_of_job = "$study.quantifyexons2";
+    $err_name = "nu.quantifyexons2.*.err";
+    &clear_log($name_of_alljob, $err_name);
+    while(qx{$stat | wc -l} > $maxjobs){
+	sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant false $se -NU-only $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.quantifyexons.filter.nu\" -o $logdir/$study.quantifyexons.filter.nu.out -e $logdir/$study.quantifyexons.filter.nu.err";
+    
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+    
+#get_high_expressors 
+    $name_of_alljob = "$study.runall_get_high_expressors";
+    $name_of_job = "$study.get_high_expressor";
+    $err_name = "*annotate*.err";
+    &clear_log($name_of_alljob, $err_name);
+    if ($filter_high_expressors eq "false" | $cutoff_he eq '100'){
+	$cutoff_he = 10;
+    }
+    if ($other eq "true"){
+	$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
+	$new_queue = "";
+    }
+    else{
+	$new_queue = "-mem $queue_15G";
+    }
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_get_high_expressors.pl $sample_dir $LOC $cutoff_he $annot $list_for_quant $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_get_high_expressors\" -o $logdir/$study.runall_get_high_expressors.out -e $logdir/$study.runall_get_high_expressors.err";
+
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob,  $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+    
+    if ($filter_high_expressors eq 'true'){
+    #filter_high_expressors
+	$name_of_job = "$study.filter_high_expressors";
+	$err_name = "$name_of_job.err";
+	&clear_log($name_of_job, $err_name);
+	while(qx{$stat | wc -l} > $maxjobs){
+	    sleep(10);
+	}	
+	$job = "echo \"perl $norm_script_dir/filter_high_expressors.pl $sample_dir $LOC $list_for_quant\" | $batchjobs  $jobname \"$study.filter_high_expressors\" -o $logdir/$study.filter_high_expressors.out -e $logdir/$study.filter_high_expressors.err";
+
+	&onejob($job, $name_of_job, $job_num);
+	&check_exit_onejob($job, $name_of_job, $job_num);
+	&check_err ($name_of_job, $err_name, $job_num);
+	$job_num++;
+    }
+    
+#get_percent_high_expressor
+    $name_of_job = "$study.get_percent_high_expressor";
+    $err_name = "$name_of_job.err";
+    &clear_log($name_of_job, $err_name);
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/get_percent_high_expressor.pl $sample_dir $LOC\" | $batchjobs  $jobname \"$study.get_percent_high_expressor\" -o $logdir/$study.get_percent_high_expressor.out -e $logdir/$study.get_percent_high_expressor.err";
+
+    &onejob($job, $name_of_job, $job_num);
+    &check_exit_onejob($job, $name_of_job, $job_num);
+    &check_err ($name_of_job, $err_name, $job_num);
+    $job_num++;
+    
+#run_quantify_exons unique
+    $name_of_alljob = "$study.runall_quantify_exons.true.u";
+    $name_of_job = "$study.quantifyexons";
+    $err_name = "quantifyexons.*.err";
+    &clear_log($name_of_alljob, $err_name);
+    $filtered_list = $list_for_quant;
+    $filtered_list =~ s/master_list/filtered_master_list/g;
+    if ($filter_high_expressors eq "true"){
+	$list_for_quant2 = $filtered_list;
+    }
+    else {
+	$list_for_quant2 = $list_for_quant;
+    }
+    if ($other eq "true"){
+	$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_4G, $stat\\\"";
+	$new_queue = "";
+    }
+    else{
+	$new_queue = "-mem $queue_4G";
+    }
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant2 true $se $c_option -depth $i_exon $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_quantify_exons.true.u\" -o $logdir/$study.runall_quantify_exons.true.u.out -e $logdir/$study.runall_quantify_exons.true.u.err";
+
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+
+#run_quantify_exons nu
+    $name_of_alljob = "$study.runall_quantify_exons.true.nu";
+    $name_of_job = "$study.quantifyexons";
+    $err_name = "nu.quantifyexons.*.err";
+    &clear_log($name_of_alljob, $err_name);
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }    
+    $job = "echo \"perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant2 true $se $c_option -NU-only -depth $i_exon $new_queue\" | $batchjobs  $jobname \"$study.runall_quantify_exons.true.nu\" -o $logdir/$study.runall_quantify_exons.true.nu.out -e $logdir/$study.runall_quantify_exons.true.nu.err";
+
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+    
+#exon2nonexon
+    $name_of_job = "$study.get_exon2nonexon_stats";
+    $err_name = "$name_of_job.err";
+    &clear_log($name_of_job, $err_name);
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }    
+    $job = "echo \"perl $norm_script_dir/get_exon2nonexon_signal_stats.pl $sample_dir $LOC\" | $batchjobs  $jobname \"$study.get_exon2nonexon_stats\" -o $logdir/$study.get_exon2nonexon_stats.out -e $logdir/$study.get_exon2nonexon_stats.err";
+
+    &onejob($job, $name_of_job, $job_num);
+    &check_exit_onejob($job, $name_of_job, $job_num);
+    &check_err ($name_of_job, $err_name, $job_num);
+    $job_num++;
+    
+#1exonvsmultiexons
+    $name_of_job = "$study.get_1exonvsmultiexons_stats";
+    $err_name = "$name_of_job.err";
+    &clear_log($name_of_job, $err_name);
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/get_1exon_vs_multi_exon_stats.pl $sample_dir $LOC\" | $batchjobs  $jobname \"$study.get_1exonvsmultiexons_stats\" -o $logdir/$study.get_1exonvsmultiexons_stats.out -e $logdir/$study.get_1exonvsmultiexons_stats.err";
+
+    &onejob($job, $name_of_job, $job_num);
+    &check_exit_onejob($job, $name_of_job, $job_num);
+    &check_err ($name_of_job, $err_name, $job_num);
+    $job_num++;
+
+#get_master_list_of_introns
+    $name_of_job = "$study.get_master_list_of_introns_from_geneinfofile";
+    $err_name = "$name_of_job.err";
+    &clear_log($name_of_job, $err_name);
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/get_master_list_of_introns_from_geneinfofile.pl $geneinfo $LOC\" | $batchjobs  $jobname \"$study.get_master_list_of_introns_from_geneinfofile\" -o $logdir/$study.get_master_list_of_introns_from_geneinfofile.out -e $logdir/$study.get_master_list_of_introns_from_geneinfofile.err";
+
+    &onejob($job, $name_of_job, $job_num);
+    &check_exit_onejob($job, $name_of_job, $job_num);
+    &check_err ($name_of_job, $err_name, $job_num);
+    $job_num++;
+
+#run_quantify_introns unique 
+    $name_of_alljob = "$study.runall_quantify_introns.true.u";
+    $name_of_job = "$study.quantifyintrons";
+    $err_name = "quantifyintrons.*.err";
+    &clear_log($name_of_alljob, $err_name);
+    if ($other eq "true"){
+	$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_4G, $stat\\\"";
+	$new_queue = "";
+    }
+    else{
+	$new_queue = "-mem $queue_4G";
+    }
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt true $c_option -depth $i_intron $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_quantify_introns.true.u\" -o $logdir/$study.runall_quantify_introns.true.u.out -e $logdir/$study.runall_quantify_introns.true.u.err";
+    
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+    
+#run_quantify_introns nu
+    $name_of_alljob = "$study.runall_quantify_introns.true.nu";
+    $name_of_job = "$study.quantifyintrons";
+    $err_name = "nu.quantifyintrons.*.err";
+    &clear_log($name_of_alljob, $err_name);
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt true $c_option -NU-only -depth $i_intron $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_quantify_introns.true.nu\" -o $logdir/$study.runall_quantify_introns.true.nu.out -e $logdir/$study.runall_quantify_introns.true.nu.err";
+
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+    
+#get_percent_intergenic
+    $name_of_job = "$study.get_percent_intergenic";
+    $err_name = "$name_of_job.err";
+    &clear_log($name_of_job, $err_name);
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/get_percent_intergenic.pl $sample_dir $LOC\" | $batchjobs  $jobname \"$study.get_percent_intergenic\" -o $logdir/$study.get_percent_intergenic.out -e $logdir/$study.get_percent_intergenic.err ";
+
+    &onejob($job, $name_of_job, $job_num);
+    &check_exit_onejob($job, $name_of_job, $job_num);
+    &check_err ($name_of_job, $err_name, $job_num);
+    $job_num++;
+
+#runall_head
+    $name_of_alljob = "$study.runall_head";
+    $name_of_job = "$study.head";
+    $err_name = "*_head.*.err";
+    &clear_log($name_of_alljob, $err_name);
+    if ($other eq "true"){
+	$c_option = "$submit \\\"$batchjobs, $jobname, $stat\\\"";
+    }
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_head.pl $sample_dir $LOC $c_option $cluster_max -depthE $i_exon -depthI $i_intron\" | $batchjobs  $jobname \"$study.runall_head\" -o $logdir/$study.runall_head.out -e $logdir/$study.runall_head.err";
+
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+    
+#cat_headfiles
+    $name_of_job = "$study.cat_headfiles";
+    $err_name = "$name_of_job.err";
+    &clear_log($name_of_job, $err_name);
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/cat_headfiles.pl $sample_dir $LOC\" | $batchjobs  $jobname \"$study.cat_headfiles\" -o $logdir/$study.cat_headfiles.out -e $logdir/$study.cat_headfiles.err";
+
+    &onejob($job, $name_of_job, $job_num);
+    &check_exit_onejob($job, $name_of_job, $job_num);
+    &check_err ($name_of_job, $err_name, $job_num);
+    $job_num++;
+    
+#make_final_samfile
+    $name_of_job = "$study.make_final_samfile";
+    $err_name = "$name_of_job.err";
+    &clear_log($name_of_job, $err_name);
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/make_final_samfile.pl $sample_dir $LOC $samfilename\" | $batchjobs  $jobname \"$study.make_final_samfile\" -o $logdir/$study.make_final_samfile.out -e $logdir/$study.make_final_samfile.err";
+
+    &onejob($job, $name_of_job, $job_num);
+    &check_exit_onejob($job, $name_of_job, $job_num);
+    &check_err ($name_of_job, $err_name, $job_num);
+    $job_num++;
+    
+#runall_sam2junctions
+    $name_of_alljob = "$study.runall_sam2junctions";
+    $name_of_job = "$study.sam2junctions";
+    $err_name = "sam2junctions.*.err";
+    &clear_log($name_of_alljob, $err_name);
+    if ($other eq "true"){
+	$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
+	$new_queue = "";
+    }
+    else{
+	$new_queue = "-mem $queue_6G";
+    }
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }    
+    $job = "echo \"perl $norm_script_dir/runall_sam2junctions.pl $sample_dir $LOC $geneinfo $genome $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_sam2junctions\" -o $logdir/$study.runall_sam2junctions.out -e $logdir/$study.runall_sam2junctions.err";
+    
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+    
+#cat_exonmappers
+    $name_of_job = "$study.cat_exonmappers";
+    $err_name = "$name_of_job.err";
+    &clear_log($name_of_job, $err_name);
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/cat_exonmappers_Unique_NU.pl $sample_dir $LOC\" | $batchjobs  $jobname \"$study.cat_exonmappers\" -o $logdir/$study.cat_exonmappers.out -e $logdir/$study.cat_exonmappers.err";
+
+    &onejob($job, $name_of_job, $job_num);
+    &check_exit_onejob($job, $name_of_job, $job_num);
+    &check_err ($name_of_job, $err_name, $job_num);
+    $job_num++;
+
+#runall_quantify_exons (merged/unique)
+    $name_of_alljob = "$study.runall_quantify_exons.false";
+    $name_of_job = "$study.quantifyexons2";
+    $err_name = "quantifyexons2.*.err";
+    &clear_log($name_of_alljob, $err_name);
+    if ($other eq "true"){
+	$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_4G, $stat\\\"";
+	$new_queue = "";
+    }
+    else{
+	$new_queue = "-mem $queue_4G";
+    }
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_quantify_exons.pl $sample_dir $LOC $list_for_quant2 false $se $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_quantify_exons.false\" -o $logdir/$study.runall_quantify_exons.false.out -e $logdir/$study.runall_quantify_exons.false.err";
+    
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+    
+#runall_quantify_introns unique
+    $name_of_alljob = "$study.runall_quantify_introns.false.u";
+    $name_of_job = "$study.quantifyintrons2";
+    $err_name = "quantifyintrons2.*.err";
+    &clear_log($name_of_alljob, $err_name);
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt false $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_quantify_introns.false.u\" -o $logdir/$study.runall_quantify_introns.false.u.out -e $logdir/$study.runall_quantify_introns.false.u.err";
+    
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+    
+#runall_quantify_introns nu
+    $name_of_alljob = "$study.runall_quantify_introns.false.nu";
+    $name_of_job = "$study.quantifyintrons2";
+    $err_name = "nu.quantifyintrons2.*.err";
+    &clear_log($name_of_alljob, $err_name);
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_quantify_introns.pl $sample_dir $LOC $LOC/master_list_of_introns.txt false $c_option -NU-only $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_quantify_introns.false.nu\" -o $logdir/$study.runall_quantify_introns.false.nu.out -e $logdir/$study.runall_quantify_introns.false.nu.err";
+
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+
+#make_final_spreadsheets
+    $name_of_alljob = "$study.make_final_spreadsheets";
+    $name_of_job = "$study.final_spreadsheet";
+    $err_name = "*2spreadsheet_min_max.err";
+    &clear_log($name_of_alljob, $err_name);
+    if ($other eq "true"){
+	$c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_6G, $queue_10G, $stat\\\"";
+	$new_queue = "";
+    }
+    else{
+	$new_queue = "-mem $queue_10G";
+    }
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+
+    $job = "echo \"perl $norm_script_dir/make_final_spreadsheets.pl $sample_dir $LOC $c_option $new_queue \" | $batchjobs  $jobname \"$study.make_final_spreadsheets\" -o $logdir/$study.make_final_spreadsheets.out -e $logdir/$study.make_final_spreadsheets.err";
+
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+    
+#run_annotate
+    $name_of_alljob = "$study.run_annotate";
+    $name_of_job = "$study.annotate";
+    $err_name = "annotate.*.txt.err";
+    &clear_log($name_of_alljob, $err_name);
+    $to_annotate = "$study_dir/NORMALIZED_DATA/to_annotate.txt";
+    open(out, ">$to_annotate");
+    print out "master_list_of_exons_counts_MIN.$study.txt\nmaster_list_of_exons_counts_MAX.$study.txt\nmaster_list_of_introns_counts_MIN.$study.txt\nmaster_list_of_introns_counts_MAX.$study.txt\nmaster_list_of_junctions_counts_MIN.$study.txt\nmaster_list_of_junctions_counts_MAX.$study.txt\n";
+    close(out);
+    if ($other eq "true"){
+	$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
+	$new_queue = "";
+    }
+    else{
+	$new_queue = "-mem $queue_15G";
+    }
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/run_annotate.pl $to_annotate $annot $LOC $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.run_annotate\" -o $logdir/$study.run_annotate.out -e $logdir/$study.run_annotate.err";
+    
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+    
+#filter_low_expressors
+    $name_of_job = "$study.filter_low_expressors";
+    $err_name = "$name_of_job.err";
+    &clear_log($name_of_job, $err_name);
+    $to_filter = "$study_dir/NORMALIZED_DATA/to_filter.txt";
+    open(out, ">$to_filter");
+    print out "annotated_master_list_of_exons_counts_MIN.$study.txt\nannotated_master_list_of_exons_counts_MAX.$study.txt\nannotated_master_list_of_introns_counts_MIN.$study.txt\nannotated_master_list_of_introns_counts_MAX.$study.txt\nannotated_master_list_of_junctions_counts_MIN.$study.txt\nannotated_master_list_of_junctions_counts_MAX.$study.txt\n";
+    close(out);
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_filter_low_expressors.pl $to_filter $num_samples $cutoff_le $LOC\" | $batchjobs  $jobname \"$study.filter_low_expressors\" -o $logdir/$study.filter_low_expressors.out -e $logdir/$study.filter_low_expressors.err";
+
+    &onejob($job, $name_of_job, $job_num);
+    &check_exit_onejob($job, $name_of_job, $job_num);
+    &check_err ($name_of_job, $err_name, $job_num);
+    $job_num++;
+
+#runall_sam2cov
+    print LOG "\nPostprocessing\n--------------\n";
+    $job_num = 1;
+    $name_of_alljob = "$study.runall_sam2cov";
+    $name_of_job = "$study.sam2cov";
+    $err_name = "sam2cov.*.err";
+    &clear_log($name_of_alljob, $err_name);
+    if ($sam2cov eq "true"){
+	if ($other eq "true"){
+	    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
+	    $new_queue = "";
+	}
+	else{
+	    $new_queue = "-mem $queue_15G";
+	}
+	while(qx{$stat | wc -l} > $maxjobs){
+	    sleep(10);
+	}
+	$job = "echo \"perl $norm_script_dir/runall_sam2cov.pl $sample_dir $LOC $fai $sam2cov_loc $aligner $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_sam2cov\" -o $logdir/$study.runall_sam2cov.out -e $logdir/$study.runall_sam2cov.err";
+	
+	&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+	&only_err ($name_of_alljob, $err_name, $job_num);
+	$job_num++;
+    }
+
+#mappingstats_norm
+    $name_of_alljob = "$study.runall_sam2mappingstats.norm";
+    $name_of_job = "$study.sam2mappingstats.norm";
+    $err_name = "sam2mappingstats.norm.*.err";
+
+    &clear_log($name_of_alljob, $err_name);
+
+    $total = "$study_dir/STATS/total_num_reads.txt";
+    $sorted = `cut -f 2 $total | sort`;
+    @a = split (/\n/, $sorted);
+    $min = $a[0];
+    if ($other eq "true"){
+        $c_option = "$submit \\\"$batchjobs,$jobname,$request,$queue_30G,$stat\\\"";
+        $new_queue = "";
+    }
+    else{
+        $new_queue = "-mem $queue_30G";
+    }
+    if ($min > 200000000){
+        $new_queue = "-mem 60G";
+    }
+    else{
+        if ($min > 150000000){
+            $new_queue = "-mem 45G";
+        }
+    }
+    while (qx{$status | wc -l} > $maxjobs){
+	sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_sam2mappingstats.pl $sample_dir $LOC $samfilename false -norm $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_sam2mappingstats.norm\" -o $logdir/$study.runall_sam2mappingstats.norm.out -e $logdir/$study.runall_sam2mappingstats.norm.err";
+
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+
+#getstats_normsam
+    $name_of_job = "$study.getstats.norm";
+    $err_name = "$name_of_job.err";
+
+    &clear_log($name_of_job, $err_name);
+    while (qx{$status | wc -l} > $maxjobs){
+	sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/getstats.pl $sample_dir $LOC -norm\" | $batchjobs  $jobname \"$study.getstats.norm\" -o $logdir/$study.getstats.norm.out -e $logdir/$study.getstats.norm.err";
+
+    &onejob($job, $name_of_job, $job_num);
+    &check_exit_onejob($job, $name_of_job, $job_num);
+    &check_err ($name_of_job, $err_name, $job_num);
+    $job_num++;
+    
+#cleanup: delete intermediate sam
+    $name_of_job = "$study.cleanup";
+    $err_name = "$name_of_job.err";
+    if ($delete_int_sam eq "true"){
+	&clear_log($name_of_job, $err_name);
+	while (qx{$status | wc -l} > $maxjobs){
+	    sleep(10);
+	}
+	$job = "echo \"perl $norm_script_dir/cleanup.pl $sample_dir $LOC\" | $batchjobs  $jobname \"$study.cleanup\" -o $logdir/$study.cleanup.out -e $logdir/$study.cleanup.err";
+	
+	&onejob($job, $name_of_job, $job_num);
+	&check_exit_onejob($job, $name_of_job, $job_num);
+	&check_err ($name_of_job, $err_name, $job_num);
+	$job_num++;
+    }
+    
+#cleanup: compress 
+    $name_of_alljob = "$study.runall_compress";
+    $name_of_job = "$study.compress";
+    $err_name = "compress.*.err";
+    if ($convert_sam2bam eq "true" | $gzip_cov eq "true"){
+	&clear_log($name_of_job, $err_name);
+	$option = "-dont_cov -dont_bam";
+	if ($convert_sam2bam eq "true"){
+	    $option =~ s/-dont_bam//g;
+	}
+	if ($gzip_cov eq 'true'){
+	    $option =~ s/-dont_cov//g;
+	}
+	if ($other eq "true"){
+	    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
+	    $new_queue = "";
+	}
+	else{
+	    $new_queue = "-mem $queue_6G";
+	}
+	while (qx{$status | wc -l} > $maxjobs){
+	    sleep(10);
+	}
+	$job = "echo \"perl $norm_script_dir/runall_compress.pl $sample_dir $LOC $samfilename $fai $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.compress\" -o $logdir/$study.compress.out -e $logdir/$study.compress.err ";
+	&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+	&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+	&check_err ($name_of_alljob, $err_name, $job_num);
+	$job_num++;
+    }
+    print LOG "\n* Normalization completed successfully.\n\n";
+}
+
 close(LOG);
 
 sub parse_config_file () {
@@ -1535,9 +1274,12 @@ sub check_exit_onejob {
 sub check_exit_alljob{
     my ($job, $name_of_alljob, $job_num, $err_name) = @_;
     $outfile_all = "$logdir/$name_of_alljob.out";
-    until (-e $outfile_all){
+    while (qx{ls $outfile_all | wc -l} < 1){
 	sleep(10);
     }
+#    until (-e $outfile_all){
+#	sleep(10);
+#    }
     $check_out_all = `grep "got here" $outfile_all | grep -v echo | wc -l`;
     chomp($check_out_all);
     if ($check_out_all eq '0'){
@@ -1707,4 +1449,4 @@ sub clear_log{
 	`rm $logdir/$name_of_job.out`;
     }
 }    
-print LOG "\n\nNormailzation completed successfully.\n";
+

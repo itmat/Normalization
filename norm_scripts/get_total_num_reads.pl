@@ -94,7 +94,7 @@ while($dir = <DIRS>){
     $total_num_reads = `grep -w $id $outfile_all`;
     @fields = split(" ", $total_num_reads);
     $num = $fields[0];
-    print OUTFINAL "$dir\t$num\n";
+    print OUTFINAL "$id\t$num\n";
 }
 close(DIRS);
 close(OUTFINAL);

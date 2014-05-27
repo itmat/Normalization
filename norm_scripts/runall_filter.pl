@@ -20,7 +20,7 @@ option:
 
   -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI) cluster.
 
-  -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_4G>\":
+  -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_4G>, <status>\":
          set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
          **make sure the arguments are comma separated inside the quotes**
 
@@ -33,6 +33,11 @@ option:
   -mem <s> : set this if your job requires more memory.
             <s> is the queue name for required mem.
             Default: 4G
+
+        <status> : command for checking batch job status (e.g. bjobs, qstat)
+
+  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
+                   by default, <n> = 200.
 
   -h : print usage
 
@@ -51,7 +56,7 @@ use Cwd 'abs_path';
 $path = abs_path($0);
 $path =~ s/\/runall_filter.pl//;
 $sam_name = $ARGV[2];
-
+$njobs = 200;
 $U = "true";
 $NU = "true";
 $numargs_1 = 0;
@@ -66,6 +71,14 @@ $mem = "";
 
 for($i=3; $i<@ARGV; $i++) {
     $option_found = "false";
+    if ($ARGV[$i] eq '-max_jobs'){
+        $option_found = "true";
+        $njobs = $ARGV[$i+1];
+        if ($njobs !~ /(\d+$)/ ){
+            die "-max_jobs <n> : <n> needs to be a number\n";
+        }
+        $i++;
+    }
     if($ARGV[$i] eq '-nu') {
 	$U = "false";
 	$option_found = "true";
@@ -91,6 +104,7 @@ for($i=3; $i<@ARGV; $i++) {
         $jobname_option = "-J";
         $request_memory_option = "-q";
         $mem = "plus";
+	$status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
         $numargs++;
@@ -99,6 +113,7 @@ for($i=3; $i<@ARGV; $i++) {
         $jobname_option = "-N";
         $request_memory_option = "-l h_vmem=";
         $mem = "4G";
+	$status = "qstat";
     }
     if ($ARGV[$i] eq '-other'){
         $numargs++;
@@ -109,12 +124,13 @@ for($i=3; $i<@ARGV; $i++) {
         $jobname_option = $a[1];
         $request_memory_option = $a[2];
         $mem = $a[3];
+	$status = $a[4];
         $i++;
-        if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem eq ""){
-            die "please provide \"<submit>, <jobname_option>,<request_memory_option>, <queue_name_for_4G>\"\n";
+        if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem eq ""| $status eq ""){
+            die "please provide \"<submit>, <jobname_option>,<request_memory_option>, <queue_name_for_4G>, <status>\"\n";
         }
         if ($submit eq "-lsf" | $submit eq "-sge"){
-            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_4G>\".\n";
+            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_4G>, <status>\".\n";
         }
     }
     if ($ARGV[$i] eq '-mem'){
@@ -137,7 +153,7 @@ and non-unique by default so if that's what you want don't use either arg
 ";
 }
 if($numargs ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit> ,<jobname_option>, <request_memory_option>, <queue_name_for_4G>\".\n";
+    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit> ,<jobname_option>, <request_memory_option>, <queue_name_for_4G>, <status>\".\n";
 }
 if ($replace_mem eq "true"){
     $mem = $new_mem;
@@ -196,6 +212,9 @@ while($line = <INFILE>) {
 	}
     }
     close(OUTFILE);
+    while (qx{$status | wc -l} > $njobs){
+	sleep(10);
+    }
     `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
 }
 close(INFILE);

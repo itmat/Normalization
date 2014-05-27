@@ -9,6 +9,10 @@ where:
 --cfg <cfg file> : is a cfg file for the study
 
 OPTIONS:
+     [pipeline options]
+     -preprocess_only : set this if you want to run steps in \"1) Preprocess\" only.
+     -skip_preprocess : set this if you've already run all steps in \"1) Preprocess\" and want to skip them.
+
      [data type]
      -se : set this if the data is single end, otherwise by default it will assume it's a paired end data
      -fa : set this if the unaligned files are in fasta format 
@@ -43,6 +47,7 @@ if(@ARGV < 8) {
 
 $required = 0;
 $unaligned = 0;
+$count_b = 0;
 $se = "";
 $unaligned_z = "";
 $min = 10;
@@ -58,6 +63,18 @@ for($i=0; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq '-h'){
 	$option_found = "true";
 	die $USAGE;
+    }
+    if ($ARGV[$i] eq '-preprocess_only'){
+	$option_found = "true";
+	$run_blast = "true";
+	$run_norm = "false";
+	$count_b++;
+    }
+    if ($ARGV[$i] eq '-skip_preprocess'){
+	$option_found = "true";
+	$run_blast = "false";
+	$run_norm = "true";
+	$count_b++;
     }
     if ($ARGV[$i] eq '--sample_dirs'){
 	$option_found = "true";
@@ -186,6 +203,10 @@ if ($required ne '5'){
 if ($unaligned ne '1'){
     die "you have to specify the type of your unaligned files: '-fa' or '-fq'\n"
 }
+if ($count_b > 1){
+    die "you cannot set both -preprocess_only and -skip_preprocess\n";
+}
+
 
 $dirs = `wc -l $sample_dir`;
 @a = split(" ", $dirs);
@@ -283,7 +304,7 @@ $other = "false";
 $num_cluster = 0;
 if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
     $num_cluster++;
-    if ($QUEUE_NAME_4G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $QUEUE_NAME_45G_sge eq "" | $QUEUE_NAME_30G_sge eq ""| $WAIT_OPTION_sge eq "" | $WAIT_2JOBS_OPTION_sge eq "" | $MAX_JOBS_sge eq ""){
+    if ($QUEUE_NAME_4G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $QUEUE_NAME_45G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $MAX_JOBS_sge eq ""){
         die "ERROR: please provide all required CLUSTER INFO for SGE_CLUSTER in the config file \"$cfg_file\"\n";
     }
     else{
@@ -301,14 +322,12 @@ if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
 	$submit = "-sge";
 	$sge = "true";
 	$c_option = $submit;
-	$wait_option = $WAIT_OPTION_sge;
-	$wait_2jobs_option = $WAIT_2JOBS_OPTION_sge;
 	$maxjobs = $MAX_JOBS_sge;
     }
 }
 if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
     $num_cluster++;
-    if ($QUEUE_NAME_4G_lsf eq "" | $QUEUE_NAME_6G_lsf eq "" | $QUEUE_NAME_10G_lsf eq "" |  $QUEUE_NAME_15G_lsf eq "" | $QUEUE_NAME_30G_lsf eq "" | $QUEUE_NAME_45G_lsf eq "" | $QUEUE_NAME_60G_lsf eq "" |$WAIT_OPTION_lsf eq "" | $WAIT_2JOBS_OPTION_lsf eq "" | $MAX_JOBS_lsf eq ""){
+    if ($QUEUE_NAME_4G_lsf eq "" | $QUEUE_NAME_6G_lsf eq "" | $QUEUE_NAME_10G_lsf eq "" |  $QUEUE_NAME_15G_lsf eq "" | $QUEUE_NAME_30G_lsf eq "" | $QUEUE_NAME_45G_lsf eq "" | $QUEUE_NAME_60G_lsf eq "" | $MAX_JOBS_lsf eq ""){
         die "ERROR: please provide all required CLUSTER INFO for LSF_CLUSTER in the config file \"$cfg_file\"\n";
     }
     else{
@@ -326,14 +345,12 @@ if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
 	$submit = "-lsf";
 	$lsf = "true";
 	$c_option = $submit;
-	$wait_option = $WAIT_OPTION_lsf;
-	$wait_2jobs_option = $WAIT_2JOBS_OPTION_lsf;
 	$maxjobs = $MAX_JOBS_lsf;
     }
 }
 if ($OTHER_CLUSTER =~ /^true/ | $OTHER_CLUSTER =~ /^TRUE/){
     $num_cluster++;
-    if ($SUBMIT_BATCH_JOBS eq "" | $JOB_NAME_OPTION eq "" | $CHECK_STATUS_FULLNAME eq "" | $REQUEST_RESOURCE_OPTION eq "" | $QUEUE_NAME_4G eq "" | $QUEUE_NAME_6G eq "" | $QUEUE_NAME_10G eq "" |  $QUEUE_NAME_15G eq "" | $QUEUE_NAME_30G eq "" | $QUEUE_NAME_45G eq "" | $QUEUE_NAME_60G eq "" | $WAIT_OPTION eq "" | $WAIT_2JOBS_OPTION eq "" | $MAX_JOBS eq ""){
+    if ($SUBMIT_BATCH_JOBS eq "" | $JOB_NAME_OPTION eq "" | $CHECK_STATUS_FULLNAME eq "" | $REQUEST_RESOURCE_OPTION eq "" | $QUEUE_NAME_4G eq "" | $QUEUE_NAME_6G eq "" | $QUEUE_NAME_10G eq "" |  $QUEUE_NAME_15G eq "" | $QUEUE_NAME_30G eq "" | $QUEUE_NAME_45G eq "" | $QUEUE_NAME_60G eq "" | $MAX_JOBS eq ""){
 	die "ERROR: please provide all required CLUSTER INFO for OTHER_CLUSTER in the config file \"$cfg_file\"\n";
     }
     else {
@@ -348,8 +365,6 @@ if ($OTHER_CLUSTER =~ /^true/ | $OTHER_CLUSTER =~ /^TRUE/){
 	$queue_30G = $QUEUE_NAME_30G;
 	$submit = "-other";
 	$other = "true";
-	$wait_option = $WAIT_OPTION;
-	$wait_2jobs_option = $WAIT_2JOBS_OPTION;
 	$maxjobs = $MAX_JOBS;
     }
 }
@@ -385,11 +400,17 @@ while ($line = <IN>){
 }
 close(IN);
 
+@s = split(" ", $status);
+$stat = $s[0];
+
 $runall_shfile = $shdir . "/runall_normalization.sh";
 open(SH, ">$runall_shfile");
 $argv = join(" ",@ARGV);
 print SH "perl $norm_script_dir/runall_normalization.pl $argv";
 close(SH);
+while(qx{$stat | wc -l} > $maxjobs){
+    sleep(10);
+}
 `$batchjobs $jobname "$study.RUNALL_NORMALIZATION" -o $logdir/$study.runall_normalization.out -e $logdir/$study.runall_normalization.err < $runall_shfile`;
 
 sub parse_config_file () {

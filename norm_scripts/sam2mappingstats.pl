@@ -128,15 +128,18 @@ while (<SAM>){
 close(SAM);
 $common_str = "";
 
-@tail = &last_x_lines($sam_in, 1000);
+$last_1000 = `tail -1000 $sam_in`;
+@tail = split(/\n/, $last_1000);
 for $seq (@tail){
-    @a = split (/\t/, $seq);
-    $seqname = $a[0];
-    $seqname =~ s/[^A-Za-z0-9 ]//g;
-    push(@NAME, $seqname);
+    if ($seq !~ /^@/){
+	@a = split (/\t/, $seq);
+	$seqname = $a[0];
+	$seqname =~ s/[^A-Za-z0-9 ]//g;
+	push(@NAME, $seqname);
+    }
 }
 $common_str = &LCP(@NAME);
-
+print "common_str: $common_str\n";
 open(INFILE, $sam_in);
 $linecnt = 0;
 $num_OL = 0;
@@ -388,38 +391,6 @@ Num. Locations      Num. Reads
 ";
 foreach $n (sort {$a<=>$b} keys %numLocs) {
     print OUT "$n\t$numLocs{$n}\n";
-}
-
-sub last_x_lines {
-    my ($filename, $lineswanted) = @_;
-    my ($line, $filesize, $seekpos, $numread, @lines);
-
-    open F, $filename or die "Can't read $filename: $!\n";
-
-    $filesize = -s $filename;
-    $seekpos = 50 * $lineswanted;
-    $numread = 0;
-
-    while ($numread < $lineswanted) {
-        @lines = ();
-        $numread = 0;
-        seek(F, $filesize - $seekpos, 0);
-        <F> if $seekpos < $filesize; # Discard probably fragmentary line
-        while (defined($line = <F>)) {
-            push @lines, $line;
-            shift @lines if ++$numread > $lineswanted;
-        }
-        if ($numread < $lineswanted) {
-            # We didn't get enough lines. Double the amount of space to read from next time.
-            if ($seekpos >= $filesize) {
-                die "There aren't even $lineswanted lines in $filename - I got $numread\n";
-            }
-            $seekpos *= 2;
-            $seekpos = $filesize if $seekpos >= $filesize;
-        }
-    }
-    close F;
-    return @lines;
 }
 
 sub LCP {

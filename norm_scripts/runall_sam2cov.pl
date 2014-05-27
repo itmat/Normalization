@@ -24,7 +24,7 @@ option:
 
  -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI) cluster.
 
- -other \"<submit>,<jobname_option>,<request_memory_option>,<queue_name_for_15G>\":
+ -other \"<submit>,<jobname_option>,<request_memory_option>,<queue_name_for_15G>,<status>\":
         set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
         **make sure the arguments are comma separated inside the quotes**
 
@@ -33,10 +33,14 @@ option:
         <request_memory_option> : is option for requesting resources for batch job submission command
                                   (e.g. -q, -l h_vmem=)
         <queue_name_for_15G> : is queue name for 15G (e.g. max_mem30, 15G)
+        <status> : command for checking batch job status (e.g. bjobs, qstat)
 
  -mem <s> : set this if your job requires more memory.
             <s> is the queue name for required mem.
             Default: 15G
+
+ -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
+                   by default, <n> = 200.
 
  -h : print usage
 
@@ -50,7 +54,7 @@ $U = "true";
 $NU = "true";
 $star = "false";
 $rum = "false";
-
+$njobs = 200;
 $replace_mem = "false";
 $numargs = 0;
 $submit = "";
@@ -59,6 +63,14 @@ $request_memory_option = "";
 $mem = "";
 for ($i=4; $i<@ARGV; $i++){
     $option_found = "false";
+    if ($ARGV[$i] eq '-max_jobs'){
+        $option_found = "true";
+        $njobs = $ARGV[$i+1];
+        if ($njobs !~ /(\d+$)/ ){
+            die "-max_jobs <n> : <n> needs to be a number\n";
+        }
+        $i++;
+    }
     if($ARGV[$i] eq '-nu') {
         $U = "false";
 	$numargs_u_nu++;
@@ -90,6 +102,7 @@ for ($i=4; $i<@ARGV; $i++){
         $jobname_option = "-J";
 	$request_memory_option = "-q";
         $mem = "max_mem30";
+	$status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
         $numargs++;
@@ -98,6 +111,7 @@ for ($i=4; $i<@ARGV; $i++){
         $jobname_option = "-N";
         $request_memory_option = "-l h_vmem=";
         $mem = "15G";
+	$status = "qstat";
     }
     if ($ARGV[$i] eq '-other'){
         $numargs++;
@@ -108,12 +122,13 @@ for ($i=4; $i<@ARGV; $i++){
         $jobname_option = $a[1];
         $request_memory_option = $a[2];
         $mem = $a[3];
+	$status = $a[4];
         $i++;
-        if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem eq ""){
-            die "please provide \"<submit>, <jobname_option>, and <request_memory_option> <queue_name_for_15G>\"\n";
+        if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem eq "" | $status eq ""){
+            die "please provide \"<submit>, <jobname_option>, and <request_memory_option> <queue_name_for_15G>,<status>\"\n";
         }
         if ($submit eq "-lsf" | $submit eq "-sge"){
-            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option> ,<request_memory_option> ,<queue_name_for_15G>\".\n";
+            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option> ,<request_memory_option> ,<queue_name_for_15G>,<status>\".\n";
         }
     }
     if ($ARGV[$i] eq '-mem'){
@@ -130,7 +145,7 @@ for ($i=4; $i<@ARGV; $i++){
     }
 }
 if($numargs ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>,<jobname_option>,<request_memory_option>,<queue_name_for_15G>\".\n
+    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>,<jobname_option>,<request_memory_option>,<queue_name_for_15G>,<status>\".\n
 ";
 }
 
@@ -212,6 +227,9 @@ while($line =  <INFILE>){
 	print OUTFILE "$sam2cov -u -e 0 -p $prefix $fai_file $filename"; 
     }
     close(OUTFILE);
+    while (qx{$status | wc -l} > $njobs){
+	sleep(10);
+    }
     `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shdir/$shfile`;
 }
 close(INFILE);

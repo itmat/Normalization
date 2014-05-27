@@ -1,14 +1,28 @@
 #!/usr/bin/env perl
-if(@ARGV<2) {
-    die "usage: perl getstats.pl <dirs> <loc>
+
+$USAGE = "\nUsage: perl getstats.pl <dirs> <loc> [option]
 
 where 
 <dirs> is a file of directory names (without path)
 <loc> is where the sample directories are
 
+option:
+ -norm : set this if you want to generated summary table for normalized sam files.
+
 This will parse the mapping_stats.txt files for all dirs
 and output a table with summary info across all samples.
 ";
+if(@ARGV<2) {
+    die $USAGE;
+}
+
+$norm = "false";
+for ($i=2; $i<@ARGV; $i++){
+    $option_found = "false";
+    if ($ARGV[$i] eq '-norm'){
+        $option_found = "true";
+        $norm = "true";
+    }
 }
 
 $dirs = $ARGV[0];
@@ -28,7 +42,12 @@ while($dir = <DIRS>) {
     chomp($dir);
     $id = $dir;
     $id =~ s/Sample_//;
-    $filename = "$LOC/$dir/$id.mappingstats.txt";
+    if ($norm eq "true"){
+	$filename = "$study_dir/NORMALIZED_DATA/FINAL_SAM/MERGED/$id.FINAL.norm.mappingstats.txt";
+    }
+    else{
+	$filename = "$LOC/$dir/$id.mappingstats.txt";
+    }
     if(!(-e "$filename")) {
 	next;
     }
@@ -154,12 +173,27 @@ $max4 = 0;
 $max5 = 0;
 $max6 = 0;
 
-$outfile = "$stats_dir/mappingstats_summary.txt";
+if ($norm eq "true"){
+    $outfile = "$stats_dir/num_reads_after_normalization.txt";
+}
+else{
+    $outfile = "$stats_dir/mappingstats_summary.txt";
+}
 open(OUT, ">$outfile");
 #print OUT "id\ttotal\t!<>\t!<|>\t!chrM(%!)\t\%overlap\t~!<>\t~!<|>\t<|>\n";
-print OUT "id\ttotalreads\tUniqueFWDandREV\tUniqueFWDorREV\tUniqueChrM\t%overlap\tNon-UniqueFWDandREV\tNon-UniqueFWDorREV\tFWDorREVmapped\n";
+if ($norm eq "true"){
+    print OUT "id\ttotalreads\tUnique\tNon-Unique\n";
+}
+else{
+    print OUT "id\ttotalreads\tUniqueFWDandREV\tUniqueFWDorREV\tUniqueChrM\t%overlap\tNon-UniqueFWDandREV\tNon-UniqueFWDorREV\tFWDorREVmapped\n";
+}
 foreach $dir (keys %UchrM) {
-    print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$UchrM{$dir}\t$Pover{$dir}\%\t$NUandFRconsistently{$dir}\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped{$dir}\n";
+    if ($norm eq "true"){
+	print OUT "$dir\t$total{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$NUandAtLeastOneMapped{$dir}\n";
+    }
+    else{
+	print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$UchrM{$dir}\t$Pover{$dir}\%\t$NUandFRconsistently{$dir}\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped{$dir}\n";
+    }
     $x = $total{$dir};
     $x =~ s/,//g;
     if($x < $min_total) {
@@ -247,7 +281,12 @@ $min_nutotal = &format_large_int($min_nutotal);
 $min_total_UorNU = &format_large_int($min_total_UorNU);
 $min_nutotal_f_or_r = &format_large_int($min_nutotal_f_or_r);
 $min_chrm = &format_large_int($min_chrm);
-print OUT "mins\t$min_total\t$min_total_frcons\t$min_utotal_f_or_r_cons\t$min_chrm\t$min_pover\%\t$min_nutotal\t$min_nutotal_f_or_r\t$min_total_UorNU\n";
+if ($norm eq "true"){
+    print OUT "mins\t$min_total\t$min_utotal_f_or_r_cons\t$min_nutotal_f_or_r\n";
+}
+else{
+    print OUT "mins\t$min_total\t$min_total_frcons\t$min_utotal_f_or_r_cons\t$min_chrm\t$min_pover\%\t$min_nutotal\t$min_nutotal_f_or_r\t$min_total_UorNU\n";
+}
 $max_total = &format_large_int($max_total);
 $max_total_frcons = &format_large_int($max_total_frcons);
 $max_utotal_f_or_r_cons = &format_large_int($max_utotal_f_or_r_cons);
@@ -255,7 +294,12 @@ $max_nutotal = &format_large_int($max_nutotal);
 $max_nutotal_f_or_r = &format_large_int($max_nutotal_f_or_r);
 $max_total_UorNU = &format_large_int($max_total_UorNU);
 $max_chrm = &format_large_int($max_chrm);
-print OUT "maxs\t$max_total\t$max_total_frcons\t$max_utotal_f_or_r_cons\t$max_chrm\t$max_pover\%\t$max_nutotal\t$max_nutotal_f_or_r\t$max_total_UorNU\n";
+if ($norm eq "true"){
+    print OUT "maxs\t$max_total\t$max_utotal_f_or_r_cons\t$max_nutotal_f_or_r\n";
+}
+else{
+    print OUT "maxs\t$max_total\t$max_total_frcons\t$max_utotal_f_or_r_cons\t$max_chrm\t$max_pover\%\t$max_nutotal\t$max_nutotal_f_or_r\t$max_total_UorNU\n";
+}
 
 sub format_large_int () {
     ($int) = @_;

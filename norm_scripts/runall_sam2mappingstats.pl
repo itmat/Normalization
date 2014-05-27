@@ -18,7 +18,7 @@ option:
 
  -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI cluster).
 
- -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_30G>\":
+ -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_30G>, <status>\":
         set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
         **make sure the arguments are comma separated inside the quotes**
 
@@ -28,9 +28,16 @@ option:
                                   (e.g. -q, -l h_vmem=)
         <queue_name_for_30G> : is queue name for 30G (e.g. max_mem30, 30G)
 
+        <status> : command for checking batch job status (e.g. bjobs, qstat)
+
  -mem <s> : set this if your job requires more memory.
             <s> is the queue name for required mem.
             Default: 30G
+
+ -norm : set this if you want to compute mapping statistics for normalized sam files
+
+ -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
+                   by default, <n> = 200.
 
  -h : print usage
 
@@ -39,17 +46,33 @@ if(@ARGV < 4) {
     die $USAGE;
 }
 
+$njobs = 200;
 $replace_mem = "false";
 $numargs = 0;
 $submit = "";
 $jobname_option = "";
 $request_memory_option = "";
 $mem = "";
+$norm = "false";
+$total_reads_file = $ARGV[3];
 for ($i=4; $i<@ARGV; $i++){
     $option_found = "false";
+    if ($ARGV[$i] eq '-max_jobs'){
+        $option_found = "true";
+        $njobs = $ARGV[$i+1];
+        if ($njobs !~ /(\d+$)/ ){
+            die "-max_jobs <n> : <n> needs to be a number\n";
+        }
+        $i++;
+    }
     if ($ARGV[$i] eq '-h'){
         $option_found = "true";
 	die $USAGE;
+    }
+    if ($ARGV[$i] eq '-norm'){
+	$option_found = "true";
+	$norm = "true";
+	$total_reads_file = "false";
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs++;
@@ -58,6 +81,7 @@ for ($i=4; $i<@ARGV; $i++){
         $jobname_option = "-J";
         $request_memory_option = "-q";
         $mem = "max_mem30";
+	$status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
         $numargs++;
@@ -66,6 +90,7 @@ for ($i=4; $i<@ARGV; $i++){
         $jobname_option = "-N";
         $request_memory_option = "-l h_vmem=";
         $mem = "30G";
+	$status = "qstat";
     }
     if ($ARGV[$i] eq '-other'){
         $numargs++;
@@ -76,12 +101,13 @@ for ($i=4; $i<@ARGV; $i++){
         $jobname_option = $a[1];
         $request_memory_option = $a[2];
         $mem = $a[3];
+	$status = $a[4];
 	$i++;
-        if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem eq ""){
-            die "please provide \"<submit>,<jobname_option>,<request_memory_option>,<queue_name_for_30G>\"\n";
+        if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem eq ""|$status eq ""){
+            die "please provide \"<submit>,<jobname_option>,<request_memory_option>,<queue_name_for_30G>,<status>\"\n";
         }
         if ($submit eq "-lsf" | $submit eq "-sge"){
-            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>,<jobname_option>,<request_memory_option>,<queue_name_for_30G>\".\n";
+            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>,<jobname_option>,<request_memory_option>,<queue_name_for_30G>,<status>\".\n";
         }
     }
     if ($ARGV[$i] eq '-mem'){
@@ -99,7 +125,7 @@ for ($i=4; $i<@ARGV; $i++){
 
 }
 if($numargs ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other <submit>,<jobname_option>,<request_memory_option>,<queue_name_for_30G>.\n";
+    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other <submit>,<jobname_option>,<request_memory_option>,<queue_name_for_30G>,<status>.\n";
 }
 
 if ($replace_mem eq "true"){
@@ -127,7 +153,6 @@ unless (-d $shdir){
 unless (-d $logdir){
     `mkdir $logdir`;}
 $sam_name = $ARGV[2];
-$total_reads_file = $ARGV[3];
 $dirs = `wc -l $sample_dir`;
 @a = split(" ", $dirs);
 $num_samples = $a[0];
@@ -149,6 +174,9 @@ if ($total_reads_file eq "true"){
 	open(OUTFILE, ">$shfile");
 	print OUTFILE "perl $path $LOC/$dir/$sam_name $LOC/$dir/$id.mappingstats.txt -numreads $num_id\n";
     	close(OUTFILE);
+	while (qx{$status | wc -l} > $njobs){
+	    sleep(10);
+	}
 	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
     }
 }
@@ -163,12 +191,27 @@ if ($total_reads_file eq "false"){
 	$id = $dir;
 	$id =~ s/Sample_//;
 	$id =~ s/\//_/g;
-	$shfile = "$shdir/m." . $id . "runsam2mappingstats.sh";
-	$jobname = "$study.sam2mappingstats";
-	$logname = "$logdir/$dir.sam2mappingstats";
+	if ($norm eq "true"){
+	    $shfile = "$shdir/sam2mapping.FINALSAM.$id.sh";
+	    $jobname = "$study.sam2mappingstats.norm";
+	    $logname = "$logdir/sam2mappingstats.norm.$id";
+	}
+	else{
+	    $shfile = "$shdir/m." . $id . "runsam2mappingstats.sh";
+	    $jobname = "$study.sam2mappingstats";
+	    $logname = "$logdir/sam2mappingstats.$id";
+	}
 	open(OUTFILE, ">$shfile");
-	print OUTFILE "perl $path $LOC/$dir/$sam_name $LOC/$dir/$id.mappingstats.txt\n";
+	if ($norm eq "true"){
+	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/FINAL_SAM/MERGED/$id.FINAL.norm.sam $study_dir/NORMALIZED_DATA/FINAL_SAM/MERGED/$id.FINAL.norm.mappingstats.txt";
+	}
+	else{
+	    print OUTFILE "perl $path $LOC/$dir/$sam_name $LOC/$dir/$id.mappingstats.txt\n";
+	}
 	close(OUTFILE);
+	while (qx{$status | wc -l} > $njobs){
+	    sleep(10);
+	}
 	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
     }
 }
