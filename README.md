@@ -387,11 +387,14 @@ This will output `*exonpercents.txt` and `*high_expressors_annot.txt` files of a
 
 III. Filter High Expressors
 
-     perl filter_high_expressors.pl <sample dirs> <loc> <exons>
+     perl filter_high_expressors.pl <sample dirs> <loc> <exons> [options]
 
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * &lt;exons> : `master_list_of_exons.*STUDY*.txt` file
+* option:<br>
+  **-u**  :  set this if you're only using unique exonpercents, otherwise by default it will use both unique and non-unique exonpercents.<br>
+  **-nu** :  set this if you're only using non-unique exonpercent, otherwise by default it will use both unique and non-unique exonpercents.<br>
 
 This will output a text file called `filtered_master_list_of_exons.*STUDY*.txt` to `STUDY/READS` directory.
 

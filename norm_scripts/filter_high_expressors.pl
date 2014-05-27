@@ -1,20 +1,19 @@
 #!/usr/bin/env perl
-if(@ARGV < 3) {
-    die  "usage: perl filter_high_expressors.pl <sample dirs> <loc> <exons> [options]
+$USAGE = "\nUsage: perl filter_high_expressors.pl <sample dirs> <loc> <exons> [options]
 
-where
+where:
 <sample dirs> is the name of a file with the names of sample directories (no paths)
 <loc> is the path to the dir with the sample directories
 <exons> the study specific master list of exons or master list of exons file
 
 [option]
-  -u  :  set this if you want to filter only unique expressors, otherwise by default
-         it will use both unique and non-unique.
+ -u : set this if you want to filter only unique expressors, otherwise by default it will use both unique 
+and non-unique.
 
-  -nu :  set this if you want to filter only non-unique expressors, otherwise by default
-         it will return both unique and non-unique.
+ -nu : set this if you want to filter only non-unique expressors, otherwise by default it will return both unique and non-unique.\n";
 
-";
+if(@ARGV < 3) {
+    die $USAGE;
 }
 
 $LOC = $ARGV[1];
@@ -50,6 +49,8 @@ and non-unique by default so if that's what you want don't use either arg
 ";
 }
 
+%HIGH_GENE;
+%EXON_REMOVE;
 open(INFILE, $ARGV[0]) or die "cannot find \"$ARGV[0]\"\n";
 while ($line = <INFILE>){
     chomp($line);
@@ -57,28 +58,43 @@ while ($line = <INFILE>){
     $id =~ s/Sample_//;
     $dir = $line;
     $file = "$LOC/$dir/$id.high_expressors_annot.txt";
-    open(IN, "<$file");
-    @genes = <IN>;
-    close(IN);
-    foreach $gene (@genes){
+    open(IN, "$file");
+    $header = <IN>;
+    while ($gene = <IN>){
 	chomp($gene);
 	@a = split(/\t/, $gene);
-	if (@a > 3){
-           if ($numargs eq '0'){
-	      $list = $a[4];
-           }
-           else{
-              $list = $a[3];
-           }
-	   @b = split(',', $list);
-	   for ($i=0; $i<@b; $i++){
-		$HIGH_GENE{$b[$i]} = $b[$i];
-	   }
+        $exon = $a[0];
+        if ($numargs eq '0'){
+	    if (@a > 3){
+		$list = $a[3];
+	    }
+	    else{
+		$EXON_REMOVE{$exon} = $exon;
+	    }
+        }
+        else{
+	    if (@a > 2){
+		$list = $a[2];
+	    }
+	    else{
+		$EXON_REMOVE{$exon} = $exon;
+	    }
+        }
+	@b = split(',', $list);
+	if (@b eq 0){
+	    $EXON_REMOVE{$exon} = $exon;
+	}
+	for ($i=0; $i<@b; $i++){
+	    if ($b[$i] eq ""){
+    	        $EXON_REMOVE{$exon} = $exon;
+	    }
+	    $HIGH_GENE{$b[$i]} = $exon;
 	}
     }
 }
 close(INFILE);
 
+%MASTER_EXON;
 open(INFILE, "<$annotated_exons") or die "cannot find \"$annotated_exons\"\n";
 @lines = <INFILE>;
 close(INFILE);
@@ -86,10 +102,11 @@ foreach $line (@lines){
     chomp($line);
     $flag = 0;
     @l = split(/\t/, $line);
-    $list = $l[2];
+    $list = $l[1];
     $exon = $l[0];
     $exon =~ s/exon://;
     $MASTER_EXON{$exon} = $exon;
+
     @b = split(',', $list);
     for ($i=0; $i<@b; $i++){
 	foreach $g (keys %HIGH_GENE){
@@ -98,7 +115,7 @@ foreach $line (@lines){
 	    }
 	}
     }
-    if ($flag == 1){
+    if (($flag == 1) || (exists $EXON_REMOVE{$exon})){
 	delete $MASTER_EXON{$exon};
     }
 }
