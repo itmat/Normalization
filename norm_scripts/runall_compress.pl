@@ -11,7 +11,7 @@ where:
 option:
  -dont_cov : set this if you DO NOT want to gzip the coverage files (By default, it will gzip the coverage files).
 
- -dont_bam : set this if you DO NOT conver SAM to bam (By default, it will conver sam to bam).
+ -dont_bam : set this if you DO NOT convert SAM to bam (By default, it will convert sam to bam).
 
  -lsf : set this if you want to submit batch jobs to LSF (PMACS cluster).
 
@@ -49,7 +49,7 @@ $request_memory_option = "";
 $mem = "";
 $gzip_cov = 'true';
 $sam2bam = 'true';
-
+$njobs = 200;
 for ($i=4; $i<@ARGV; $i++){
     $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
