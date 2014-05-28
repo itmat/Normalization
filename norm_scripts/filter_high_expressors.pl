@@ -65,30 +65,28 @@ while ($line = <INFILE>){
 	@a = split(/\t/, $gene);
         $exon = $a[0];
         if ($numargs eq '0'){
-	    if (@a > 3){
-		$list = $a[3];
-	    }
-	    else{
-		$EXON_REMOVE{$exon} = $exon;
-	    }
+            $name_at = 3;
+        }
+        else {
+            $name_at = 2;
+        }
+	$list = $a[$name_at];
+        @b = split(',', $list);
+        if ($list =~ /^[a-z]?$/){
+	   $EXON_REMOVE{$exon} = $exon;
         }
         else{
-	    if (@a > 2){
-		$list = $a[2];
-	    }
-	    else{
-		$EXON_REMOVE{$exon} = $exon;
-	    }
+	   if (@b eq 0){
+	      $EXON_REMOVE{$exon} = $exon;
+	   }
         }
-	@b = split(',', $list);
-	if (@b eq 0){
-	    $EXON_REMOVE{$exon} = $exon;
-	}
 	for ($i=0; $i<@b; $i++){
-	    if ($b[$i] eq ""){
+	    if ($b[$i] =~ /^[a-z]?$/){
     	        $EXON_REMOVE{$exon} = $exon;
 	    }
-	    $HIGH_GENE{$b[$i]} = $exon;
+            else{
+	        $HIGH_GENE{$b[$i]} = $exon;
+            }
 	}
     }
 }
