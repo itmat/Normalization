@@ -1144,11 +1144,11 @@ if ($run_norm eq "true"){
 	&check_err ($name_of_job, $err_name, $job_num);
 	$job_num++;
     }
-    
+
 #cleanup: compress 
     $name_of_alljob = "$study.runall_compress";
     $name_of_job = "$study.compress";
-    $err_name = "compress.*.err";
+    $err_name = "sam2bam.*.err";
     if ($convert_sam2bam eq "true" | $gzip_cov eq "true"){
 	&clear_log($name_of_job, $err_name);
 	$option = "-dont_cov -dont_bam";
@@ -1168,10 +1168,10 @@ if ($run_norm eq "true"){
 	while (qx{$status | wc -l} > $maxjobs){
 	    sleep(10);
 	}
-	$job = "echo \"perl $norm_script_dir/runall_compress.pl $sample_dir $LOC $samfilename $fai $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.compress\" -o $logdir/$study.compress.out -e $logdir/$study.compress.err ";
+	$job = "echo \"perl $norm_script_dir/runall_compress.pl $sample_dir $LOC $samfilename $fai $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_compress\" -o $logdir/$study.runall_compress.out -e $logdir/$study.runall_compress.err ";
 	&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
-	&check_err ($name_of_alljob, $err_name, $job_num);
+	&only_err ($name_of_alljob, $err_name, $job_num);
 	$job_num++;
     }
     print LOG "\n* Normalization completed successfully.\n\n";
@@ -1277,9 +1277,7 @@ sub check_exit_alljob{
     while (qx{ls $outfile_all | wc -l} < 1){
 	sleep(10);
     }
-#    until (-e $outfile_all){
-#	sleep(10);
-#    }
+
     $check_out_all = `grep "got here" $outfile_all | grep -v echo | wc -l`;
     chomp($check_out_all);
     if ($check_out_all eq '0'){
@@ -1393,10 +1391,8 @@ sub check_err {
 sub only_err{
     my ($name_of_job, $err_name, $job_num) = @_;
     $wc_err = `wc -l $logdir/$name_of_job.err`;
-    @wc = split(/\n/, $wc_err);
-    $last_wc = $wc[@wc-1];
-    @w = split(" ", $last_wc);
-    $wc_num = $w[0];
+    @wc = split(" ", $wc_err);
+    $wc_num = $wc[0];
     $err = `cat $logdir/$name_of_job.err`;
     if ($wc_num ne '0'){
 	print LOG "***Job killed:\nstderr: $logdir/$name_of_job.err\n";
@@ -1404,6 +1400,9 @@ sub only_err{
     }
     else{
 	if ("$name_of_job.err" ne "$err_name"){
+	    if (qx{grep "SAM header" $logdir/$err_name | wc -l} > 0){
+		`sed -i '/SAM header/d' $logdir/$err_name`;
+	    }
 	    $wc_err_sample = `wc -l $logdir/$err_name`;
 	    @wc = split(/\n/, $wc_err_sample);
 	    $sum = 0;

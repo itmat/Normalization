@@ -90,11 +90,10 @@ open(OUTFINAL, ">$outfile_final");
 while($dir = <DIRS>){
     chomp($dir);
     $id = $dir;
-    $id =~ s/Sample_//g;
     $total_num_reads = `grep -w $id $outfile_all`;
     @fields = split(" ", $total_num_reads);
     $num = $fields[0];
-    print OUTFINAL "$id\t$num\n";
+    print OUTFINAL "$dir\t$num\n";
 }
 close(DIRS);
 close(OUTFINAL);

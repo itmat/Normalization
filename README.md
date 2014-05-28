@@ -14,12 +14,16 @@
 STUDY
 └── READS
     ├── Sample_1
+    │	├── Unaligned reads
     │   └── Aligned.sam
     ├── Sample_2
+    │	├── Unaligned reads
     │   └── Aligned.sam
     ├── Sample_3
+    │	├── Unaligned reads
     │   └── Aligned.sam
     └── Sample_4
+    	├── Unaligned reads
         └── Aligned.sam
 
 </pre>

@@ -132,6 +132,7 @@ $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 @fields = split("/", $LOC);
 $last_dir = $fields[@fields-1];
+$study = $fields[@fields-2];
 $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 $shdir = $study_dir . "shell_scripts";
@@ -167,6 +168,7 @@ if ($sam2bam eq 'true'){
 	    open(OUT, ">$shfile");
 	    print OUT "samtools view -bt $fai_file $LOC/$line/$sam_name > $LOC/$line/$bam_name\n";
 	    print OUT "rm $LOC/$line/$sam_name\n";
+	    print OUT "echo \"got here \"\n";
 	    close(OUT);
 	    while (qx{$status | wc -l} > $njobs){
 		sleep(10);
@@ -174,8 +176,9 @@ if ($sam2bam eq 'true'){
 	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
 	    if (-e "$final_M_dir/$id.FINAL.norm.sam"){
 		open(OUT2, ">$norm_shfile");
-		print OUT2 "samtools view -bt $fai_file $final_M_dir/$id.FINAL.norm.sam > $final_M_dir/$id.FINAL.norm.bam\n";
+		print OUT2 "samtools view -bt $fai_file $final_M_dir/$id.FINAL.norm.sam > $final_M_dir/$id.FINAL.norm.bam \n";
 		print OUT2 "rm $final_M_dir/$id.FINAL.norm.sam\n";
+		print OUT2 "echo \"got here \"\n";
 		close(OUT2);
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
@@ -185,8 +188,9 @@ if ($sam2bam eq 'true'){
 	    else{
 		if (-e "$final_U_dir/$id.FINAL.norm_u.sam"){
 		    open(OUT2, ">$norm_shfile");
-		    print OUT2 "samtools view -bt $fai_file $final_U_dir/$id.FINAL.norm_u.sam > $final_U_dir/$id.FINAL.norm_u.bam\n";
+		    print OUT2 "samtools view -bt $fai_file $final_U_dir/$id.FINAL.norm_u.sam > $final_U_dir/$id.FINAL.norm_u.bam \n";
 		    print OUT2 "rm $final_U_dir/$id.FINAL.norm_u.sam\n";
+		    print OUT2 "echo \"got here \"\n";
 		    close(OUT2);
 		    while (qx{$status | wc -l} > $njobs){
 			sleep(10);
@@ -195,8 +199,9 @@ if ($sam2bam eq 'true'){
 		}
 		if (-e "$final_NU_dir/$id.FINAL.norm_nu.sam"){
 		    open(OUT2, ">$norm_shfile");
-		    print OUT2 "samtools view -bt $fai_file $final_NU_dir/$id.FINAL.norm_nu.sam > $final_NU_dir/$id.FINAL.norm_nu.bam\n";
+		    print OUT2 "samtools view -bt $fai_file $final_NU_dir/$id.FINAL.norm_nu.sam > $final_NU_dir/$id.FINAL.norm_nu.bam \n";
 		    print OUT2 "rm $final_NU_dir/$id.FINAL.norm_nu.sam\n";
+		    print OUT2 "echo \"got here \"\n";
 		    close(OUT2);
 		    while (qx{$status | wc -l} > $njobs){
 			sleep(10);
@@ -204,21 +209,26 @@ if ($sam2bam eq 'true'){
 		    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_norm.out -e $logname_norm.err < $norm_shfile`;
 		}
 		else{
-		    print STDERR "ERROR: normalized sam file \"$final_M_dir/$id.FINAL.norm.sam\", \"$final_U_dir/$id.FINAL.norm_u.sam\", or \"$final_NU_dir/$id.FINAL.norm_nu.sam\" does not exist. Please check the input samfile name/path\n\n";
+		    print STDOUT "WARNING: normalized sam file \"$final_M_dir/$id.FINAL.norm.sam\", \"$final_U_dir/$id.FINAL.norm_u.sam\", or \"$final_NU_dir/$id.FINAL.norm_nu.sam\" does not exist. Please check the input samfile name/path\n\n";
 		}
 	    }
 	}
 	else{
-	    print STDERR "ERROR: file \"$LOC/$line/$sam_name\" doesn't exist. please check the input samfile name/path\n\n.";
+	    print STDOUT "WARNING: file \"$LOC/$line/$sam_name\" doesn't exist. please check the input samfile name/path\n\n.";
 	}
 	
     }
 }
 if ($gzip_cov eq 'true'){
     if (-d $cov_dir){
-	`gzip $cov_dir/*/*`;
+	@a = glob("$cov_dir/*/*cov");
+	if (@a > 0){
+	    @g = glob("$cov_dir/*/*gz");
+	    if (@g eq 0){
+		`gzip $cov_dir/*/*cov`;
+	    }
+	}
     }
 }
-
 	
 print "got here\n";
