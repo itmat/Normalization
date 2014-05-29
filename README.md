@@ -176,11 +176,10 @@ This creates `runall_normalization.sh` file in `STUDY/shell_scripts` directory a
        * option : <br>
          **-lsf** : set this if you want to submit batch jobs to LSF<br>
          **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-	 **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_30G>, &lt;status>"** : <br>
-	 	  set this if you're not on LSF or SGE cluster
+	 **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_30G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
 	 **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 30G)<br>
-	 **If you have > 150,000,000 reads, use -mem option to request 45G mem.<br>
-	 **If you have > 200,000,000 reads, use -mem option to request 60G mem.<br>
+	 ** If you have > 150,000,000 reads, use -mem option to request 45G mem.<br>
+	 ** If you have > 200,000,000 reads, use -mem option to request 60G mem.<br>
          **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
  
  This will output `*mappingstats.txt` file of all samples to each sample directory. The following script will parse the `*mappingstats.txt` files and output a table with summary info across all samples.
@@ -219,8 +218,7 @@ This will output `mappingstats_summary.txt` file to `STUDY/STATS` directory. Thi
 * option : <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;status>"** :<br>
-         set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;status>"** : set this if you're not on LSF or SGE cluster <br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
@@ -235,8 +233,7 @@ __[NORMALIZATION FACTOR] Ribo percents__
 * option : <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_10G>, &lt;status>"** :<br>
-         set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_10G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 10G)<br>
   ** -max_jobs &lt;n>**  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.<br>
 
@@ -277,8 +274,7 @@ Run the following command. By default it will return both unique and non-unique 
   **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** :<br>
-         set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
@@ -314,8 +310,7 @@ Create a study-specific master list of exons by adding novel exons from the stud
       **-nu** :  set this if you want to return only non-unique files, otherwise by default it will return merged(unique+non-unique) junctions files<br>
       **-lsf** : set this if you want to submit batch jobs to LSF<br>
       **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-      **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;status>"** :<br>
-             set this if you're not on LSF or SGE cluster<br>
+      **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
       **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)<br>
       **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
@@ -356,8 +351,7 @@ Run the following command with **&lt;output sam?> = false**. By default this wil
   **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** :<br>
-         set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
@@ -382,8 +376,7 @@ es: geneSymbol, and description.
   **-nu** :  set this if you want to return only non-unique exonpercents, otherwise by default it will return both unique and non-unique exonpercents.<br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_15G>, &lt;status>"** :<br>
-         set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_15G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 15G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
@@ -434,8 +427,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
   **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** :<br>
-         set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
@@ -495,8 +487,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
   **-NU-only** : set this for non-unique mappers<br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** :<br>
-         set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
  
@@ -531,8 +522,7 @@ This identifies minimum line count of each type of exonmappers/intronmappers/int
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;status>"** :<br>
-         set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
 
 This will output the same number of rows from each file in each `sample_dir/Unique` and/or `sample_dir/NU` directory of the same type.
 
@@ -580,8 +570,7 @@ By default, this will use merged final sam files as input.
   **-nu** :  set this if you want to return only non-unique files, otherwise by default it will return merged(unique+non-unique) junctions files.<br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;status>"** :<br>
-         set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
  
@@ -617,8 +606,7 @@ Run the following command with **&lt;output sam?> = false**. This will output me
   **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** :<br>
-         set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
   			  
@@ -640,8 +628,7 @@ Run the following command with **&lt;output sam?> = false**. By default this wil
   **-NU-only** : set this for non-unique mappers<br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** :<br>
-         set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
@@ -659,8 +646,7 @@ This outputs `intronquants` file of all samples to `NORMALIZED_DATA/notexonmappe
   **-nu** :  set this if you want to return only non-unique, otherwise by default it will return min and max spreadsheets.<br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;queue_name_for_10G>,&lt;status>"** :<br>
-         set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;queue_name_for_10G>,&lt;status>"** : set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G, 10G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
@@ -689,8 +675,7 @@ es: geneSymbol, and description.
 * option : <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_15G>, &lt;status>"** :<br>
-         set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_15G>, &lt;status>"** :  set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 15G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
@@ -741,8 +726,7 @@ Use sam2cov to create coverage files and upload them to a Genome Browser. Curren
   **-star** : set this if you used STAR to align your reads<br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_15G>, &lt;status>"** :<br>
-         set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_15G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 15G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
@@ -761,11 +745,10 @@ Run the script with **-norm** option.
    * option : <br>
      **-lsf** : set this if you want to submit batch jobs to LSF<br>
      **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-     **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_30G>, &lt;status>"** : <br>
-              set this if you're not on LSF or SGE cluster<br>
+     **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_30G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
      **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 30G)<br>
-         **If you have > 150,000,000 reads, use -mem option to request 45G mem.<br>
-         **If you have > 200,000,000 reads, use -mem option to request 60G mem.<br>
+         ** If you have > 150,000,000 reads, use -mem option to request 45G mem.<br>
+         ** If you have > 200,000,000 reads, use -mem option to request 60G mem.<br>
      ** -norm** : set this if you want to compute mapping statistics for normalized sam files<br>
      **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
@@ -804,8 +787,7 @@ This will delete intermediate files.
   **-dont_bam : set this if you DO NOT conver SAM to bam (By default, it will conver sam to bam) <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;status>"** :<br>
-         set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
