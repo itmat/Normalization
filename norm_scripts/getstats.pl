@@ -41,7 +41,6 @@ open(DIRS, $dirs) or die "cannot find file '$dirs'\n";
 while($dir = <DIRS>) {
     chomp($dir);
     $id = $dir;
-    $id =~ s/Sample_//;
     if ($norm eq "true"){
 	$filename = "$study_dir/NORMALIZED_DATA/FINAL_SAM/MERGED/$id.FINAL.norm.mappingstats.txt";
     }

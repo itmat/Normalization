@@ -49,7 +49,6 @@ open(OUT, ">$sample_name_file");
 while($line = <INFILE>){
     chomp($line);
     $id = $line;
-    $id =~ s/Sample_//;
     if($nuonly eq "true"){
 	print OUT "$junc_dir/$id.FINAL.norm_nu_junctions_all.rum\n";
     }
@@ -69,7 +68,6 @@ while ($file = <FILES>){
     $id = $fields[$size-1];
     $id =~ s/.FINAL.norm_u_junctions_all.rum//;
     $id =~ s/.FINAL.norm_u_junctions_all.rum//;
-    $id =~ s/Sample_//;
     $ID[$filecnt] = $id;
     open(INFILE, $file);
     while($line = <INFILE>){

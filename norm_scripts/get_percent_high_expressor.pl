@@ -58,7 +58,6 @@ close(INFILE);
 foreach $dir (@dirs){
     chomp($dir);
     $id = $dir;
-    $id =~ s/Sample_//;
     $file = "$LOC/$dir/$id.high_expressors_annot.txt";
     open(IN, "<$file");
     @exons = <IN>;
@@ -124,7 +123,6 @@ while($line = <INFILE>){
     chomp($line);
     $dir = $line;
     $id = $line;
-    $id =~ s/Sample_//;
     $rowU = "$id\t";
     $rowNU = "$id\t";
     foreach $exon (keys %HIGH_EXON){

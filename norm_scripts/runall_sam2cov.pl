@@ -189,7 +189,6 @@ while($line =  <INFILE>){
     chomp($line);
     $dir = $line;
     $id = $dir;
-    $id =~ s/Sample_//;
     if ($numargs_u_nu eq '0'){
 	$filename = "$final_M_dir/$id.FINAL.norm.sam";
 	unless (-d "$cov_dir/MERGED"){

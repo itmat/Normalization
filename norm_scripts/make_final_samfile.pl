@@ -65,7 +65,6 @@ while ($line = <INFILE>){
     $original = "$LOC/$dir/$samfilename";
     $header = `grep ^@ $original`;
     $id = $line;
-    $id =~ s/Sample_//;
     $in_UE = "$exon_dir/Unique/$id.exonmappers.norm_u.sam";
     $in_NUE = "$exon_dir/NU/$id.exonmappers.norm_nu.sam";
     $in_UI = "$nexon_dir/Unique/$id.intronmappers.norm_u.sam";

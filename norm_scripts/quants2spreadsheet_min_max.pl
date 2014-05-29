@@ -53,7 +53,6 @@ if ($type =~ /^exon/){
     while ($line = <INFILE>){
 	chomp($line);
 	$id = $line;
-	$id =~ s/Sample_//;
 	print OUT "$exon_dir/MERGED/$id.exonmappers.norm_exonquants\n";
     }
 }
@@ -65,7 +64,6 @@ if ($type =~ /^intron/){
     while($line = <INFILE>){
 	chomp($line);
 	$id = $line;
-	$id =~ s/Sample_//;	
 	$Unique = "$nexon_dir/Unique/$id.intronmappers.norm_u_intronquants";
 	$NU = "$nexon_dir/NU/$id.intronmappers.norm_nu_intronquants";
 	$Unique_no_header = $Unique . "_no_header";
@@ -131,7 +129,6 @@ if ($type =~ /^intron/){
     while ($line = <INFILE>){
 	chomp($line);
 	$id = $line;
-	$id =~ s/Sample_//;
 	print OUT "$merged_dir/$id.intronquants_merged\n";
     }
 }
@@ -166,7 +163,6 @@ while($file = <FILES>) {
     $id = $fields[$size-1];
     $id =~ s/.exonmappers.norm_exonquants//;
     $id =~ s/.intronquants_merged//;
-    $id =~ s/Sample_//; 
     $ID[$filecnt] = $id;
     open(INFILE, $file);
     $firstline = <INFILE>;

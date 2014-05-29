@@ -158,7 +158,6 @@ if ($sam2bam eq 'true'){
 	chomp($line);
 	$dir = $line;
 	$id = $line;
-	$id =~ s/Sample_//;
 	$shfile = "$shdir/$id.sam2bam.sh";
 	$jobname = "$study.sam2bam";
 	$logname = "$logdir/sam2bam.$id";

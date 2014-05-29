@@ -48,7 +48,6 @@ $sampledir = $ARGV[0];
 @a = split("/", $sampledir);
 $dirname = $a[@a-1];
 $id = $dirname;
-$id =~ s/Sample_//;
 $quantsfile_u = "$sampledir/Unique/$id.filtered_u_exonquants";
 $quantsfile_nu = "$sampledir/NU/$id.filtered_nu_exonquants";
 $temp_u = $quantsfile_u . ".temp";

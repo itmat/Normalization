@@ -18,7 +18,6 @@ $samfile = $ARGV[2]; # the name of the sam file (without path)
 $blastdir = $ARGV[3];
 $db = $ARGV[4];
 $str = $dir;
-$str =~ s/Sample_//;
 $str =~ s/\//_/g;
 
 $idsfile = "$LOC/$dir/$str.ribosomalids.txt";

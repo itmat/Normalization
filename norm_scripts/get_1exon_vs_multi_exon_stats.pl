@@ -73,7 +73,6 @@ while($line = <INFILE>){
     $dirU = $dir . "/Unique";
     $dirNU = $dir . "/NU";
     $id = $line;
-    $id =~ s/Sample_//;
     $fileU = "$LOC/$dirU/$id.filtered_u_exonquants";
     $fileNU = "$LOC/$dirNU/$id.filtered_nu_exonquants";
     if ($option_found eq "false"){

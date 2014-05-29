@@ -57,7 +57,6 @@ while ($line = <INFILE>){
     chomp($line);
     $dir = $line;
     $id = $line;
-    $id =~ s/Sample_//;
     $outfile = "$id.list_of_inferred_exons.txt";
     `perl $path/rum-2.0.5_05/bin/sort_by_location.pl --skip 1 -o $LOC/$dir/$sorted_junc --location 1 $LOC/$dir/$junc_name`;
     `perl $path/get_novel_exons.pl $LOC/$dir/$sorted_junc $LOC/$dir/$outfile -min $min -max $max`;

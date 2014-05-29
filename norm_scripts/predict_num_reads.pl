@@ -53,7 +53,6 @@ open(IN, $ARGV[0]) or die "cannot find file \"$ARGV[0]\"\n";
 while($line = <IN>){
     chomp($line);
     $id = $line;
-    $id =~ s/Sample_//g;
     $m = `grep $id $mappingstats`;
     @a = split(/\t/, $m);
     #unique

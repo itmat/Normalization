@@ -168,7 +168,6 @@ if ($optionfound_u_nu eq 'false'){
 	while($dirname = <INFILE>) {
 	    chomp($dirname);
 	    $id = $dirname;
-	    $id =~ s/Sample_//;
 	    if(-e "$LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam") {
 		$N = `tail -1 $LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam`;
 		$exonuniques = "true";
@@ -222,7 +221,6 @@ if ($optionfound_u_nu eq 'false'){
 	    while($dirname = <INFILE>) {
 		chomp($dirname);
 		$id = $dirname;
-		$id =~ s/Sample_//;
 		if(-e "$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam") {
 		    $N = `tail -1 $LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam`;
 		    $intronuniques = "true";
@@ -274,7 +272,6 @@ if ($optionfound_u_nu eq 'false'){
 	while($dirname = <INFILE>) {
 	    chomp($dirname);
 	    $id = $dirname;
-	    $id =~ s/Sample_//;
 	    if(-e "$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam") {
 		$N = `tail -1 $LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam`;
 		$iguniques = "true";
@@ -326,7 +323,6 @@ else{
 	    while($dirname = <INFILE>) {
 		chomp($dirname);
 		$id = $dirname;
-		$id =~ s/Sample_//;
 		if(-e "$LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam") {
 		    $N = `tail -1 $LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam`;
 		    $exonuniques = "true";
@@ -358,7 +354,6 @@ else{
 		while($dirname = <INFILE>) {
 		    chomp($dirname);
 		    $id = $dirname;
-		    $id =~ s/Sample_//;
 		    if(-e "$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam") {
 			$N = `tail -1 $LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam`;
 			$intronuniques = "true";
@@ -390,7 +385,6 @@ else{
 	    while($dirname = <INFILE>) {
 		chomp($dirname);
 		$id = $dirname;
-		$id =~ s/Sample_//;
 		if(-e "$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam") {
 		    $N = `tail -1 $LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam`;
 		$iguniques = "true";
@@ -422,7 +416,6 @@ else{
 	    while($dirname = <INFILE>) {
 		chomp($dirname);
 		$id = $dirname;
-		$id =~ s/Sample_//;
 		if(-e "$LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam") {
 		    $N = `tail -1 $LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam`;
 		    $exonnu = "true";
@@ -456,7 +449,6 @@ else{
 		while($dirname = <INFILE>) {
 		    chomp($dirname);
 		    $id = $dirname;
-		    $id =~ s/Sample_//;
 		    if(-e "$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam") {
 			$N = `tail -1 $LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam`;
 			$intronnu = "true";
@@ -488,7 +480,6 @@ else{
 	    while($dirname = <INFILE>) {
 		chomp($dirname);
 		$id = $dirname;
-		$id =~ s/Sample_//;
 		if(-e "$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam") {
 		    $N = `tail -1 $LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam`;
 		    $ignu = "true";
@@ -525,7 +516,6 @@ for($i=1; $i<=$i_exon; $i++) {
     while($dirname = <INFILE>) {
 	chomp($dirname);
 	$id = $dirname;
-	$id =~ s/Sample_//;
 	$numU = $minEU[$i];
 	$numNU = $minENU[$i];
 	$filenameU = "$id.filtered_u_exonmappers.$i.sam";
@@ -572,7 +562,6 @@ for($i=1; $i<=$i_intron; $i++) {
     while($dirname = <INFILE>) {
 	chomp($dirname);
 	$id = $dirname;
-	$id =~ s/Sample_//;
 	$numU = $minIU[$i];
 	$numNU = $minINU[$i];
 	$filenameU = "$id.filtered_u_notexonmappers_intronmappers.$i.sam";
@@ -617,7 +606,6 @@ open(INFILE, $ARGV[0]);
 while($dirname = <INFILE>) {
     chomp($dirname);
     $id = $dirname;
-    $id =~ s/Sample_//;
     $numU = $minIGU;
     $numNU = $minIGNU;
     $filenameU = "$id.filtered_u_notexonmappers_intergenicmappers.sam";

@@ -167,7 +167,6 @@ while($line = <INFILE>) {
     chomp($line);
     $dir = $line;
     $id = $line;
-    $id =~ s/Sample_//;
     if($outputsam eq "true"){
 	$filename = "$id.filtered.sam";
 	if ($nuonly eq "true"){

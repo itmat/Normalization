@@ -74,7 +74,6 @@ while($line = <INFILE>){
     $dirU = $dir . "/Unique";
     $dirNU = $dir . "/NU";
     $id = $line;
-    $id =~ s/Sample_//;
     $fileU = "$LOC/$dirU/$id.filtered_u_exonquants";
     $interU = "$LOC/$dirU/$id.filtered_u_notexonmappers_intergenicmappers.sam";
     $fileNU = "$LOC/$dirNU/$id.filtered_nu_exonquants";

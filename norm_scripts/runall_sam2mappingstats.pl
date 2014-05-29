@@ -167,7 +167,6 @@ if ($total_reads_file eq "true"){
 	$dir = $fields[0];
 	$num_id = $fields[1];
 	$id = $dir;
-	$id =~ s/Sample_//;
 	$shfile = "$shdir/m." . $id . "runsam2mappingstats.sh";
 	$jobname = "$study.sam2mappingstats";
 	$logname = "$logdir/sam2mappingstats.$id";
@@ -189,7 +188,6 @@ if ($total_reads_file eq "false"){
 	chomp($line);
 	$dir = $line;
 	$id = $dir;
-	$id =~ s/Sample_//;
 	$id =~ s/\//_/g;
 	if ($norm eq "true"){
 	    $shfile = "$shdir/sam2mapping.FINALSAM.$id.sh";

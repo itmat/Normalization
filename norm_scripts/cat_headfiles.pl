@@ -72,7 +72,6 @@ while ($line = <INFILE>){
     $dirU = $dir . "/Unique";
     $dirNU = $dir . "/NU";
     $id = $line;
-    $id =~ s/Sample_//;
     if ($option_found eq "false"){
 	unless (-d $norm_exon_dirU){
 	    `mkdir $norm_exon_dirU`;

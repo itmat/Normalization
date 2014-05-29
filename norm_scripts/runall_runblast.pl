@@ -143,7 +143,6 @@ $db = $ARGV[4];
 while($line = <INFILE>) {
     chomp($line);
     $dir = $line;
-    $line =~ s/Sample_//;
     $line =~ s/\//_/g;
     $id = $line;
     $shfile = "$shdir/a" . $id . "runblast.sh";

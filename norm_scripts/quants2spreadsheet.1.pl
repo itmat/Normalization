@@ -70,7 +70,6 @@ if($type =~ /^exon/){
     while ($line = <INFILE>){
 	chomp($line);
 	$id = $line;
-	$id =~ s/Sample_//;
 	if($nuonly eq "false"){
 	    print OUT "$exon_dir/Unique/$id.exonmappers.norm_u_exonquants\n";
 	}
@@ -85,7 +84,6 @@ if ($type =~ /^intron/){
     while ($line = <INFILE>){
 	chomp($line);
 	$id = $line;
-	$id =~ s/Sample_//;
 	if($nuonly eq "false"){
             print OUT "$nexon_dir/Unique/$id.intronmappers.norm_u_intronquants\n";
 	}
@@ -126,7 +124,6 @@ while($file = <FILES>) {
     $id =~ s/.exonmappers.norm_nu_exonquants//;
     $id =~ s/.intronmappers.norm_u_intronquants//;
     $id =~ s/.intronmappers.norm_nu_intronquants//;
-    $id =~ s/Sample_//;
     $ID[$filecnt] = $id;
     open(INFILE, $file);
     $firstline = <INFILE>;

@@ -160,7 +160,6 @@ while($line = <INFILE>) {
     chomp($line);
     $dir = $line;
     $id = $line;
-    $id =~ s/Sample_//;
     $logname = "$logdir/quantifyintrons.$id";
     $logname2 = "$logdir/quantifyintrons2.$id";
     if($outputsam eq "true"){

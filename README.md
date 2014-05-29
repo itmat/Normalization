@@ -7,23 +7,23 @@
 
 #####B. Input Directory Structure
 - Give `STUDY` directory a unique name.
-- Make sure the alignment outputs(SAM files) are in each sample directory inside the `READS` folder.
+- Make sure the unaligned reads and alignment outputs(SAM files) are in each sample directory inside the `READS` folder.
 - All alignment files (SAM files) MUST have the same name.
 
 <pre>
 STUDY
 └── READS
     ├── Sample_1
-    │	├── Unaligned reads
+    │   ├── Unaligned reads
     │   └── Aligned.sam
     ├── Sample_2
-    │	├── Unaligned reads
+    │   ├── Unaligned reads
     │   └── Aligned.sam
     ├── Sample_3
-    │	├── Unaligned reads
+    │   ├── Unaligned reads
     │   └── Aligned.sam
     └── Sample_4
-    	├── Unaligned reads
+        ├── Unaligned reads
         └── Aligned.sam
 
 </pre>

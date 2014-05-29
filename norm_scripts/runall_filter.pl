@@ -178,7 +178,6 @@ while($line = <INFILE>) {
     chomp($line);
     $dir = $line;
     $id = $line;
-    $id =~ s/Sample_//;
     $id =~ s/\//_/g;
     $idsfile = "$LOC/$dir/$id.ribosomalids.txt";
     $shfile = "$shdir/a" . $id . "filter.sh";

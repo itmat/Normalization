@@ -24,7 +24,6 @@ open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){
     chomp($line);
     $id = $line;
-    $id =~ s/Sample_//;
     $file_U = "$loc_exon/Unique/$id.exonmappers.norm_u.sam";
     $file_NU = "$loc_exon/NU/$id.exonmappers.norm_nu.sam";
     `cat $file_U $file_NU > $loc_merged/$id.exonmappers.norm.sam`;

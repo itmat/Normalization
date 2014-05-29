@@ -529,7 +529,6 @@ if ($run_blast eq "true"){
 }
 
 if ($run_norm eq "true"){
-
     $job_num = 1;
     print LOG "\nNormalization\n-------------\n";
 #filter_sam
@@ -1303,6 +1302,9 @@ sub check_exit_alljob{
 	$out_name =~ s/err/out/g;
 	$wc_out = `ls $logdir/$out_name | wc -l`;
 	$check_out = `grep "got here" $logdir/$out_name | grep -v echo | wc -l`;
+	if (qx{grep "SAM header" $logdir/$err_name | wc -l} > 0){
+	    `sed -i '/SAM header/d' $logdir/$err_name`;
+	}
 	chomp($wc_out);
 	chomp($check_out);
 	if ($check_out ne $wc_out){
@@ -1400,9 +1402,6 @@ sub only_err{
     }
     else{
 	if ("$name_of_job.err" ne "$err_name"){
-	    if (qx{grep "SAM header" $logdir/$err_name | wc -l} > 0){
-		`sed -i '/SAM header/d' $logdir/$err_name`;
-	    }
 	    $wc_err_sample = `wc -l $logdir/$err_name`;
 	    @wc = split(/\n/, $wc_err_sample);
 	    $sum = 0;

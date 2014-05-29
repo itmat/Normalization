@@ -30,7 +30,6 @@ while($dir = <IN>){
     chomp($dir);
     `sort -u $LOC/$dir/*ribosomalids.txt | wc -l | grep -vw total >> $LOC/ribosomal_counts.txt`;
     $X = $dir;
-#    $X =~ s/Sample_//;
     $filename[$i] = $X;
     $i++;
 }

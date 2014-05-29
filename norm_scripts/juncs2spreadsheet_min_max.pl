@@ -35,7 +35,6 @@ open(OUT, ">$sample_name_file");
 while($line = <INFILE>){
     chomp($line);
     $id = $line;
-    $id =~ s/Sample_//;
     print OUT "$junc_dir/$id.FINAL.norm_junctions_all.rum\n";
 }
 close(INFILE);
@@ -49,7 +48,6 @@ while ($file = <FILES>){
     $size = @fields;
     $id = $fields[$size-1];
     $id =~ s/.FINAL.norm_junctions_all.rum//;
-    $id =~ s/Sample_//;
     $ID[$filecnt] = $id;
     open(INFILE, $file);
     while($line = <INFILE>){

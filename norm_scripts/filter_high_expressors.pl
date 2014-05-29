@@ -55,7 +55,6 @@ open(INFILE, $ARGV[0]) or die "cannot find \"$ARGV[0]\"\n";
 while ($line = <INFILE>){
     chomp($line);
     $id = $line;
-    $id =~ s/Sample_//;
     $dir = $line;
     $file = "$LOC/$dir/$id.high_expressors_annot.txt";
     open(IN, "$file");

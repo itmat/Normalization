@@ -199,7 +199,6 @@ open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while($line = <INFILE>){
     chomp($line);
     $id = $line;
-    $id =~ s/Sample_//;
     $sampledir = "$LOC/$line";
     $outfile = "$LOC/$line/$id.exonpercents.txt";
     $highfile = "$LOC/$line/$id.high_expressors.txt";

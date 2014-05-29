@@ -180,7 +180,6 @@ while($line = <INFILE>) {
     chomp($line);
     $dir = $line;
     $id = $line;
-    $id =~ s/Sample_//;
     if ($samfilename eq "true"){
 	$final_dir = "$LOC/$dir";
 	$filename = $samname;

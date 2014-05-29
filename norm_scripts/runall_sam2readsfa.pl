@@ -60,7 +60,6 @@ open(INFILE, $ARGV[0]) or die "cannot find file \"$ARGV[0]\"\n";
 while($line = <INFILE>) {
     chomp($line);
     $dir = $line;
-    $line =~ s/Sample_//;
     $line =~ s/\//_/g;
     $id = $line;
     $shfile = "$shdir/a" . $id . "runsam2fa.sh";
