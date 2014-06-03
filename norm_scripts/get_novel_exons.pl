@@ -11,13 +11,13 @@ where
 
 options: -min <n> : min is set at 10 by default
         
-         -max <n> : max is set at 2000 by default
+         -max <n> : max is set at 800 by default
 
 ";
 }
 
 my $min = 10;
-my $max = 2000;
+my $max = 800;
 my %EXON_START;
 my %INF_EXONS;
 my $current_n = "1";
@@ -58,7 +58,7 @@ while($line = <INFILE>){
 	    delete $EXON_START{$_};
 	}
     }
-    if ($score > 5){
+    if ($score >= 5){
 	foreach my $exon_start (keys %EXON_START){
 	    my $ex_start_score = $EXON_START{$exon_start};
 	    my $ex_end_score = $score;

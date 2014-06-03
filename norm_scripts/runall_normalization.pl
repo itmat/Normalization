@@ -23,7 +23,7 @@ OPTIONS:
      -novel_off : set this if you DO NOT want to generate/use a study-specific master list of exons
                   (By default, the pipeline will add inferred exons to the list of exons)
      -min <n> : is minimum size of inferred exon for get_novel_exons.pl script (Default = 10)
-     -max <n> : is maximum size of inferred exon for get_novel_exons.pl script (Default = 2000)
+     -max <n> : is maximum size of inferred exon for get_novel_exons.pl script (Default = 800)
      -cutoff_highexp <n> : is cutoff % value to identify highly expressed exons. 
                            the script will consider exons with exonpercents greater than n(%) as high expressors, 
                            and remove them from the list of exons.
@@ -50,7 +50,7 @@ $count_b = 0;
 $se = "";
 $unaligned_z = "";
 $min = 10;
-$max = 2000;
+$max = 800;
 $cutoff_he = 100;
 $filter_high_expressors = "false";
 $i_exon = 20;
@@ -421,7 +421,7 @@ if ($run_blast eq "true"){
     $total = "$study_dir/STATS/total_num_reads.txt";
     $sorted = `cut -f 2 $total | sort`;
     @a = split (/\n/, $sorted);
-    $max = $a[@a-1];
+    $max_map = $a[@a-1];
     if ($other eq "true"){
 	$c_option = "$submit \\\"$batchjobs,$jobname,$request,$queue_30G,$stat\\\"";
 	$new_queue = "";
@@ -429,12 +429,12 @@ if ($run_blast eq "true"){
     else{
 	$new_queue = "-mem $queue_30G";
     }
-    if ($max > 200000000){
-	$new_queue = "-mem 60G";
+    if ($max_map > 200000000){
+	$new_queue = "-mem $queue_60G";
     }
     else{
-	if ($max > 150000000){
-	    $new_queue = "-mem 45G";
+	if ($max_map > 150000000){
+	    $new_queue = "-mem $queue_45G";
 	}
     }
     while(qx{$stat | wc -l} > $maxjobs){
@@ -600,7 +600,7 @@ if ($run_norm eq "true"){
 	if ($min ne '10'){
 	    $min_option = "-min $min";
 	}
-	if ($max ne '2000'){
+	if ($max ne '800'){
 	    $max_option = "-max $max";
 	}
         while(qx{$stat | wc -l} > $maxjobs){
@@ -1087,7 +1087,7 @@ if ($run_norm eq "true"){
     $total = "$study_dir/STATS/total_num_reads.txt";
     $sorted = `cut -f 2 $total | sort`;
     @a = split (/\n/, $sorted);
-    $min = $a[0];
+    $min_map = $a[0];
     if ($other eq "true"){
         $c_option = "$submit \\\"$batchjobs,$jobname,$request,$queue_30G,$stat\\\"";
         $new_queue = "";
@@ -1095,12 +1095,12 @@ if ($run_norm eq "true"){
     else{
         $new_queue = "-mem $queue_30G";
     }
-    if ($min > 200000000){
-        $new_queue = "-mem 60G";
+    if ($min_map > 200000000){
+        $new_queue = "-mem $queue_60G";
     }
     else{
-        if ($min > 150000000){
-            $new_queue = "-mem 45G";
+        if ($min_map > 150000000){
+            $new_queue = "-mem $queue_45G";
         }
     }
     while (qx{$status | wc -l} > $maxjobs){

@@ -10,14 +10,14 @@ where:
 options: 
 -min <n> : min is set at 10 by default
 
--max <n> : max is set at 2000 by default
+-max <n> : max is set at 800 by default
 
 ";
     die $USAGE;
 }
 
 $min = 10;
-$max = 2000;
+$max = 800;
 
 for($i=3; $i<@ARGV; $i++) {
     $argument_recognized = 0;
@@ -37,7 +37,7 @@ for($i=3; $i<@ARGV; $i++) {
 }
 use Cwd 'abs_path';
 $path = abs_path($0);
-$path =~ s/\/runall_get_novel_exons.pl//;
+$path =~ s/\/runall_get_novel_exons-test.pl//;
 
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
@@ -66,15 +66,21 @@ while ($line = <INFILE>){
     foreach $exon (@exons){
 	chomp($exon);
 	$EXON_LIST{$exon} = 1;
+	($chr, $exonstart, $exonend) = $exon =~  /^(.*):(\d*)-(\d*)$/g;
+	push (@{$EX_START{"$chr.$exonstart"} }, $exonend);
+	push (@{$EX_END{"$chr.$exonend"} }, $exonstart);
     }
 }
 close(INFILE);
 
+#debug
+=comment
 open(INF, ">$LOC/$study.list_of_inferred_exons.txt");
 foreach $exon (keys %EXON_LIST){
     print INF "$exon\n";
 }
 close(INF);
+=cut
 
 if (-e $master_list){
     open(IN, "<$master_list");
@@ -82,16 +88,38 @@ if (-e $master_list){
     close(IN);
     foreach $exon (@exons){
 	chomp($exon);
-	$EXON_LIST{$exon} = 1;
+	$EXON_LIST{$exon} = 2;
+	($chr, $exonstart, $exonend) = $exon =~  /^(.*):(\d*)-(\d*)$/g;
+	push (@{$EX_START{"$chr.$exonstart"} }, $exonend);
+	push (@{$EX_END{"$chr.$exonend"} }, $exonstart);
     }
 }
 else{
     die "cannot find the 'master_list_of_exons.txt' file\n";
 }
 
+foreach $key (keys %EXON_LIST){
+    if ($EXON_LIST{$key} eq "1"){
+	($chr, $exonstart, $exonend) = $key =~  /^(.*):(\d*)-(\d*)$/g;
+	$start = "$chr.$exonstart";
+	$end = "$chr.$exonend";
+	if ((exists $EX_START{$start}) && (exists $EX_END{$end})){
+	    @sorted_exonend = sort {$a <=> $b} @{$EX_START{$start}};
+	    @sorted_exonstart = sort {$a <=> $b} @{$EX_END{$end}};
+	    $min_end = $sorted_exonend[0];
+	    $max_start = $sorted_exonstart[@sorted_exonstart-1];
+	    if ($min_end < $max_start){
+		delete $EXON_LIST{$key};
+	    }
+	}
+    }
+}
+
 open(OUT, ">$final_list");
+open(NOV, ">$LOC/$study.list_of_novel_exons.txt");
 foreach $exon (keys %EXON_LIST){
     print OUT "$exon\n";
+    print NOV "$exon\n" if ($EXON_LIST{$exon} eq "1");
 }
 close(OUT);
 print "got here\n";
