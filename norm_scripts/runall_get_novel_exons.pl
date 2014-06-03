@@ -37,7 +37,7 @@ for($i=3; $i<@ARGV; $i++) {
 }
 use Cwd 'abs_path';
 $path = abs_path($0);
-$path =~ s/\/runall_get_novel_exons-test.pl//;
+$path =~ s/\/runall_get_novel_exons.pl//;
 
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
