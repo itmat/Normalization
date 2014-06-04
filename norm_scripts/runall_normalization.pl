@@ -1167,7 +1167,7 @@ if ($run_norm eq "true"){
 	while (qx{$status | wc -l} > $maxjobs){
 	    sleep(10);
 	}
-	$job = "echo \"perl $norm_script_dir/runall_compress.pl $sample_dir $LOC $samfilename $fai $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_compress\" -o $logdir/$study.runall_compress.out -e $logdir/$study.runall_compress.err ";
+	$job = "echo \"perl $norm_script_dir/runall_compress.pl $sample_dir $LOC $samfilename $fai $c_option $new_queue $option $cluster_max\" | $batchjobs  $jobname \"$study.runall_compress\" -o $logdir/$study.runall_compress.out -e $logdir/$study.runall_compress.err ";
 	&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 	&only_err ($name_of_alljob, $err_name, $job_num);
