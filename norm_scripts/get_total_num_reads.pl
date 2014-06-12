@@ -1,21 +1,46 @@
 #!/usr/bin/env perl
-if(@ARGV<3) {
-    die "Usage: perl get_total_num_reads.pl <sample dirs> <loc> <file of input forward fa/fq files> [options]
+
+$USAGE = "\nUsage: perl get_total_num_reads.pl <sample dirs> <loc> <file of input forward fa/fq files> [options]
 
 <sample dirs> is a file with the names of the sample directories (without path)
 <loc> is the location where the sample directories are
 <file of input forward fa/fq files> is a file with the names of input forward fa/fq files (full path)
 
-option:  -fa : set this if the input files are in fasta format
-         -fq : set this if the input files are in fastq format
-         -gz : set this if your input files are compressed
+option:  
+
+ -fa : set this if the input files are in fasta format
+ -fq : set this if the input files are in fastq format
+ -gz : set this if your input files are compressed
+
+ -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
+
+ -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI) cluster.
+
+ -other \"<submit>,<jobname_option>,<status>\":
+        set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
+        **make sure the arguments are comma separated inside the quotes**
+
+        <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
+        <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
+        <status> : command for checking batch job status (e.g. bjobs, qstat)
+
+ -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
+                   by default, <n> = 200.
+
+ -h : print usage
 
 ";
+if(@ARGV<3) {
+    die $USAGE;
 }
+
 $fa = "false";
 $fq = "false";
 $gz = "false";
+$njobs = 200;
 $numargs = 0;
+$numargs_2 = 0;
+$jobname_option = "";
 for ($i=3; $i<@ARGV; $i++){
     $option_found = "false";
     if ($ARGV[$i] eq '-fa'){
@@ -32,6 +57,48 @@ for ($i=3; $i<@ARGV; $i++){
 	$gz = "true";
 	$option_found = "true";
     }
+    if ($ARGV[$i] eq '-max_jobs'){
+        $option_found = "true";
+        $njobs = $ARGV[$i+1];
+        if ($njobs !~ /(\d+$)/ ){
+            die "-max_jobs <n> : <n> needs to be a number\n";
+        }
+        $i++;
+    }
+    if ($ARGV[$i] eq '-h'){
+        $option_found = "true";
+	die $USAGE;
+    }
+    if ($ARGV[$i] eq '-lsf'){
+        $numargs_2++;
+        $option_found = "true";
+        $submit = "bsub";
+        $jobname_option = "-J";
+	$status = "bjobs";
+    }
+    if ($ARGV[$i] eq '-sge'){
+        $numargs_2++;
+        $option_found = "true";
+        $submit = "qsub -cwd";
+        $jobname_option = "-N";
+	$status = "qstat";
+    }
+    if ($ARGV[$i] eq '-other'){
+        $numargs_2++;
+        $option_found = "true";
+	$argv_all = $ARGV[$i+1];
+        @a = split(",", $argv_all);
+        $submit = $a[0];
+        $jobname_option = $a[1];
+	$status = $a[2];
+        $i++;
+        if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $status eq ""){
+            die "please provide \"<submit>, <jobname_option>, and <status>\"\n";
+        }
+        if ($submit eq "-lsf" | $submit eq "-sge"){
+            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option>,<status>\".\n";
+        }
+    }
     if ($option_found eq "false"){
 	die "option \"$ARGV[$i]\" was not recognized.\n";
     }
@@ -40,62 +107,87 @@ if($numargs ne '1'){
     die "you have to specify an input file type. use either '-fa' or '-fq'\n
 ";
 }
+if($numargs_2 ne '1'){
+    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>,<jobname_option>,<status>\".\n
+";
+}
 
 $sample_dirs = $ARGV[0];
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 @fields = split("/", $LOC);
 $last_dir = $fields[@fields-1];
+$study = $fields[@fields-2];
 $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 $stats_dir = $study_dir . "STATS";
+$logdir = $study_dir . "logs";
+unless (-d $logdir){
+    `mkdir $logdir`;}
 unless (-d $stats_dir){
     `mkdir $stats_dir`;}
 $input_files = $ARGV[2];
+$temp_file = "$stats_dir/temp";
+@t = glob ("$temp_file*$study");
+if (@t > 0){
+    `rm $temp_file*$study`;
+}
+
+$jobname = "numreads";
+$logname = "$logdir/$study.numreads";
+@l = glob ("$logname*");
+if (@l > 0){
+    `rm $logname*`;
+}
 
 open(INFILE, $input_files) or die "cannot find file '$input_files'\n";
-$outfile_all = "$LOC/total_reads_temp.txt";
-open(OUT, ">$outfile_all");
+$i = 0;
 while($line = <INFILE>){
     chomp($line);
     unless (-e $line){
 	die "ERROR: cannot find \"$line\"\n";
     }
+    while (qx{$status | wc -l} > $njobs){
+	sleep(10);
+    }
     if ($gz eq "true"){
-	$lc = `zcat $line | wc -l`;
-	$num = $lc;
-	$name = $line;
+	`echo "zcat $line | wc -l | xargs echo -n >> $temp_file.$i.$study && echo -e '\t$line' >> $temp_file.$i.$study" | $submit $jobname_option $jobname -e $logname.$i.err -o $logname.$i.out`;
     }
     else {
-	$lc = `wc -l $line`;
-	@a = split(" ", $lc);
-	$num = $a[0];
-	$name = $a[1];
+	`echo "wc -l < $line | xargs echo -n >> $temp_file.$i.$study && echo -e '\t$line' >> $temp_file.$i.$study" | $submit $jobname_option $jobname -e $logname.$i.err -o $logname.$i.out`;
     }
-
-    if ($fq eq "true"){
-	$num = $num/4;
-    }
-    if ($fa eq "true"){
-	$num = $num/2;
-    }
-    print OUT "$num\t$name\n";
+    $i++;
 }
 close(INFILE);
-close(OUT);
 
 $outfile_final = "$stats_dir/total_num_reads.txt";
+while (qx{$status | grep $jobname | wc -l} > 0){
+    sleep(10);
+}
+if (qx{cat $logname.*.err | wc -l} > 0){
+    die "ERROR: wc -l step had errors\n";
+}
+
 open(DIRS, $sample_dirs) or die "cannot find file '$sample_dirs'\n";
 open(OUTFINAL, ">$outfile_final");
 while($dir = <DIRS>){
     chomp($dir);
     $id = $dir;
-    $total_num_reads = `grep -w $id $outfile_all`;
+    $total_num_reads = `grep -w $id $temp_file.*.$study`;
     @fields = split(" ", $total_num_reads);
-    $num = $fields[0];
+    $first = $fields[0];
+    @a = split(":", $first);
+    $num = $a[1];
+    if ($fq eq "true"){
+	$num = $num/4;
+    }
+    if ($fa eq "true"){
+	$num = $num/2;
+    }    
     print OUTFINAL "$id\t$num\n";
 }
 close(DIRS);
 close(OUTFINAL);
+
 print "got here\n";
-`rm $outfile_all`;
+`rm $temp_file*$study`;

@@ -161,7 +161,11 @@ This creates `runall_normalization.sh` file in `STUDY/shell_scripts` directory a
 	 * option : <br>
 	  **-fa** : set this if the input files are in fasta format <br>
 	  **-fq** : set this if the input files are in fastq format <br>
-	  **-gz** : set this if the input files are compressed
+	  **-gz** : set this if the input files are compressed<br>
+	  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+	  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+	  **-other "&lt;submit>, &lt;jobname_option>, &lt;status>"** : set this if you're not on LSF or SGE cluster <br>
+	  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
  This will output a file called `total_num_reads.txt` to the `STUDY/STATS` directory.
 

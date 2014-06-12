@@ -400,13 +400,18 @@ if ($run_blast eq "true"){
 #get_total_num_reads.pl
     $name_of_job = "$study.get_total_num_reads";
     $err_name = "$name_of_job.err";
-    
+
     &clear_log($name_of_job, $err_name);
+
+    if ($other eq "true"){
+	$c_option = "$submit \\\"$batchjobs,$jobname,$stat\\\"";
+    }
+
     while(qx{$stat | wc -l} > $maxjobs){
         sleep(10);
     }
 
-    $job = "echo \"perl $norm_script_dir/get_total_num_reads.pl $sample_dir $LOC $unaligned_file $unaligned_type $unaligned_z\" | $batchjobs $jobname \"$study.get_total_num_reads\" -o $logdir/$study.get_total_num_reads.out -e $logdir/$study.get_total_num_reads.err";
+    $job = "echo \"perl $norm_script_dir/get_total_num_reads.pl $sample_dir $LOC $unaligned_file $unaligned_type $unaligned_z $c_option $cluster_max\" | $batchjobs $jobname \"$study.get_total_num_reads\" -o $logdir/$study.get_total_num_reads.out -e $logdir/$study.get_total_num_reads.err";
     &onejob($job, $name_of_job, $job_num);
     &check_exit_onejob($job, $name_of_job, $job_num);
     &check_err ($name_of_job, $err_name, $job_num);
