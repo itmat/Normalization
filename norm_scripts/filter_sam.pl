@@ -138,7 +138,7 @@ while($forward = <INFILE>) {
 	    @F = split(/\t/,$forward);
 	    @R = split(/\t/,$reverse);
 	    if($R[1] & 64) {
-		print STDERR "Warning: I read two reads consecutive but neither were a reverse read...\n\nforward=$forward\n\nreverse=$reverse\n\nPrevious was id='$id'\n\nI am skipping read '$id2'.\n\n";
+		print "Warning: I read two reads consecutive but neither were a reverse read...\n\nforward=$forward\n\nreverse=$reverse\n\nPrevious was id='$id'\n\nI am skipping read '$id2'.\n\n";
 		$line = <INFILE>;
 		chomp($line);
 		@a = split(/\t/,$line);

@@ -34,7 +34,11 @@ option:
             <s> is the queue name for required mem.
             Default: 30G
 
- -norm : set this if you want to compute mapping statistics for normalized sam files
+ -norm : set this if you want to compute mapping statistics for normalized sam files (Unique + NU MERGED)
+
+ -norm_u : set this if you want to compute mapping statistics for normalized sam files (Unique)
+
+ -norm_nu : set this if you want to compute mapping statistics for normalized sam files (NU)
 
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                    by default, <n> = 200.
@@ -54,6 +58,8 @@ $jobname_option = "";
 $request_memory_option = "";
 $mem = "";
 $norm = "false";
+$norm_u = "false";
+$norm_nu = "false";
 $total_reads_file = $ARGV[3];
 for ($i=4; $i<@ARGV; $i++){
     $option_found = "false";
@@ -72,6 +78,16 @@ for ($i=4; $i<@ARGV; $i++){
     if ($ARGV[$i] eq '-norm'){
 	$option_found = "true";
 	$norm = "true";
+	$total_reads_file = "false";
+    }
+    if ($ARGV[$i] eq '-norm_u'){
+	$option_found = "true";
+	$norm_u = "true";
+	$total_reads_file = "false";
+    }
+    if ($ARGV[$i] eq '-norm_nu'){
+	$option_found = "true";
+	$norm_nu = "true";
 	$total_reads_file = "false";
     }
     if ($ARGV[$i] eq '-lsf'){
@@ -153,9 +169,6 @@ unless (-d $shdir){
 unless (-d $logdir){
     `mkdir $logdir`;}
 $sam_name = $ARGV[2];
-$dirs = `wc -l $sample_dir`;
-@a = split(" ", $dirs);
-$num_samples = $a[0];
 
 if ($total_reads_file eq "true"){
     $dirs_reads = "$stats_dir/total_num_reads.txt";
@@ -194,6 +207,16 @@ if ($total_reads_file eq "false"){
 	    $jobname = "$study.sam2mappingstats.norm";
 	    $logname = "$logdir/sam2mappingstats.norm.$id";
 	}
+	elsif ($norm_u eq "true"){
+	    $shfile = "$shdir/sam2mapping.FINALSAM.u.$id.sh";
+	    $jobname = "$study.sam2mappingstats.norm.u";
+	    $logname = "$logdir/sam2mappingstats.norm.u.$id";
+	}
+	elsif ($norm_nu eq "true"){
+	    $shfile = "$shdir/sam2mapping.FINALSAM.nu.$id.sh";
+	    $jobname = "$study.sam2mappingstats.norm.nu";
+	    $logname = "$logdir/sam2mappingstats.norm.nu.$id";
+	}
 	else{
 	    $shfile = "$shdir/m." . $id . "runsam2mappingstats.sh";
 	    $jobname = "$study.sam2mappingstats";
@@ -202,6 +225,12 @@ if ($total_reads_file eq "false"){
 	open(OUTFILE, ">$shfile");
 	if ($norm eq "true"){
 	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/FINAL_SAM/MERGED/$id.FINAL.norm.sam $study_dir/NORMALIZED_DATA/FINAL_SAM/MERGED/$id.FINAL.norm.mappingstats.txt";
+	}
+	elsif ($norm_u eq "true"){
+	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/FINAL_SAM/Unique/$id.FINAL.norm_u.sam $study_dir/NORMALIZED_DATA/FINAL_SAM/Unique/$id.FINAL.norm_u.mappingstats.txt";
+	}
+	elsif ($norm_nu eq "true"){
+	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/FINAL_SAM/NU/$id.FINAL.norm_nu.sam $study_dir/NORMALIZED_DATA/FINAL_SAM/NU/$id.FINAL.norm_nu.mappingstats.txt";
 	}
 	else{
 	    print OUTFILE "perl $path $LOC/$dir/$sam_name $LOC/$dir/$id.mappingstats.txt\n";

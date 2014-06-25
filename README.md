@@ -753,7 +753,9 @@ Run the script with **-norm** option.
      **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 30G)<br>
          ** If you have > 150,000,000 reads, use -mem option to request 45G mem.<br>
          ** If you have > 200,000,000 reads, use -mem option to request 60G mem.<br>
-     ** -norm** : set this if you want to compute mapping statistics for normalized sam files<br>
+     ** -norm** : set this if you want to compute mapping statistics for normalized sam files (Unique + NU MERGED)<br>
+     ** -norm_u** : set this if you want to compute mapping statistics for normalized sam files (Unique)<br>
+     ** -norm_nu** : set this if you want to compute mapping statistics for normalized sam files (NU)<br>
      **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
 This will output `*mappingstats.txt` file of all samples to `STUDY/NORMALIZED_DATA/FINAL_SAM/*`.
@@ -766,7 +768,9 @@ This will parse the `*mappingstats.txt` files and output a table with summary in
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * option : <br>
- **-norm** : set this if you want to compute mapping statistics for normalized sam files
+ **-norm** : set this if you want to compute mapping statistics for normalized sam files (Unique + NU MERGED)<br>
+ **-norm_u** : set this if you want to compute mapping statistics for normalized sam files (Unique)<br>
+ **-norm_nu** : set this if you want to compute mapping statistics for normalized sam files (NU)
 
 #### 10) Clean Up
 #####A. Delete Intermediate SAM Files

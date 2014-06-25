@@ -139,7 +139,7 @@ for $seq (@tail){
     }
 }
 $common_str = &LCP(@NAME);
-print "common_str: $common_str\n";
+#print "common_str: $common_str\n";
 open(INFILE, $sam_in);
 $linecnt = 0;
 $num_OL = 0;
