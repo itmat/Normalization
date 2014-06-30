@@ -11,13 +11,13 @@ where
 
 options: -min <n> : min is set at 10 by default
         
-         -max <n> : max is set at 800 by default
+         -max <n> : max is set at 1200 by default
 
 ";
 }
 
 my $min = 10;
-my $max = 800;
+my $max = 1200;
 my %EXON_START;
 my %INF_EXONS;
 my $current_n = "1";
@@ -138,7 +138,7 @@ while($line = <TEMP2>){
     # add exon to temp_hash
     $temp_hash{$line} = $INF_EXONS{$line};
     my $count = scalar keys %temp_hash;
-    if ($count > 5){
+    if ($count >= 5){
 	# sort -r exons hash by min score and then max score 
 	my @temp_keys = sort {
 	    $temp_hash{$b}[0] <=> $temp_hash{$a}[0]

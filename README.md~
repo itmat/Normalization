@@ -127,7 +127,7 @@ You can also run it step by step using the scripts documented in [#2. NORMALIZAT
      [normalization parameters]<br>
      **-novel_off** : set this if you DO NOT want to generate/use a study-specific master list of exons<br> (By default, the pipeline will add inferred exons to the list of exons) <br>
      **-min &lt;n>** : is minimum size of inferred exon for get_novel_exons.pl script (Default = 10)<br>
-     **-max &lt;n>** : is maximum size of inferred exon for get_novel_exons.pl script (Default = 1200)<br>
+     **-max &lt;n>** : is maximum size of inferred exon for get_novel_exons.pl script (Default = 800)<br>
      **-cutoff_highexp &lt;n>** : <br>is cutoff % value to identify highly expressed exons.<br>
                            the script will consider exons with exonpercents greater than n(%) as high expressors,
                            and remove them from the list of exons.<br>
@@ -331,7 +331,7 @@ Create a study-specific master list of exons by adding novel exons from the stud
     * &lt;sam file name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
     * options : <br>
      **-min &lt;n>** : size of inferred exon, min is set at 10 by default<br>
-     **-max &lt;n>** : size of inferred exon, max is set at 1200 by default
+     **-max &lt;n>** : size of inferred exon, max is set at 800 by default
 
  This outputs `*list_of_inferred_exons.txt` file of all samples to each sample directory. It also outputs `master_list_of_exons.*STUDY*.txt` file to `READS` directory.
 

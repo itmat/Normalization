@@ -1,25 +1,26 @@
 #!/usr/bin/env perl
-if(@ARGV<3){
-    $USAGE = "\nUsage: perl runall_get_novel_exons.pl <sample dirs> <loc> <sam file name> [options]
+if(@ARGV<4){
+    $USAGE = "\nUsage: perl runall_get_novel_exons.pl <sample dirs> <loc> <sam file name> <gene info file> [options]
 
 where:
 <sample dirs> is  a file of sample directories with alignment output without path
 <loc> is where the sample directories are
 <sam file name> name of the aligned sam file
+<gene info file> a gene annotation file including chrom, strand, txStrand, txEnd, exonCount, exonStarts, exonEnds, and name
 
 options: 
 -min <n> : min is set at 10 by default
 
--max <n> : max is set at 800 by default
+-max <n> : max is set at 1200 by default
 
 ";
     die $USAGE;
 }
 
 $min = 10;
-$max = 800;
+$max = 1200;
 
-for($i=3; $i<@ARGV; $i++) {
+for($i=4; $i<@ARGV; $i++) {
     $argument_recognized = 0;
     if($ARGV[$i] eq '-min') {
 	$min = $ARGV[$i+1];
@@ -52,6 +53,8 @@ $sorted_junc =~ s/.rum/.sorted.rum/;
 $master_list = "$LOC/master_list_of_exons.txt";
 $final_list = "$LOC/master_list_of_exons.$study.txt";
 
+$annot_file = $ARGV[3];
+
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){
     chomp($line);
@@ -82,28 +85,45 @@ foreach $exon (keys %EXON_LIST){
 close(INF);
 =cut
 
-if (-e $master_list){
-    open(IN, "<$master_list");
-    @exons = <IN>;
-    close(IN);
-    foreach $exon (@exons){
-	chomp($exon);
-	$EXON_LIST{$exon} = 2;
-	($chr, $exonstart, $exonend) = $exon =~  /^(.*):(\d*)-(\d*)$/g;
-	push (@{$EX_START{"$chr.$exonstart"} }, $exonend);
-	push (@{$EX_END{"$chr.$exonend"} }, $exonstart);
-    }
+open(IN, "<$master_list") or die "cannot find the 'master_list_of_exons.txt' file\n";
+@exons = <IN>;
+close(IN);
+foreach $exon (@exons){
+    chomp($exon);
+    $EXON_LIST{$exon} = 2;
+    ($chr, $exonstart, $exonend) = $exon =~  /^(.*):(\d*)-(\d*)$/g;
+    push (@{$EX_START{"$chr.$exonstart"} }, $exonend);
+    push (@{$EX_END{"$chr.$exonend"} }, $exonstart);
 }
-else{
-    die "cannot find the 'master_list_of_exons.txt' file\n";
+
+%gene_start;
+%gene_end;
+
+open(GENE, $annot_file) or die "cannot find the '$annot_file' file\n";
+while($line = <GENE>){
+    chomp($line);
+    @a = split(/\t/, $line);
+    $gene_chr = $a[0];
+    $exon_starts = $a[5];
+    $exon_ends = $a[6];
+    @s = split(",", $exon_starts);
+    $last_exon_start = $s[@s-1] + 1;
+    $gene_start{"$gene_chr.$last_exon_start"} = 1;
+    @e = split(",", $exon_ends);
+    $first_exon_end =$e[0];
+    $gene_end{"$gene_chr.$first_exon_end"} = 1;
 }
+close(GENE);
 
 foreach $key (keys %EXON_LIST){
     if ($EXON_LIST{$key} eq "1"){
 	($chr, $exonstart, $exonend) = $key =~  /^(.*):(\d*)-(\d*)$/g;
 	$start = "$chr.$exonstart";
 	$end = "$chr.$exonend";
-	if ((exists $EX_START{$start}) && (exists $EX_END{$end})){
+	if ((exists $gene_start{$start}) && (exists $gene_end{$end})){
+	    delete $EXON_LIST{$key};
+	}
+	elsif ((exists $EX_START{$start}) && (exists $EX_END{$end})){
 	    @sorted_exonend = sort {$a <=> $b} @{$EX_START{$start}};
 	    @sorted_exonstart = sort {$a <=> $b} @{$EX_END{$end}};
 	    $min_end = $sorted_exonend[0];
