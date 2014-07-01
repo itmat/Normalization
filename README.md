@@ -791,8 +791,8 @@ This will delete intermediate files.
 * &lt;sam file name> : name of the alignment sam file (e.g. RUM.sam, Aligned.out.sam)
 * &lt;fai file> : full path of fai file 
 * option : <br>
-  **-dont_cov : set this if you DO NOT want to gzip the coverage files (By default, it will gzip the coverage files) <br>
-  **-dont_bam : set this if you DO NOT conver SAM to bam (By default, it will conver sam to bam) <br>
+  **-dont_cov** : set this if you DO NOT want to gzip the coverage files (By default, it will gzip the coverage files) <br>
+  **-dont_bam** : set this if you DO NOT want to convert SAM to bam (By default, it will conver sam to bam) <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
   **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
