@@ -611,7 +611,7 @@ if ($run_norm eq "true"){
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
-	$job = "echo \"perl $norm_script_dir/runall_get_novel_exons.pl $sample_dir $LOC $samfilename $min_option $max_option\" | $batchjobs  $jobname \"$study.runall_get_novel_exons\" $mem -o $logdir/$study.runall_get_novel_exons.out -e $logdir/$study.runall_get_novel_exons.err";
+	$job = "echo \"perl $norm_script_dir/runall_get_novel_exons.pl $sample_dir $LOC $samfilename $geneinfo $min_option $max_option\" | $batchjobs  $jobname \"$study.runall_get_novel_exons\" $mem -o $logdir/$study.runall_get_novel_exons.out -e $logdir/$study.runall_get_novel_exons.err";
 
 	&onejob($job, $name_of_job, $job_num);
 	&check_exit_onejob($job, $name_of_job, $job_num);

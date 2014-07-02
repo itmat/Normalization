@@ -324,11 +324,12 @@ Create a study-specific master list of exons by adding novel exons from the stud
 
  This takes `*junctions_all.rum` files as input.
 
-         perl runall_get_novel_exons.pl <sample dirs> <loc> <sam file name> [options]
+         perl runall_get_novel_exons.pl <sample dirs> <loc> <sam file name> <gene info file> [options]
 
     * &lt;sample dirs> : a file with the names of the sample directories
     * &lt;loc> : full path of the directory with the sample directories (`READS`)
     * &lt;sam file name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
+    * &lt;gene info file> : a UCSC gene annotation file including chrom, strand, txStrand, txEnd, exonCount, exonStarts, exonEnds, and name
     * options : <br>
      **-min &lt;n>** : size of inferred exon, min is set at 10 by default<br>
      **-max &lt;n>** : size of inferred exon, max is set at 1200 by default
