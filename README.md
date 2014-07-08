@@ -57,7 +57,20 @@ This is an optional step. You can use sam2cov to create coverage files and uploa
      cd sam2cov
      make
 
-#####F. Output Directory Structure
+#####F. Index
+Get the gene information file and genome sequence one-line fasta file. 
+###### i. mm9 and hg19
+The following files are available at `http://itmat.indexes.s3.amazonaws.com/`:
+
+     mm9_ucsc_gene_info.txt
+     mm9_genome_one-line-seqs.fa
+     hg19_ucsc_gene_info.txt
+     hg19_genome_one-line-seqs.fa
+
+###### ii. other organism
+Follow the instructions [here](https://github.com/itmat/rum/wiki/Creating-indexes) to create indexes.
+
+#####G. Output Directory Structure
 You will find all log files and shell scripts in `STUDY/logs` and `STUDY/shell_scripts` directory, respectively. Once you complete the normalization pipeline, your directory structure will look like this (before the Clean Up step):
 <pre>
 STUDY
