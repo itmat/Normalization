@@ -67,7 +67,7 @@ The following files are available at `http://itmat.indexes.s3.amazonaws.com/`:
      hg19_ucsc_gene_info.txt
      hg19_genome_one-line-seqs.fa
 
-###### ii. other organism
+###### ii. other organisms
 Follow the instructions [here](https://github.com/itmat/rum/wiki/Creating-indexes) to create indexes.
 
 #####G. Output Directory Structure
