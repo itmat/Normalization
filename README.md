@@ -60,14 +60,12 @@ This is an optional step. You can use sam2cov to create coverage files and uploa
 #####F. Index
 Get the gene information file and genome sequence one-line fasta file. 
 ###### i. mm9 and hg19
-The following files are available at `http://itmat.indexes.s3.amazonaws.com/`:
+The following files are available for download: 
 
-     mm9_ucsc_gene_info.txt
-     mm9_genome_one-line-seqs.fa
-     hg19_ucsc_gene_info.txt
-     hg19_genome_one-line-seqs.fa
-
-e.g. `wget http://itmat.indexes.s3.amazonaws.com/mm9_ucsc_gene_info.txt`
+     http://itmat.indexes.s3.amazonaws.com/mm9_ucsc_gene_info.txt
+     http://itmat.indexes.s3.amazonaws.com/mm9_genome_one-line-seqs.fa
+     http://itmat.indexes.s3.amazonaws.com/hg19_ucsc_gene_info.txt
+     http://itmat.indexes.s3.amazonaws.com/hg19_genome_one-line-seqs.fa
 
 ###### ii. other organisms
 Follow the instructions [here](https://github.com/itmat/rum/wiki/Creating-indexes) to create indexes.
