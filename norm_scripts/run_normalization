@@ -386,7 +386,7 @@ while ($line = <IN>){
     chomp($line);
     $file_loc = "$LOC/$line/$samfilename";
     unless (-e $file_loc){
-	die "ERROR: SAM file \"$file_loc\" does not exist. Please double check --sample_dir, --loc, and --samfilename\n";
+	die "ERROR: SAM file \"$file_loc\" does not exist. Please double check --sample_dirs, --loc, and --samfilename\n";
     }
 }
 close(IN);

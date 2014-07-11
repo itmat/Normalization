@@ -1,14 +1,16 @@
 #!/usr/bin/env perl
 $| = 1;
 
-if(@ARGV<5) {
-    die "Usage: quantify_exons.pl <exons file> <sam file> <output file> <exon sam out> <intron sam out> [options]
+if(@ARGV<6) {
+    die "Usage: quantify_exons.pl <exons file> <sam file> <output file> <exon sam out> <intron sam out> <loc>[options]
 
 <exons file> has one line per exon, each line is in the format chr:start-end
 
 <sam file> has must have mate pairs in consecutive rows
 
 <output file> is tab delimited with two columns:   [feature]   [count]
+
+<loc> is the directory with the sample directories
 
 This script reports fragments per feature by default.  If you want reads
 per feature use the -rpf option.
@@ -67,7 +69,7 @@ $HI1_as_unique = "false";
 $rpf = 'false';
 $nuonly = 'false';
 $i_exon = 20;
-for($i=5; $i<@ARGV; $i++) {
+for($i=6; $i<@ARGV; $i++) {
     $arg_recognized = 'false';
     if($ARGV[$i] eq '-treat-primary-as-unique') {
 	$secondary_as_non_unique = "true";
@@ -105,9 +107,11 @@ $samfile = $ARGV[1];
 $outfile = $ARGV[2];
 $exon_sam_outfile = $ARGV[3];
 $intron_sam_outfile = $ARGV[4];
-
+$LOC = $ARGV[5];
+$linecountfile = "$LOC/linecounts_exonmappers.txt";
 if($exon_sam_outfile ne "none") {
     open(EXONSAMOUT, ">$exon_sam_outfile");
+    open (LC, ">>$linecountfile");
 }
 if($intron_sam_outfile ne "none") {
     open(INTRONSAMOUT, ">$intron_sam_outfile");
@@ -563,9 +567,11 @@ while ($line1 = <INFILE>) {
     $FLAG_DIST[$Flag]++;
 }
 for ($i=1; $i<=$i_exon; $i++){
+    print LC "$exon_sam_outfile[$i]\t$outfile_cnt[$i]\n";
     print {$OUTFILE[$i]} "line count = $outfile_cnt[$i]\n";
     close($OUTFILE[$i]);
 }
+
 open(OUTFILE, ">$outfile");
 print OUTFILE "total number of reads-pairs which incremented at least one exon: $CNT_OF_FRAGS_WHICH_HIT_EXONS\n";
 print OUTFILE "feature\tmin\tmax\n";
@@ -580,6 +586,7 @@ foreach $exon (sort {cmpChrs($a,$b)} keys %EXON_counts_unique) {
 close(OUTFILE);
 if($exon_sam_outfile ne "none") {
     close(EXONSAMOUT);
+    close(LC);
 }
 if($intron_sam_outfile ne "none") {
     close(INTRONSAMOUT);

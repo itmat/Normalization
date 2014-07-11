@@ -234,18 +234,18 @@ while($line = <INFILE>) {
 	open(OUTFILE, ">$shdir/$shfile");
 		if($nuonly eq 'false') {
 		    if ($pe eq "true"){
-			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -depth $i_exon\n";
+			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC -depth $i_exon\n";
 		    }
 		    else {
-			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -rpf -depth $i_exon\n";
+			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC -rpf -depth $i_exon\n";
 		    }
 		} else {
 		    $logname = "$logdir/nu.quantifyexons.$id";
 		    if ($pe eq "true"){
-			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -NU-only -depth $i_exon\n";
+			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC -NU-only -depth $i_exon\n";
 		    }
 		    else{
-			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile -NU-only -rpf -depth $i_exon\n";
+			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC -NU-only -rpf -depth $i_exon\n";
 		    }
 		}
     } 
@@ -253,19 +253,19 @@ while($line = <INFILE>) {
 	open(OUTFILE, ">$shdir/$shfile2");
 	if($nuonly eq 'false') {
 	    if ($pe eq "true"){
-		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none\n";
+		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none $LOC\n";
 	    }
 	    else {
-		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none -rpf\n";
+		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none $LOC -rpf\n";
 	    }
 	}
 	else{
 	    $logname2 = "$logdir/nu.quantifyexons2.$id";
 	    if ($pe eq "true"){
-		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none -NU-only\n";
+		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none $LOC -NU-only\n";
 	    }
 	    else{
-		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none -NU-only -rpf\n";
+		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none $LOC -NU-only -rpf\n";
 	    }
 	}
     }

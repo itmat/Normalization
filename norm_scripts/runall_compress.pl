@@ -166,7 +166,10 @@ if ($sam2bam eq 'true'){
 	if (-e "$LOC/$line/$sam_name"){
 	    open(OUT, ">$shfile");
 	    print OUT "samtools view -bt $fai_file $LOC/$line/$sam_name > $LOC/$line/$bam_name\n";
-	    print OUT "rm $LOC/$line/$sam_name\n";
+	    print OUT "lc=`cat $LOC/$line/$bam_name | wc -l`\n";
+	    print OUT "if [ \"\$lc\" -ne 0 ]; then rm $LOC/$line/$sam_name\n";
+	    print OUT "else samtools view -bt $fai_file $LOC/$line/$sam_name > $LOC/$line/$bam_name\n";
+	    print OUT "echo sam2bam ran twice for '$LOC/$line/$sam_name'. please make sure '$LOC/$line/$bam_name' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
 	    print OUT "echo \"got here \"\n";
 	    close(OUT);
 	    while (qx{$status | wc -l} > $njobs){
@@ -176,7 +179,10 @@ if ($sam2bam eq 'true'){
 	    if (-e "$final_M_dir/$id.FINAL.norm.sam"){
 		open(OUT2, ">$norm_shfile");
 		print OUT2 "samtools view -bt $fai_file $final_M_dir/$id.FINAL.norm.sam > $final_M_dir/$id.FINAL.norm.bam \n";
-		print OUT2 "rm $final_M_dir/$id.FINAL.norm.sam\n";
+		print OUT2 "lc=`cat $final_M_dir/$id.FINAL.norm.bam | wc -l`\n";
+		print OUT2 "if [ \"\$lc\" -ne 0 ]; then rm $final_M_dir/$id.FINAL.norm.sam\n";
+		print OUT2 "else samtools view -bt $fai_file $final_M_dir/$id.FINAL.norm.sam > $final_M_dir/$id.FINAL.norm.bam\n";
+		print OUT2 "echo sam2bam ran twice for '$final_M_dir/$id.FINAL.norm.sam'. please make sure '$final_M_dir/$id.FINAL.norm.bam' file is not empty and delete the sam file  >> $logdir/$study.sam2bam.log\nfi\n";
 		print OUT2 "echo \"got here \"\n";
 		close(OUT2);
 		while (qx{$status | wc -l} > $njobs){
@@ -188,7 +194,10 @@ if ($sam2bam eq 'true'){
 		if (-e "$final_U_dir/$id.FINAL.norm_u.sam"){
 		    open(OUT2, ">$norm_shfile");
 		    print OUT2 "samtools view -bt $fai_file $final_U_dir/$id.FINAL.norm_u.sam > $final_U_dir/$id.FINAL.norm_u.bam \n";
-		    print OUT2 "rm $final_U_dir/$id.FINAL.norm_u.sam\n";
+		    print OUT2 "lc=`cat $final_U_dir/$id.FINAL.norm_u.bam | wc -l`\n";
+		    print OUT2 "if [ \"\$lc\" -ne 0 ]; then rm $final_U_dir/$id.FINAL.norm_u.sam\n";
+		    print OUT2 "else samtools view -bt $fai_file $final_U_dir/$id.FINAL.norm_u.sam > $final_U_dir/$id.FINAL.norm_u.bam\n";
+		    print OUT2 "echo sam2bam ran twice for '$final_U_dir/$id.FINAL.norm_u.sam'.please make sure '$final_U_dir/$id.FINAL.norm_u.bam' file is not empty and delete the sam file  >> $logdir/$study.sam2bam.log\nfi\n";
 		    print OUT2 "echo \"got here \"\n";
 		    close(OUT2);
 		    while (qx{$status | wc -l} > $njobs){
@@ -199,7 +208,10 @@ if ($sam2bam eq 'true'){
 		if (-e "$final_NU_dir/$id.FINAL.norm_nu.sam"){
 		    open(OUT2, ">$norm_shfile");
 		    print OUT2 "samtools view -bt $fai_file $final_NU_dir/$id.FINAL.norm_nu.sam > $final_NU_dir/$id.FINAL.norm_nu.bam \n";
-		    print OUT2 "rm $final_NU_dir/$id.FINAL.norm_nu.sam\n";
+                    print OUT2 "lc=`cat $final_NU_dir/$id.FINAL.norm_nu.bam | wc -l`\n";
+                    print OUT2 "if [ \"\$lc\" -ne 0 ]; then rm $final_NU_dir/$id.FINAL.norm_nu.sam\n";
+                    print OUT2 "else samtools view -bt $fai_file $final_NU_dir/$id.FINAL.norm_nu.sam > $final_NU_dir/$id.FINAL.norm_nu.bam\n";
+		    print OUT2 "echo sam2bam ran twice for '$final_NU_dir/$id.FINAL.norm_nu.sam'.please make sure '$final_NU_dir/$id.FINAL.norm_nu.bam' file is not empty and delete the sam file  >> $logdir/$study.sam2bam.log\nfi\n";
 		    print OUT2 "echo \"got here \"\n";
 		    close(OUT2);
 		    while (qx{$status | wc -l} > $njobs){
@@ -212,8 +224,9 @@ if ($sam2bam eq 'true'){
 		}
 	    }
 	}
+
 	else{
-	    print STDOUT "WARNING: file \"$LOC/$line/$sam_name\" doesn't exist. please check the input samfile name/path\n\n.";
+	    print STDOUT "WARNING: file \"$LOC/$line/$sam_name\" doesn't exist. please check the input samfile name/path\n\n";
 	}
 	
     }

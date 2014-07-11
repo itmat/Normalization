@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 $|=1;
-if(@ARGV<4) {
-    die "Usage: quantify_introns.pl <introns file> <sam file> <output file> <output sam?> [options]
+if(@ARGV<5) {
+    die "Usage: quantify_introns.pl <introns file> <sam file> <output file> <output sam?> <loc>[options]
 
 <introns file> has one line per intron, each line is in the format chr:start-end
 
@@ -12,6 +12,8 @@ if(@ARGV<4) {
 <output sam?> = true if you want it to output two sam files, one of things that map to introns 
                 and one with things that do not.
 
+<loc> is the directory with the sample directories
+
 option:
 
 -depth <n> : by default, it will output 10 intronmappers
@@ -19,7 +21,7 @@ option:
 ";
 }
 $i_intron = 10;
-for($i=4; $i<@ARGV; $i++) {
+for($i=5; $i<@ARGV; $i++) {
     $arg_recognized = 'false';
     if($ARGV[$i] eq '-depth'){
 	$i_intron = $ARGV[$i+1];
@@ -39,6 +41,8 @@ $intronoutfile =~ s/.sam$/_intronmappers.sam/;
 $intergenicoutfile = $samfile;
 $intergenicoutfile =~ s/.sam$/_intergenicmappers.sam/;
 $outputsam = $ARGV[3];
+$LOC = $ARGV[4];
+$linecountfile = "$LOC/linecounts_notexonmappers.txt";
 if($outputsam eq "true") {
     for ($i=1; $i<=$i_intron; $i++){
 	$intronoutfile[$i] = $intronoutfile;
@@ -46,6 +50,7 @@ if($outputsam eq "true") {
 	open($OUTFILE[$i], ">$intronoutfile[$i]");
     }
     open(IGOUTFILE, ">$intergenicoutfile");
+    open (LC, ">>$linecountfile");
 }
 
 open(OUTFILE, ">$outfile");
@@ -223,12 +228,15 @@ for($i=0; $i<@flagDist; $i++) {
 	
 if($outputsam eq "true") {
     print IGOUTFILE "line count = $outfile_cnt_ig\n";
+    print LC "$intergenicoutfile\t$outfile_cnt_ig\n";
     for ($i=1; $i<=$i_intron; $i++){
+	print LC "$intronoutfile[$i]\t$outfile_cnt[$i]\n";
 	print {$OUTFILE[$i]} "line count = $outfile_cnt[$i]\n";
 	close($OUTFILE[$i]);
     }
     close(INTRONOUTFILE);
     close(IGOUTFILE);
+    close(LC);
 }
 
 foreach $intron (sort {cmpChrs($a,$b)} keys %INTRON_hash) {

@@ -199,12 +199,12 @@ while($line = <INFILE>) {
     $outfile =~ s/.sam/_intronquants/;
     if($outputsam eq "true") {
 	open(OUTFILE, ">$shdir/$shfile");
-	print OUTFILE "perl $path $introns $LOC/$dir/$filename $LOC/$dir/$outfile true -depth $i_intron\n";
+	print OUTFILE "perl $path $introns $LOC/$dir/$filename $LOC/$dir/$outfile true $LOC -depth $i_intron\n";
 	close(OUTFILE);
     } 
     else {
 	open(OUTFILE, ">$shdir/$shfile2");
-	print OUTFILE "perl $path $introns $final_nexon_dir/$filename $final_nexon_dir/$outfile false\n";
+	print OUTFILE "perl $path $introns $final_nexon_dir/$filename $final_nexon_dir/$outfile false $LOC\n";
 	close(OUTFILE);
     }
     if($outputsam eq "true") {

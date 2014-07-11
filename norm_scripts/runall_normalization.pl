@@ -434,12 +434,10 @@ if ($run_blast eq "true"){
     else{
 	$new_queue = "-mem $queue_30G";
     }
-    if ($max_map > 200000000){
-	$new_queue = "-mem $queue_60G";
-    }
-    else{
-	if ($max_map > 150000000){
-	    $new_queue = "-mem $queue_45G";
+    if ($max_map > 150000000){
+	$new_queue = "-mem $queue_45G";
+	if ($max_map > 200000000){
+	    $new_queue = "-mem $queue_60G";
 	}
     }
     while(qx{$stat | wc -l} > $maxjobs){
@@ -509,7 +507,7 @@ if ($run_blast eq "true"){
     while(qx{$stat | wc -l} > $maxjobs){
         sleep(10);
     }
-    $job = "echo \"perl $norm_script_dir/runall_get_ribo_percents.pl $sample_dir $LOC $c_option $new_mem $cluster_max \" | $batchjobs  $jobname \"$study.runall_getribopercents\" -o $logdir/$study.runall_getribopercents.out -e $logdir/$study.runall_getribopercents.err";
+    $job = "echo \"perl $norm_script_dir/runall_get_ribo_percents.pl $sample_dir $LOC $c_option $new_queue $cluster_max \" | $batchjobs  $jobname \"$study.runall_getribopercents\" -o $logdir/$study.runall_getribopercents.out -e $logdir/$study.runall_getribopercents.err";
 
     &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
     &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
@@ -531,11 +529,13 @@ if ($run_blast eq "true"){
     $job_num++;
     $exp_num_reads = `grep Expected $study_dir/STATS/expected_num_reads.txt`;
     print LOG "\n* $exp_num_reads\n";
+
 }
 
 if ($run_norm eq "true"){
     $job_num = 1;
     print LOG "\nNormalization\n-------------\n";
+
 #filter_sam
     $name_of_alljob = "$study.runall_filtersam";
     $name_of_job = "$study.filtersam";
@@ -617,7 +617,7 @@ if ($run_norm eq "true"){
 	&check_exit_onejob($job, $name_of_job, $job_num);
 	&check_err ($name_of_job, $err_name, $job_num);
 	$job_num++;
-    }    
+    }
 
 #quantify_exons for filter
     $name_of_alljob = "$study.quantifyexons.filter.u";
@@ -647,7 +647,7 @@ if ($run_norm eq "true"){
     &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
     &check_err ($name_of_alljob, $err_name, $job_num);
     $job_num++;
-    
+
 #quantify_exons for filter nu
     $name_of_alljob = "$study.quantifyexons.filter.nu";
     $name_of_job = "$study.quantifyexons2";
@@ -856,32 +856,54 @@ if ($run_norm eq "true"){
     &check_err ($name_of_job, $err_name, $job_num);
     $job_num++;
 
-#runall_head
-    $name_of_alljob = "$study.runall_head";
-    $name_of_job = "$study.head";
-    $err_name = "*_head.*.err";
+#runall_shuf
+    $name_of_alljob = "$study.runall_shuf";
+    $name_of_job = "$study.shuf";
+    $err_name = "*_shuf.*.err";
     &clear_log($name_of_alljob, $err_name);
     if ($other eq "true"){
-	$c_option = "$submit \\\"$batchjobs, $jobname, $stat\\\"";
+	$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
+	$new_queue = "";
+    }
+    else{
+        $new_queue = "-mem $queue_6G";
+    }
+    @g = glob("$LOC/linecount*txt");
+    if (@g ne '0'){
+	$max_lc = `cut -f 2 $LOC/linecount*txt | sort -nr | head -1`;
+	if ($max_lc > 50000000){
+	    $new_queue = "-mem $queue_10G";
+	    if (100000000 < $max_lc){
+		if ($max_lc <= 300000000){
+		    $new_queue = "-mem $queue_30G";
+		}
+		elsif ($max_lc <= 450000000){
+		    $new_queue = "-mem $queue_45G";
+		}
+		else{
+		    $new_queue = "-mem $queue_60G";
+		}
+	    }
+	}
     }
     while(qx{$stat | wc -l} > $maxjobs){
         sleep(10);
     }
-    $job = "echo \"perl $norm_script_dir/runall_head.pl $sample_dir $LOC $c_option $cluster_max -depthE $i_exon -depthI $i_intron\" | $batchjobs  $jobname \"$study.runall_head\" -o $logdir/$study.runall_head.out -e $logdir/$study.runall_head.err";
+    $job = "echo \"perl $norm_script_dir/runall_shuf.pl $sample_dir $LOC $c_option $new_queue $cluster_max -depthE $i_exon -depthI $i_intron\" | $batchjobs  $jobname \"$study.runall_shuf\" -o $logdir/$study.runall_shuf.out -e $logdir/$study.runall_shuf.err";
 
     &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
     &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
     &check_err ($name_of_alljob, $err_name, $job_num);
     $job_num++;
     
-#cat_headfiles
-    $name_of_job = "$study.cat_headfiles";
+#cat_shuffiles
+    $name_of_job = "$study.cat_shuffiles";
     $err_name = "$name_of_job.err";
     &clear_log($name_of_job, $err_name);
     while(qx{$stat | wc -l} > $maxjobs){
         sleep(10);
     }
-    $job = "echo \"perl $norm_script_dir/cat_headfiles.pl $sample_dir $LOC\" | $batchjobs  $jobname \"$study.cat_headfiles\" -o $logdir/$study.cat_headfiles.out -e $logdir/$study.cat_headfiles.err";
+    $job = "echo \"perl $norm_script_dir/cat_shuffiles.pl $sample_dir $LOC\" | $batchjobs  $jobname \"$study.cat_shuffiles\" -o $logdir/$study.cat_shuffiles.out -e $logdir/$study.cat_shuffiles.err";
 
     &onejob($job, $name_of_job, $job_num);
     &check_exit_onejob($job, $name_of_job, $job_num);
@@ -1176,7 +1198,9 @@ if ($run_norm eq "true"){
 	&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	&check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
 	&only_err ($name_of_alljob, $err_name, $job_num);
-	$job_num++;
+	if (-e "$logdir/$study.sam2bam.log"){
+	    print LOG "\t* please check the sam2bam logfile $logdir/$study.sam2bam.log\n";
+	}
     }
     print LOG "\n* Normalization completed successfully.\n\n";
 }
