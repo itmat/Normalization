@@ -535,7 +535,7 @@ if ($run_blast eq "true"){
 if ($run_norm eq "true"){
     $job_num = 1;
     print LOG "\nNormalization\n-------------\n";
-=comment
+
 #filter_sam
     $name_of_alljob = "$study.runall_filtersam";
     $name_of_job = "$study.filtersam";
@@ -1011,7 +1011,7 @@ if ($run_norm eq "true"){
     &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
     &check_err ($name_of_alljob, $err_name, $job_num);
     $job_num++;
-=cut
+
 #make_final_spreadsheets
     $name_of_alljob = "$study.make_final_spreadsheets";
     $name_of_job = "$study.final_spreadsheet";
@@ -1020,16 +1020,15 @@ if ($run_norm eq "true"){
     if ($other eq "true"){
 	$c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_6G, $queue_10G, $stat\\\"";
 	$new_queue = "";
-	if ($num_samples > 500){
-	    $new_queue = "-mem $queue_60G";
-	}
     }
     else{
 	$new_queue = "-mem $queue_10G";
-	if ($num_samples > 500){
-	    $new_queue = "-mem $queue_60G";
-	}
     }
+
+    if ($num_samples > 500){
+	$new_queue = "-mem $queue_60G";
+    }
+
     while(qx{$stat | wc -l} > $maxjobs){
         sleep(10);
     }
