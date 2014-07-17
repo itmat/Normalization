@@ -116,7 +116,7 @@ for ($i=2; $i<@ARGV; $i++){
 	$request_memory_option = "-q";
 	$mem = "plus";
     }
-    if ($ARGV[$i] eq 'sge'){
+    if ($ARGV[$i] eq '-sge'){
         $numargs++;
         $option_found = "true";
         $submit = "qsub -cwd";
