@@ -113,7 +113,7 @@ STUDY
 
 ========================================================================================================
 
-### 1. RUN_NORMALIZATION
+## 1. RUN_NORMALIZATION
 
 This runs the Normalization pipeline. <br>
 You can also run it step by step using the scripts documented in [#2. NORMALIZATION STEPS](https://github.com/itmat/Normalization/tree/master#2-normalization-steps).
@@ -160,9 +160,10 @@ This creates `runall_normalization.sh` file in `STUDY/shell_scripts` directory a
 
 ========================================================================================================
 
-### 2. NORMALIZATION STEPS
-#### 1) Preprocess
+## 2. NORMALIZATION STEPS
+### [1] Preprocess
 
+#### 1) Mapping statistics and Blast
 ##### A. Mapping Statistics
 * **Get total number of reads from input fasta or fastq files**
 
@@ -255,17 +256,6 @@ __[NORMALIZATION FACTOR] Ribo percents__
   **-max_jobs &lt;n>**  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.<br>
 
 It assumes there are files of ribosomal ids output from runblast.pl each with suffix "ribosomalids.txt" in each sample directory. This will output `ribosomal_counts.txt` and `ribo_percents.txt` to `STUDY/STATS` directory.
-
-##### C. Predict Number of Reads
-
-      perl predict_num_reads.pl <sample dirs> <loc> [option]
-
-* &lt;sample dirs> : a file with the names of the sample directories
-* &lt;loc> : full path of the directory with the sample directories (`READS`)
-* option : <br>
-  **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
-
-This will provide a rough estimate of number of reads you'll have after normalization in `STUDY/STATS/expected_num_reads.txt`. Based on this information, samples can be added/removed by modifying `sample_dirs` file.
 
 #### 2) Run Filter
 This step removes all rows from input sam file except those that satisfy all of the following:
@@ -523,7 +513,23 @@ __[NORMALIZATION FACTOR] Percent of non-exonic signal that is intergenic (as opp
 
 This will output `percent_intergenic_Unique.txt` and/or `percent_intergenic_NU.txt` depending on the option provided to `STUDY/STATS` directory.
 
-#### 5) Downsample
+#### 5) Predict Number of Reads
+
+      perl predict_num_reads.pl <sample dirs> <loc> [option]
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* option : <br>
+ **-u** : set this if you want to return number of unique reads only, otherwise by default it will return number of unique and non-unique reads <br>
+ **-nu** : set this if you want to return number of non-unique reads only, otherwise by default it will return number of unique and non-unique reads <br>
+ **-depthE &lt;n>** : This is the number of exonmappers file used for normalization. (By default, &lt;n> = 20)
+ **-depthI &lt;n>** : This is the number of intronmappers file used for normalization. (By default, &lt;n> = 10)
+
+This will provide a rough estimate of number of reads you'll have after normalization in `STUDY/STATS/expected_num_reads.txt`. Based on this information, samples can be added/removed by modifying `sample_dirs` file.
+
+### [2] Normalization Steps
+
+#### 6) Downsample
 
 ##### A. Downsample by type
 This identifies minimum line count of each type of exonmappers/intronmappers/intergenicmappers and downsamples each file by taking the minimum line count of rows from each file.
@@ -542,7 +548,7 @@ This identifies minimum line count of each type of exonmappers/intronmappers/int
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
   **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)<br>
-  ** If the maximum line count in `STUDY/READS/linecounts*txt` is > 50,000,000, use -mem option (6G for 60 million lines, 7G for 70 million lines, 8G for 80 million lines, etc).
+  ** If the maximum line count in `STUDY/READS/sample*/*/*linecounts*txt` is > 50,000,000, use -mem option (6G for 60 million lines, 7G for 70 million lines, 8G for 80 million lines, etc).
 
 This will output the same number of rows from each file in each `sample_dir/Unique` and/or `sample_dir/NU` directory of the same type.
 
@@ -575,7 +581,7 @@ This will create `STUDY/NORMALIZED_DATA`, `STUDY/NORMALIZED_DATA/exonmappers`, a
 
 This will create `FINAL_SAM`. Then, depending on the option given, it will make `FINAL_SAM/Unique`, `FINAL_SAM/NU`, or `FINAL_SAM/MERGED` directory and output final sam files to the directories created. A tag will be added to each sequence indicating its type (XT:A:E for exonmappers, XT:A:I for intronmapper, and XT:A:G for intergenicmappers).
 
-#### 6) Run sam2junctions
+#### 7) Run sam2junctions
 
 By default, this will use merged final sam files as input. 
  
@@ -596,7 +602,7 @@ By default, this will use merged final sam files as input.
  
 This will create `STUDY/NORMALIZED_DATA/JUNCTIONS` directory and output `junctions_hq.bed`, `junctions_all.bed` and `junctions_all.rum` files of all samples.
 
-#### 7) Master table of features counts
+#### 8) Master table of features counts
 #####A. Get Exonquants 
 **a. Concatenate unique and non-unique normalized exonmappers**
 
@@ -721,7 +727,9 @@ This will output `annotated_master_list_of_*` to `STUDY/NORMALIZED_DATA/SPREADSH
 
 This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts` to `STUDY/NORMALIZED_DATA/SPREADSHEETS`.
 
-#### 8) Data Visualization
+### [3] Postprocess
+
+#### 9) Data Visualization
 
 Use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR.
 
@@ -752,7 +760,7 @@ Use sam2cov to create coverage files and upload them to a Genome Browser. Curren
 
 This will output `*Unique.cov` and `*NU.cov` files of all samples to `STUDY/NORMALIZED_DATA/COV`.
 
-#### 9) Number of Reads after Normalization
+#### 10) Number of Reads after Normalization
 #####A. Mapping statistics
 Run the script with **-norm** option.
 
@@ -788,7 +796,7 @@ This will parse the `*mappingstats.txt` files and output a table with summary in
  **-norm_u** : set this if you want to compute mapping statistics for normalized sam files (Unique)<br>
  **-norm_nu** : set this if you want to compute mapping statistics for normalized sam files (NU)
 
-#### 10) Clean Up
+#### 11) Clean Up
 #####A. Delete Intermediate SAM Files
 
      perl cleanup.pl <sample dirs> <loc>
