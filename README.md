@@ -129,8 +129,9 @@ You can also run it step by step using the scripts documented in [#2. NORMALIZAT
 * --cfg <cfg file> : configuration file for the study
 * option : <br>
      [pipeline options]<br>
-     **-preprocess_only** : set this if you want to run steps in "1) Preprocess" only<br>
-     **-skip_preprocess** : set this if you've already run all steps in "1) Preprocess" and want to skip them<br>
+     **-preprocess_all** : set this if you want to run steps in "[I] Preprocess" only<br>
+     **-preprocess_skip_blast** : set this if you've already run "[I] Preprocess" and want to rerun the step using different list of sample directories or options.
+     **-skip_preprocess** : set this if you've already run all steps in "[I] Preprocess" and want to skip them<br>
      [data type]<br>
      **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data<br>
      **-fa** : set this if the unaligned files are in fasta format<br>
@@ -161,7 +162,7 @@ This creates `runall_normalization.sh` file in `STUDY/shell_scripts` directory a
 ========================================================================================================
 
 ## 2. NORMALIZATION STEPS
-### [1] Preprocess
+### [I] Preprocess
 
 #### 1) Mapping statistics and Blast
 ##### A. Mapping Statistics
@@ -522,12 +523,12 @@ This will output `percent_intergenic_Unique.txt` and/or `percent_intergenic_NU.t
 * option : <br>
  **-u** : set this if you want to return number of unique reads only, otherwise by default it will return number of unique and non-unique reads <br>
  **-nu** : set this if you want to return number of non-unique reads only, otherwise by default it will return number of unique and non-unique reads <br>
- **-depthE &lt;n>** : This is the number of exonmappers file used for normalization. (By default, &lt;n> = 20)
+ **-depthE &lt;n>** : This is the number of exonmappers file used for normalization. (By default, &lt;n> = 20)<br>
  **-depthI &lt;n>** : This is the number of intronmappers file used for normalization. (By default, &lt;n> = 10)
 
 This will provide a rough estimate of number of reads you'll have after normalization in `STUDY/STATS/expected_num_reads.txt`. Based on this information, samples can be added/removed by modifying `sample_dirs` file.
 
-### [2] Normalization Steps
+### [II] Normalization Steps
 
 #### 6) Downsample
 
@@ -727,7 +728,7 @@ This will output `annotated_master_list_of_*` to `STUDY/NORMALIZED_DATA/SPREADSH
 
 This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts` to `STUDY/NORMALIZED_DATA/SPREADSHEETS`.
 
-### [3] Postprocess
+### [III] Postprocess
 
 #### 9) Data Visualization
 
