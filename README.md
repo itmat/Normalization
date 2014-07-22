@@ -1,5 +1,5 @@
 # Normalization
-### 0. Setting Up
+## 0. Setting Up
 
 #####A. Clone the repository
     
@@ -129,9 +129,10 @@ You can also run it step by step using the scripts documented in [#2. NORMALIZAT
 * --cfg <cfg file> : configuration file for the study
 * option : <br>
      [pipeline options]<br>
-     **-preprocess_all** : set this if you want to run steps in "[I] Preprocess" only<br>
-     **-preprocess_skip_blast** : set this if you've already run "[I] Preprocess" and want to rerun the step using different list of sample directories or options.
-     **-skip_preprocess** : set this if you've already run all steps in "[I] Preprocess" and want to skip them<br>
+     The pipeline has 4 steps: [I] Preprocess, [II] Filter, [III] Downsample & Quantify and [IV] Postprocess.<br>
+     **-I_and_II** : set this if you want to run steps in \"[I] Preprocess\" and \"[II] Filter\" (upto Predict Number of Reads step).<br>
+     **-II_only** : set this if you've already run the pipeline with -I_and_II option and want to run \"[II] Filter\" step only using different list of sample directories or options (skip preprocess).<br>
+     **-III_and_IV** : set this if you've already run all steps in \"[I] Preprocess\" and \"[II] Filter\" and want to skip them.<br>
      [data type]<br>
      **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data<br>
      **-fa** : set this if the unaligned files are in fasta format<br>
@@ -257,6 +258,8 @@ __[NORMALIZATION FACTOR] Ribo percents__
   **-max_jobs &lt;n>**  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.<br>
 
 It assumes there are files of ribosomal ids output from runblast.pl each with suffix "ribosomalids.txt" in each sample directory. This will output `ribosomal_counts.txt` and `ribo_percents.txt` to `STUDY/STATS` directory.
+
+### [II] Filter
 
 #### 2) Run Filter
 This step removes all rows from input sam file except those that satisfy all of the following:
@@ -528,7 +531,7 @@ This will output `percent_intergenic_Unique.txt` and/or `percent_intergenic_NU.t
 
 This will provide a rough estimate of number of reads you'll have after normalization in `STUDY/STATS/expected_num_reads.txt`. Based on this information, samples can be added/removed by modifying `sample_dirs` file.
 
-### [II] Normalization Steps
+### [III] Downsample & Quantify
 
 #### 6) Downsample
 
@@ -728,7 +731,7 @@ This will output `annotated_master_list_of_*` to `STUDY/NORMALIZED_DATA/SPREADSH
 
 This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts` to `STUDY/NORMALIZED_DATA/SPREADSHEETS`.
 
-### [III] Postprocess
+### [IV] Postprocess
 
 #### 9) Data Visualization
 
