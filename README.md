@@ -1,5 +1,5 @@
 # Normalization
-## 0. Setting Up
+### 0. Setting Up
 
 #####A. Clone the repository
     
@@ -113,11 +113,16 @@ STUDY
 
 ========================================================================================================
 
-## 1. RUN_NORMALIZATION
+### 1. RUN_NORMALIZATION
 
-This runs the Normalization pipeline. <br>
+This runs the Normalization pipeline. <br> 
 You can also run it step by step using the scripts documented in [#2. NORMALIZATION STEPS](https://github.com/itmat/Normalization/tree/master#2-normalization-steps).
 
+By default, the pipeline will pause after [5) Predict Number of Reads](https://github.com/itmat/Normalization/tree/master#5-predict-number-of-reads). You will have a chance to check the following before resuming:
+ (1) number of reads you will have after normalization
+     - modify the list of sample directories accordingly.
+ (2) percent high expressors
+     - use -cutoff_highexp <n> option to set/change the highexpressor cutoff value.
 
     run_normalization --sample_dirs <file of sample_dirs> --loc <s> \
     --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
@@ -129,11 +134,8 @@ You can also run it step by step using the scripts documented in [#2. NORMALIZAT
 * --cfg <cfg file> : configuration file for the study
 * option : <br>
      [pipeline options]<br>
-     **This pipeline has 4 steps: <br>[I] Preprocess, [II] Filter, [III] Downsample & Quantify and [IV] Postprocess.**<br>
-     **-I_and_II** : set this if you want to run steps in [I] Preprocess and [II] Filter<br>
-                     (up to Predict Number of Reads step).<br>
-     **-II_only** : set this if you've already run the pipeline with **-I_and_II** option and want to rerun [II] Filter step only using different list of sample directories or options (skip preprocess).<br>
-     **-III_and_IV** : set this if you've already run all steps in [I] Preprocess and [II] Filter and want to skip them.<br>
+     **-dont_pause** : Use this option if you do not want the pipeline to pause. <br>
+     **-resume** : Use this option to resume the pipeline. You may edit the &lt;file of sample dirs> file and/or change the highexpressor cutoff value.<br>
 
      [data type]<br>
      **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data<br>
@@ -164,10 +166,9 @@ This creates `runall_normalization.sh` file in `STUDY/shell_scripts` directory a
 
 ========================================================================================================
 
-## 2. NORMALIZATION STEPS
-### [I] Preprocess
+### 2. NORMALIZATION STEPS
 
-#### 1) Mapping statistics and Blast
+#### 1) Preprocess
 ##### A. Mapping Statistics
 * **Get total number of reads from input fasta or fastq files**
 
@@ -260,8 +261,6 @@ __[NORMALIZATION FACTOR] Ribo percents__
   **-max_jobs &lt;n>**  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.<br>
 
 It assumes there are files of ribosomal ids output from runblast.pl each with suffix "ribosomalids.txt" in each sample directory. This will output `ribosomal_counts.txt` and `ribo_percents.txt` to `STUDY/STATS` directory.
-
-### [II] Filter
 
 #### 2) Run Filter
 This step removes all rows from input sam file except those that satisfy all of the following:
@@ -533,8 +532,6 @@ This will output `percent_intergenic_Unique.txt` and/or `percent_intergenic_NU.t
 
 This will provide a rough estimate of number of reads you'll have after normalization in `STUDY/STATS/expected_num_reads.txt`. Based on this information, samples can be added/removed by modifying `sample_dirs` file.
 
-### [III] Downsample & Quantify
-
 #### 6) Downsample
 
 ##### A. Downsample by type
@@ -623,7 +620,7 @@ This will create `NORMALIZED_DATA/exonmappers/MERGED` directory and output conca
 
 **b. Run Quantify exons**
 
-Run the following command with **&lt;output sam?> = false**. This will output merged exonquants by default. If merged exonmappers do not exist, it will output unique exonquants. Use -NU-only to get non-unique exonquants:
+Run the following command with **&lt;output sam?> = false** and **-norm** option. This will output merged exonquants by default. If merged exonmappers do not exist, it will output unique exonquants. Use -NU-only to get non-unique exonquants:
 
     perl runall_quantify_exons.pl <sample dirs> <loc> <exons> <output sam?> [options]
 
@@ -636,6 +633,7 @@ Run the following command with **&lt;output sam?> = false**. This will output me
 * option:<br>
   **-NU-only** : set this for non-unique mappers<br>
   **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
+  **-norm** : set this if you want to quantify the normalized sam files<br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
   **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
@@ -732,8 +730,6 @@ This will output `annotated_master_list_of_*` to `STUDY/NORMALIZED_DATA/SPREADSH
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 
 This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts` to `STUDY/NORMALIZED_DATA/SPREADSHEETS`.
-
-### [IV] Postprocess
 
 #### 9) Data Visualization
 

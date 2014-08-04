@@ -42,7 +42,9 @@ $intergenicoutfile = $samfile;
 $intergenicoutfile =~ s/.sam$/_intergenicmappers.sam/;
 $outputsam = $ARGV[3];
 $LOC = $ARGV[4];
-$linecountfile = "$LOC/linecounts_notexonmappers.txt";
+$linecountfile = $samfile;
+$linecountfile =~ s/filtered_u_notexonmappers.sam/linecounts_notexons.txt/g;
+$linecountfile =~ s/filtered_nu_notexonmappers.sam/linecounts_notexons.txt/g;
 if($outputsam eq "true") {
     for ($i=1; $i<=$i_intron; $i++){
 	$intronoutfile[$i] = $intronoutfile;
@@ -50,7 +52,7 @@ if($outputsam eq "true") {
 	open($OUTFILE[$i], ">$intronoutfile[$i]");
     }
     open(IGOUTFILE, ">$intergenicoutfile");
-    open (LC, ">>$linecountfile");
+    open (LC, ">$linecountfile");
 }
 
 open(OUTFILE, ">$outfile");

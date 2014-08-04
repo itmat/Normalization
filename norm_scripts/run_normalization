@@ -10,8 +10,16 @@ where:
 
 OPTIONS:
      [pipeline options]
-     -preprocess_only : set this if you want to run steps in \"1) Preprocess\" only.
-     -skip_preprocess : set this if you've already run all steps in \"1) Preprocess\" and want to skip them.
+     By default, the pipeline will pause after \"5) Predict Number of Reads\". 
+     You will have a chance to check the following before resuming:
+      (1) number of reads you will have after normalization 
+          - modify the list of sample directories accordingly.
+      (2) percent high expressors
+          - use -cutoff_highexp <n> option to set/change the highexpressor cutoff value.
+
+     -dont_pause : Use this option if you do not want the pipeline to pause.
+     -resume : Use this option to resume the pipeline. You may edit the <file of sample_dirs> file 
+               and/or change the highexpressor cutoff value.
 
      [data type]
      -se : set this if the data is single end, otherwise by default it will assume it's a paired end data
@@ -58,22 +66,23 @@ $i_exon = 20;
 $i_intron = 10;
 $filter_low_expressors = "false";
 $novel = "true";
+$shfile_name = "runall_normalization.sh";
+$resume = "false";
 for($i=0; $i<@ARGV; $i++) {
     $option_found = "false";
     if ($ARGV[$i] eq '-h'){
 	$option_found = "true";
 	die $USAGE;
     }
-    if ($ARGV[$i] eq '-preprocess_only'){
+    if ($ARGV[$i] eq '-dont_pause'){
 	$option_found = "true";
-	$run_blast = "true";
-	$run_norm = "false";
+	$shfile_name = "runall_normalization_dont_pause.sh";
 	$count_b++;
     }
-    if ($ARGV[$i] eq '-skip_preprocess'){
-	$option_found = "true";
-	$run_blast = "false";
-	$run_norm = "true";
+    if ($ARGV[$i] eq '-resume'){
+        $option_found = "true";
+	$resume = "true";
+	$shfile_name = "runall_normalization_resume.sh";
 	$count_b++;
     }
     if ($ARGV[$i] eq '--sample_dirs'){
@@ -204,9 +213,8 @@ if ($unaligned ne '1'){
     die "you have to specify the type of your unaligned files: '-fa' or '-fq'\n"
 }
 if ($count_b > 1){
-    die "you cannot set both -preprocess_only and -skip_preprocess\n";
+    die "you can only set one of the following options: -dont_pause, -resume\n";
 }
-
 
 $dirs = `wc -l $sample_dir`;
 @a = split(" ", $dirs);
@@ -400,10 +408,17 @@ while ($line = <IN>){
 }
 close(IN);
 
+
+#if -resume is set, check to make sure runall_normalization.sh file exists.
+if ($resume eq "true"){
+    unless (-e "$shdir/runall_normalization.sh"){
+	die "ERROR: cannot find file \"$shdir/runall_normalization.sh\".\n-resume option cannot be used. please run the pipeline using default pipeline setting first.\n";
+    }
+}
 @s = split(" ", $status);
 $stat = $s[0];
 
-$runall_shfile = $shdir . "/runall_normalization.sh";
+$runall_shfile = $shdir . "/" . $shfile_name;
 open(SH, ">$runall_shfile");
 $argv = join(" ",@ARGV);
 print SH "perl $norm_script_dir/runall_normalization.pl $argv";

@@ -1,2 +1,3 @@
 norm_scripts/run_normalization_head
 norm_scripts/runall_normalization_head.pl
+norm_scripts/predict_num_reads_blast.pl
