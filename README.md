@@ -120,9 +120,7 @@ You can also run it step by step using the scripts documented in [#2. NORMALIZAT
 
 By default, the pipeline will pause after the [5) Predict Number of Reads](https://github.com/itmat/Normalization/tree/master#5-predict-number-of-reads) step. You will have a chance to check the following before resuming:
 * number of reads you will have after normalization
-* percent high expressors
-
-
+* percent high expressors<br>
 
 
     run_normalization --sample_dirs <file of sample_dirs> --loc <s> \
