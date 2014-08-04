@@ -127,18 +127,18 @@ You can also run it step by step using the scripts documented in [#2. NORMALIZAT
 * --samfilename &lt;s> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
 * --cfg <cfg file> : configuration file for the study
 * option : <br>
-     [pipeline options]<br>
+     **[pipeline options]**<br>
      By default, the pipeline will pause after the [5) Predict Number of Reads](https://github.com/itmat/Normalization/tree/master#5-predict-number-of-reads) step. You will have a chance to check the expected number of reads after normalization and the list of percent high expressors before resuming.<br>
      **-dont_pause** : Use this option if you do not want the pipeline to pause. <br>
      **-resume** : Use this option to resume the pipeline. You may edit the &lt;file of sample dirs> file and/or change the highexpressor cutoff value.<br>
 
-     [data type]<br>
+     **[data type]**<br>
      **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data<br>
      **-fa** : set this if the unaligned files are in fasta format<br>
      **-fq** : set this if the unaligned files are in fastq format<br>
      **-gz** : set this if the unaligned files are compressed<br>
 
-     [normalization parameters]<br>
+     **[normalization parameters]**<br>
      **-novel_off** : set this if you DO NOT want to generate/use a study-specific master list of exons<br> (By default, the pipeline will add inferred exons to the list of exons) <br>
      **-min &lt;n>** : is minimum size of inferred exon for get_novel_exons.pl script (Default = 10)<br>
      **-max &lt;n>** : is maximum size of inferred exon for get_novel_exons.pl script (Default = 1200)<br>
