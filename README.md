@@ -118,9 +118,11 @@ STUDY
 This runs the Normalization pipeline. <br> 
 You can also run it step by step using the scripts documented in [#2. NORMALIZATION STEPS](https://github.com/itmat/Normalization/tree/master#2-normalization-steps).
 
-By default, the pipeline will pause after the [5) Predict Number of Reads](https://github.com/itmat/Normalization/tree/master#5-predict-number-of-reads) step. You will have a chance to check the following before resuming:<br>
+By default, the pipeline will pause after the [5) Predict Number of Reads](https://github.com/itmat/Normalization/tree/master#5-predict-number-of-reads) step. You will have a chance to check the following before resuming:
 * number of reads you will have after normalization
 * percent high expressors
+
+
 
 
     run_normalization --sample_dirs <file of sample_dirs> --loc <s> \
