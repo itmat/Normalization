@@ -122,6 +122,7 @@ By default, the pipeline will pause after the [5) Predict Number of Reads](https
 * number of reads you will have after normalization
 * percent high expressors
 
+
     run_normalization --sample_dirs <file of sample_dirs> --loc <s> \
     --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
 
