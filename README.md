@@ -128,7 +128,7 @@ You can also run it step by step using the scripts documented in [#2. NORMALIZAT
 * --cfg <cfg file> : configuration file for the study
 * option : <br>
      **[pipeline options]**<br>
-     By default, the pipeline will pause after the [5) Predict Number of Reads](https://github.com/itmat/Normalization/tree/master#5-predict-number-of-reads) step. You will have a chance to check the expected number of reads after normalization and the list of percent high expressors before resuming.<br>
+     By default, the pipeline will pause after the [5) Predict Number of Reads](https://github.com/itmat/Normalization/tree/master#5-predict-number-of-reads) step (recommended). You will have a chance to check the expected number of reads after normalization and the list of percent high expressors before resuming.<br>
      **-dont_pause** : Use this option if you do not want the pipeline to pause. <br>
      **-resume** : Use this option to resume the pipeline. You may edit the &lt;file of sample dirs> file and/or change the highexpressor cutoff value.<br>
 
@@ -162,7 +162,7 @@ This creates `runall_normalization.sh` file in `STUDY/shell_scripts` directory a
 ========================================================================================================
 
 ### 2. NORMALIZATION STEPS
-
+#### [PART1]
 #### 1) Preprocess
 ##### A. Mapping Statistics
 * **Get total number of reads from input fasta or fastq files**
@@ -527,6 +527,7 @@ This will output `percent_intergenic_Unique.txt` and/or `percent_intergenic_NU.t
 
 This will provide a rough estimate of number of reads you'll have after normalization in `STUDY/STATS/expected_num_reads.txt`. Based on this information, samples can be added/removed by modifying `sample_dirs` file.
 
+#### [PART2]
 #### 6) Downsample
 
 ##### A. Downsample by type
@@ -745,6 +746,7 @@ Use sam2cov to create coverage files and upload them to a Genome Browser. Curren
 * &lt;fai file> : full path of fai file
 * &lt;sam2cov> : full path of sam2cov 
 * option : <br>
+  **-str** : set this if your library is strand-specific<br>
   **-u** : set this if you want to use only unique mappers to generate coverage files, otherwise by default it will use merged(unique+non-unique) mappers<br>
   **-nu** : set this if you want to use only non-unique mappers to generate coverage files, otherwise by default it will use merged(unique+non-unique) mappers<br>
   **-rum** : set this if you used RUM to align your reads<br>
