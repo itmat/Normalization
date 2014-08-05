@@ -128,9 +128,9 @@ You can also run it step by step using the scripts documented in [#2. NORMALIZAT
 * --cfg <cfg file> : configuration file for the study
 * option : <br>
      **[pipeline options]**<br>
-     By default, the pipeline will pause after the [5) Predict Number of Reads](https://github.com/itmat/Normalization/tree/master#5-predict-number-of-reads) step (recommended). You will have a chance to check the expected number of reads after normalization and the list of percent high expressors before resuming.<br>
-     **-dont_pause** : Use this option if you do not want the pipeline to pause. <br>
-     **-resume** : Use this option to resume the pipeline. You may edit the &lt;file of sample dirs> file and/or change the highexpressor cutoff value.<br>
+     By default, the pipeline will run through the steps in [PART1](https://github.com/itmat/Normalization/tree/master#part1) and pause before [PART2](https://github.com/itmat/Normalization/tree/master#part2) (recommended). You will have a chance to check the expected number of reads after normalization and the list of percent high expressors before resuming.<br>
+     **-dont_pause** : Use this option if you want to run steps in PART1 and PART2 without pausing. <br>
+     **-resume** : Use this option to resume the pipeline at PART2. You may edit the &lt;file of sample dirs> file and/or change the highexpressor cutoff value.<br>
 
      **[data type]**<br>
      **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data<br>
