@@ -10,15 +10,15 @@ where:
 
 OPTIONS:
      [pipeline options]
-     By default, the pipeline will pause after \"5) Predict Number of Reads\".
+     By default, the pipeline will run through the steps in PART1 and pause (recommended).
      You will have a chance to check the following before resuming:
       (1) number of reads you will have after normalization
           - modify the list of sample directories accordingly.
       (2) percent high expressors
           - use -cutoff_highexp <n> option to set/change the highexpressor cutoff value.
 
-     -dont_pause : Use this option if you do not want the pipeline to pause.
-     -resume : Use this option to resume the pipeline. You may edit the <file of sample_dirs> file
+     -part1_part2 : Use this option if you want to run steps in PART1 and PART2 without pausing.
+     -part2 : Use this option to resume the pipeline at PART2. You may edit the <file of sample_dirs> file
                and/or change the highexpressor cutoff value.
 
      [data type]
@@ -70,18 +70,18 @@ $run_norm = "false";
 $shfile_name = "runall_normalization.sh";
 for($i=0; $i<@ARGV; $i++) {
     $option_found = "false";
-    if ($ARGV[$i] eq '-dont_pause'){
+    if ($ARGV[$i] eq '-part1_part2'){
 	$option_found = "true";
 	$run_prepause = "true";
 	$run_norm = "true";
-	$shfile_name = "runall_normalization_dont_pause.sh";
+	$shfile_name = "runall_normalization_part1_part2.sh";
 	$count_b++;
     }
-    if ($ARGV[$i] eq '-resume'){
+    if ($ARGV[$i] eq '-part2'){
 	$option_found = "true";
 	$run_prepause = "false";
 	$run_norm = "true";
-	$shfile_name = "runall_normalization_resume.sh";
+	$shfile_name = "runall_normalization_part2.sh";
 	$count_b++;
     }
     if ($ARGV[$i] eq '-h'){
@@ -216,7 +216,7 @@ if ($unaligned ne '1'){
     die "you have to specify the type of your unaligned files: '-fa' or '-fq'\n"
 }
 if ($count_b > 1){
-    die "you can only set one of the following options: -dont_pause, -resume\n";
+    die "you can only set one of the following options: -part1_part2, -part2\n";
 }
 
 $dirs = `wc -l $sample_dir`;
@@ -248,6 +248,7 @@ $genome = $GENOME_FA;
 $annot = $ANNOTATION_FILE;
 $fai = $GENOME_FAI;
 $sam2cov = "false";
+$strand_info = "";
 if ($SAM2COV =~ /^true/ | $SAM2COV =~ /^TRUE/){
     $sam2cov = "true";
     $num_cov = 0;
@@ -266,6 +267,10 @@ if ($SAM2COV =~ /^true/ | $SAM2COV =~ /^TRUE/){
     if ($num_cov ne '1'){
 	die "Please specify which aligner was used. (#4 DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
     }
+    if ($STRAND_SPECIFIC =~ /^true/ | $STRAND_SPECIFIC =~ /^TRUE/){
+	$strand_info = "-str";
+    }
+
 }
 $delete_int_sam = "true";
 $convert_sam2bam = "false";
@@ -392,7 +397,6 @@ if ($maxjobs ne '200'){
 $stat = $s[0];
 
 $shfile = $shdir . "/" . $shfile_name;
-$default_input = `cat $shdir/runall_normalization.sh`;
 $input = `cat $shfile`;
 if ($novel eq "true"){
     $list_for_quant = $novel_list;
@@ -421,9 +425,7 @@ if (-e "$logdir/$study.runall_normalization.err"){
 
 if ($run_prepause eq "true"){
     $job_num = 1;
-
     print LOG "\nPreprocessing\n-------------\n";
-
     #get_total_num_reads.pl
     $name_of_job = "$study.get_total_num_reads";
     $err_name = "$name_of_job.err";
@@ -856,7 +858,7 @@ if ($run_prepause eq "true"){
     while(qx{$stat | wc -l} > $maxjobs){
         sleep(10);
     }
-    $job = "echo \"perl $norm_script_dir/predict_num_reads.pl $sample_dir $LOC $se\" | $batchjobs $jobname \"$study.predict_num_reads\" -o $logdir/$name_of_job.out -e $logdir/$name_of_job.err";
+    $job = "echo \"perl $norm_script_dir/predict_num_reads.pl $sample_dir $LOC -depthE $i_exon -depthI $i_intron\" | $batchjobs $jobname \"$study.predict_num_reads\" -o $logdir/$name_of_job.out -e $logdir/$name_of_job.err";
 
     &onejob($job, $name_of_job, $job_num);
     &check_exit_onejob($job, $name_of_job, $job_num);
@@ -866,32 +868,33 @@ if ($run_prepause eq "true"){
     if (($run_prepause eq "true")&&($run_norm eq "false")){
 	$exp_num_reads = `grep -A 3 Expected $study_dir/STATS/expected_num_reads.txt | grep -A 3 estimate`;
 	chomp($exp_num_reads);
-	print LOG "\n[Normalization paused]\n\n";
-	print LOG "* Check the following before proceeding:\n";
+	print LOG "\n[PART1 complete] ";
+	print LOG "Check the following before proceeding:\n\n";
 	print LOG "(1) Number of reads\n";
 	print LOG "$exp_num_reads";
-	print LOG "See \"$study_dir/STATS/expected_num_reads.txt\" and modify the list of sample directories (\"$sample_dir\") accordingly to get more reads.\n\n";
+	print LOG "See \"$study_dir/STATS/expected_num_reads.txt\" \nand modify the list of sample directories (\"$sample_dir\") accordingly to get more reads.\n\n";
 	print LOG "(2) High Expressors\n";
-	print LOG "See \"$study_dir/STATS/percent_high_expressor_*.txt\" and use \"-cutoff_highexp <n>\" option to set/change the highexpressor cutoff value.\n\n";
+	print LOG "See \"$study_dir/STATS/percent_high_expressor_*.txt\" \nand use \"-cutoff_highexp <n>\" option to set/change the highexpressor cutoff value.\n\n";
+	$default_input = `cat $shdir/runall_normalization.sh`;
 	$default_input =~ s/perl\ //g;
 	$default_input =~ s/runall_normalization.pl/run_normalization/g;
-	print LOG "* Use \"-resume\" option to resume:\n";
-	print LOG "e.g. $default_input -resume\n\n";
+	print LOG "*************\nUse \"-part2\" option to resume:\n(do not change options other than the two listed above)\n";
+	print LOG "e.g. $default_input -part2\n*************\n";
     }
 }
 
 if ($run_norm eq "true"){
     if ($run_prepause eq "false"){
-	print LOG "\nNormalization\n-------------\n";
+	print LOG "\nNormalization (continued)\n-------------------------\n";
 	$job_num = 1;
-	# when -cutoff_highexp is used along with -resume, compare the cutoff value against old cutoff 
+	# when -cutoff_highexp is used along with -part2, compare the cutoff value against old cutoff 
 	# to determine if filter_high_expressor and/or quantify_exons need to be repeated
 	if ($filter_high_expressors eq 'true'){
 	    $skip_quant = "false";
 	    if (-e "$shdir/runall_normalization.sh"){
 		$skip_quant = "true";
-		if (qx{grep highexp $shdir/runall_normalization.sh | wc -l} > 0){
-		    $command = `cat $shdir/runall_normalization.sh`;
+		$command = `cat $shdir/runall_normalization.sh`;
+		if ($command =~ /highexp/){
 		    $command =~ m/highexp\ (\d*)/;
 		    $cutoff_old = $1;
 		    if ($cutoff_he eq $cutoff_old){
@@ -1305,7 +1308,7 @@ if ($run_norm eq "true"){
 	while(qx{$stat | wc -l} > $maxjobs){
 	    sleep(10);
 	}
-	$job = "echo \"perl $norm_script_dir/runall_sam2cov.pl $sample_dir $LOC $fai $sam2cov_loc $aligner $c_option $new_queue $cluster_max\" | $batchjobs  $jobname \"$study.runall_sam2cov\" -o $logdir/$study.runall_sam2cov.out -e $logdir/$study.runall_sam2cov.err";
+	$job = "echo \"perl $norm_script_dir/runall_sam2cov.pl $sample_dir $LOC $fai $sam2cov_loc $aligner $c_option $new_queue $cluster_max $strand_info\" | $batchjobs  $jobname \"$study.runall_sam2cov\" -o $logdir/$study.runall_sam2cov.out -e $logdir/$study.runall_sam2cov.err";
 	
 	&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	&only_err ($name_of_alljob, $err_name, $job_num);

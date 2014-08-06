@@ -10,15 +10,15 @@ where:
 
 OPTIONS:
      [pipeline options]
-     By default, the pipeline will pause after \"5) Predict Number of Reads\". 
+     By default, the pipeline will run through the steps in PART1 and pause (recommended).
      You will have a chance to check the following before resuming:
       (1) number of reads you will have after normalization 
           - modify the list of sample directories accordingly.
       (2) percent high expressors
           - use -cutoff_highexp <n> option to set/change the highexpressor cutoff value.
 
-     -dont_pause : Use this option if you do not want the pipeline to pause.
-     -resume : Use this option to resume the pipeline. You may edit the <file of sample_dirs> file 
+     -part1_part2 : Use this option if you want to run steps in PART1 and PART2 without pausing. 
+     -part2 : Use this option to resume the pipeline at PART2. You may edit the <file of sample_dirs> file 
                and/or change the highexpressor cutoff value.
 
      [data type]
@@ -67,22 +67,22 @@ $i_intron = 10;
 $filter_low_expressors = "false";
 $novel = "true";
 $shfile_name = "runall_normalization.sh";
-$resume = "false";
+$part2 = "false";
 for($i=0; $i<@ARGV; $i++) {
     $option_found = "false";
     if ($ARGV[$i] eq '-h'){
 	$option_found = "true";
 	die $USAGE;
     }
-    if ($ARGV[$i] eq '-dont_pause'){
+    if ($ARGV[$i] eq '-part1_part2'){
 	$option_found = "true";
-	$shfile_name = "runall_normalization_dont_pause.sh";
+	$shfile_name = "runall_normalization_part1_part2.sh";
 	$count_b++;
     }
-    if ($ARGV[$i] eq '-resume'){
+    if ($ARGV[$i] eq '-part2'){
         $option_found = "true";
-	$resume = "true";
-	$shfile_name = "runall_normalization_resume.sh";
+	$part2 = "true";
+	$shfile_name = "runall_normalization_part2.sh";
 	$count_b++;
     }
     if ($ARGV[$i] eq '--sample_dirs'){
@@ -213,7 +213,7 @@ if ($unaligned ne '1'){
     die "you have to specify the type of your unaligned files: '-fa' or '-fq'\n"
 }
 if ($count_b > 1){
-    die "you can only set one of the following options: -dont_pause, -resume\n";
+    die "you can only set one of the following options: -part1_part2, -part2\n";
 }
 
 $dirs = `wc -l $sample_dir`;
@@ -259,6 +259,7 @@ unless (-e $annot){
 }
 
 $sam2cov = "false";
+$strand_info = "";
 if ($SAM2COV =~ /^true/ | $SAM2COV =~ /^TRUE/){
     $sam2cov = "true";
     $num_cov = 0;
@@ -276,6 +277,9 @@ if ($SAM2COV =~ /^true/ | $SAM2COV =~ /^TRUE/){
     }
     if ($num_cov ne '1'){
 	die "Please specify which aligner was used. (#4 DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
+    }
+    if ($STRAND_SPECIFIC =~ /^true/ | $STRAND_SPECIFIC =~ /^TRUE/){
+	$strand_info = "-str";
     }
 }
 $delete_int_sam = "true";
@@ -403,26 +407,72 @@ open(IN, $unaligned_file) or die "cannot find file \"$unaligned_file\"\n";
 while ($line = <IN>){
     chomp($line);
     unless (-e $line){
-	die "ERROR: Unaligned file \"$line\" does not exit.\n";
+	die "ERROR: Unaligned file \"$line\" does not exist.\n";
     }
 }
 close(IN);
-
-
-#if -resume is set, check to make sure runall_normalization.sh file exists.
-if ($resume eq "true"){
-    unless (-e "$shdir/runall_normalization.sh"){
-	die "ERROR: cannot find file \"$shdir/runall_normalization.sh\".\n-resume option cannot be used. please run the pipeline using default pipeline setting first.\n";
-    }
-}
-@s = split(" ", $status);
-$stat = $s[0];
-
 $runall_shfile = $shdir . "/" . $shfile_name;
 open(SH, ">$runall_shfile");
 $argv = join(" ",@ARGV);
 print SH "perl $norm_script_dir/runall_normalization.pl $argv";
 close(SH);
+
+if ($part2 eq "true"){
+#if -part2 is set, check to make sure runall_normalization.sh file exists.
+    unless (-e "$shdir/runall_normalization.sh"){
+	die "ERROR: cannot find file \"$shdir/runall_normalization.sh\".\n-part2 option cannot be used. please run the pipeline using default pipeline setting first.\n";
+    }
+#if -depthE and/or -depthI is greater than before
+    $default_sh = `cat $shdir/runall_normalization.sh`;
+    $part2_sh = `cat $runall_shfile`;
+    $def_E = 20;
+    $def_I = 10;
+    $res_E = 20;
+    $res_I = 10;
+    if ($default_sh =~ /-depthE/){
+	$default_sh =~ /-depthE\ (\d+)/;
+	$def_E = $1;
+	if ($def_E =~ /^$/){
+	    $def_E = 20;
+	}
+    }
+    if ($default_sh =~ /-depthI/){
+	$default_sh =~ /-depthI\ (\d+)/;
+	$def_I = $1;
+	if ($def_I =~ /^$/){
+	    $def_I = 10;
+	}
+    }
+    if ($part2_sh =~ /-depthE/){
+	$part2_sh =~ /-depthE\ (\d+)/;
+	$p2_E = $1;
+	if ($p2_E =~ /^$/){
+	    $p2_E = 20;
+	}
+    }
+    if ($part2_sh =~ /-depthI/){
+	$part2_sh =~ /-depthI\ (\d+)/;
+	$p2_I = $1;
+	if ($p2_I =~ /^$/){
+	    $p2_I = 10;
+	}
+    }
+    if (($p2_E > $def_E)){
+	die "ERROR: Check \"-depthE <n>\" option. <n> cannot be greater than $def_E.\n";
+    }
+    if (($p2_I > $def_I)){
+	die "ERROR: Check \"-depthI <n>\" option. <n> cannot be greater than $def_I.\n";
+    }
+#if -part2 is set and $novel is true, check and make sure study-specific master list of exon exists.
+    if ($novel eq "true"){
+	unless (-e "$LOC/master_list_of_exons.$study.txt"){
+	    die "ERROR: cannot find file \"$LOC/master_list_of_exons.$study.txt\".\nCreate a study-specific master list of exons by running step 3)-B. Get Novel Exons.\n";
+	}
+    }
+}
+
+@s = split(" ", $status);
+$stat = $s[0];
 while(qx{$stat | wc -l} > $maxjobs){
     sleep(10);
 }

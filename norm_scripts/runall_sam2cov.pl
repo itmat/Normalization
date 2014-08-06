@@ -10,6 +10,7 @@ $USAGE = "\nUsage: runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov> [o
 ***Sam files produced by aligners other than STAR and RUM are currently not supported***
 
 option:  
+ -str : set this if your library is strand-specific
  -u  :  set this if you want to use only unique mappers to generate coverage files, 
         otherwise by default it will use merged(unique+non-unique) mappers.
 
@@ -53,6 +54,7 @@ $numargs_u_nu = 0;
 $U = "true";
 $NU = "true";
 $star = "false";
+$strand = "false";
 $rum = "false";
 $njobs = 200;
 $replace_mem = "false";
@@ -70,6 +72,10 @@ for ($i=4; $i<@ARGV; $i++){
             die "-max_jobs <n> : <n> needs to be a number\n";
         }
         $i++;
+    }
+    if($ARGV[$i] eq '-str') {
+        $strand = "true";
+        $option_found = "true";
     }
     if($ARGV[$i] eq '-nu') {
         $U = "false";
@@ -195,7 +201,13 @@ while($line =  <INFILE>){
 	    `mkdir "$cov_dir/MERGED"`;
 	}
 	$prefix = "$cov_dir/MERGED/$id.FINAL.norm.sam";
+	$prefix_fwd = $prefix;
+	$prefix_rev = $prefix;
 	$prefix =~ s/norm.sam//;
+	if ($strand eq "true"){
+	    $prefix_fwd =~ s/norm.sam/fwd./g;
+	    $prefix_rev =~ s/norm.sam/rev./g;
+	}
     }
     else {
 	if ($U eq 'true'){
@@ -204,7 +216,13 @@ while($line =  <INFILE>){
 		`mkdir "$cov_dir/Unique"`;
 	    }
 	    $prefix = "$cov_dir/Unique/$id.FINAL.norm_u.sam";
+	    $prefix_fwd = $prefix;
 	    $prefix =~ s/norm_u.sam//;
+	    $prefix_rev = $prefix;
+	    if ($strand eq "true"){
+		$prefix_fwd =~ s/norm.sam/fwd./g;
+		$prefix_rev =~ s/norm.sam/rev./g;
+	    }
 	}
 	if ($NU eq 'true'){
 	    $filename = "$final_NU_dir/$id.FINAL.norm_nu.sam";
@@ -212,24 +230,64 @@ while($line =  <INFILE>){
 		`mkdir "$cov_dir/NU"`;
 	    }
 	    $prefix = "$cov_dir/NU/$id.FINAL.norm_nu.sam";
+	    $prefix_fwd = $prefix;
+	    $prefix_rev = $prefix;
 	    $prefix =~ s/norm_nu.sam//;
+	    if ($strand eq "true"){
+		$prefix_fwd =~ s/norm.sam/fwd./g;
+		$prefix_rev =~ s/norm.sam/rev./g;
+	    }
 	}
     }
     $shfile = "C.$id.sam2cov.sh";
     $jobname = "$study.sam2cov";
     $logname = "$logdir/sam2cov.$id";
-    open(OUTFILE, ">$shdir/$shfile");
-    if ($rum eq 'true'){
-	print OUTFILE "$sam2cov -r 1 -e 0 -u -p $prefix $fai_file $filename"; 
+    if ($strand eq "true"){
+	$shfile_fwd = "C.$id.sam2cov.fwd.sh";
+	$shfile_rev = "C.$id.sam2cov.rev.sh";
+	$logname_fwd = "$logdir/sam2cov.fwd.$id";
+	$logname_rev = "$logdir/sam2cov.rev.$id";
     }
-    if ($star eq 'true'){
-	print OUTFILE "$sam2cov -u -e 0 -p $prefix $fai_file $filename"; 
+    if ($strand eq "false"){
+	open(OUTFILE, ">$shdir/$shfile");
+	if ($rum eq 'true'){
+	    print OUTFILE "$sam2cov -r 1 -e 0 -u -p $prefix $fai_file $filename"; 
+	}
+	if ($star eq 'true'){
+	    print OUTFILE "$sam2cov -u -e 0 -p $prefix $fai_file $filename"; 
+	}
+	close(OUTFILE);
+	while (qx{$status | wc -l} > $njobs){
+	    sleep(10);
+	}
+	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shdir/$shfile`;
     }
-    close(OUTFILE);
-    while (qx{$status | wc -l} > $njobs){
-	sleep(10);
+    if ($strand eq "true"){
+	open(OUTFILEF, ">$shdir/$shfile_fwd");
+	if ($rum eq 'true'){
+	    print OUTFILEF "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_fwd $fai_file $filename"; 
+	}
+	if ($star eq 'true'){
+	    print OUTFILEF "$sam2cov -u -e 0 -s 1 -p $prefix_fwd $fai_file $filename"; 
+	}
+	close(OUTFILEF);
+	open(OUTFILER, ">$shdir/$shfile_rev");
+	if ($rum eq 'true'){
+	    print OUTFILER "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_rev $fai_file $filename"; 
+	}
+	if ($star eq 'true'){
+	    print OUTFILER "$sam2cov -u -e 0 -s 2 -p $prefix_rev $fai_file $filename"; 
+	}
+	close(OUTFILER);
+	while (qx{$status | wc -l} > $njobs){
+	    sleep(10);
+	}
+	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_fwd.out -e $logname_fwd.err < $shdir/$shfile_fwd`;
+	while (qx{$status | wc -l} > $njobs){
+	    sleep(10);
+	}
+	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_rev.out -e $logname_rev.err < $shdir/$shfile_rev`;
     }
-    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shdir/$shfile`;
 }
 close(INFILE);
 print "got here\n";
