@@ -16,6 +16,8 @@ option:
 
  -se  :  set this if the data is single end, otherwise by default it will assume it's a paired end data 
 
+ -norm : set this if you want to quantify the normalized sam files
+
  -lsf : set this if you want to submit batch jobs to LSF (PMACS cluster).
 
  -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI cluster).
@@ -56,6 +58,7 @@ $jobname_option = "";
 $request_memory_option = "";
 $mem = "";
 $numargs = 0;
+$norm = "false";
 for($i=4; $i<@ARGV; $i++) {
     $option_found = 'false';
     if ($ARGV[$i] eq '-max_jobs'){
@@ -68,6 +71,10 @@ for($i=4; $i<@ARGV; $i++) {
     }
     if($ARGV[$i] eq '-NU-only') {
 	$nuonly = 'true';
+	$option_found = 'true';
+    }
+    if($ARGV[$i] eq '-norm') {
+	$norm = 'true';
 	$option_found = 'true';
     }
     if ($ARGV[$i] eq '-depth'){
@@ -179,41 +186,40 @@ while($line = <INFILE>) {
 	}
     }
     if($outputsam eq "false"){
-	$filename = "$id.exonmappers.norm.sam";
-	@fields = split("/", $LOC);
-	$last_dir = $fields[@fields-1];
-	$norm_dir = $LOC;
-	$norm_dir =~ s/$last_dir//;
-	$norm_dir = $norm_dir . "NORMALIZED_DATA";
-	$exon_dir = $norm_dir . "/exonmappers";
-	$merged_exon_dir = $exon_dir . "/MERGED";
-	$unique_exon_dir = $exon_dir . "/Unique";
-	$nu_exon_dir = $exon_dir . "/NU";
-	if ($nuonly eq "false"){
-	    if (-d $merged_exon_dir){
-		$final_exon_dir = $merged_exon_dir;
-	    }	
-	    else{
-		if (-d $unique_exon_dir){
+	if ($norm eq "false"){
+	    $filename = "$id.filtered.sam";
+	    if ($nuonly eq "false"){
+		$filename =~ s/.sam$/_u.sam/;
+		$final_exon_dir = "$LOC/$dir/Unique";
+	    }
+	    if ($nuonly eq "true"){
+                $filename =~ s/.sam$/_nu.sam/;
+		$final_exon_dir = "$LOC/$dir/NU";
+	    }
+	}
+	if ($norm eq "true"){
+	    $filename = "$id.exonmappers.norm.sam";
+	    @fields = split("/", $LOC);
+	    $last_dir = $fields[@fields-1];
+	    $norm_dir = $LOC;
+	    $norm_dir =~ s/$last_dir//;
+	    $norm_dir = $norm_dir . "NORMALIZED_DATA";
+	    $exon_dir = $norm_dir . "/exonmappers";
+	    $merged_exon_dir = $exon_dir . "/MERGED";
+	    $unique_exon_dir = $exon_dir . "/Unique";
+	    $nu_exon_dir = $exon_dir . "/NU";
+	    if ($nuonly eq "false"){
+		if (-d $merged_exon_dir){
+		    $final_exon_dir = $merged_exon_dir;
+		}	
+		else{
 		    $final_exon_dir = $unique_exon_dir;
 		    $filename =~ s/.sam$/_u.sam/;
 		}
-		else {
-		    $filename = "$id.filtered.sam";
-		    $filename =~ s/.sam$/_u.sam/;
-		    $final_exon_dir = "$LOC/$dir/Unique";
-		}
 	    }
-	}
-	if ($nuonly eq "true"){
-	    if (-d $nu_exon_dir){
+	    if ($nuonly eq "true"){
 		$final_exon_dir = $nu_exon_dir;
 		$filename =~ s/.sam$/_nu.sam/;
-	    }
-	    else{
-		$filename = "$id.filtered.sam";
-                $filename =~ s/.sam$/_nu.sam/;
-		$final_exon_dir = "$LOC/$dir/NU";
 	    }
 	}
     }

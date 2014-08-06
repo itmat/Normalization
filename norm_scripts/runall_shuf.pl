@@ -54,7 +54,7 @@ if (@ARGV <2){
 
 $U = 'true';
 $NU = 'true';
-$numargs_n_nu = 0;
+$numargs_u_nu = 0;
 $i_exon = 20;
 $i_intron = 10;
 $njobs = 200;
@@ -79,7 +79,7 @@ for ($i=2; $i<@ARGV; $i++){
 	$NU = "false";
 	$option_found = "true";
 	$option_u_nu = "true";
-	$numargs_n_nu++;
+	$numargs_u_nu++;
     }
     if ($ARGV[$i] eq '-nu'){
 	$U = "false";

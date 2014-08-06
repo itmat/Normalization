@@ -108,10 +108,12 @@ $outfile = $ARGV[2];
 $exon_sam_outfile = $ARGV[3];
 $intron_sam_outfile = $ARGV[4];
 $LOC = $ARGV[5];
-$linecountfile = "$LOC/linecounts_exonmappers.txt";
+$linecountfile = $samfile;
+$linecountfile =~ s/filtered_u.sam/linecounts_exons.txt/g;
+$linecountfile =~ s/filtered_nu.sam/linecounts_exons.txt/g;
 if($exon_sam_outfile ne "none") {
     open(EXONSAMOUT, ">$exon_sam_outfile");
-    open (LC, ">>$linecountfile");
+    open (LC, ">$linecountfile");
 }
 if($intron_sam_outfile ne "none") {
     open(INTRONSAMOUT, ">$intron_sam_outfile");
