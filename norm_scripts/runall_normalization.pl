@@ -247,6 +247,7 @@ $geneinfo = $GENE_INFO_FILE;
 $genome = $GENOME_FA;
 $annot = $ANNOTATION_FILE;
 $fai = $GENOME_FAI;
+$ensGene = $ENSGENES_FILE;
 $sam2cov = "false";
 $strand_info = "";
 if ($SAM2COV =~ /^true/ | $SAM2COV =~ /^TRUE/){
@@ -1217,6 +1218,40 @@ if ($run_norm eq "true"){
     &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
     &check_err ($name_of_alljob, $err_name, $job_num);
     $job_num++;
+    
+    #runall_sam2genes
+    $name_of_alljob = "$study.runall_sam2genes";
+    $name_of_job = "$study.sam2genes";
+    $err_name = "sam2genes.*.err";
+    &clear_log($name_of_alljob, $err_name);
+    if ($other eq "true"){
+	$c_option = "$submit \\\"$batchjobs, $jobname, $stat\\\"";
+    }
+    while(qx{$stat | wc -l} > $maxjobs){
+	sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_sam2genes.pl $sample_dir $LOC $ensGene $c_option $cluster_max\" | $batchjobs $jobname \"$study.runall_sam2genes\" -o $logdir/$study.runall_sam2genes.out -e $logdir/$study.runall_sam2genes.err";
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
+
+   #runall_quantifygenes
+    $name_of_alljob = "$study.runall_quantify_genes";
+    $name_of_job = "$study.quantifygenes";
+    $err_name = "quantifygenes.*.err";
+    &clear_log($name_of_alljob, $err_name);
+    if ($other eq "true"){
+	$c_option = "$submit \\\"$batchjobs, $jobname, $stat\\\"";
+    }
+    while(qx{$stat | wc -l} > $maxjobs){
+        sleep(10);
+    }
+    $job = "echo \"perl $norm_script_dir/runall_quantify_genes.pl $sample_dir $LOC $ensGene $c_option $cluster_max\" | $batchjobs $jobname \"$study.runall_quantify_genes\" -o $logdir/$study.runall_quantify_genes.out -e $logdir/$study.runall_quantify_genes.err";
+    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+    &check_exit_alljob($job, $name_of_alljob, $job_num, $err_name);
+    &check_err ($name_of_alljob, $err_name, $job_num);
+    $job_num++;
 
     #make_final_spreadsheets
     $name_of_alljob = "$study.make_final_spreadsheets";
@@ -1278,7 +1313,7 @@ if ($run_norm eq "true"){
     &clear_log($name_of_job, $err_name);
     $to_filter = "$study_dir/NORMALIZED_DATA/to_filter.txt";
     open(out, ">$to_filter");
-    print out "annotated_master_list_of_exons_counts_MIN.$study.txt\nannotated_master_list_of_exons_counts_MAX.$study.txt\nannotated_master_list_of_introns_counts_MIN.$study.txt\nannotated_master_list_of_introns_counts_MAX.$study.txt\nannotated_master_list_of_junctions_counts_MIN.$study.txt\nannotated_master_list_of_junctions_counts_MAX.$study.txt\n";
+    print out "annotated_master_list_of_exons_counts_MIN.$study.txt\nannotated_master_list_of_exons_counts_MAX.$study.txt\nannotated_master_list_of_introns_counts_MIN.$study.txt\nannotated_master_list_of_introns_counts_MAX.$study.txt\nannotated_master_list_of_junctions_counts_MIN.$study.txt\nannotated_master_list_of_junctions_counts_MAX.$study.txt\nmaster_list_of_genes_counts_MIN.$study.txt\nmaster_list_of_genes_counts_MAX.$study.txt";
     close(out);
     while(qx{$stat | wc -l} > $maxjobs){
         sleep(10);

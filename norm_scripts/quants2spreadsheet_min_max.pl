@@ -5,7 +5,7 @@ if(@ARGV<3) {
 where:
 <sample dirs> is the name of a file with the names of the sample directories (no paths)
 <loc> is the path to the sample directories.
-<type of quants file> is the type of quants file. e.g: exonquants, intronquants
+<type of quants file> is the type of quants file. e.g: exonquants, intronquants, genequants
 
 ";
 }
@@ -21,6 +21,7 @@ $norm_dir =~ s/$last_dir//;
 $norm_dir = $norm_dir . "NORMALIZED_DATA";
 $exon_dir = $norm_dir . "/exonmappers";
 $nexon_dir = $norm_dir . "/notexonmappers";
+$genequants_dir = $norm_dir . "/FINAL_SAM/MERGED";
 $spread_dir = $norm_dir . "/SPREADSHEETS";
 
 unless (-d $spread_dir){
@@ -32,19 +33,22 @@ if ($type =~ /^exon/){
     $out_MAX = "$spread_dir/master_list_of_exons_counts_MAX.$study.txt";
     $sample_name_file = "$norm_dir/file_exonquants_minmax.txt";
 }
+elsif ($type =~ /^gene/){
+    $out_MIN = "$spread_dir/master_list_of_genes_counts_MIN.$study.txt";
+    $out_MAX = "$spread_dir/master_list_of_genes_counts_MAX.$study.txt";
+    $sample_name_file = "$norm_dir/file_genequants_minmax.txt";
+}
+elsif ($type =~ /^intron/){
+    $out_MIN = "$spread_dir/master_list_of_introns_counts_MIN.$study.txt";
+    $out_MAX = "$spread_dir/master_list_of_introns_counts_MAX.$study.txt";
+    $sample_name_file = "$norm_dir/file_intronquants_minmax.txt";
+    $merged_dir = $nexon_dir . "/MERGED";
+    unless (-d $merged_dir){
+	`mkdir $merged_dir`;
+    }
+}
 else{
-    if ($type =~ /^intron/){
-	$out_MIN = "$spread_dir/master_list_of_introns_counts_MIN.$study.txt";
-	$out_MAX = "$spread_dir/master_list_of_introns_counts_MAX.$study.txt";
-	$sample_name_file = "$norm_dir/file_intronquants_minmax.txt";
-	$merged_dir = $nexon_dir . "/MERGED";
-	unless (-d $merged_dir){
-	    `mkdir $merged_dir`;
-	}
-    }
-    else{
-	die "ERROR:Please check the type of quants file. It has to be either \"exonquants\" or \"intronquants\".\n\n";
-    }
+    die "ERROR:Please check the type of quants file. It has to be either \"exonquants\" ,\"intronquants\", or \"genequants\".\n\n";
 }
 
 if ($type =~ /^exon/){
@@ -54,6 +58,18 @@ if ($type =~ /^exon/){
 	chomp($line);
 	$id = $line;
 	print OUT "$exon_dir/MERGED/$id.exonmappers.norm_exonquants\n";
+    }
+}
+close(INFILE);
+close(OUT);
+
+if ($type =~ /^gene/){
+    open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
+    open(OUT, ">$sample_name_file");
+    while ($line = <INFILE>){
+	chomp($line);
+	$id = $line;
+	print OUT "$norm_dir/FINAL_SAM/MERGED/$id.FINAL.norm.genequants\n";
     }
 }
 close(INFILE);
@@ -140,16 +156,25 @@ chomp($file);
 $file = <FILES>;
 close(FILES);
 
-open(INFILE, $file);
+
+open(INFILE, $file) or die "cannot find file \"$file\"\n";
 $firstline = <INFILE>;
 $rowcnt = 0;
 while($line = <INFILE>) {
     chomp($line);
-    if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
-	next;
+    if (($type =~ /^exon/) || ($type =~ /^intron/)){
+	if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
+	    next;
+	}
+    }
+    if ($type =~ /^gene/){
+	if ($line !~ /^EN/){
+	    next;
+	}
     }
     @a = split(/\t/,$line);
     $id[$rowcnt] = $a[0];
+    $sym[$rowcnt] = $a[3];
     $rowcnt++;
 }
 close(INFILE);
@@ -163,6 +188,7 @@ while($file = <FILES>) {
     $id = $fields[$size-1];
     $id =~ s/.exonmappers.norm_exonquants//;
     $id =~ s/.intronquants_merged//;
+    $id =~ s/.FINAL.norm.genequants//;
     $ID[$filecnt] = $id;
     open(INFILE, $file);
     $firstline = <INFILE>;
@@ -170,8 +196,15 @@ while($file = <FILES>) {
     while($line = <INFILE>) {
 	chomp($line);
 	@a = split(/\t/,$line);
-	if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
-	    next;
+	if (($type =~ /^exon/) || ($type =~ /^intron/)){
+	    if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
+		next;
+	    }
+	}
+	if ($type =~ /^gene/){
+	    if ($line !~ /^EN/){
+		next;
+	    }
 	}
 	$DATA_MIN[$filecnt][$rowcnt] = $a[1];
 	$DATA_MAX[$filecnt][$rowcnt] = $a[2];
@@ -191,8 +224,13 @@ for($i=0; $i<@ID; $i++) {
     print OUT_MIN "\t$ID[$i]";
     print OUT_MAX "\t$ID[$i]";
 }
+if ($type =~ /^gene/){
+    print OUT_MIN "\tgeneSymbol";
+    print OUT_MAX "\tgeneSymbol";
+}
 print OUT_MIN "\n";
 print OUT_MAX "\n";
+
 
 for($i=0; $i<$rowcnt; $i++) {
     if ($type =~ /^exon/){
@@ -203,10 +241,18 @@ for($i=0; $i<$rowcnt; $i++) {
 	print OUT_MIN "intron:$id[$i]";
 	print OUT_MAX "intron:$id[$i]";
     }
+    if ($type =~ /^gene/){
+	print OUT_MIN "$id[$i]";
+	print OUT_MAX "$id[$i]";
+    }
     for($j=0; $j<$filecnt; $j++) {
 	print OUT_MIN "\t$DATA_MIN[$j][$i]";
 	print OUT_MAX "\t$DATA_MAX[$j][$i]";
     }
+    if ($type =~ /^gene/){
+	print OUT_MIN "\t$sym[$i]";
+	print OUT_MAX "\t$sym[$i]";
+    }	
     print OUT_MIN "\n";
     print OUT_MAX "\n";
 }

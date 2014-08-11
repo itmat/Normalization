@@ -70,7 +70,18 @@ The following files are available for download:
 ###### ii. other organisms
 Follow the instructions [here](https://github.com/itmat/rum/wiki/Creating-indexes) to create indexes.
 
-#####G. Output Directory Structure
+#####G. Ensembl Genes
+Get Ensembl Genes file. 
+###### i. mm9 and hg19
+Tables are available for mm9 hg19:
+
+    /path/to/Normalization/norm_scripts/mm9_ensGenes.txt
+    /path/to/Normalization/norm_scripts/hg19_ensGenes.txt
+
+###### ii. other organisms
+You can get the table from UCSC table browser. Your header must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value.
+
+#####H. Output Directory Structure
 You will find all log files and shell scripts in `STUDY/logs` and `STUDY/shell_scripts` directory, respectively. Once you complete the normalization pipeline, your directory structure will look like this (before the Clean Up step):
 <pre>
 STUDY
@@ -660,10 +671,53 @@ Run the following command with **&lt;output sam?> = false**. By default this wil
 
 This outputs `intronquants` file of all samples to `NORMALIZED_DATA/notexonmappers/Unique` or `NORMALIZED_DATA/notexonmappers/NU`.
 
-#####C. Make Final Spreadsheets
+#####C. Get Genequants
+**a. Run sam2genes**
+
+    perl runall_sam2genes.pl <sample dirs> <loc> <ensGene file>
+
+> `sam2genes.pl` available for running one sample at a time
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;ensGene file> : ensembl table must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
+
+* option:<br>
+  **-u**  :  set this if your final (normalized) sam files have unique mappers only, otherwise by default it will use merged(unique+non-unique) mappers. <br>
+  **-nu** :  set this if your final (normalized) sam files have non-unique mappers only, otherwise by default it will use merged(unique+non-unique) mappers. <br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
+  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
+
+This outputs `genes.txt` files of all samples to `NORMALIZED_DATA/FINAL_SAM/MERGED/`, `NORMALIZED_DATA/FINAL_SAM/Unique/`, or `NORMALIZED_DATA/FINAL_SAM/NU/`.
+
+**b. Run Quantify Genes**
+
+    perl runall_quantify_genes.pl <sample dirs> <loc> <ensGene file>
+
+> `quantify_genes.pl` available for running one sample at a time
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;ensGene file> : ensembl table must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
+
+* option:<br>
+  **-u**  :  set this if your final (normalized) sam files have unique mappers only, otherwise by default it will use merged(unique+non-unique) mappers. <br>
+  **-nu** :  set this if your final (normalized) sam files have non-unique mappers only, otherwise by default it will use merged(unique+non-unique) mappers. <br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
+  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
+
+This outputs `genequants` files of all samples to `NORMALIZED_DATA/FINAL_SAM/MERGED/`, `NORMALIZED_DATA/FINAL_SAM/Unique/`, or `NORMALIZED_DATA/FINAL_SAM/NU/`.
+
+#####D. Make Final Spreadsheets
 **a. Run quants2spreadsheet and juncs2spreadsheet**
 
      perl make_final_spreadsheets.pl <sample dirs> <loc> [options]
+
+> `quants2spreadsheet.1.pl`, `quants2spreadsheet_min_max.pl`, `juncs2spreadsheet.1.pl`, `juncs2spreadsheet_min_max.pl` available for running separately.
 
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
@@ -676,7 +730,7 @@ This outputs `intronquants` file of all samples to `NORMALIZED_DATA/notexonmappe
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G, 10G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
-This will output `master_list_of_exons_counts`, `master_list_of_introns_counts`, and `master_list_of_junctions_counts` files to `STUDY/NORMALIZED_DATA/SPREADSHEETS` directory. 
+This will output `master_list_of_genes_counts`, `master_list_of_exons_counts`, `master_list_of_introns_counts`, and `master_list_of_junctions_counts` files to `STUDY/NORMALIZED_DATA/SPREADSHEETS` directory. 
 
 **b. Annotate `list_of_exons_counts`**
      
@@ -720,12 +774,14 @@ This will output `annotated_master_list_of_*` to `STUDY/NORMALIZED_DATA/SPREADSH
 	      annotated_master_list_of_introns_counts_MAX.STUDY.txt
 	      annotated_master_list_of_junctions_counts_MIN.STUDY.txt
 	      annotated_master_list_of_junctions_counts_MAX.STUDY.txt
+	      master_list_of_genes_counts_MIN.STUDY.txt
+	      master_list_of_genes_counts_MAX.STUDY.txt
 
 * &lt;number_of_samples> : number of samples
 * &lt;cutoff> : cutoff value
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 
-This will output `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts` to `STUDY/NORMALIZED_DATA/SPREADSHEETS`.
+This will output `FINAL_master_list_of_genes_counts`, `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts` to `STUDY/NORMALIZED_DATA/SPREADSHEETS`.
 
 #### 9) Data Visualization
 
