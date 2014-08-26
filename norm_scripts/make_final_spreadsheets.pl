@@ -1,12 +1,15 @@
 #!/usr/bin/env perl
-
-$USAGE = "\nUsage: perl make_final_spreadsheets.pl <sample dirs> <loc> [options]
+use warnings;
+use strict;
+my $USAGE = "\nUsage: perl make_final_spreadsheets.pl <sample dirs> <loc> [options]
 
 where:
 <sample dirs> is the name of a file with the names of the sample directories (no paths)
 <loc> is the path to the sample directories.
 
 options:
+ -novelexon : set this to label the novel exons in the final spreadsheet
+
  -u  :  set this if you want to return only unique, otherwise by default
          it will use merged files and return min and max files.
 
@@ -43,19 +46,21 @@ if(@ARGV<2) {
     die $USAGE;
 }
 
-$U = "true";
-$NU = "true";
-$numargs = 0;
-$njobs =200;
-$numargs_c = 0;
-$replace_mem = "false";
-$submit = "";
-$jobname_option = "";
-$request_memory_option = "";
-$mem6 = "";
-$mem10 = "";
-for($i=2; $i<@ARGV; $i++) {
-    $option_found = "false";
+my $novelexon = "false";
+my $U = "true";
+my $NU = "true";
+my $numargs = 0;
+my $njobs =200;
+my $numargs_c = 0;
+my $replace_mem = "false";
+my $submit = "";
+my $jobname_option = "";
+my $request_memory_option = "";
+my $mem6 = "";
+my $mem10 = "";
+my ($status, $argv_all, $new_mem);
+for(my $i=2; $i<@ARGV; $i++) {
+    my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];
@@ -63,6 +68,10 @@ for($i=2; $i<@ARGV; $i++) {
             die "-max_jobs <n> : <n> needs to be a number\n";
         }
         $i++;
+    }
+    if($ARGV[$i] eq "-novelexon"){
+	$option_found = "true";
+	$novelexon = "true";
     }
     if($ARGV[$i] eq '-nu') {
         $U = "false";
@@ -102,7 +111,7 @@ for($i=2; $i<@ARGV; $i++) {
         $numargs_c++;
         $option_found = "true";
 	$argv_all = $ARGV[$i+1];
-        @a = split(",", $argv_all);
+        my @a = split(",", $argv_all);
         $submit = $a[0];
         $jobname_option = $a[1];
         $request_memory_option = $a[2];
@@ -143,32 +152,42 @@ if ($replace_mem eq "true"){
 }
 
 use Cwd 'abs_path';
-$path = abs_path($0);
+my $path = abs_path($0);
 $path =~ s/\/make_final_spreadsheets.pl//;
-$LOC = $ARGV[1];
+my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
-@fields = split("/", $LOC);
-$last_dir = $fields[@fields-1];
-$study = $fields[@fields-2];
-$study_dir = $LOC;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study = $fields[@fields-2];
+my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
-$shdir = $study_dir . "shell_scripts";
-$logdir = $study_dir . "logs";
+my $shdir = $study_dir . "shell_scripts";
+my $logdir = $study_dir . "logs";
+
 unless (-d $shdir){
     `mkdir $shdir`;}
+
 unless (-d $logdir){
     `mkdir $logdir`;}
-$norm_dir = $study_dir . "NORMALIZED_DATA";
-$spread_dir = $norm_dir . "/SPREADSHEETS";
+
+my $norm_dir = $study_dir . "NORMALIZED_DATA";
+my $spread_dir = $norm_dir . "/SPREADSHEETS";
 unless (-d $spread_dir){
     `mkdir $spread_dir`;
 }
-$FILE = $ARGV[0];
+my $novellist = "$LOC/$study.list_of_novel_exons.txt";
+my $FILE = $ARGV[0];
 
+my ($sh_exon, $sh_intron, $sh_junctions, $sh_genes, $jobname, $lognameE, $lognameI, $lognameJ, $lognameG);
 if ($numargs eq "0"){
     $sh_exon = "$shdir/exonquants2spreadsheet_min_max.sh";
     open(OUTexon, ">$sh_exon");
-    print OUTexon "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC exonquants";
+    if ($novelexon eq "true"){
+	print OUTexon "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC exonquants -novelexon $novellist";
+    }
+    else{
+	print OUTexon "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC exonquants";
+    }
     close(OUTexon);
     $sh_intron = "$shdir/intronquants2spreadsheet_min_max.sh";
     open(OUTintron, ">$sh_intron");
@@ -202,14 +221,19 @@ if ($numargs eq "0"){
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);
     }
-    `$submit $jobname_option $jobname -o $lognameG.out -e $lognameG.err < $sh_genes`;
+    `$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameG.out -e $lognameG.err < $sh_genes`;
 
 }
 else{
     if ($U eq "true"){
 	$sh_exon = "$shdir/exonquants2spreadsheet.u.sh";
 	open(OUTexon, ">$sh_exon");
-	print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants";
+	if ($novelexon eq "true"){
+	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -novelexon $novellist";
+	}
+	else{
+	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants";
+	}
 	close(OUTexon);
 	$sh_intron = "$shdir/intronquants2spreadsheet.u.sh";
 	open(OUTintron, ">$sh_intron");
@@ -243,12 +267,17 @@ else{
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
-	`$submit $jobname_option $jobname -o $lognameG.out -e $lognameG.err < $sh_genes`;
+	`$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameG.out -e $lognameG.err < $sh_genes`;
     }
     if ($NU eq "true"){
         $sh_exon = "$shdir/exonquants2spreadsheet.nu.sh";
         open(OUTexon, ">$sh_exon");
-        print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -NU";
+	if ($novelexon eq "true"){
+	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -NU -novelexon $novellist";
+	}
+	else{
+	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -NU";
+	}
         close(OUTexon);
         $sh_intron = "$shdir/intronquants2spreadsheet.nu.sh";
         open(OUTintron, ">$sh_intron");
@@ -282,7 +311,7 @@ else{
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
-        `$submit $jobname_option $jobname -o $lognameG.out -e $lognameG.err < $sh_genes`;
+        `$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameG.out -e $lognameG.err < $sh_genes`;
     }
 }
 print "got here\n";

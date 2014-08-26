@@ -18,7 +18,7 @@ my $input = $ARGV[0];
 my $genes = $ARGV[1];
 my $outfile = $ARGV[2];
 
-my (%GENE, %GENE_counts_min, %GENE_counts_max, %READ_count, %READ_U, %READ_NU);
+my (%GENE, %GENE_COORDS, %GENE_counts_min, %GENE_counts_max, %READ_count, %READ_U, %READ_NU);
 open(IN, $genes);
 my $header = <IN>;
 while(my $line = <IN>){
@@ -26,9 +26,11 @@ while(my $line = <IN>){
     my @a = split(/\t/, $line);
     my $gene_id = $a[0];
     my $gene_sym = $a[1];
+    my $gene_coord = $a[2];
     $GENE{$gene_id} = $gene_sym;
     $GENE_counts_min{$gene_id} = 0;
     $GENE_counts_max{$gene_id} = 0;
+    $GENE_COORDS{$gene_id} = $gene_coord;
 }
 close(IN);
 
@@ -130,10 +132,10 @@ while(my $line = <INFILE2>){
 }
 
 open(OUT, ">$outfile");
-print OUT "ensGeneID\tmin\tmax\tgeneSymbol\n";
+print OUT "ensGeneID\tmin\tmax\tgeneSymbol\tgeneCoordinates\n";
 foreach my $key (sort keys %GENE){
     my $MAX = $GENE_counts_min{$key}+$GENE_counts_max{$key};
-    print OUT "$key\t$GENE_counts_min{$key}\t$MAX\t$GENE{$key}\n";
+    print OUT "$key\t$GENE_counts_min{$key}\t$MAX\t$GENE{$key}\t$GENE_COORDS{$key}\n";
 }
 
 print "got here\n";
