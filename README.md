@@ -143,6 +143,11 @@ You can also run it step by step using the scripts documented in [#2. NORMALIZAT
      **-part1_part2** : Use this option if you want to run steps in PART1 and PART2 without pausing. <br>
      **-part2** : Use this option to resume the pipeline at [PART2](https://github.com/itmat/Normalization/tree/master#part2). You may edit the &lt;file of sample dirs> file and/or change the highexpressor cutoff value.<br>
 
+      **[resume options]**<br>
+      You may not change the normalization parameters with resume option.
+      **-resume** : Use this if you have a job that crashed or stopped. This runs job that has already been initialized or partially run after the last completed step. It may repeat the last completed step if necessary.<br>
+      **-resume_at "&lt;step>" : Use this if you have a job that crashed or stopped. This resumes job at "&lt;step>". **Make sure full step name (found in log file) is given in quotes** (e.g. "1   "STUDY.get_total_num_reads"")<br>
+
      **[data type]**<br>
      **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data<br>
      **-fa** : set this if the unaligned files are in fasta format<br>
@@ -707,7 +712,8 @@ This outputs `genes.txt` files of all samples to `NORMALIZED_DATA/FINAL_SAM/MERG
   **-nu** :  set this if your final (normalized) sam files have non-unique mappers only, otherwise by default it will use merged(unique+non-unique) mappers. <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_10G>,&lt;status>"** : set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 10G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
 This outputs `genequants` files of all samples to `NORMALIZED_DATA/FINAL_SAM/MERGED/`, `NORMALIZED_DATA/FINAL_SAM/Unique/`, or `NORMALIZED_DATA/FINAL_SAM/NU/`.
