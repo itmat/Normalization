@@ -20,16 +20,23 @@ option:
 
  -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI) cluster.
 
- -other \"<submit>,<jobname_option>,<status>\":
+ -other \"<submit>,<jobname_option>,<request_memory_option>, <queue_name_for_10G>,<status>\":
         set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
         **make sure the arguments are comma separated inside the quotes**
 
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
+        <request_memory_option> : is option for requesting resources for batch job submission command
+                                  (e.g. -q, -l h_vmem=)
+        <queue_name_for_10G> : is queue name for 10G (e.g. max_mem30, 10G)
         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted.
                    by default it will submit 200 jobs at a time.
+
+ -mem <s> : set this if your job requires more memory.
+            <s> is the queue name for required mem.
+            Default: 10G
 
  -h : print usage
 
@@ -47,9 +54,14 @@ my $numargs = 0;
 my $U = "true";
 my $NU = "true";
 my $njobs = 200;
+my $replace_mem = "false";
 my $submit = "";
+my $request_memory_option = "";
+my $mem = "";
+my $new_mem = "";
 my $jobname_option = "";
 my $status;
+
 for (my $i=3; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -79,6 +91,8 @@ for (my $i=3; $i<@ARGV; $i++){
         $option_found = "true";
         $submit = "bsub";
         $jobname_option = "-J";
+	$request_memory_option = "-q";
+        $mem = "max_mem30";
         $status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
@@ -86,6 +100,8 @@ for (my $i=3; $i<@ARGV; $i++){
 	$option_found = "true";
         $submit = "qsub -cwd";
         $jobname_option = "-N";
+	$request_memory_option = "-l h_vmem=";
+        $mem = "10G";
         $status = "qstat";
     }
     if ($ARGV[$i] eq '-other'){
@@ -95,29 +111,39 @@ for (my $i=3; $i<@ARGV; $i++){
         my @a = split(",", $argv_all);
         $submit = $a[0];
         $jobname_option = $a[1];
-        $status = $a[2];
+	$request_memory_option = $a[2];
+        $mem = $a[3];
+        $status = $a[4];
         $i++;
-	$i++;
-        if ($submit eq "-max_jobs" | $submit eq "" | $jobname_option eq "" |  $status eq ""){
-            die "please provide \"<submit>, <jobname_option>, and <status>\"\n";
+        if ($submit eq "-max_jobs" | $submit eq "" | $jobname_option eq "" |  $request_memory_option eq "" | $mem eq "" | $status eq ""){
+            die "please provide \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_10G> ,<status>\"\n";
         }
         if ($submit eq "-lsf" | $submit eq "-sge"){
-            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname\
-_option> ,<status>\".\n";
+            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_10G>,<status>\".\n";
+        }
+    }
+    if ($ARGV[$i] eq '-mem'){
+        $option_found = "true";
+        $new_mem = $ARGV[$i+1];
+        $replace_mem = "true";
+        $i++;
+        if ($new_mem eq ""){
+            die "please provide a queue name.\n";
         }
     }
 }
 if($numargs ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>,<jobname_option>,\
-<status>\".\n
+    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>,<jobname_option>, <request_memory_option>, \
+<queue_name_for_10G>,<status>\".\n
 ";
 }
 if($numargs_u_nu > 1) {
     die "you cannot specify both -u and -nu\n.
 ";
 }
-
-
+if ($replace_mem eq "true"){
+    $mem = $new_mem;
+}
 
 
 my $samples = $ARGV[0];
@@ -136,13 +162,13 @@ my $final_U_dir = "$finalsam_dir/Unique";
 my $final_NU_dir = "$finalsam_dir/NU";
 my $final_M_dir = "$finalsam_dir/MERGED";
 my $ensFile = $ARGV[2];
-my %ID;
+my (%ID, %GENECHR, %GENEST, %GENEEND);
 
 open(ENS, $ensFile) or die "cannot find file \"$ensFile\"\n";
 my $header = <ENS>;
 chomp($header);
 my @ENSHEADER = split(/\t/, $header);
-my ($genenamecol, $genesymbolcol);
+my ($genenamecol, $genesymbolcol, $txchrcol, $txstartcol, $txendcol);
 for(my $i=0; $i<@ENSHEADER; $i++){
     if ($ENSHEADER[$i] =~ /.name2$/){
         $genenamecol = $i;
@@ -150,23 +176,41 @@ for(my $i=0; $i<@ENSHEADER; $i++){
     if ($ENSHEADER[$i] =~ /.ensemblToGeneName.value$/){
         $genesymbolcol = $i;
     }
+    if ($ENSHEADER[$i] =~ /.chrom/){
+	$txchrcol = $i;
+    }
+    if ($ENSHEADER[$i] =~ /.txStart/){
+	$txstartcol = $i;
+    }
+    if ($ENSHEADER[$i] =~ /.txEnd/){
+	$txendcol = $i;
+    }
 }
-if (!defined($genenamecol) || !defined($genesymbolcol)){
-    die "Your header must contain columns with the following suffixes: name2, ensemblToGeneName.value\n";
+if (!defined($genenamecol) || !defined($genesymbolcol) || !defined($txchrcol) || !defined($txstartcol)|| !defined($txendcol)){
+    die "Your header must contain columns with the following suffixes: chrom, txStart, txEnd, name2, ensemblToGeneName.value\n";
 }
 while(my $line = <ENS>){
     chomp($line);
     my @a = split(/\t/,$line);
+    my $txchr = $a[$txchrcol];
+    my $txst = $a[$txstartcol];
+    my $txend = $a[$txendcol];
     my $geneid = $a[$genenamecol];
     my $genesym = $a[$genesymbolcol];
     $ID{$geneid}= $genesym;
+    $GENECHR{$geneid} = $txchr;
+    push (@{$GENEST{$geneid}}, $txst);
+    push (@{$GENEEND{$geneid}}, $txend);
 }
 close(ENS);
 
 my $master_list_of_genes = "$LOC/master_list_of_ensGeneIDs.txt";
 open(MAS, ">$master_list_of_genes");
 foreach my $key (keys %ID){
-    print MAS "$key\t$ID{$key}\n";
+    my $chr = $GENECHR{$key};
+    my $min_st = &get_min(@{$GENEST{$key}});
+    my $max_end = &get_max(@{$GENEEND{$key}});
+    print MAS "$key\t$ID{$key}\t$chr:$min_st-$max_end\n";
 }
 close(MAS);
 
@@ -196,8 +240,21 @@ while(my $line = <IN>){
     while (qx{$status | wc -l} > $njobs){
         sleep(10);
     }
-    `$submit $jobname_option $jobname -o $logname.out -e $logname.err < $shfile`;
+    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
 
 }
 close(IN);
 print "got here\n";
+
+sub get_min(){
+    (my @array) = @_;
+    my @sorted_array = sort {$a <=> $b} @array;
+    return $sorted_array[0];
+}
+
+sub get_max(){
+    (my @array) = @_;
+    my @sorted_array = sort {$a <=> $b} @array;
+    return $sorted_array[@sorted_array-1];
+}
+

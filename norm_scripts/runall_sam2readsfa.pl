@@ -71,5 +71,6 @@ while($line = <INFILE>) {
     }
     if ($qsub eq "true"){
 	`qsub -cwd -N $dir.sam2readsfa -e $logidr -o $logdir $shfile`;
+    }
 }
 close(INFILE);

@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
-if(@ARGV<3) {
-    die "usage: perl quants2spreadsheet.1.pl <file names> <loc> <type of quants file> [options]
+use strict;
+use warnings;
+my $USAGE = "usage: perl quants2spreadsheet.1.pl <file names> <loc> <type of quants file> [options]
 
 where:
 <sample dirs> is the name of a file with the names of the sample directories (no paths)
@@ -10,37 +11,58 @@ where:
 option:
  -NU: set this if you want to use non-unique quants, otherwise by default it will 
       use unique quants files as input
+ -novelexon <file> : provide full path of list of novel exons file with this option to label the exons
+
+
 ";
+if(@ARGV<3) {
+    die $USAGE;
 }
 
-$nuonly = 'false';
-for($i=3; $i<@ARGV; $i++) {
+my $nuonly = 'false';
+my ($arg_recognized, $novellist);
+my $novelexon = "false";
+for(my $i=3; $i<@ARGV; $i++) {
     $arg_recognized = 'false';
     if($ARGV[$i] eq '-NU') {
 	$nuonly = 'true';
 	$arg_recognized = 'true';
+    }
+    if ($ARGV[$i] eq "-novelexon"){
+        $arg_recognized = "true";
+        $novelexon = "true";
+        $novellist = $ARGV[$i+1];
+        if ($novellist =~ /^$/){
+            die "please provide a list of novel exons\n";
+        }
+        $i++;
+    }
+    if ($ARGV[$i] eq "-h"){
+        $arg_recognized = "true";
+        die $USAGE;
     }
     if($arg_recognized eq 'false') {
 	die "arg \"$ARGV[$i]\" not recognized.\n";
     }
 }
 
-$LOC = $ARGV[1];
+my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
-$type = $ARGV[2];
-@fields = split("/", $LOC);
-$study = $fields[@fields-2];
-$last_dir = $fields[@fields-1];
-$norm_dir = $LOC;
+my $type = $ARGV[2];
+my @fields = split("/", $LOC);
+my $study = $fields[@fields-2];
+my $last_dir = $fields[@fields-1];
+my $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
 $norm_dir = $norm_dir . "NORMALIZED_DATA";
-$exon_dir = $norm_dir . "/exonmappers";
-$nexon_dir = $norm_dir . "/notexonmappers";
-$spread_dir = $norm_dir . "/SPREADSHEETS";
+my $exon_dir = $norm_dir . "/exonmappers";
+my $nexon_dir = $norm_dir . "/notexonmappers";
+my $spread_dir = $norm_dir . "/SPREADSHEETS";
 
 unless (-d $spread_dir){
     `mkdir $spread_dir`;
 }
+my ($out, $sample_name_file, $out_min, $out_max);
 if ($type =~ /^exon/){
     $out = "$spread_dir/master_list_of_exons_counts_u.$study.txt";
     $sample_name_file = "$norm_dir/file_exonquants_u.txt";
@@ -75,9 +97,9 @@ else{
 if($type =~ /^exon/){
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     open(OUT, ">$sample_name_file");
-    while ($line = <INFILE>){
+    while (my $line = <INFILE>){
 	chomp($line);
-	$id = $line;
+	my $id = $line;
 	if($nuonly eq "false"){
 	    print OUT "$exon_dir/Unique/$id.exonmappers.norm_u_exonquants\n";
 	}
@@ -89,9 +111,9 @@ if($type =~ /^exon/){
 if ($type =~ /^gene/){
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     open(OUT, ">$sample_name_file");
-    while ($line = <INFILE>){
+    while (my $line = <INFILE>){
         chomp($line);
-        $id = $line;
+        my $id = $line;
         if($nuonly eq "false"){
             print OUT "$norm_dir/FINAL_SAM/Unique/$id.FINAL.norm_u.genequants\n";
         }
@@ -106,9 +128,9 @@ close(OUT);
 if ($type =~ /^intron/){
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     open(OUT, ">$sample_name_file");
-    while ($line = <INFILE>){
+    while (my $line = <INFILE>){
 	chomp($line);
-	$id = $line;
+	my $id = $line;
 	if($nuonly eq "false"){
             print OUT "$nexon_dir/Unique/$id.intronmappers.norm_u_intronquants\n";
 	}
@@ -121,13 +143,14 @@ close(INFILE);
 close(OUT);
 
 open(FILES, $sample_name_file);
-$file = <FILES>;
+my $file = <FILES>;
 close(FILES);
 
 open(INFILE, $file) or die "cannot find file \"$file\"\n";
-$firstline = <INFILE>;
-$rowcnt = 0;
-while($line = <INFILE>) {
+my $firstline = <INFILE>;
+my $rowcnt = 0;
+my (@id, @sym, @coord);
+while(my $line = <INFILE>) {
     chomp($line);
     if ($type =~ /^gene/){
 	if ($line !~ /^EN/){
@@ -139,20 +162,22 @@ while($line = <INFILE>) {
 	    next;
 	}
     }
-    @a = split(/\t/,$line);
+    my @a = split(/\t/,$line);
     $id[$rowcnt] = $a[0];
     $sym[$rowcnt] = $a[3];
+    $coord[$rowcnt] = $a[4];
     $rowcnt++;
 }
 close(INFILE);
 
 open(FILES, $sample_name_file);
-$filecnt = 0;
+my $filecnt = 0;
+my (@ID, @DATA, @DATA_MIN, @DATA_MAX);
 while($file = <FILES>) {
     chomp($file);
-    @fields = split("/",$file);
-    $size = @fields;
-    $id = $fields[$size-1];
+    my @fields = split("/",$file);
+    my $size = @fields;
+    my $id = $fields[$size-1];
     $id =~ s/.exonmappers.norm_u_exonquants//;
     $id =~ s/.exonmappers.norm_nu_exonquants//;
     $id =~ s/.intronmappers.norm_u_intronquants//;
@@ -161,11 +186,11 @@ while($file = <FILES>) {
     $id =~ s/.FINAL.norm_nu.genequants//;
     $ID[$filecnt] = $id;
     open(INFILE, $file);
-    $firstline = <INFILE>;
-    $rowcnt = 0;
-    while($line = <INFILE>) {
+    my $firstline = <INFILE>;
+    my $rowcnt = 0;
+    while(my $line = <INFILE>) {
 	chomp($line);
-	@a = split(/\t/,$line);
+	my @a = split(/\t/,$line);
 	if (($type =~ /^exon/) || ($type =~ /^intron/)){
 	    if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
 		next;
@@ -186,22 +211,44 @@ while($file = <FILES>) {
 }
 close(FILES);
 
+my %NOVEL;
 if (($type =~ /^exon/) || ($type =~ /^intron/)){
     open(OUTFILE, ">$out");
     print OUTFILE "id";
-    for($i=0; $i<@ID; $i++) {
+    for(my $i=0; $i<@ID; $i++) {
 	print OUTFILE "\t$ID[$i]";
     }
+    if ($type =~ /^exon/){
+	if ($novelexon eq "true"){
+	    print OUTFILE "\tNovelExon";
+	    open(IN, $novellist) or die "cannot find file \"$novellist\"\n";
+	    while(my $line = <IN>){
+		chomp($line);
+		$NOVEL{$line} = 1;
+	    }
+	    close(IN);
+	}
+    }
     print OUTFILE "\n";
-    for($i=0; $i<$rowcnt; $i++) {
+    for(my $i=0; $i<$rowcnt; $i++) {
 	if ($type =~ /^exon/){
 	    print OUTFILE "exon:$id[$i]";
 	}
 	if ($type =~ /^intron/){
 	    print OUTFILE "intron:$id[$i]";
 	}
-	for($j=0; $j<$filecnt; $j++) {
+	for(my $j=0; $j<$filecnt; $j++) {
 	    print OUTFILE "\t$DATA[$j][$i]";
+	}
+	if ($type =~ /^exon/){
+	    if ($novelexon eq "true"){
+		if (exists $NOVEL{$id[$i]}){
+		    print OUTFILE "\tN";
+		}
+		else{
+		    print OUTFILE "\t.";
+		}
+	    }
 	}
 	print OUTFILE "\n";
     }
@@ -212,21 +259,21 @@ if ($type =~ /^gene/){
     open(OUT_MAX, ">$out_max");
     print OUT_MIN "id";
     print OUT_MAX "id";
-    for($i=0; $i<@ID; $i++) {
+    for(my $i=0; $i<@ID; $i++) {
         print OUT_MIN "\t$ID[$i]";
         print OUT_MAX "\t$ID[$i]";
     }
-    print OUT_MIN "\tgeneSymbol\n";
-    print OUT_MAX "\tgeneSymbol\n";
-    for($i=0; $i<$rowcnt; $i++) {
-	print OUT_MIN "$id[$i]";
-	print OUT_MAX "$id[$i]";
-        for($j=0; $j<$filecnt; $j++) {
+    print OUT_MIN "\tgeneCoordinate\tgeneSymbol\n";
+    print OUT_MAX "\tgeneCoordinate\tgeneSymbol\n";
+    for(my $i=0; $i<$rowcnt; $i++) {
+	print OUT_MIN "gene:$id[$i]";
+	print OUT_MAX "gene:$id[$i]";
+        for(my $j=0; $j<$filecnt; $j++) {
             print OUT_MIN "\t$DATA_MIN[$j][$i]";
             print OUT_MAX "\t$DATA_MAX[$j][$i]";
 	}
-	print OUT_MIN "\t$sym[$i]\n";
-	print OUT_MAX "\t$sym[$i]\n";
+	print OUT_MIN "\t$coord[$i]\t$sym[$i]\n";
+	print OUT_MAX "\t$coord[$i]\t$sym[$i]\n";
     }
     close(OUT_MIN);
     close(OUT_MAX);

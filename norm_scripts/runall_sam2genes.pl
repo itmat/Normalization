@@ -96,7 +96,7 @@ for (my $i=3; $i<@ARGV; $i++){
 	$status = $a[2];
         $i++;
         if ($submit eq "-max_jobs" | $submit eq "" | $jobname_option eq "" |  $status eq ""){
-            die "please provide \"<submit>, <jobname_option>, and <status>\"\n";
+            die "please provide \"<submit>, <jobname_option>,<status>\"\n";
         }
         if ($submit eq "-lsf" | $submit eq "-sge"){
             die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option> ,<status>\".\n";

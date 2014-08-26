@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
-$USAGE =  "\nUsage: run_normalization --sample_dirs <file of sample_dirs> --loc <s> --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
+#use warnings;
+my $USAGE =  "\nUsage: run_normalization --sample_dirs <file of sample_dirs> --loc <s> --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
 
 where:
 --sample_dirs <file of sample_dirs> : is a file of sample directories with alignment output without path
@@ -20,6 +21,16 @@ OPTIONS:
      -part1_part2 : Use this option if you want to run steps in PART1 and PART2 without pausing. 
      -part2 : Use this option to resume the pipeline at PART2. You may edit the <file of sample_dirs> file 
                and/or change the highexpressor cutoff value.
+
+     [resume options]
+     You may not change the normalization parameters with resume option.
+     -resume : Use this if you have a job that crashed or stopped.
+               Runs job that has already been initialized or partially run after the last completed step.
+               It may repeat the last completed step.
+     -resume_at \"<step>\" : Use this if you have a job that crashed or stopped.
+                             This resumes at \"<step>\".
+                             **make sure full step name (found in log file) is given in quotes**
+                             (e.g. \"1    \"allsteps.get_total_num_reads\"\")
 
      [data type]
      -se : set this if the data is single end, otherwise by default it will assume it's a paired end data
@@ -49,26 +60,30 @@ OPTIONS:
 ";
 
 
-if(@ARGV < 8) {
+if(@ARGV < 10) {
     die $USAGE;
 }
 
-$required = 0;
-$unaligned = 0;
-$count_b = 0;
-$se = "";
-$unaligned_z = "";
-$min = 10;
-$max = 2000;
-$cutoff_he = 100;
-$filter_high_expressors = "false";
-$i_exon = 20;
-$i_intron = 10;
-$filter_low_expressors = "false";
-$novel = "true";
-$shfile_name = "runall_normalization.sh";
-$part2 = "false";
-for($i=0; $i<@ARGV; $i++) {
+my $required = 0;
+my $unaligned = 0;
+my $count_b = 0;
+my $count_r = 0;
+my $se = "";
+my $unaligned_z = "";
+my $min = 10;
+my $max = 2000;
+my $cutoff_he = 100;
+my $filter_high_expressors = "false";
+my $i_exon = 20;
+my $i_intron = 10;
+my $filter_low_expressors = "false";
+my $novel = "true";
+my $shfile_name = "runall_normalization.sh";
+my $resume = "false";
+my $resume_at = "false";
+my ($sample_dir, $LOC, $unaligned_file, $samfilename, $unaligned_type, $cfg_file, $cutoff_temp, $last_step);
+my $part2 = "false";
+for(my $i=0; $i<@ARGV; $i++) {
     $option_found = "false";
     if ($ARGV[$i] eq '-h'){
 	$option_found = "true";
@@ -78,6 +93,22 @@ for($i=0; $i<@ARGV; $i++) {
 	$option_found = "true";
 	$shfile_name = "runall_normalization_part1_part2.sh";
 	$count_b++;
+    }
+    if ($ARGV[$i] eq '-resume'){
+	$option_found = "true";
+	$resume = "true";
+	$count_r++;
+    }
+    if ($ARGV[$i] eq '-resume_at'){
+	$option_found = "true";
+	$resume = "true";
+	$count_r++;
+	$resume_at = "true";
+	$last_step = $ARGV[$i+1];
+	if ($last_step =~ /^$/){
+	    die "you need to provide -resume_at \"<step>\".\n";
+	}
+	$i++;
     }
     if ($ARGV[$i] eq '-part2'){
         $option_found = "true";
@@ -110,7 +141,7 @@ for($i=0; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq '--unaligned'){
 	$option_found = "true";
         $unaligned_file = $ARGV[$i+1];
-	if ($unalgined_file =~ /^-/ | $unaligned_file eq ""){
+	if ($unaligned_file =~ /^-/ | $unaligned_file eq ""){
 	    die "\nplease provide <file of fa/fqfiles> for --unaligned\n";
 	}
         $i++;
@@ -215,20 +246,23 @@ if ($unaligned ne '1'){
 if ($count_b > 1){
     die "you can only set one of the following options: -part1_part2, -part2\n";
 }
+if ($count_r > 1){
+    die "you can only set one of the following options: -resume, -resume_at \"<step>\"\n";
+}
 
-$dirs = `wc -l $sample_dir`;
-@a = split(" ", $dirs);
-$num_samples = $a[0];
-$cutoff_le = 0;
+my $dirs = `wc -l $sample_dir`;
+my @a = split(" ", $dirs);
+my $num_samples = $a[0];
+my $cutoff_le = 0;
 if ($filter_low_expressors eq "true"){
     $cutoff_le = $cutoff_temp;
 }
 $LOC =~ s/\/$//;
-@fields = split("/", $LOC);
-$last_dir = $fields[@fields-1];
-$study_dir = $LOC;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
-$study = $fields[@fields-2];
+my $study = $fields[@fields-2];
 
 #check_config file
 unless (-e $cfg_file){
@@ -238,35 +272,36 @@ unless (-e $cfg_file){
 &parse_config_file ($cfg_file, \%Config);
 
 use Cwd 'abs_path';
-$norm_script_dir = abs_path($0);
+my $norm_script_dir = abs_path($0);
 $norm_script_dir =~ s/\/run_normalization//;
 
-$geneinfo = $GENE_INFO_FILE;
+my $geneinfo = $GENE_INFO_FILE;
 unless (-e $geneinfo){
     die "ERROR: cannot find file \"$geneinfo\"\nYou need to provide [1] gene information file (#2 GENOME INFO in your cfg file \"$cfg_file\")\n\n";
 }
-$genome = $GENOME_FA;
+my $genome = $GENOME_FA;
 unless (-e $genome){
     die "ERROR: cannot find file \"$genome\"\nYou need to provide [2] genome sequence one-line fasta file (#2 GENOME INFO in your cfg file \"$cfg_file\")\n\n";
 }
-$fai = $GENOME_FAI;
+my $fai = $GENOME_FAI;
 unless (-e $fai){
     die "ERROR: cannot find file \"$fai\"\nYou need to provide [3] FASTA index file (#2 GENOME INFO in your cfg file \"$cfg_file\")\n\n";
 }
-$annot = $ANNOTATION_FILE;
+my $annot = $ANNOTATION_FILE;
 unless (-e $annot){
     die "ERROR: cannot find file \"$annot\"\nYou need to provide annotation file (#3 ANNOTATION INFO in your cfg file \"$cfg_file\")\n\n";
 }
-$ensGene = $ENSGENES_FILE;
+my $ensGene = $ENSGENES_FILE;
 unless (-e $ensGene){
     die "ERROR: cannot find file \"$ensGene\"\nYou need to provide ensembl gene file (#4 Ensembl Genes in your cfg file \"$cfg_file\")\n\n";
 }
 
-$sam2cov = "false";
-$strand_info = "";
+my $sam2cov = "false";
+my $strand_info = "";
+my $sam2cov_loc;
 if ($SAM2COV =~ /^true/ | $SAM2COV =~ /^TRUE/){
     $sam2cov = "true";
-    $num_cov = 0;
+    my $num_cov = 0;
     unless (-e $SAM2COV_LOC){
 	die "You need to provide sam2cov location. (#5 DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
     }
@@ -286,9 +321,9 @@ if ($SAM2COV =~ /^true/ | $SAM2COV =~ /^TRUE/){
 	$strand_info = "-str";
     }
 }
-$delete_int_sam = "true";
-$convert_sam2bam = "false";
-$gzip_cov = "false";
+my $delete_int_sam = "true";
+my $convert_sam2bam = "false";
+my $gzip_cov = "false";
 if ($DELETE_INT_SAM ne ""){
     if ($DELETE_INT_SAM =~ /^true/ | $DELETE_INT_SAM =~ /^TRUE/){
 	$delete_int_sam = "true";
@@ -314,13 +349,14 @@ if ($GZIP_COV ne ""){
     }
 }
 
-$lsf = "false";
-$sge = "false";
-$other = "false";
-$num_cluster = 0;
+my $lsf = "false";
+my $sge = "false";
+my $other = "false";
+my $num_cluster = 0;
+my ($batchjobs,  $jobname, $status, $request, $queue_4G,  $queue_6G, $queue_10G, $queue_15G, $queue_30G, $queue_45G, $queue_60G, $submit, $c_option, $maxjobs);
 if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
     $num_cluster++;
-    if ($QUEUE_NAME_4G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $QUEUE_NAME_45G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $MAX_JOBS_sge eq ""){
+    if ($QUEUE_NAME_4G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $QUEUE_NAME_45G_sge eq "" | $QUEUE_NAME_60G_sge eq "" | $MAX_JOBS_sge eq ""){
         die "ERROR: please provide all required CLUSTER INFO for SGE_CLUSTER in the config file \"$cfg_file\"\n";
     }
     else{
@@ -379,6 +415,8 @@ if ($OTHER_CLUSTER =~ /^true/ | $OTHER_CLUSTER =~ /^TRUE/){
 	$queue_10G = $QUEUE_NAME_10G;
 	$queue_15G = $QUEUE_NAME_15G;
 	$queue_30G = $QUEUE_NAME_30G;
+	$queue_45G = $QUEUE_NAME_45G;
+	$queue_60G = $QUEUE_NAME_60G;
 	$submit = "-other";
 	$other = "true";
 	$maxjobs = $MAX_JOBS;
@@ -388,9 +426,9 @@ if ($num_cluster ne '1'){
     die "ERROR: please specify which cluster you're using in your configuration file \"$cfg_file\"\n";
 }
 
-$shdir = $study_dir . "shell_scripts";
-$logdir = $study_dir . "logs";
-$logfile = $logdir . "/$study.run_normalization.log";
+my $shdir = $study_dir . "shell_scripts";
+my $logdir = $study_dir . "logs";
+my $logfile = $logdir . "/$study.run_normalization.log";
 unless (-d $shdir){
     `mkdir $shdir`;}
 unless (-d $logdir){
@@ -398,9 +436,9 @@ unless (-d $logdir){
 
 #check if the sam files exist
 open(IN, $sample_dir) or die "cannot find file \"$sample_dir\"\n";
-while ($line = <IN>){
+while (my $line = <IN>){
     chomp($line);
-    $file_loc = "$LOC/$line/$samfilename";
+    my $file_loc = "$LOC/$line/$samfilename";
     unless (-e $file_loc){
 	die "ERROR: SAM file \"$file_loc\" does not exist. Please double check --sample_dirs, --loc, and --samfilename\n";
     }
@@ -408,31 +446,43 @@ while ($line = <IN>){
 close(IN);
 #check if the fq/fa files exist
 open(IN, $unaligned_file) or die "cannot find file \"$unaligned_file\"\n";
-while ($line = <IN>){
+while (my $line = <IN>){
     chomp($line);
     unless (-e $line){
 	die "ERROR: Unaligned file \"$line\" does not exist.\n";
     }
 }
 close(IN);
-$runall_shfile = $shdir . "/" . $shfile_name;
+#if resume option used, check if the log file exists
+if (($resume eq "true") && ($resume_at eq "false")){
+    unless (-e $logfile){
+	die "ERROR: Log file \"$logfile\" does not exist. Please use -resume_at \"<step>\" option to resume.\n\n";
+    }
+}
+my $runall_shfile = $shdir . "/" . $shfile_name;
 open(SH, ">$runall_shfile");
-$argv = join(" ",@ARGV);
+if ($resume_at eq "true"){
+    $argv = join(" ", &args2shell(@ARGV));
+}
+else{
+    $argv = join(" ", @ARGV);
+}
 print SH "perl $norm_script_dir/runall_normalization.pl $argv";
 close(SH);
 
+my ($p2_I, $p2_E);
 if ($part2 eq "true"){
 #if -part2 is set, check to make sure runall_normalization.sh file exists.
     unless (-e "$shdir/runall_normalization.sh"){
 	die "ERROR: cannot find file \"$shdir/runall_normalization.sh\".\n-part2 option cannot be used. please run the pipeline using default pipeline setting first.\n";
     }
 #if -depthE and/or -depthI is greater than before
-    $default_sh = `cat $shdir/runall_normalization.sh`;
-    $part2_sh = `cat $runall_shfile`;
-    $def_E = 20;
-    $def_I = 10;
-    $res_E = 20;
-    $res_I = 10;
+    my $default_sh = `cat $shdir/runall_normalization.sh`;
+    my $part2_sh = `cat $runall_shfile`;
+    my $def_E = 20;
+    my $def_I = 10;
+    my $res_E = 20;
+    my $res_I = 10;
     if ($default_sh =~ /-depthE/){
 	$default_sh =~ /-depthE\ (\d+)/;
 	$def_E = $1;
@@ -454,12 +504,18 @@ if ($part2 eq "true"){
 	    $p2_E = 20;
 	}
     }
+    else{
+	$p2_E = 20;
+    }
     if ($part2_sh =~ /-depthI/){
 	$part2_sh =~ /-depthI\ (\d+)/;
 	$p2_I = $1;
 	if ($p2_I =~ /^$/){
 	    $p2_I = 10;
 	}
+    }
+    else{
+	$p2_I = 10;
     }
     if (($p2_E > $def_E)){
 	die "ERROR: Check \"-depthE <n>\" option. <n> cannot be greater than $def_E.\n";
@@ -475,17 +531,27 @@ if ($part2 eq "true"){
     }
 }
 
-@s = split(" ", $status);
-$stat = $s[0];
+my @s = split(" ", $status);
+my $stat = $s[0];
 while(qx{$stat | wc -l} > $maxjobs){
     sleep(10);
 }
 `$batchjobs $jobname "$study.RUNALL_NORMALIZATION" -o $logdir/$study.runall_normalization.out -e $logdir/$study.runall_normalization.err < $runall_shfile`;
 
+sub args2shell{
+    local (@argv) = @_;
+    local $" = '\' \'';
+    local (@margv);
+
+    @margv = map { s/'/'\\''/g; $_ } @argv;
+    return "\'@margv\'" if @margv;
+    return undef;   
+} 
+
 sub parse_config_file () {
-    ($File, $Config) = @_;
+    my ($File, $Config) = @_;
     open(CONFIG, "$File") or die "ERROR: Config file not found : $File\n";
-    while ($config_line = <CONFIG>) {
+    while (my $config_line = <CONFIG>) {
 	chomp($config_line);
         $config_line =~ s/^\s*//;
         $config_line =~ s/\s*$//;
