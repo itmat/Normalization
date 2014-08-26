@@ -1716,7 +1716,7 @@ if ($run_norm eq "true"){
 	@b = split(" ", $num);
 	$number = $b[0];
 	$number =~ s/,//g;
-	print LOG "\$number:$number\n";
+#	print LOG "\$number:$number\n";
 	if ($number > 50000000){	
 	    $new_queue = "-mem $queue_15G";
             if ($number > 100000000){
