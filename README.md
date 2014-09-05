@@ -59,7 +59,7 @@ This is an optional step. You can use sam2cov to create coverage files and uploa
 
 #####F. Index
 Get the gene information file and genome sequence one-line fasta file. 
-###### i. mm9 and hg19
+###### i. mm9, hg19 and dm3
 The following files are available for download: 
 
      http://itmat.indexes.s3.amazonaws.com/mm9_ucsc_gene_info.txt
@@ -74,8 +74,8 @@ Follow the instructions [here](https://github.com/itmat/rum/wiki/Creating-indexe
 
 #####G. Ensembl Genes
 Get Ensembl Genes file. 
-###### i. mm9 and hg19
-Tables are available for mm9 and hg19:
+###### i. mm9, hg19 and dm3
+Tables are available for mm9, hg19 and dm3:
 
     /path/to/Normalization/norm_scripts/mm9_ensGenes.txt
     /path/to/Normalization/norm_scripts/hg19_ensGenes.txt
