@@ -64,7 +64,7 @@ unless (-d $norm_notexon_dir){
 }
 $norm_notexon_dirU = $norm_notexon_dir . "/Unique";
 $norm_notexon_dirNU = $norm_notexon_dir . "/NU";
-
+my @g;
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){
     chomp($line);
@@ -80,8 +80,14 @@ while ($line = <INFILE>){
 	    `mkdir $norm_exon_dirNU`;
 	}
 	#exonmappers
-	`cat $LOC/$dirU/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dirU/$id.exonmappers.norm_u.sam`;
-	`cat $LOC/$dirNU/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dirNU/$id.exonmappers.norm_nu.sam`;
+	@g = glob("$LOC/$dirU/$id.*_exonmappers.*_shuf_*.sam");
+	if (@g ne '0'){
+	    `cat $LOC/$dirU/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dirU/$id.exonmappers.norm_u.sam`;
+	}
+	@g = glob("$LOC/$dirNU/$id.*_exonmappers.*_shuf_*.sam");
+	if (@g ne '0'){
+	    `cat $LOC/$dirNU/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dirNU/$id.exonmappers.norm_nu.sam`;
+	}
         unless (-d $norm_notexon_dirU){
             `mkdir $norm_notexon_dirU`;
         }
@@ -89,11 +95,23 @@ while ($line = <INFILE>){
             `mkdir $norm_notexon_dirNU`;
         }
 	#intronmappers
+        @g = glob("$LOC/$dirU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam");
+	if (@g ne '0'){
 	`cat $LOC/$dirU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam > $norm_notexon_dirU/$id.intronmappers.norm_u.sam`;
-	`cat $LOC/$dirNU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam > $norm_notexon_dirNU/$id.intronmappers.norm_nu.sam`;
+	}
+        @g = glob("$LOC/$dirNU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam");
+	if (@g ne '0'){
+	    `cat $LOC/$dirNU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam > $norm_notexon_dirNU/$id.intronmappers.norm_nu.sam`;
+	}
 	#intergenicmappers
-	`cp $LOC/$dirU/$id.intergenicmappers.norm_u.sam $norm_notexon_dirU/`;
-	`cp $LOC/$dirNU/$id.intergenicmappers.norm_nu.sam $norm_notexon_dirNU/`;
+        @g = glob("$LOC/$dirU/$id.intergenicmappers.norm_u.sam");
+	if (@g ne '0'){
+	    `cp $LOC/$dirU/$id.intergenicmappers.norm_u.sam $norm_notexon_dirU/`;
+	}
+        @g = glob("$LOC/$dirNU/$id.intergenicmappers.norm_nu.sam");
+	if (@g ne '0'){
+	    `cp $LOC/$dirNU/$id.intergenicmappers.norm_nu.sam $norm_notexon_dirNU/`;
+	}
     }
     else{
 	if ($U eq "true"){
@@ -103,10 +121,18 @@ while ($line = <INFILE>){
 	    unless (-d $norm_notexon_dirU){
 		`mkdir $norm_notexon_dirU`;
 	    }
-
-	    `cat $LOC/$dirU/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dirU/$id.exonmappers.norm_u.sam`;
-	    `cat $LOC/$dirU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam > $norm_notexon_dirU/$id.intronmappers.norm_u.sam`;
+	    @g = glob("$LOC/$dirU/$id.*_exonmappers.*_shuf_*.sam");
+	    if (@g ne '0'){
+		`cat $LOC/$dirU/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dirU/$id.exonmappers.norm_u.sam`;
+	    }
+	    @g = glob("$LOC/$dirU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam");
+	    if (@g ne '0'){
+		`cat $LOC/$dirU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam > $norm_notexon_dirU/$id.intronmappers.norm_u.sam`;
+	    }
+	    @g = glob("$LOC/$dirU/$id.intergenicmappers.norm_u.sam");
+	    if (@g ne '0'){
 	    `cp $LOC/$dirU/$id.intergenicmappers.norm_u.sam $norm_notexon_dirU/`;
+	    }
 	}
 	if ($NU eq "true"){
             unless (-d $norm_exon_dirNU){
@@ -115,9 +141,18 @@ while ($line = <INFILE>){
             unless (-d $norm_notexon_dirNU){
                 `mkdir $norm_notexon_dirNU`;
             }
-	    `cat $LOC/$dirNU/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dirNU/$id.exonmappers.norm_nu.sam`;
-	    `cat $LOC/$dirNU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam > $norm_notexon_dirNU/$id.intronmappers.norm_nu.sam`;
-	    `cp $LOC/$dirNU/$id.intergenicmappers.norm_nu.sam $norm_notexon_dirNU/`;
+	    @g = glob("$LOC/$dirNU/$id.*_exonmappers.*_shuf_*.sam");
+	    if (@g ne '0'){
+		`cat $LOC/$dirNU/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dirNU/$id.exonmappers.norm_nu.sam`;
+	    }
+	    @g = glob("$LOC/$dirNU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam");
+            if (@g ne '0'){
+		`cat $LOC/$dirNU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam > $norm_notexon_dirNU/$id.intronmappers.norm_nu.sam`;
+	    }
+	    @g = glob("$LOC/$dirNU/$id.intergenicmappers.norm_nu.sam");
+            if (@g ne '0'){
+		`cp $LOC/$dirNU/$id.intergenicmappers.norm_nu.sam $norm_notexon_dirNU/`;
+	    }
 	}
     }
 }

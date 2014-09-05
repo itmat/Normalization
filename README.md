@@ -66,6 +66,8 @@ The following files are available for download:
      http://itmat.indexes.s3.amazonaws.com/mm9_genome_one-line-seqs.fa
      http://itmat.indexes.s3.amazonaws.com/hg19_ucsc_gene_info.txt
      http://itmat.indexes.s3.amazonaws.com/hg19_genome_one-line-seqs.fa
+     http://itmat.indexes.s3.amazonaws.com/dm3_refseq_gene_info.txt
+     http://itmat.indexes.s3.amazonaws.com/dm3_genome_one-line-seqs.fa
 
 ###### ii. other organisms
 Follow the instructions [here](https://github.com/itmat/rum/wiki/Creating-indexes) to create indexes.
@@ -77,6 +79,7 @@ Tables are available for mm9 and hg19:
 
     /path/to/Normalization/norm_scripts/mm9_ensGenes.txt
     /path/to/Normalization/norm_scripts/hg19_ensGenes.txt
+    /path/to/Normalization/norm_scripts/dm3_ensGenes.txt
 
 ###### ii. other organisms
 You can get the table from UCSC table browser. Your header must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value.

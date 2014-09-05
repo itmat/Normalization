@@ -49,12 +49,12 @@ $header = <INFILE2>;
 while(my $line = <INFILE2>){
     chomp($line);
     my @a = split(/\t/, $line);
-    if (@a < 4){
-	next;
-    }
     my $read_id = $a[0];
     my $gene_ids = $a[2];
     my $gene_syms = $a[3];
+    if ($gene_ids =~ /^$/){
+	next;
+    }
     my @b = split(",", $gene_ids);
     if (@b == 1){ #single gene id
 	if ($READ_count{$read_id} == 1){ #unique mapper

@@ -4,3 +4,4 @@ norm_scripts/run_normalization_aug14
 norm_scripts/runall_normalization_aug14.pl
 norm_scripts/predict_num_reads_blast.pl
 norm_scripts/runall_head.pl
+norm_scripts/get_stats_table.pl
