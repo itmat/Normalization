@@ -74,7 +74,7 @@ Follow the instructions [here](https://github.com/itmat/rum/wiki/Creating-indexe
 
 #####G. Ensembl Genes
 Get Ensembl Genes file. 
-###### i. mm9 and hg19
+###### i. mm9, hg19 and dm3
 Tables are available for mm9, hg19 and dm3:
 
     /path/to/Normalization/norm_scripts/mm9_ensGenes.txt
