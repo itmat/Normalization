@@ -75,6 +75,9 @@ my $last_dir = $fields[@fields-1];
 my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $stats_dir = $study_dir . "STATS";
+unless (-d "$stats_dir"){
+    `mkdir $stats_dir`;
+}
 my $outfile = "$stats_dir/expected_num_reads.txt";
 my $tempfile = "$stats_dir/expected_num_reads.temp";
 my (@sumEU, @sumENU, @sumIU, @sumINU);

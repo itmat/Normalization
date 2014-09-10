@@ -561,14 +561,28 @@ for($i=1; $i<=$i_exon; $i++) {
 	$total_lc = $LINECOUNTS{$for_lc};
 	$numU = $minEU[$i];
 	$numNU = $minENU[$i];
-	$filenameU = "$id.filtered_u_exonmappers.$i.sam";
-	$outfileU = $filenameU;
-	$outfileU =~ s/.sam/_shuf_$numU.sam/;
-	$filenameNU = "$id.filtered_nu_exonmappers.$i.sam";
-	$outfileNU = $filenameNU;
-	$outfileNU =~ s/.sam/_shuf_$numNU.sam/;
 	$dirU = $dirname . "/Unique";
 	$dirNU = $dirname . "/NU";
+	$filenameU = "$id.filtered_u_exonmappers.$i.sam";
+	$outfileU = $filenameU;
+	$checkU = $filenameU;
+	$checkU =~ s/.sam//g;
+	$checkU = $checkU . "_shuf_*.sam";
+	@g = glob("$LOC/$dirU/$checkU");
+	if (@g ne '0'){
+	    `rm $LOC/$dirU/$checkU`;
+	}
+	$outfileU =~ s/.sam/_shuf_$numU.sam/;
+	$filenameNU = "$id.filtered_nu_exonmappers.$i.sam";
+        $checkNU = $filenameNU;
+        $checkNU =~ s/.sam//g;
+        $checkNU = $checkNU . "_shuf_*.sam";
+        @g = glob("$LOC/$dirNU/$checkNU");
+        if (@g ne '0'){
+            `rm $LOC/$dirNU/$checkNU`;
+        }
+	$outfileNU = $filenameNU;
+	$outfileNU =~ s/.sam/_shuf_$numNU.sam/;
 	$shfileU[$i] = "$shdir/a" . $id . "exonmappers.u_runshuf.$i.sh";
 	$shfileNU[$i] = "$shdir/a" . $id . "exonmappers.nu_runshuf.$i.sh";
 	$jobname = "$study.shuf";
@@ -610,18 +624,32 @@ for($i=1; $i<=$i_intron; $i++) {
     while($dirname = <INFILE>) {
 	chomp($dirname);
 	$id = $dirname;
+	$dirU = $dirname . "/Unique";
+	$dirNU = $dirname . "/NU";
 	$for_lc = "IU.$id.$i";
 	$total_lc = $LINECOUNTS{$for_lc};
 	$numU = $minIU[$i];
 	$numNU = $minINU[$i];
 	$filenameU = "$id.filtered_u_notexonmappers_intronmappers.$i.sam";
+        $checkU = $filenameU;
+        $checkU =~ s/.sam//g;
+        $checkU = $checkU . "_shuf_*.sam";
+        @g = glob("$LOC/$dirU/$checkU");
+        if (@g ne '0'){
+            `rm $LOC/$dirU/$checkU`;
+        }
 	$outfileU = $filenameU;
 	$outfileU =~ s/.sam/_shuf_$numU.sam/;
 	$filenameNU = "$id.filtered_nu_notexonmappers_intronmappers.$i.sam";
+        $checkNU = $filenameNU;
+        $checkNU =~ s/.sam//g;
+        $checkNU = $checkNU . "_shuf_*.sam";
+        @g = glob("$LOC/$dirNU/$checkNU");
+        if (@g ne '0'){
+            `rm $LOC/$dirNU/$checkNU`;
+        }
 	$outfileNU = $filenameNU;
 	$outfileNU =~ s/.sam/_shuf_$numNU.sam/;
-	$dirU = $dirname . "/Unique";
-	$dirNU = $dirname . "/NU";
 	$shfileU[$i] = "$shdir/a" . $id . "intronmappers.u_runshuf.$i.sh";
 	$shfileNU[$i] = "$shdir/a" . $id . "intronmappers.nu_runshuf.$i.sh";
 	$jobname = "$study.shuf";
@@ -672,6 +700,12 @@ while($dirname = <INFILE>) {
     $outfileNU = "$id.intergenicmappers.norm_nu.sam";
     $dirU = $dirname . "/Unique";
     $dirNU = $dirname . "/NU";
+    if (-e "$LOC/$dirU/$outfileU"){
+	`rm $LOC/$dirU/$outfileU`;
+    }
+    if (-e "$LOC/$dirNU/$outfileNU"){
+	`rm $LOC/$dirNU/$outfileNU`;
+    }
     $shfileU = "$shdir/a" . $id . "intergenic.u_runshuf.sh";
     $shfileNU = "$shdir/a" . $id . "intergenic.nu_runshuf.sh";
     $jobname = "$study.shuf";

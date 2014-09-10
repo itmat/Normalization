@@ -50,7 +50,7 @@ my $exon_dir = $norm_dir . "/exonmappers";
 my $nexon_dir = $norm_dir . "/notexonmappers";
 my $genequants_dir = $norm_dir . "/FINAL_SAM/MERGED";
 my $spread_dir = $norm_dir . "/SPREADSHEETS";
-
+my $gnorm_dir = $norm_dir. "/GENE_NORM";
 unless (-d $spread_dir){
     `mkdir $spread_dir`;
 }
@@ -64,6 +64,11 @@ elsif ($type =~ /^gene/){
     $out_MIN = "$spread_dir/master_list_of_genes_counts_MIN.$study.txt";
     $out_MAX = "$spread_dir/master_list_of_genes_counts_MAX.$study.txt";
     $sample_name_file = "$norm_dir/file_genequants_minmax.txt";
+}
+elsif ($type =~ /^gnorm/){
+    $out_MIN = "$spread_dir/master_list_of_genes_counts_MIN.GNORM.$study.txt";
+    $out_MAX = "$spread_dir/master_list_of_genes_counts_MAX.GNORM.$study.txt";
+    $sample_name_file = "$norm_dir/file_genequants_minmax.GNORM.txt";
 }
 elsif ($type =~ /^intron/){
     $out_MIN = "$spread_dir/master_list_of_introns_counts_MIN.$study.txt";
@@ -97,6 +102,18 @@ if ($type =~ /^gene/){
 	chomp($line);
 	my $id = $line;
 	print OUT "$norm_dir/FINAL_SAM/MERGED/$id.FINAL.norm.genequants\n";
+    }
+}
+close(INFILE);
+close(OUT);
+
+if ($type =~ /^gnorm/){
+    open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
+    open(OUT, ">$sample_name_file");
+    while (my $line = <INFILE>){
+        chomp($line);
+        my $id = $line;
+        print OUT "$gnorm_dir/MERGED/$id.GNORM.genequants\n";
     }
 }
 close(INFILE);
@@ -193,7 +210,7 @@ while(my $line = <INFILE>) {
 	    next;
 	}
     }
-    if ($type =~ /^gene/){
+    if (($type =~ /^gene/)|| ($type =~ /^gnorm/)){
 	if ($line !~ /^EN/){
 	    next;
 	}
@@ -218,6 +235,7 @@ while($file = <FILES>) {
     $id =~ s/.exonmappers.norm_exonquants//;
     $id =~ s/.intronquants_merged//;
     $id =~ s/.FINAL.norm.genequants//;
+    $id =~ s/.GNORM.genequants//;
     $ID[$filecnt] = $id;
     open(INFILE, $file);
     my $firstline = <INFILE>;
@@ -230,7 +248,7 @@ while($file = <FILES>) {
 		next;
 	    }
 	}
-	if ($type =~ /^gene/){
+	if (($type =~ /^gene/)|| ($type =~ /^gnorm/)){
 	    if ($line !~ /^EN/){
 		next;
 	    }
@@ -253,7 +271,7 @@ for(my $i=0; $i<@ID; $i++) {
     print OUT_MIN "\t$ID[$i]";
     print OUT_MAX "\t$ID[$i]";
 }
-if ($type =~ /^gene/){
+if (($type =~ /^gene/) || ($type =~ /^gnorm/)){
     print OUT_MIN "\tgeneCoordinate\tgeneSymbol";
     print OUT_MAX "\tgeneCoordinate\tgeneSymbol";
 }
@@ -284,7 +302,7 @@ for(my $i=0; $i<$rowcnt; $i++) {
 	print OUT_MIN "intron:$id[$i]";
 	print OUT_MAX "intron:$id[$i]";
     }
-    if ($type =~ /^gene/){
+    if (($type =~ /^gene/)||($type =~ /^gnorm/)){
 	print OUT_MIN "gene:$id[$i]";
 	print OUT_MAX "gene:$id[$i]";
     }
@@ -292,7 +310,7 @@ for(my $i=0; $i<$rowcnt; $i++) {
 	print OUT_MIN "\t$DATA_MIN[$j][$i]";
 	print OUT_MAX "\t$DATA_MAX[$j][$i]";
     }
-    if ($type =~ /^gene/){
+    if (($type =~ /^gene/)|| ($type =~ /^gnorm/)){
 	print OUT_MIN "\t$coord[$i]\t$sym[$i]";
 	print OUT_MAX "\t$coord[$i]\t$sym[$i]";
     }	

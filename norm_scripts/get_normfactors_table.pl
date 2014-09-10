@@ -1,5 +1,23 @@
-$sorted_list = $ARGV[0];
-$new_table = $ARGV[1];
+#!/usr/bin/env perl
+use warnings;
+use strict;
+
+my $USAGE = "\nUsage: perl get_normfactors_table.pl <sample_dirs> <loc>
+
+options:
+ -u : 
+ -nu :
+
+";
+
+if (@ARGV < 2){
+    die $USAGE;
+}
+
+my $sorted_list = $ARGV[0];
+my $LOC = $ARGV[1];
+
+$norm_factor = $ARGV[1];
 
 print "sample\ttotalnumreads\t%ribo\t%chrM\t%NU\t%1exonmappersU\t%1exonmappersNU\t%exonicU\t%exonicNU\t%intergenicU\t%intergenicNU\n";
 open(IN, $sorted_list);
