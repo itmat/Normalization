@@ -1,4 +1,7 @@
-# Normalization
+# PORT - RNASeq Normalization
+
+This pipeline has 2 differerent Normalization methods you can choose : __GENE Normalization__ and __EXON-INTRON-JUNCTION Normalization__. The choice can be made in the [configuration file](https://github.com/itmat/Normalization/tree/master#c-configuration-file). 
+
 ### 0. Setting Up
 
 #####A. Clone the repository
@@ -9,6 +12,7 @@
 - Give `STUDY` directory a unique name.
 - Make sure the unaligned reads and alignment outputs(SAM files) are in each sample directory inside the `READS` folder.
 - All alignment files (SAM files) MUST have the same name.
+- SAM files should have unique read ids.
 
 <pre>
 STUDY
@@ -29,7 +33,7 @@ STUDY
 </pre>
 
 #####C. Configuration File
-Obtain the `template.cfg` file from `Normalization/` and modify as you need. Follow the instructions in the config file. You can choose GENE NORMALIZATION, EXON_INTRON_JUNCTION_NORMALIZATION or BOTH.
+Obtain the `template.cfg` file from `Normalization/` and modify as you need. Follow the instructions in the config file. You can choose GENE Normalization, EXON_INTRON_JUNCTION Normalization or Both.
 
 #####D. File of Sample Directories and Unaligned Reads
 ###### i. File of Sample Directories
@@ -51,7 +55,7 @@ Create a file &lt;file of input forward fa/fq files> with full path of input for
             path/to/Sample_4.fwd.fq/fa
 
 #####E. Install [sam2cov](https://github.com/khayer/sam2cov/)
-This is an optional step. You can use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR. Please make sure you have the lastest version of sam2cov.
+This is an optional step. You can use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR. __Please make sure you have the lastest version of sam2cov__.
 
      git clone https://github.com/khayer/sam2cov.git
      cd sam2cov
@@ -85,7 +89,7 @@ Tables are available for mm9, hg19 and dm3:
 You can get the table from UCSC table browser. Your header must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value.
 
 #####H. Output Directory Structure
-You will find all log files and shell scripts in `STUDY/logs` and `STUDY/shell_scripts` directory, respectively. Once you complete the normalization pipeline, your directory structure will look like this (before the Clean Up step):
+You will find all log files and shell scripts in `STUDY/logs` and `STUDY/shell_scripts` directory, respectively. Once you complete the normalization pipeline, your directory structure will look like this if you run both Gene and Exon-Intron-Junction Normliazation (before the Clean Up step):
 <pre>
 STUDY
 │── READS
@@ -186,20 +190,21 @@ You can also run it step by step using the scripts documented in [#2. NORMALIZAT
      **-gz** : set this if the unaligned files are compressed<br>
 
      **[normalization parameters]**<br>
+     **-cutoff_highexp &lt;n>** : <br>is cutoff % value to identify highly expressed exons.<br>
+                           the script will consider genes/exons with gene/exonpercents greater than n(%) as high expressors,
+                           and **remove** the reads and filter the genes/exons.<br>
+                           (Default = 100; with the default cutoff, exons expressed >5% will be reported, but will not remove any exons from the list)<br>
+     **-cutoff_lowexp &lt;n>** : <br>is cutoff counts to identify low expressors in the final spreadsheets (exon, intron and junc).<br>
+                          the script will remove features with sum of counts less than <n> from all samples.<br>
+                          (Default = 0; with the default cutoff, features with sum of counts = 0 will be removed from all samples)<br>
+     **[exon-intron-junction normalization only]**<br>
      **-novel_off** : set this if you DO NOT want to generate/use a study-specific master list of exons<br> (By default, the pipeline will add inferred exons to the list of exons) <br>
      **-min &lt;n>** : is minimum size of inferred exon for get_novel_exons.pl script (Default = 10)<br>
      **-max &lt;n>** : is maximum size of inferred exon for get_novel_exons.pl script (Default = 1200)<br>
-     **-cutoff_highexp &lt;n>** : <br>is cutoff % value to identify highly expressed exons.<br>
-                           the script will consider exons with exonpercents greater than n(%) as high expressors,
-                           and remove them from the list of exons.<br>
-                           (Default = 100; with the default cutoff, exons expressed >10% will be reported, but will not remove any exons from the list)<br>
      **-depthE &lt;n>** : <br>the pipeline splits filtered sam files into 1,2,3...n exonmappers and downsamples each separately.<br>
                    (Default = 20)<br>
      **-depthI &lt;n>** : <br>the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.<br>
                    (Default = 10)<br>
-     **-cutoff_lowexp &lt;n>** : <br>is cutoff counts to identify low expressors in the final spreadsheets (exon, intron and junc).<br>
-                          the script will remove features with sum of counts less than <n> from all samples.<br>
-                          (Default = 0; with the default cutoff, features with sum of counts = 0 will be removed from all samples)<br>
      **-h** : print usage
 
 
@@ -315,9 +320,9 @@ This step removes all rows from input sam file except those that satisfy all of 
 
 Run the following command. By default it will return both unique and non-unique mappers.
 
-    perl runall_filter.pl <sample dirs> <loc> <sam file name> [options]
+    perl runall_filter_gnorm.pl <sample dirs> <loc> <sam file name> [options]
 
-> `filter_sam.pl` available for running one sample at a time
+> `filter_sam_gnorm.pl` available for running one sample at a time
 
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
@@ -335,6 +340,7 @@ Run the following command. By default it will return both unique and non-unique 
 This creates directories called `STUDY/READS/Sample*/GNORM/Unique` and/or `STUDY/READS/Sample*/GNORM/NU` and outputs `filtered.sam` files of all samples to the directories created.
 
 __[NORMALIZATION FACTOR] Percent chromosome stats__
+
 Run the following with **-GENE** option.
 
      perl runall_get_percent_numchr.pl <sample dirs> <loc> [options]
