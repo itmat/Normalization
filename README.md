@@ -29,7 +29,7 @@ STUDY
 </pre>
 
 #####C. Configuration File
-Obtain the `template.cfg` file from `Normalization/` and modify as you need. Follow the instructions in the config file.
+Obtain the `template.cfg` file from `Normalization/` and modify as you need. Follow the instructions in the config file. You can choose GENE NORMALIZATION, EXON_INTRON_JUNCTION_NORMALIZATION or BOTH.
 
 #####D. File of Sample Directories and Unaligned Reads
 ###### i. File of Sample Directories
@@ -90,35 +90,63 @@ You will find all log files and shell scripts in `STUDY/logs` and `STUDY/shell_s
 STUDY
 │── READS
 │   ├── Sample_1
-│   │   ├── NU
-│   │   └── Unique
+│   │   ├── EIJ
+│   │   │   ├── NU
+│   │   │   └── Unique
+│   │   └── GNORM
+│   │       ├── NU
+│   │       └── Unique
 │   ├── Sample_2
-│   │   ├── NU
-│   │   └── Unique
+│   │   ├── EIJ
+│   │   │   ├── NU
+│   │   │   └── Unique
+│   │   └── GNORM
+│   │       ├── NU
+│   │       └── Unique
 │   ├── Sample_3
-│   │   ├── NU
-│   │   └── Unique
+│   │   ├── EIJ
+│   │   │   ├── NU
+│   │   │   └── Unique
+│   │   └── GNORM
+│   │       ├── NU
+│   │       └── Unique
 │   └── Sample_4
-│       ├── NU
-│       └── Unique
+│       ├── EIJ
+│       │   ├── NU
+│       │   └── Unique
+│       └── GNORM
+│           ├── NU
+│           └── Unique
 │
-│── STATS
+├── STATS
+│   ├── EXON_INTRON_JUNCTION
+│   └── GENE
 │
 │── NORMALIZED_DATA
-│   ├── exonmappers
-│   │    ├── MERGED
-│   │    ├── NU
-│   │    └── Unique
-│   ├── notexonmappers
-│   │    ├── MERGED
-│   │    ├── NU
-│   │    └── Unique
-│   ├── FINAL_SAM
-│   │    └── MERGED
-│   ├── COV
-│   │    └── MERGED
-│   ├── SPREADSHEETS
-│   └── JUNCTIONS
+│   ├── EXON_INTRON_JUNCTION
+│   │   ├── COV
+│   │   │   └── MERGED
+│   │   ├── exonmappers
+│   │   │   ├── MERGED
+│   │   │   ├── NU
+│   │   │   └── Unique
+│   │   ├── FINAL_SAM
+│   │   │   └── MERGED
+│   │   ├── JUNCTIONS
+│   │   ├── notexonmappers
+│   │   │   ├── MERGED
+│   │   │   ├── NU
+│   │   │   └── Unique
+│   │   └── SPREADSHEETS
+│   └── GENE
+│       ├── COV
+│       │   └── MERGED
+│       ├── FINAL_SAM
+│       │   ├── MERGED
+│       │   ├── NU
+│       │   └── Unique
+│       ├── JUNCTIONS
+│       └── SPREADSHEETS
 │
 │── logs
 │
@@ -181,7 +209,7 @@ This creates `runall_normalization.sh` file in `STUDY/shell_scripts` directory a
 ========================================================================================================
 
 ### 2. NORMALIZATION STEPS
-#### [PART1]
+#### [PART1 - both Gene and Exon-Intron-Junction Normalization]
 #### 1) Preprocess
 ##### A. Mapping Statistics
 * **Get total number of reads from input fasta or fastq files**
@@ -276,7 +304,235 @@ __[NORMALIZATION FACTOR] Ribo percents__
 
 It assumes there are files of ribosomal ids output from runblast.pl each with suffix "ribosomalids.txt" in each sample directory. This will output `ribosomal_counts.txt` and `ribo_percents.txt` to `STUDY/STATS` directory.
 
-#### 2) Run Filter
+#### [PART1 - Gene Normalization]
+#### 1) Run Filter
+This step removes all rows from input sam file except those that satisfy all of the following:
+
+  1. Unique mapper / Non-Unique mapper
+  2. Both forward and reverse map consistently
+  3. id not in the `*ribosomalids.txt` file
+  4. Only on a numbered chromosome, X or Y
+
+Run the following command. By default it will return both unique and non-unique mappers.
+
+    perl runall_filter.pl <sample dirs> <loc> <sam file name> [options]
+
+> `filter_sam.pl` available for running one sample at a time
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;sam file name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
+* option:<br>
+  **-u** : set this if you want to return only unique mappers<br>
+  **-nu** :  set this if you want to return only non-unique mappers<br>
+  **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)<br>
+  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
+
+This creates directories called `STUDY/READS/Sample*/GNORM/Unique` and/or `STUDY/READS/Sample*/GNORM/NU` and outputs `filtered.sam` files of all samples to the directories created.
+
+__[NORMALIZATION FACTOR] Percent chromosome stats__
+Run the following with **-GENE** option.
+
+     perl runall_get_percent_numchr.pl <sample dirs> <loc> [options]
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* option : <br>
+  **-GENE** : set this if you're running GENE normalization<br>
+  **-EIJ** : set this if you're running EXON-INTRON-JUNCTION normalization<br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
+  **-max_jobs &lt;n>**  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.<br>
+
+This will output `*numchr_count.txt` to `STUDY/READS/Sample*/GNORM/Unique` and/or `STUDY/READS/Sample*/GNORM/NU` directory.
+
+Then, run this with **-GENE** option:
+
+     perl get_chr_stats.pl <sample dirs> <loc> [options]
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* option : <br>
+  **-GENE** : set this if you're running GENE normalization<br>
+  **-EIJ** : set this if you're running EXON-INTRON-JUNCTION normalization<br>
+
+This will output `percent_reads_chr_gnorm.txt` to `STUDY/STATS/GENE` directory.
+
+#### 2) Quantify Genes
+##### A. Create Master List of Genes
+Get master list of genes from a Ensembl Genes file.
+
+    perl get_master_list_of_genes.pl <gene info file> <loc>
+
+* &lt;ensGene file> : ensembl table must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value<br>
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+
+This outputs a file called `master_list_of_ensGenes.txt` to the `READS` directory. 
+
+##### B. Run sam2genes
+
+    perl runall_sam2genes_gnorm.pl <sample dirs> <loc> <ensGene file> [options]
+
+> `sam2genes.pl` available for running one sample at a time
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;ensGene file> : ensembl table must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
+
+* option:<br>
+  **-u**  :  set this if you are using unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
+  **-nu** :  set this if you are using non-unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
+  **-norm** : set this to get genes file for the gene-normalized sam files.<br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
+  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
+
+This outputs `*genes.txt` file to `STUDY/READS/Sample*/GNORM/Unique` and/or `STUDY/READS/Sample*/GNORM/NU` directory.
+
+##### C. Run genefilter
+
+    perl runall_genefilter.pl <sample dirs> <loc> [options]
+
+> `genefilter.pl` available for running one sample at a time
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+
+* option:<br>
+  **-u**  :  set this if you are using unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
+  **-nu** :  set this if you are using non-unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
+  **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data.<br>
+  **-filter_highexp** : use this if you want to filter high expressors. <br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other "&lt;submit>,&lt;jobname_option>,&lt;request_memory_option>, &lt;queue_name_for_10G>,&lt;status>""** : set this if you're not on LSF or SGE cluster<br>
+  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
+
+This outputs `filtered_u_genes.sam` file to `STUDY/READS/Sample*/GNORM/Unique` and/or `STUDY/READS/Sample*/GNORM/NU` directory.
+
+##### D. Run Quantify Genes
+
+    perl runall_quantify_genes_gnorm.pl <sample dirs> <loc> <genes>
+
+> `quantify_genes_gnorm.pl` and `quantify_genes.pl` available for running one sample at a time
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;genes> : master list of genes file
+
+* option:<br>
+  **-u**  :  set this if you are using unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
+  **-nu** :  set this if you are using non-unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
+  **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data.<br>
+  **-norm** : set this to quantify normalized sam. <br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_10G>,&lt;status>"** : set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 10G)<br>
+  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
+
+This outputs `genequants` file to `STUDY/READS/Sample*/GNORM/Unique` and/or `STUDY/READS/Sample*/GNORM/NU` directory.
+
+__[NORMALIZATION FACTOR] Percent of genemappers__
+
+    perl get_percent_genemappers.pl  <sample dirs> <loc> [options]
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* option:<br>
+ **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
+ **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
+
+This will output `percent_genemappers_Unique.txt` and/or `percent_genemappers_NU.txt` depending on the option provided to `STUDY/STATS/GENE/` directory.
+
+##### E. [optional step] : Filter High Expressors
+This is an extra filter step that removes highly expressed genes.
+
+I. Get High Expressors
+
+    perl runall_get_high_genes.pl <sample dirs> <loc> <cutoff> [options]
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;cutoff> : cutoff % value
+
+* option:<br>
+  **-nu** :  set this if you want to return only non-unique genepercents, otherwise by default it will return only unique genepercents.<br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)<br>
+  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
+
+This will output `*genepercents.txt` and `*high_expressors_gene.txt` files of all samples to each sample directory. 
+
+II. Filter High Expressors
+
+     perl filter_high_expressors_gnorm.pl <sample dirs> <loc> <genes> [options]
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;genes> : master list of genes file
+
+* option:<br>
+  **-nu** :  set this if you're only using non-unique genepercent, otherwise by default it will only unique genepercents.<br>
+  **-se** : set this if your data is single end.<br>
+
+This will output a text file called `filtered_master_list_of_ensGenes.txt` to `STUDY/READS` directory and filter out the reads that map to high expressors from `genes.txt` file and create `genes2.txt` in each sample directory `STUDY/READS/Sample*/GNORM/Unique` and/or `STUDY/READS/Sample*/GNORM/NU`.
+
+III. Run Genefilter
+Run the following with **-filter_highexp** option.
+
+    perl runall_genefilter.pl <sample dirs> <loc> [options]
+
+> `genefilter.pl` available for running one sample at a time
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+
+* option:<br>
+  **-u**  :  set this if you are using unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
+  **-nu** :  set this if you are using non-unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
+  **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data.<br>
+  **-filter_highexp** : use this if you want to filter high expressors. <br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other "&lt;submit>,&lt;jobname_option>,&lt;request_memory_option>, &lt;queue_name_for_10G>,&lt;status>""** : set this if you're not on LSF or SGE cluster<br>
+  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
+
+This outputs `filtered_u_genes.sam` file to `STUDY/READS/Sample*/GNORM/Unique` and/or `STUDY/READS/Sample*/GNORM/NU` directory.
+
+__[NORMALIZATION FACTOR] Highly expressed genes__
+
+     perl get_percent_high_exprermsso_gnor.pl <sample dirs> <loc> [options]
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* option:<br>
+ **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return only unique stats
+
+This will output `percent_high_expressor_gene_Unique.txt` or `percent_high_expressor_NU.txt` depending on the option provided to `STUDY/STATS/GENE/` directory.
+
+#### 3) Predict Number of Reads
+
+      perl predict_num_reads_gnorm.pl <sample dirs> <loc> [option]
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* option : <br>
+ **-u** : set this if you want to return number of unique reads only, otherwise by default it will return number of unique and non-unique reads <br>
+ **-nu** : set this if you want to return number of non-unique reads only, otherwise by default it will return number of unique and non-unique reads <br>
+
+This will provide number of reads you'll have after normalization in `STUDY/STATS/GENE/expected_num_reads_gnorm.txt`. 
+
+#### [PART1 - Exon-Intron-Junction Normalization]
+#### 1) Run Filter
 This step removes all rows from input sam file except those that satisfy all of the following:
 
   1. Unique mapper / Non-Unique mapper
@@ -304,9 +560,38 @@ Run the following command. By default it will return both unique and non-unique 
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
-This creates directories called `STUDY/READS/Sample*/Unique` and/or `STUDY/READS/Sample*/NU` and outputs `filtered.sam` files of all samples to the directories created. 
+This creates directories called `STUDY/READS/Sample*/EIJ/Unique` and/or `STUDY/READS/EIJ/Sample*/NU` and outputs `filtered.sam` files of all samples to the directories created. 
 
-#### 3) Quantify Exons
+__[NORMALIZATION FACTOR] Percent chromosome stats__
+Run the following with **-EIJ** option.
+
+     perl runall_get_percent_numchr.pl <sample dirs> <loc> [options]
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* option : <br>
+  **-GENE** : set this if you're running GENE normalization<br>
+  **-EIJ** : set this if you're running EXON-INTRON-JUNCTION normalization<br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
+  **-max_jobs &lt;n>**  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.<br>
+
+This will output `*numchr_count.txt` to `STUDY/READS/Sample*/EIJ/Unique` and/or `STUDY/READS/Sample*/EIJ/NU` directory.
+
+Then, run this with **-EIJ** option:
+
+     perl get_chr_stats.pl <sample dirs> <loc> [options]
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* option : <br>
+  **-GENE** : set this if you're running GENE normalization<br>
+  **-EIJ** : set this if you're running EXON-INTRON-JUNCTION normalization<br>
+
+This will output `percent_reads_chr_gnorm.txt` to `STUDY/STATS/EXON_INTRON_JUNCTION` directory.
+
+#### 2) Quantify Exons
 ##### A. Create Master List of Exons
 Get master list of exons from a UCSC gene info file.
 
@@ -382,7 +667,7 @@ Run the following command with **&lt;output sam?> = false**. By default this wil
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
-This will output `exonquants` file of all samples to `Unique` and/or `NU` directory in each sample directory.
+This will output `exonquants` file of all samples to `STUDY/READS/Sample*/EIJ/Unique` and/or `STUDY/READS/Sample*/EIJ/NU`.
 
 
 II. Get High Expressors
@@ -407,7 +692,7 @@ es: geneSymbol, and description.
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 15G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
-This will output `*exonpercents.txt` and `*high_expressors_annot.txt` files of all samples to each sample directory. It will also output `annotated_master_list_of_exons.*STUDY*.txt` to `STUDY/READS` directory.
+This will output `*exonpercents.txt` and `*high_expressors_annot.txt` files to `STUDY/READS/Sample*/EIJ/Unique` and/or `STUDY/READS/Sample*/EIJ/NU`. It will also output `annotated_master_list_of_exons.*STUDY*.txt` to `STUDY/READS` directory.
 
 III. Filter High Expressors
 
@@ -429,10 +714,9 @@ __[NORMALIZATION FACTOR] High expressor exonpercent__
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * option:<br>
- **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
- **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
+ **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return only unique stats
 
-This will output `percent_high_expressor_Unique.txt` and/or `percent_high_expressor_NU.txt` depending on the option provided to `STUDY/STATS` directory.
+This will output `percent_high_expressor_exon_Unique.txt` or `percent_high_expressor_NU.txt` depending on the option provided to `STUDY/STATS/EXON_INTRON_JUNCTION/` directory.
 
 ##### D. Run quantify exons
 
@@ -458,7 +742,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
-This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam`, `notexonmappers.sam`, and `exonquants` file to `Unique` / `NU` directory inside each sample directory. 
+This outputs multiple files of all samples: `exonmappers.(1, 2, 3, 4, ... n).sam`, `notexonmappers.sam`, and `exonquants` file to `EIJ/Unique` / `EIJ/NU` directory inside each sample directory. 
 
 __[NORMALIZATION FACTOR] Exon to nonexon signal__
 
@@ -470,7 +754,7 @@ __[NORMALIZATION FACTOR] Exon to nonexon signal__
  **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
  **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
 
-This will output `exon2nonexon_signal_stats_Unique.txt` and/or `exon2nonexon_signal_stats_NU.txt` depending on the option provided to `STUDY/STATS` directory.
+This will output `exon2nonexon_signal_stats_Unique.txt` and/or `exon2nonexon_signal_stats_NU.txt` depending on the option provided to `STUDY/STATS/EXON_INTRON_JUNCTION/` directory.
 
 
 __[NORMALIZATION FACTOR] One exon vs multi exons__
@@ -483,9 +767,9 @@ __[NORMALIZATION FACTOR] One exon vs multi exons__
  **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
  **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
 
-This will output `1exon_vs_multi_exon_stats_Unique.txt` and/or `1exon_vs_multi_exon_stats_NU.txt` depending on the option provided to `STUDY/STATS` directory.
+This will output `1exon_vs_multi_exon_stats_Unique.txt` and/or `1exon_vs_multi_exon_stats_NU.txt` depending on the option provided to `STUDY/STATS/EXON_INTRON_JUNCTION/` directory.
 
-#### 4) Quantify Introns
+#### 3) Quantify Introns
 ##### A. Create Master List of Introns
 
     perl get_master_list_of_introns_from_geneinfofile.pl <gene info file> <loc>
@@ -530,9 +814,9 @@ __[NORMALIZATION FACTOR] Percent of non-exonic signal that is intergenic (as opp
  **-u** : set this if you want to return only unique stats, otherwise by default it will return both unique and non-uniqe stats<br>
  **-nu** :  set this if you want to return only non-unique stats, otherwise by default it will return both unique and non-uniqe stats
 
-This will output `percent_intergenic_Unique.txt` and/or `percent_intergenic_NU.txt` depending on the option provided to `STUDY/STATS` directory.
+This will output `percent_intergenic_Unique.txt` and/or `percent_intergenic_NU.txt` depending on the option provided to `STUDY/STATS/EXON_INTRON_JUNCTION/` directory.
 
-#### 5) Predict Number of Reads
+#### 4) Predict Number of Reads
 
       perl predict_num_reads.pl <sample dirs> <loc> [option]
 
@@ -544,10 +828,137 @@ This will output `percent_intergenic_Unique.txt` and/or `percent_intergenic_NU.t
  **-depthE &lt;n>** : This is the number of exonmappers file used for normalization. (By default, &lt;n> = 20)<br>
  **-depthI &lt;n>** : This is the number of intronmappers file used for normalization. (By default, &lt;n> = 10)
 
-This will provide a rough estimate of number of reads you'll have after normalization in `STUDY/STATS/expected_num_reads.txt`. Based on this information, samples can be added/removed by modifying `sample_dirs` file.
+This will provide a rough estimate of number of reads you'll have after normalization in `STUDY/STATS/EXON_INTRON_JUNCTION/expected_num_reads.txt`. Based on this information, samples can be added/removed by modifying `sample_dirs` file.
 
 #### [PART2]
-#### 6) Downsample
+
+#### [PART2 - Gene Normalization]
+#### 1) Downsample
+
+      perl runall_shuf_gnorm.pl <sample dirs> <loc> [options]
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* option : <br>
+  **-u** : set this if you want to return only unique mappers, otherwise by default it will return both unique and non-uniqe mappers<br>
+  **-nu** :  set this if you want to return only non-unique mappers, otherwise by default it will return both unique and non-uniqe mappers<br>
+  **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data.<br>
+  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)<br>
+  ** If the maximum line count in `STUDY/READS/sample*/GNORM/*/*linecounts*txt` is > 50,000,000, use -mem option (6G for 60 million lines, 7G for 70 million lines, 8G for 80 million lines, etc).
+
+This will output the same number of rows from each file in `STUDY/READS/Sample*/GNORM/Unique` (same for NU) to `NORMALIZED_DATA/GENE/Unique` (and NU).
+
+#### 2) Concatenate downsampled files
+
+      perl cat_gnorm_Unique_NU.pl <sample dirs> <loc> <samfilename>
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;samfilename> : name of the original samfile
+
+This will create `STUDY/NORMALIZED_DATA/GENE/MERGED` directory, concatenate normalized unique and non-unique reads and output to the directory created.
+
+#### 3) Run sam2genes
+Run the following with **-norm** option.
+
+    perl runall_sam2genes_gnorm.pl <sample dirs> <loc> <ensGene file> [options]
+
+> `sam2genes.pl` available for running one sample at a time
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;ensGene file> : ensembl table must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
+
+* option:<br>
+  **-u**  :  set this if you are using unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
+  **-nu** :  set this if you are using non-unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
+  **-norm** : set this to get genes file for the gene-normalized sam files.<br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
+  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
+
+This outputs `*genes.txt` file to `STUDY/NORMALIZED_DATA/GENE/MERGED`, `STUDY/NORMALIZED_DATA/GENE/Unique`, or `STUDY/NORMALIZED_DATA/GENE/NU`.
+
+#### 4) Run Quantify Genes
+Run the following with **-norm** option.
+
+    perl runall_quantify_genes_gnorm.pl <sample dirs> <loc> <genes>
+
+> `quantify_genes_gnorm.pl` and `quantify_genes.pl` available for running one sample at a time
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;genes> : master list of genes file
+
+* option:<br>
+  **-u**  :  set this if you are using unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
+  **-nu** :  set this if you are using non-unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
+  **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data.<br>
+  **-norm** : set this to quantify normalized sam. <br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_10G>,&lt;status>"** : set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 10G)<br>
+  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
+
+This outputs `genequants` file to `STUDY/NORMALIZED_DATA/GENE/MERGED`, `STUDY/NORMALIZED_DATA/GENE/Unique`, or `STUDY/NORMALIZED_DATA/GENE/NU`.
+
+#### 5) Run sam2junctions
+Run the following with **-gnorm** option.
+
+    perl runall_sam2junctions.pl <sample dirs> <loc> <genes> <genome> [options]
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;genes> :the RUM gene info file
+* &lt;genome> : the RUM genome sequene one-line fasta file
+* option:<br>
+  **-samfilename &lt;s> : set this to create junctions files using unfiltered aligned samfile. &lt;s> is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam) and all sam files in each sample directory should have the same name.<br>
+  **-u**  :  set this if you want to return only unique junctions files, otherwise by default it will return merged(unique+non-unique) junctions files.<br>
+  **-nu** :  set this if you want to return only non-unique files, otherwise by default it will return merged(unique+non-unique) junctions files.<br>
+  **-gnorm** : set this to create junctions files for gene normalization output.
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)<br>
+  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
+
+This will create `STUDY/NORMALIZED_DATA/GENE/JUNCTIONS` directory and output `junctions_hq.bed`, `junctions_all.bed` and `junctions_all.rum` files of all samples.
+
+#### 6) Make Final Spreadsheets
+Run the following with &lt;type of quants file> = **genequants**.
+
+     perl quants2spreadsheet_min_max.pl <sample dirs> <loc> <type of quants file>
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;type of quants file> : exonquants, intronquants, genequants
+
+This will create `STUDY/NORMALIZED_DATA/GENE/SPREADSHEETS` directory and output `master_list_of_genes_counts` files.
+
+#### 7) Filter low expressors
+
+    perl runall_filter_low_expressors.pl <file of quants files> <number_of_samples> <cutoff> <loc>
+
+* &lt;file of quants files> : a file with the names of the quants file
+
+         e.g. the <file of quants files> file should look like this:
+              master_list_of_genes_counts_MIN.STUDY.txt
+              master_list_of_genes_counts_MAX.STUDY.txt
+
+* &lt;number_of_samples> : number of samples
+* &lt;cutoff> : cutoff value
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+
+This will output `FINAL_master_list_of_genes_counts` to `STUDY/NORMALIZED_DATA/GENE/SPREADSHEETS`.
+
+#### [PART2 - Exon-Intron-Junction Normalization]
+#### 1) Downsample
 
 ##### A. Downsample by type
 This identifies minimum line count of each type of exonmappers/intronmappers/intergenicmappers and downsamples each file by taking the minimum line count of rows from each file.
@@ -566,9 +977,9 @@ This identifies minimum line count of each type of exonmappers/intronmappers/int
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
   **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)<br>
-  ** If the maximum line count in `STUDY/READS/sample*/*/*linecounts*txt` is > 50,000,000, use -mem option (6G for 60 million lines, 7G for 70 million lines, 8G for 80 million lines, etc).
+  ** If the maximum line count in `STUDY/READS/sample*/EIJ/*/*linecounts*txt` is > 50,000,000, use -mem option (6G for 60 million lines, 7G for 70 million lines, 8G for 80 million lines, etc).
 
-This will output the same number of rows from each file in each `sample_dir/Unique` and/or `sample_dir/NU` directory of the same type.
+This will output the same number of rows from each file in each `sample_dir/EIJ/Unique` and/or `sample_dir/EIJ/NU` directory of the same type.
 
 ##### B. Concatenate downsampled files
 
@@ -582,7 +993,7 @@ This will output the same number of rows from each file in each `sample_dir/Uniq
   **-nu** :  set this if you want to return only non-unique mappers, otherwise by default
          it will return both unique and non-unique mappers.
 
-This will create `STUDY/NORMALIZED_DATA`, `STUDY/NORMALIZED_DATA/exonmappers`, and `STUDY/NORMALIZED_DATA/notexonmappers` directories and output normalized exonmappers, intronmappers and intergenic mappers of all samples to the directories created.
+This will create `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION`, `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/exonmappers`, and `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/notexonmappers` directories and output normalized exonmappers, intronmappers and intergenic mappers of all samples to the directories created.
 
 ##### C. Merge normalized SAM files
 
@@ -597,11 +1008,9 @@ This will create `STUDY/NORMALIZED_DATA`, `STUDY/NORMALIZED_DATA/exonmappers`, a
   **-nu** :  set this if you want to return only non-unique mappers, otherwise by default
          it will return merged final sam.
 
-This will create `FINAL_SAM`. Then, depending on the option given, it will make `FINAL_SAM/Unique`, `FINAL_SAM/NU`, or `FINAL_SAM/MERGED` directory and output final sam files to the directories created. A tag will be added to each sequence indicating its type (XT:A:E for exonmappers, XT:A:I for intronmapper, and XT:A:G for intergenicmappers).
+This will create `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM`. Then, depending on the option given, it will make `FINAL_SAM/Unique`, `FINAL_SAM/NU`, or `FINAL_SAM/MERGED` directory and output final sam files to the directories created. A tag will be added to each sequence indicating its type (XT:A:E for exonmappers, XT:A:I for intronmapper, and XT:A:G for intergenicmappers).
 
 #### 7) Run sam2junctions
-
-By default, this will use merged final sam files as input. 
  
     perl runall_sam2junctions.pl <sample dirs> <loc> <genes> <genome> [options]
 
@@ -610,15 +1019,17 @@ By default, this will use merged final sam files as input.
 * &lt;genes> :the RUM gene info file 
 * &lt;genome> : the RUM genome sequene one-line fasta file 
 * option:<br>
+  **-samfilename &lt;s> : set this to create junctions files using unfiltered aligned samfile. &lt;s> is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam) and all sam files in each sample directory should have the same name.<br>
   **-u**  :  set this if you want to return only unique junctions files, otherwise by default it will return merged(unique+non-unique) junctions files.<br>
   **-nu** :  set this if you want to return only non-unique files, otherwise by default it will return merged(unique+non-unique) junctions files.<br>
+  **-gnorm** : set this to create junctions files for gene normalization output.
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
   **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_6G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
  
-This will create `STUDY/NORMALIZED_DATA/JUNCTIONS` directory and output `junctions_hq.bed`, `junctions_all.bed` and `junctions_all.rum` files of all samples.
+This will create `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/JUNCTIONS` directory and output `junctions_hq.bed`, `junctions_all.bed` and `junctions_all.rum` files of all samples.
 
 #### 8) Master table of features counts
 #####A. Get Exonquants 
@@ -631,7 +1042,7 @@ If you want to quantify both Unique and Non-unique normalized exonmappers run th
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 
-This will create `NORMALIZED_DATA/exonmappers/MERGED` directory and output concatenated `exonmappers.norm.sam` file of all samples to the directory created.
+This will create `NORMALIZED_DATA/EXON_INTRON_JUNCTION/exonmappers/MERGED` directory and output concatenated `exonmappers.norm.sam` file of all samples to the directory created.
 
 **b. Run Quantify exons**
 
@@ -655,7 +1066,7 @@ Run the following command with **&lt;output sam?> = false** and **-norm** option
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
   			  
-This outputs `exonquants` file of all samples to `NORMALIZED_DATA/exonmappers/MERGED` (or `NORMALIZED_DATA/exonmappers/Unique` or `NORMALIZED_DATA/exonmappers/NU`).
+This outputs `exonquants` file of all samples to `NORMALIZED_DATA/EXON_INTRON_JUNCTION/exonmappers/MERGED` (or `NORMALIZED_DATA/EXON_INTRON_JUNCTION/exonmappers/Unique` or `NORMALIZED_DATA/EXON_INTRON_JUNCTION/exonmappers/NU`).
 
 #####B. Get Intronquants
 
@@ -677,49 +1088,7 @@ Run the following command with **&lt;output sam?> = false**. By default this wil
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 4G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
-This outputs `intronquants` file of all samples to `NORMALIZED_DATA/notexonmappers/Unique` or `NORMALIZED_DATA/notexonmappers/NU`.
-
-#####C. Get Genequants
-**a. Run sam2genes**
-
-    perl runall_sam2genes.pl <sample dirs> <loc> <ensGene file>
-
-> `sam2genes.pl` available for running one sample at a time
-
-* &lt;sample dirs> : a file with the names of the sample directories
-* &lt;loc> : full path of the directory with the sample directories (`READS`)
-* &lt;ensGene file> : ensembl table must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
-
-* option:<br>
-  **-u**  :  set this if your final (normalized) sam files have unique mappers only, otherwise by default it will use merged(unique+non-unique) mappers. <br>
-  **-nu** :  set this if your final (normalized) sam files have non-unique mappers only, otherwise by default it will use merged(unique+non-unique) mappers. <br>
-  **-lsf** : set this if you want to submit batch jobs to LSF<br>
-  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
-  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
-
-This outputs `genes.txt` files of all samples to `NORMALIZED_DATA/FINAL_SAM/MERGED/`, `NORMALIZED_DATA/FINAL_SAM/Unique/`, or `NORMALIZED_DATA/FINAL_SAM/NU/`.
-
-**b. Run Quantify Genes**
-
-    perl runall_quantify_genes.pl <sample dirs> <loc> <ensGene file>
-
-> `quantify_genes.pl` available for running one sample at a time
-
-* &lt;sample dirs> : a file with the names of the sample directories
-* &lt;loc> : full path of the directory with the sample directories (`READS`)
-* &lt;ensGene file> : ensembl table must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
-
-* option:<br>
-  **-u**  :  set this if your final (normalized) sam files have unique mappers only, otherwise by default it will use merged(unique+non-unique) mappers. <br>
-  **-nu** :  set this if your final (normalized) sam files have non-unique mappers only, otherwise by default it will use merged(unique+non-unique) mappers. <br>
-  **-lsf** : set this if you want to submit batch jobs to LSF<br>
-  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_10G>,&lt;status>"** : set this if you're not on LSF or SGE cluster<br>
-  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 10G)<br>
-  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
-
-This outputs `genequants` files of all samples to `NORMALIZED_DATA/FINAL_SAM/MERGED/`, `NORMALIZED_DATA/FINAL_SAM/Unique/`, or `NORMALIZED_DATA/FINAL_SAM/NU/`.
+This outputs `intronquants` file of all samples to `NORMALIZED_DATA/EXON_INTRON_JUNCTION/notexonmappers/Unique` or `NORMALIZED_DATA/EXON_INTRON_JUNCTION/notexonmappers/NU`.
 
 #####D. Make Final Spreadsheets
 **a. Run quants2spreadsheet and juncs2spreadsheet**
@@ -739,7 +1108,7 @@ This outputs `genequants` files of all samples to `NORMALIZED_DATA/FINAL_SAM/MER
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 6G, 10G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
-This will output `master_list_of_genes_counts`, `master_list_of_exons_counts`, `master_list_of_introns_counts`, and `master_list_of_junctions_counts` files to `STUDY/NORMALIZED_DATA/SPREADSHEETS` directory. 
+This will output `master_list_of_exons_counts`, `master_list_of_introns_counts`, and `master_list_of_junctions_counts` files to `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/SPREADSHEETS` directory. 
 
 **b. Annotate `list_of_exons_counts`**
      
@@ -768,7 +1137,7 @@ es: geneSymbol, and description.
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 15G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
-This will output `annotated_master_list_of_*` to `STUDY/NORMALIZED_DATA/SPREADSHEETS`.
+This will output `annotated_master_list_of_*` to `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/SPREADSHEETS`.
 
 **c. Filter low expressors**
 
@@ -783,16 +1152,15 @@ This will output `annotated_master_list_of_*` to `STUDY/NORMALIZED_DATA/SPREADSH
 	      annotated_master_list_of_introns_counts_MAX.STUDY.txt
 	      annotated_master_list_of_junctions_counts_MIN.STUDY.txt
 	      annotated_master_list_of_junctions_counts_MAX.STUDY.txt
-	      master_list_of_genes_counts_MIN.STUDY.txt
-	      master_list_of_genes_counts_MAX.STUDY.txt
 
 * &lt;number_of_samples> : number of samples
 * &lt;cutoff> : cutoff value
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 
-This will output `FINAL_master_list_of_genes_counts`, `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts` to `STUDY/NORMALIZED_DATA/SPREADSHEETS`.
+This will output `FINAL_master_list_of_genes_counts`, `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts` to `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/SPREADSHEETS`.
 
-#### 9) Data Visualization
+#### [PART2 - both Gene and Exon-Intron-Junction Normalization]
+#### 1) Data Visualization
 
 Use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR.
 
@@ -803,13 +1171,37 @@ Use sam2cov to create coverage files and upload them to a Genome Browser. Curren
      make
 
 #####B. Create Coverage Files
+I. Gene Normalization
+
+     perl runall_sam2cov_gnorm.pl <sample dirs> <loc> <fai file> <sam2cov> [options]
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+* &lt;fai file> : full path of fai file
+* &lt;sam2cov> : full path of sam2cov 
+* option : <br>
+  **-str** : set this if your library is strand-specific<br>
+  **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data.<br>
+  **-u** : set this if you want to use only unique mappers to generate coverage files, otherwise by default it will use merged(unique+non-unique) mappers<br>
+  **-nu** : set this if you want to use only non-unique mappers to generate coverage files, otherwise by default it will use merged(unique+non-unique) mappers<br>
+  **-rum** : set this if you used RUM to align your reads<br>
+  **-star** : set this if you used STAR to align your reads<br>
+  **-lsf** : set this if you want to submit batch jobs to LSF<br>
+  **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
+  **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_15G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
+  **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 15G)<br>
+  **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
+
+This will output `*Unique.cov` and `*NU.cov` files of all samples to `STUDY/NORMALIZED_DATA/GENE/COV`.
+
+I. Exon-Intron-Junction Normalization
 
      perl runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov> [options]
 
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * &lt;fai file> : full path of fai file
-* &lt;sam2cov> : full path of sam2cov 
+* &lt;sam2cov> : full path of sam2cov
 * option : <br>
   **-str** : set this if your library is strand-specific<br>
   **-u** : set this if you want to use only unique mappers to generate coverage files, otherwise by default it will use merged(unique+non-unique) mappers<br>
@@ -822,45 +1214,9 @@ Use sam2cov to create coverage files and upload them to a Genome Browser. Curren
   **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 15G)<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
 
-This will output `*Unique.cov` and `*NU.cov` files of all samples to `STUDY/NORMALIZED_DATA/COV`.
+This will output `*Unique.cov` and `*NU.cov` files of all samples to `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/COV`.
 
-#### 10) Number of Reads after Normalization
-#####A. Mapping statistics
-Run the script with **-norm** option.
-
-     perl runall_sam2mappingstats.pl <sample dirs> <loc> <sam file name> <total_num_reads?> [options]
-
-   * &lt;sample dirs> : a file with the names of the sample directories
-   * &lt;loc> : full path of the directory with the sample directories (`READS`)
-   * &lt;sam file name> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
-   * &lt;total_num_reads?> : if you have the total_num_reads.txt file, use "true" If not, use "false"
-   * option : <br>
-     **-lsf** : set this if you want to submit batch jobs to LSF<br>
-     **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
-     **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_30G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
-     **-mem &lt;s>** : set this if your job requires more memory. &lt;s> is the queue name for required mem (Default: 30G)<br>
-         ** If you have > 150,000,000 reads, use -mem option to request 45G mem.<br>
-         ** If you have > 200,000,000 reads, use -mem option to request 60G mem.<br>
-     **-norm** : set this if you want to compute mapping statistics for normalized sam files (Unique + NU MERGED)<br>
-     **-norm_u** : set this if you want to compute mapping statistics for normalized sam files (Unique)<br>
-     **-norm_nu** : set this if you want to compute mapping statistics for normalized sam files (NU)<br>
-     **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
-
-This will output `*mappingstats.txt` file of all samples to `STUDY/NORMALIZED_DATA/FINAL_SAM/*`.
-
-#####B. Get Summary of Final Total Number of Reads and Unique/NU reads
-This will parse the `*mappingstats.txt` files and output a table with summary info across all samples. Run with **-norm** option.
-
-     perl getstats.pl <sample dirs> <loc> [option]
-
-* &lt;sample dirs> : a file with the names of the sample directories
-* &lt;loc> : full path of the directory with the sample directories (`READS`)
-* option : <br>
- **-norm** : set this if you want to compute mapping statistics for normalized sam files (Unique + NU MERGED)<br>
- **-norm_u** : set this if you want to compute mapping statistics for normalized sam files (Unique)<br>
- **-norm_nu** : set this if you want to compute mapping statistics for normalized sam files (NU)
-
-#### 11) Clean Up
+#### 2) Clean Up
 #####A. Delete Intermediate SAM Files
 
      perl cleanup.pl <sample dirs> <loc>
