@@ -29,12 +29,11 @@ option:
          <request_memory_option> : is option for requesting resources for batch job submission command
                                   (e.g. -q, -l h_vmem=)
          <queue_name_for_4G> : is queue name for 4G (e.g. plus, 4G)
+         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
   -mem <s> : set this if your job requires more memory.
             <s> is the queue name for required mem.
             Default: 4G
-
-        <status> : command for checking batch job status (e.g. bjobs, qstat)
 
   -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                    by default, <n> = 200.

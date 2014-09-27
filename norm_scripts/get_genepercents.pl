@@ -3,15 +3,15 @@ use strict;
 use warnings;
 
 if(@ARGV<3) {
-    die "Usage: perl get_exonpercents.pl <sample directory> <cutoff> <outfile> [options]
+    die "Usage: perl get_genepercents.pl <sample directory> <cutoff> <outfile> [options]
 
 <sample directory> 
 <cutoff> cutoff %
-<outfile> output exonpercents file with full path
+<outfile> output genepercents file with full path
 
 option:
-  -nu :  set this if you want to return only non-unique exonpercents, otherwise by default
-         it will return unique exonpercents.
+  -nu :  set this if you want to return only non-unique genepercents, otherwise by default
+         it will return unique genepercents.
 
 ";
 }
@@ -36,14 +36,14 @@ my $sampledir = $ARGV[0];
 my @a = split("/", $sampledir);
 my $dirname = $a[@a-1];
 my $id = $dirname;
-my $quantsfile_u = "$sampledir/EIJ/Unique/$id.filtered_u_exonquants";
-my $quantsfile_nu = "$sampledir/EIJ/NU/$id.filtered_nu_exonquants";
+my $quantsfile_u = "$sampledir/GNORM/Unique/$id.filtered_u.genequants";
+my $quantsfile_nu = "$sampledir/GNORM/NU/$id.filtered_nu.genequants";
 my $temp_u = $quantsfile_u . ".temp";
 my $temp_nu = $quantsfile_nu . ".temp";
 my $cutoff = $ARGV[1];
 my $outfile = $ARGV[2];
 my $highfile = $outfile;
-$highfile =~ s/.exonpercents.txt/.high_expressors_exon.txt/;
+$highfile =~ s/.genepercents.txt/.high_expressors_gene.txt/;
 
 if ($cutoff !~ /(\d+$)/){
     die "ERROR: <cutoff> needs to be a number\n";
@@ -53,18 +53,17 @@ else{
 	die "ERROR: <cutoff> needs to be a number between 0-100\n";
     }
 }
-
-if($U eq "true"){
+if ($U eq "true"){
     open(INFILE_U, $quantsfile_u) or die "cannot find file '$quantsfile_u'\n";
     open(temp_u, ">$temp_u");
     while(my $line = <INFILE_U>){
 	chomp($line);
-	if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
+	if ($line !~ /^ENS/){
 	    next;
 	}
 	print temp_u "$line\n";
 	my @a = split(/\t/, $line);
-	my $quant = $a[2];
+	my $quant = $a[1];
 	$total_u = $total_u + $quant;
     }
     close(INFILE_U);
@@ -75,10 +74,10 @@ if ($NU eq "true"){
     open(temp_nu, ">$temp_nu");
     while(my $line = <INFILE_NU>){
 	chomp($line);
-	if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
+	if ($line !~ /^ENS/){
 	    next;
 	}
-	print temp_nu "$line\n"; 
+	print temp_nu "$line\n";
 	my @a = split(/\t/, $line);
 	my $quant = $a[2];
 	$total_nu = $total_nu + $quant;
@@ -86,24 +85,24 @@ if ($NU eq "true"){
     close(INFILE_NU);
     close(temp_nu);
 }
+
 if($U eq "true"){
     open(IN_U, $temp_u);
     open(OUT, ">$outfile");
     open(OUT2, ">$highfile");
-    print OUT "exon\t%unique\n";
-    print OUT2 "exon\t%unique\n";
+    print OUT "ensGene\t%min\tgeneSymbol\tgeneCoordinates\n";
+    print OUT2 "ensGene\t%min\tgeneSymbol\tgeneCoordinates\n";
     while(my $line_U = <IN_U>){
 	chomp($line_U);
-	
 	my @au = split(/\t/, $line_U);
-	my $exonu = $au[0];
-	my $quantu = $au[2];
+	my $geneu = $au[0];
+	my $quantu = $au[1];
+	my $sym = $au[3];
+	my $coord = $au[4];
 	my $percent_u = int(($quantu / $total_u)* 10000 ) / 100;
-	
-	print OUT "$exonu\t$percent_u\n";
-	
+	print OUT "$geneu\t$percent_u\t$sym\t$coord\n";
 	if ($percent_u >= $cutoff){
-	    print OUT2 "$exonu\t$percent_u\n";
+	    print OUT2 "$geneu\t$percent_u\t$sym\t$coord\n";
 	}
     }
     close(IN_U);
@@ -111,24 +110,24 @@ if($U eq "true"){
     close(OUT2);
     `rm $temp_u`;
 }
+
 if($NU eq "true"){
     open(IN_NU, $temp_nu);
     open(OUT, ">$outfile");
     open(OUT2, ">$highfile");
-    print OUT "exon\t%non-unique\n";
-    print OUT2 "exon\t%non-unique\n";
+    print OUT "ensGene\t%max\tgeneSymbol\tgeneCoordinates\n";
+    print OUT2 "ensGene\t%max\tgeneSymbol\tgeneCoordinates\n";
     while(my $line_NU = <IN_NU>){
 	chomp($line_NU);
-
 	my @anu = split(/\t/, $line_NU);
-	my $exonnu = $anu[0];
+	my $genenu = $anu[0];
 	my $quantnu = $anu[2];
-	my $percent_nu = int(($quantnu / $total_nu)* 10000 ) / 100;
-	
-	print OUT "$exonnu\t$percent_nu\n";
-	
+	my $sym = $anu[3];
+	my $coord = $anu[4];
+	my $percent_nu = int(($quantnu / $total_nu)* 10000 ) / 100;	
+	print OUT "$genenu\t$percent_nu\t$sym\t$coord\n";
 	if ($percent_nu >= $cutoff){
-	    print OUT2 "$exonnu\t$percent_nu\n";
+	    print OUT2 "$genenu\t$percent_nu\t$sym\t$coord\n";
 	}
     }
     close(IN_NU);
@@ -136,5 +135,5 @@ if($NU eq "true"){
     close(OUT2);
     `rm $temp_nu`;
 }
-#print "got here\n";
 
+print "got here\n";

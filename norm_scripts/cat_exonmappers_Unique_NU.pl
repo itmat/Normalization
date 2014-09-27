@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-if(@ARGV<1) {
+if(@ARGV<2) {
     die "usage: perl cat_exonmappers_Unique_NU.pl <sample dirs> <loc>
 
 where:
@@ -14,7 +14,7 @@ $LOC = $ARGV[1];
 $last_dir = $fields[@fields-1];
 $loc_study = $LOC;
 $loc_study =~ s/$last_dir//;
-$norm_dir = $loc_study."NORMALIZED_DATA";
+$norm_dir = $loc_study."NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
 $loc_exon = "$norm_dir/exonmappers";
 $loc_merged = $loc_exon . "/MERGED";
 unless (-d $loc_merged){

@@ -224,13 +224,13 @@ if ($total_reads_file eq "false"){
 	}
 	open(OUTFILE, ">$shfile");
 	if ($norm eq "true"){
-	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/FINAL_SAM/MERGED/$id.FINAL.norm.sam $study_dir/NORMALIZED_DATA/FINAL_SAM/MERGED/$id.FINAL.norm.mappingstats.txt";
+	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/MERGED/$id.FINAL.norm.sam $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/MERGED/$id.FINAL.norm.mappingstats.txt";
 	}
 	elsif ($norm_u eq "true"){
-	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/FINAL_SAM/Unique/$id.FINAL.norm_u.sam $study_dir/NORMALIZED_DATA/FINAL_SAM/Unique/$id.FINAL.norm_u.mappingstats.txt";
+	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/Unique/$id.FINAL.norm_u.sam $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/Unique/$id.FINAL.norm_u.mappingstats.txt";
 	}
 	elsif ($norm_nu eq "true"){
-	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/FINAL_SAM/NU/$id.FINAL.norm_nu.sam $study_dir/NORMALIZED_DATA/FINAL_SAM/NU/$id.FINAL.norm_nu.mappingstats.txt";
+	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/NU/$id.FINAL.norm_nu.sam $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/NU/$id.FINAL.norm_nu.mappingstats.txt";
 	}
 	else{
 	    print OUTFILE "perl $path $LOC/$dir/$sam_name $LOC/$dir/$id.mappingstats.txt\n";

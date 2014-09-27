@@ -3,7 +3,7 @@ use warnings;
 use strict;
 
 if(@ARGV<2) {
-    die "Usage: perl get_percent_high_expressor.pl <sample dirs> <loc> [option]
+    die "Usage: perl get_percent_high_expressor_gnorm.pl <sample dirs> <loc> [option]
 
 <sample dirs> is the file with the names of the sample directories
 <loc> is the location where the sample directories are
@@ -34,44 +34,36 @@ my $last_dir = $fields[@fields-1];
 my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $stats_dir = $study_dir . "STATS";
-unless (-d "$stats_dir/EXON_INTRON_JUNCTION/"){
-    `mkdir -p $stats_dir/EXON_INTRON_JUNCTION`;}
-my $outfileU = "$stats_dir/EXON_INTRON_JUNCTION/percent_high_expressor_exon_Unique.txt";
-my $outfileNU = "$stats_dir/EXON_INTRON_JUNCTION/percent_high_expressor_exon_NU.txt";
-my %HIGH_EXON;
+unless (-d "$stats_dir/GENE/"){
+    `mkdir -p $stats_dir/GENE`;}
+my $outfileU = "$stats_dir/GENE/percent_high_expressor_gene_Unique.txt";
+my $outfileNU = "$stats_dir/GENE/percent_high_expressor_gene_NU.txt";
+my %HIGH_GENE;
 open(INFILE, "<$ARGV[0]");
 my @dirs = <INFILE>;
 close(INFILE);
 foreach my $dir (@dirs){
     chomp($dir);
     my $id = $dir;
-    my $file = "$LOC/$dir/$id.high_expressors_exon_annot.txt";
+    my $file = "$LOC/$dir/$id.high_expressors_gene.txt";
     open(IN, "<$file");
-    my @exons = <IN>;
+    my @genes = <IN>;
     close(IN);
-    foreach my $exon (@exons){
-	chomp($exon);
-	if ($exon =~ /^exon/){
+    foreach my $gene (@genes){
+	chomp($gene);
+	if ($gene =~ /^ens/){
 	    next;
 	}
-	my @e = split(" ", $exon);
-	my $name = $e[0];
-	my $symbol_list = $e[3];
-	my @s = split(',' , $symbol_list);
-	my @symbol = ();
-	for (my $i=0;$i<@s;$i++){
-	    push(@symbol,$s[$i]);
-	}
-	my %hash = map {$_ => 1} @symbol;
-	my @list = keys %hash;
-	my $symlist = join(',',@list);
-	$HIGH_EXON{$name} =  $symlist;
+	my @g = split(" ", $gene);
+	my $name = $g[0];
+	my $symbol = $g[2];
+	$HIGH_GENE{$name} = $symbol;
     }
 }
 
-my $firstrow = "exon";
-my $lastrow = "gene";
-while (my ($key, $value) = each (%HIGH_EXON)){
+my $firstrow = "ensGene";
+my $lastrow = "geneSymbol";
+while (my ($key, $value) = each (%HIGH_GENE)){
     $firstrow = $firstrow . "\t$key";
     $lastrow = $lastrow . "\t$value";
 }
@@ -98,11 +90,10 @@ while(my $line = <INFILE>){
     my $id = $line;
     my $rowU = "$id\t";
     my $rowNU = "$id\t";
-    foreach my $exon (keys %HIGH_EXON){
-	chomp($exon);
-	$exon =~ s/exon://;
-	my $exonpercent = "$LOC/$dir/$id.exonpercents.txt";
-	my $value = `grep -w $exon $exonpercent`;
+    foreach my $gene (keys %HIGH_GENE){
+	chomp($gene);
+	my $genepercent = "$LOC/$dir/$id.genepercents.txt";
+	my $value = `grep -w $gene $genepercent`;
 	my @v = split(" ", $value);
 	my $val = $v[1];
 	if ($U eq "true"){

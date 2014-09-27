@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-$USAGE = "\nUsage: runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov> [options]
+$USAGE = "\nUsage: runall_sam2cov_gnorm.pl <sample dirs> <loc> <fai file> <sam2cov> [options]
 
 <sample dirs> is  a file of sample directories with alignment output without path
 <loc> is where the sample directories are
@@ -10,6 +10,8 @@ $USAGE = "\nUsage: runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov> [o
 ***Sam files produced by aligners other than STAR and RUM are currently not supported***
 
 option:  
+ -se : set this if the data is single end, otherwise by default it will assume it's a paired end data.
+
  -str : set this if your library is strand-specific
 
  -u  :  set this if you want to use only unique mappers to generate coverage files, 
@@ -64,6 +66,7 @@ $submit = "";
 $jobname_option = "";
 $request_memory_option = "";
 $mem = "";
+$se = "false";
 for ($i=4; $i<@ARGV; $i++){
     $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -73,6 +76,10 @@ for ($i=4; $i<@ARGV; $i++){
             die "-max_jobs <n> : <n> needs to be a number\n";
         }
         $i++;
+    }
+    if ($ARGV[$i] eq "-se"){
+	$option_found = "true";
+	$se = "true";
     }
     if($ARGV[$i] eq '-str') {
         $strand = "true";
@@ -179,7 +186,7 @@ $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 $shdir = $study_dir . "shell_scripts";
 $logdir = $study_dir . "logs";
-$norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
+$norm_dir = $study_dir . "NORMALIZED_DATA/GENE/";
 $cov_dir = $norm_dir . "/COV";
 unless (-d $cov_dir){
     `mkdir $cov_dir`;
@@ -197,65 +204,75 @@ while($line =  <INFILE>){
     $dir = $line;
     $id = $dir;
     if ($numargs_u_nu eq '0'){
-	$filename = "$final_M_dir/$id.FINAL.norm.sam";
+	$filename = "$final_M_dir/$id.GNORM.sam";
 	unless (-d "$cov_dir/MERGED"){
 	    `mkdir "$cov_dir/MERGED"`;
 	}
-	$prefix = "$cov_dir/MERGED/$id.FINAL.norm.sam";
+	$prefix = "$cov_dir/MERGED/$id.GNORM.sam";
 	$prefix_fwd = $prefix;
 	$prefix_rev = $prefix;
-	$prefix =~ s/norm.sam//;
+	$prefix =~ s/sam//;
 	if ($strand eq "true"){
-	    $prefix_fwd =~ s/norm.sam/fwd./g;
-	    $prefix_rev =~ s/norm.sam/rev./g;
+	    $prefix_fwd =~ s/sam/fwd./g;
+	    $prefix_rev =~ s/sam/rev./g;
 	}
     }
     else {
 	if ($U eq 'true'){
-	    $filename = "$final_U_dir/$id.FINAL.norm_u.sam";
+	    $filename = "$final_U_dir/$id.GNORM.Unique.sam";
 	    unless (-d "$cov_dir/Unique"){
 		`mkdir "$cov_dir/Unique"`;
 	    }
-	    $prefix = "$cov_dir/Unique/$id.FINAL.norm_u.sam";
+	    $prefix = "$cov_dir/Unique/$id.GNORM.Unique.sam";
 	    $prefix_fwd = $prefix;
-	    $prefix =~ s/norm_u.sam//;
+	    $prefix =~ s/sam//;
 	    $prefix_rev = $prefix;
 	    if ($strand eq "true"){
-		$prefix_fwd =~ s/norm_u.sam/fwd./g;
-		$prefix_rev =~ s/norm_u.sam/rev./g;
+		$prefix_fwd =~ s/sam/fwd./g;
+		$prefix_rev =~ s/sam/rev./g;
 	    }
 	}
 	if ($NU eq 'true'){
-	    $filename = "$final_NU_dir/$id.FINAL.norm_nu.sam";
+	    $filename = "$final_NU_dir/$id.GNORM.NU.sam";
 	    unless (-d "$cov_dir/NU"){
 		`mkdir "$cov_dir/NU"`;
 	    }
-	    $prefix = "$cov_dir/NU/$id.FINAL.norm_nu.sam";
+	    $prefix = "$cov_dir/NU/$id.GNORM.NU.sam";
 	    $prefix_fwd = $prefix;
 	    $prefix_rev = $prefix;
-	    $prefix =~ s/norm_nu.sam//;
+	    $prefix =~ s/sam//;
 	    if ($strand eq "true"){
-		$prefix_fwd =~ s/norm_nu.sam/fwd./g;
-		$prefix_rev =~ s/norm_nu.sam/rev./g;
+		$prefix_fwd =~ s/sam/fwd./g;
+		$prefix_rev =~ s/sam/rev./g;
 	    }
 	}
     }
-    $shfile = "C.$id.sam2cov.sh";
-    $jobname = "$study.sam2cov";
-    $logname = "$logdir/sam2cov.$id";
+    $shfile = "C.$id.sam2cov_gnorm.sh";
+    $jobname = "$study.sam2cov_gnorm";
+    $logname = "$logdir/sam2cov_gnorm.$id";
     if ($strand eq "true"){
-	$shfile_fwd = "C.$id.sam2cov.fwd.sh";
-	$shfile_rev = "C.$id.sam2cov.rev.sh";
-	$logname_fwd = "$logdir/sam2cov.fwd.$id";
-	$logname_rev = "$logdir/sam2cov.rev.$id";
+	$shfile_fwd = "C.$id.sam2cov_gnorm.fwd.sh";
+	$shfile_rev = "C.$id.sam2cov_gnorm.rev.sh";
+	$logname_fwd = "$logdir/sam2cov_gnorm.fwd.$id";
+	$logname_rev = "$logdir/sam2cov_gnorm.rev.$id";
     }
     if ($strand eq "false"){
 	open(OUTFILE, ">$shdir/$shfile");
 	if ($rum eq 'true'){
-	    print OUTFILE "$sam2cov -r 1 -e 0 -u -p $prefix $fai_file $filename"; 
+	    if ($se eq "true"){
+		print OUTFILE "$sam2cov -r 1 -e 0 -u -p $prefix $fai_file $filename"; 
+	    }
+	    if ($se eq "false"){
+		print OUTFILE "$sam2cov -r 1 -e 1 -u -p $prefix $fai_file $filename"; 
+	    }
 	}
 	if ($star eq 'true'){
-	    print OUTFILE "$sam2cov -u -e 0 -p $prefix $fai_file $filename"; 
+	    if ($se eq "true"){
+		print OUTFILE "$sam2cov -u -e 0 -p $prefix $fai_file $filename"; 
+	    }
+	    if ($se eq "false"){
+		print OUTFILE "$sam2cov -u -e 1 -p $prefix $fai_file $filename"; 
+	    }
 	}
 	close(OUTFILE);
 	while (qx{$status | wc -l} > $njobs){
@@ -266,18 +283,38 @@ while($line =  <INFILE>){
     if ($strand eq "true"){
 	open(OUTFILEF, ">$shdir/$shfile_fwd");
 	if ($rum eq 'true'){
-	    print OUTFILEF "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_fwd $fai_file $filename"; 
+	    if ($se eq "true"){
+		print OUTFILEF "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_fwd $fai_file $filename"; 
+	    }
+	    if ($se eq "false"){
+		print OUTFILEF "$sam2cov -r 1 -e 1 -s 1 -u -p $prefix_fwd $fai_file $filename"; 
+	    }
 	}
 	if ($star eq 'true'){
-	    print OUTFILEF "$sam2cov -u -e 0 -s 1 -p $prefix_fwd $fai_file $filename"; 
+	    if ($se eq "true"){
+		print OUTFILEF "$sam2cov -u -e 0 -s 1 -p $prefix_fwd $fai_file $filename"; 
+	    }
+	    if ($se eq "false"){
+		print OUTFILEF "$sam2cov -u -e 1 -s 1 -p $prefix_fwd $fai_file $filename"; 
+	    }
 	}
 	close(OUTFILEF);
 	open(OUTFILER, ">$shdir/$shfile_rev");
 	if ($rum eq 'true'){
-	    print OUTFILER "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_rev $fai_file $filename"; 
+	    if ($se eq "true"){
+		print OUTFILER "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_rev $fai_file $filename"; 
+	    }
+	    if ($se eq "false"){
+		print OUTFILER "$sam2cov -r 1 -e 1 -s 2 -u -p $prefix_rev $fai_file $filename"; 
+	    }
 	}
 	if ($star eq 'true'){
-	    print OUTFILER "$sam2cov -u -e 0 -s 2 -p $prefix_rev $fai_file $filename"; 
+	    if ($se eq "true"){
+		print OUTFILER "$sam2cov -u -e 0 -s 2 -p $prefix_rev $fai_file $filename"; 
+	    }
+	    if ($se eq "false"){
+		print OUTFILER "$sam2cov -u -e 1 -s 2 -p $prefix_rev $fai_file $filename"; 
+	    }
 	}
 	close(OUTFILER);
 	while (qx{$status | wc -l} > $njobs){

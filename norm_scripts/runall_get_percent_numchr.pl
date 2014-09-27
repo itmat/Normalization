@@ -1,18 +1,15 @@
-#!/usr/bin/env perl
-use strict;
 use warnings;
-my $USAGE = "\nUsage: perl runall_sam2genes_gnorm.pl <sample dirs> <loc> <ensGene file> 
- 
+use strict;
+
+my $USAGE = "perl runall_get_percent_numchr.pl <sample dirs> <loc>
+
 <sample dirs> is  a file of sample directories with alignment output without path
 <loc> is where the sample directories are
-<ensGene file> ensembl table must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
 
-option:
- -u  :  set this if you are using unique mappers only.
-        otherwise by default it will use both unique and non-unique mappers.
+options:
+ -GENE: set this if you're running GENE normalization
 
- -nu  :  set this if you are using non-unique mappers only.
-        otherwise by default it will use both unique and non-unique mappers.
+ -EIJ: set this if you're running EXON-INTRON-JUNCTION normalization
 
  -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
 
@@ -26,29 +23,26 @@ option:
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
- -max_jobs <n>  :  set this if you want to control the number of jobs submitted. 
+ -max_jobs <n>  :  set this if you want to control the number of jobs submitted.
                    by default it will submit 200 jobs at a time.
 
  -h : print usage
 
-\n";
-if (@ARGV<3){
+";
+
+if (@ARGV < 2){
     die $USAGE;
 }
 
-use Cwd 'abs_path';
-my $path = abs_path($0);
-$path =~ s/\/runall_sam2genes_gnorm.pl//;
-
-my $numargs_u_nu = 0;
+my $gnorm = "false";
+my $eij = "false";
 my $numargs = 0;
-my $U = "true";
-my $NU = "true";
-my $njobs = 200;
-my $submit = "";
-my $jobname_option = "";
+my $numargs_c = 0;
+my $submit;
+my $jobname_option;
 my $status;
-for (my $i=3; $i<@ARGV; $i++){
+my $njobs = 200;
+for(my $i=2;$i<@ARGV;$i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
@@ -58,36 +52,34 @@ for (my $i=3; $i<@ARGV; $i++){
         }
         $i++;
     }
-    if($ARGV[$i] eq '-nu') {
-        $U = "false";
-	$numargs_u_nu++;
-        $option_found = "true";
+    if ($ARGV[$i] eq '-GENE'){
+	$gnorm = "true";
+	$numargs++;
     }
-    if($ARGV[$i] eq '-u') {
-        $NU = "false";
-        $numargs_u_nu++;
-        $option_found = "true";
+    if ($ARGV[$i] eq '-EIJ'){
+	$eij = "true";
+	$numargs++;
     }
     if ($ARGV[$i] eq '-h'){
         $option_found = "true";
 	die $USAGE;
     }
     if ($ARGV[$i] eq '-lsf'){
-        $numargs++;
+        $numargs_c++;
         $option_found = "true";
         $submit = "bsub";
         $jobname_option = "-J";
 	$status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
-        $numargs++;
+        $numargs_c++;
         $option_found = "true";
         $submit = "qsub -cwd";
         $jobname_option = "-N";
 	$status = "qstat";
     }
     if ($ARGV[$i] eq '-other'){
-        $numargs++;
+        $numargs_c++;
         $option_found = "true";
 	my $argv_all = $ARGV[$i+1];
         my @a = split(",", $argv_all);
@@ -103,15 +95,16 @@ for (my $i=3; $i<@ARGV; $i++){
         }
     }
 }
-if($numargs ne '1'){
+if($numargs_c ne '1'){
     die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>,<jobname_option>,<status>\".\n
 ";
 }
-if($numargs_u_nu > 1) {
-    die "you cannot specify both -u and -nu\n.
-";
+if ($numargs ne '1'){
+    die "you have to specify what type of normalization you're running. choose -GENE or -EIJ \n\n";
 }
 
+
+my $dirs = $ARGV[0];
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 my @fields = split("/", $LOC);
@@ -121,43 +114,39 @@ my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
-my $ens_file = $ARGV[2];
 
-open(IN, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; # dirnames;
+use Cwd 'abs_path';
+my $path = abs_path($0);
+$path =~ s/\/runall_get_percent_numchr.pl//;
+
+open(IN, $dirs);
 while(my $line = <IN>){
     chomp($line);
-    my $id = $line;
-    my $genedir = "$LOC/$id/GNORM";
-    my $filename_u = "$genedir/Unique/$id.filtered_u.sam";
-    my $filename_nu = "$genedir/NU/$id.filtered_nu.sam";
-    my $outname_u = $filename_u;
-    $outname_u =~ s/.sam/.genes.txt/g;
-    my $outname_nu = $filename_nu;
-    $outname_nu =~ s/.sam/.genes.txt/g;
-    my $shfile_u = "$shdir/G.$id.sam2genes_gnorm_u.sh";
-    my $jobname = "$study.sam2genes_gnorm";
-    my $logname_u = "$logdir/sam2genes_gnorm_u.$id";
-    my $shfile_nu = "$shdir/G.$id.sam2genes_gnorm_nu.sh";
-    my $logname_nu = "$logdir/sam2genes_gnorm_nu.$id";
-    if ($U eq "true"){
-	open(OUT, ">$shfile_u");
-	print OUT "perl $path/sam2genes.pl $filename_u $ens_file $outname_u\n";
-	close(OUT);
-	while (qx{$status | wc -l} > $njobs){
-	    sleep(10);
-	}
-	`$submit $jobname_option $jobname -o $logname_u.out -e $logname_u.err < $shfile_u`;
+    my ($sam, $sh, $logname, $jobname, $out);
+    if ($eij eq "true"){
+	$sam = "$LOC/$line/EIJ/Unique/$line.filtered_u.sam";
+	$sh = "$shdir/numchrcnt.$line.sh";
+	$logname = "numchrcnt.$line";
+	$jobname = "$study.numchrcnt";
     }
-    if ($NU eq "true"){
-	open(OUT, ">$shfile_nu");
-	print OUT "perl $path/sam2genes.pl $filename_nu $ens_file $outname_nu\n";
-	close(OUT);
-	while (qx{$status | wc -l} > $njobs){
-	    sleep(10);
-	}
-	`$submit $jobname_option $jobname -o $logname_nu.out -e $logname_nu.err < $shfile_nu`;
+    if ($gnorm eq "true"){
+	$sam = "$LOC/$line/GNORM/Unique/$line.filtered_u.sam";
+        $sh = "$shdir/numchrcnt_gnorm.$line.sh";
+        $logname = "numchrcnt_gnorm.$line";
+	$jobname = "$study.numchrcnt_gnorm";
     }
+    $out = $sam;
+    $out =~ s/.sam$/.numchr_count.txt/;
+    open(OUT, ">$sh");
+    print OUT "perl $path/get_percent_numchr.pl $sam $out\n";
+    close(OUT);
+    while (qx{$status | wc -l} > $njobs){
+	sleep(10);
+    }
+    `$submit $jobname_option $jobname -o $logdir/$logname.out -e $logdir/$logname.err < $sh`;
 }
 close(IN);
-print "got here\n";
+
+print "got here\n";    
+
 

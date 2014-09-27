@@ -1,6 +1,10 @@
 #!/usr/bin/env perl
 use strict;
+<<<<<<< HEAD
 use warnings;
+=======
+
+>>>>>>> develop
 
 $| = 1;
 if(@ARGV<3) {
@@ -121,7 +125,11 @@ while(my $forward = <INFILE>) {
     if ($pe eq "true"){
 	chomp($forward);
 	if($forward eq '') {
+<<<<<<< HEAD
 	    $forward = <INFILE>;
+=======
+	    my $forward = <INFILE>;
+>>>>>>> develop
 	    chomp($forward);
 	}
 	my $reverse = <INFILE>;
@@ -146,7 +154,11 @@ while(my $forward = <INFILE>) {
 	    @R = split(/\t/,$reverse);
 	    if($R[1] & 64) {
 		print "Warning: I read two reads consecutive but neither were a reverse read...\n\nforward=$forward\n\nreverse=$reverse\n\nPrevious was id='$id'\n\nI am skipping read '$id2'.\n\n";
+<<<<<<< HEAD
 		$line = <INFILE>;
+=======
+		my $line = <INFILE>;
+>>>>>>> develop
 		chomp($line);
 		my @a = split(/\t/,$line);
 		while($a[0] eq $id2) {

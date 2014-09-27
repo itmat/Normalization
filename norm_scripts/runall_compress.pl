@@ -137,7 +137,7 @@ $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 $shdir = $study_dir . "shell_scripts";
 $logdir = $study_dir . "logs";
-$norm_dir = $study_dir . "NORMALIZED_DATA";
+$norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION";
 $exon_dir = $norm_dir . "/exonmappers";
 $nexon_dir = $norm_dir . "/notexonmappers";
 $finalsam_dir = "$norm_dir/FINAL_SAM";
@@ -145,6 +145,13 @@ $final_U_dir = "$finalsam_dir/Unique";
 $final_NU_dir = "$finalsam_dir/NU";
 $final_M_dir = "$finalsam_dir/MERGED";
 $cov_dir = "$norm_dir/COV/";
+
+$gnorm_dir = $study_dir . "NORMALIZED_DATA/GENE";
+$gfinalsam_dir = "$gnorm_dir/FINAL_SAM";
+$gfinal_U_dir = "$gfinalsam_dir/Unique";
+$gfinal_NU_dir = "$gfinalsam_dir/NU";
+$gfinal_M_dir = "$gfinalsam_dir/MERGED";
+$gcov_dir = "$gnorm_dir/COV/";
 
 $sam_name = $ARGV[2];
 $bam_name = $sam_name;
@@ -176,59 +183,103 @@ if ($sam2bam eq 'true'){
 		sleep(10);
 	    }
 	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
-	    if (-e "$final_M_dir/$id.FINAL.norm.sam"){
-		open(OUT2, ">$norm_shfile");
-		print OUT2 "samtools view -bt $fai_file $final_M_dir/$id.FINAL.norm.sam > $final_M_dir/$id.FINAL.norm.bam \n";
-		print OUT2 "lc=`cat $final_M_dir/$id.FINAL.norm.bam | wc -l`\n";
-		print OUT2 "if [ \"\$lc\" -ne 0 ]; then rm $final_M_dir/$id.FINAL.norm.sam\n";
-		print OUT2 "else samtools view -bt $fai_file $final_M_dir/$id.FINAL.norm.sam > $final_M_dir/$id.FINAL.norm.bam\n";
-		print OUT2 "echo sam2bam ran twice for '$final_M_dir/$id.FINAL.norm.sam'. please make sure '$final_M_dir/$id.FINAL.norm.bam' file is not empty and delete the sam file  >> $logdir/$study.sam2bam.log\nfi\n";
-		print OUT2 "echo \"got here \"\n";
-		close(OUT2);
-		while (qx{$status | wc -l} > $njobs){
-		    sleep(10);
-		}
-		`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_norm.out -e $logname_norm.err < $norm_shfile`;
-	    }
-	    else{
-		if (-e "$final_U_dir/$id.FINAL.norm_u.sam"){
-		    open(OUT2, ">$norm_shfile");
-		    print OUT2 "samtools view -bt $fai_file $final_U_dir/$id.FINAL.norm_u.sam > $final_U_dir/$id.FINAL.norm_u.bam \n";
-		    print OUT2 "lc=`cat $final_U_dir/$id.FINAL.norm_u.bam | wc -l`\n";
-		    print OUT2 "if [ \"\$lc\" -ne 0 ]; then rm $final_U_dir/$id.FINAL.norm_u.sam\n";
-		    print OUT2 "else samtools view -bt $fai_file $final_U_dir/$id.FINAL.norm_u.sam > $final_U_dir/$id.FINAL.norm_u.bam\n";
-		    print OUT2 "echo sam2bam ran twice for '$final_U_dir/$id.FINAL.norm_u.sam'.please make sure '$final_U_dir/$id.FINAL.norm_u.bam' file is not empty and delete the sam file  >> $logdir/$study.sam2bam.log\nfi\n";
-		    print OUT2 "echo \"got here \"\n";
-		    close(OUT2);
-		    while (qx{$status | wc -l} > $njobs){
-			sleep(10);
-		    }
-		    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_norm.out -e $logname_norm.err < $norm_shfile`;
-		}
-		if (-e "$final_NU_dir/$id.FINAL.norm_nu.sam"){
-		    open(OUT2, ">$norm_shfile");
-		    print OUT2 "samtools view -bt $fai_file $final_NU_dir/$id.FINAL.norm_nu.sam > $final_NU_dir/$id.FINAL.norm_nu.bam \n";
-                    print OUT2 "lc=`cat $final_NU_dir/$id.FINAL.norm_nu.bam | wc -l`\n";
-                    print OUT2 "if [ \"\$lc\" -ne 0 ]; then rm $final_NU_dir/$id.FINAL.norm_nu.sam\n";
-                    print OUT2 "else samtools view -bt $fai_file $final_NU_dir/$id.FINAL.norm_nu.sam > $final_NU_dir/$id.FINAL.norm_nu.bam\n";
-		    print OUT2 "echo sam2bam ran twice for '$final_NU_dir/$id.FINAL.norm_nu.sam'.please make sure '$final_NU_dir/$id.FINAL.norm_nu.bam' file is not empty and delete the sam file  >> $logdir/$study.sam2bam.log\nfi\n";
-		    print OUT2 "echo \"got here \"\n";
-		    close(OUT2);
-		    while (qx{$status | wc -l} > $njobs){
-			sleep(10);
-		    }
-		    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_norm.out -e $logname_norm.err < $norm_shfile`;
-		}
-		else{
-		    print STDOUT "WARNING: normalized sam file \"$final_M_dir/$id.FINAL.norm.sam\", \"$final_U_dir/$id.FINAL.norm_u.sam\", or \"$final_NU_dir/$id.FINAL.norm_nu.sam\" does not exist. Please check the input samfile name/path\n\n";
-		}
-	    }
 	}
 
 	else{
 	    print STDOUT "WARNING: file \"$LOC/$line/$sam_name\" doesn't exist. please check the input samfile name/path\n\n";
 	}
 	
+	if (-e "$final_M_dir/$id.FINAL.norm.sam"){
+	    open(OUT2, ">$norm_shfile");
+	    print OUT2 "samtools view -bt $fai_file $final_M_dir/$id.FINAL.norm.sam > $final_M_dir/$id.FINAL.norm.bam \n";
+	    print OUT2 "lc=`cat $final_M_dir/$id.FINAL.norm.bam | wc -l`\n";
+	    print OUT2 "if [ \"\$lc\" -ne 0 ]; then rm $final_M_dir/$id.FINAL.norm.sam\n";
+	    print OUT2 "else samtools view -bt $fai_file $final_M_dir/$id.FINAL.norm.sam > $final_M_dir/$id.FINAL.norm.bam\n";
+	    print OUT2 "echo sam2bam ran twice for '$final_M_dir/$id.FINAL.norm.sam'. please make sure '$final_M_dir/$id.FINAL.norm.bam' file is not empty and delete the sam file  >> $logdir/$study.sam2bam.log\nfi\n";
+	    print OUT2 "echo \"got here \"\n";
+	    close(OUT2);
+	    while (qx{$status | wc -l} > $njobs){
+		sleep(10);
+	    }
+	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_norm.out -e $logname_norm.err < $norm_shfile`;
+	}
+	elsif (-e "$final_U_dir/$id.FINAL.norm_u.sam"){
+	    open(OUT2, ">$norm_shfile");
+	    print OUT2 "samtools view -bt $fai_file $final_U_dir/$id.FINAL.norm_u.sam > $final_U_dir/$id.FINAL.norm_u.bam \n";
+	    print OUT2 "lc=`cat $final_U_dir/$id.FINAL.norm_u.bam | wc -l`\n";
+	    print OUT2 "if [ \"\$lc\" -ne 0 ]; then rm $final_U_dir/$id.FINAL.norm_u.sam\n";
+	    print OUT2 "else samtools view -bt $fai_file $final_U_dir/$id.FINAL.norm_u.sam > $final_U_dir/$id.FINAL.norm_u.bam\n";
+	    print OUT2 "echo sam2bam ran twice for '$final_U_dir/$id.FINAL.norm_u.sam'.please make sure '$final_U_dir/$id.FINAL.norm_u.bam' file is not empty and delete the sam file  >> $logdir/$study.sam2bam.log\nfi\n";
+	    print OUT2 "echo \"got here \"\n";
+	    close(OUT2);
+	    while (qx{$status | wc -l} > $njobs){
+		sleep(10);
+	    }
+	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_norm.out -e $logname_norm.err < $norm_shfile`;
+	}
+	elsif (-e "$final_NU_dir/$id.FINAL.norm_nu.sam"){
+	    open(OUT2, ">$norm_shfile");
+	    print OUT2 "samtools view -bt $fai_file $final_NU_dir/$id.FINAL.norm_nu.sam > $final_NU_dir/$id.FINAL.norm_nu.bam \n";
+	    print OUT2 "lc=`cat $final_NU_dir/$id.FINAL.norm_nu.bam | wc -l`\n";
+	    print OUT2 "if [ \"\$lc\" -ne 0 ]; then rm $final_NU_dir/$id.FINAL.norm_nu.sam\n";
+	    print OUT2 "else samtools view -bt $fai_file $final_NU_dir/$id.FINAL.norm_nu.sam > $final_NU_dir/$id.FINAL.norm_nu.bam\n";
+	    print OUT2 "echo sam2bam ran twice for '$final_NU_dir/$id.FINAL.norm_nu.sam'.please make sure '$final_NU_dir/$id.FINAL.norm_nu.bam' file is not empty and delete the sam file  >> $logdir/$study.sam2bam.log\nfi\n";
+	    print OUT2 "echo \"got here \"\n";
+	    close(OUT2);
+	    while (qx{$status | wc -l} > $njobs){
+		sleep(10);
+	    }
+	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_norm.out -e $logname_norm.err < $norm_shfile`;
+	}
+	else{
+	    print STDOUT "WARNING: normalized sam file \"$final_M_dir/$id.FINAL.norm.sam\", \"$final_U_dir/$id.FINAL.norm_u.sam\", or \"$final_NU_dir/$id.FINAL.norm_nu.sam\" does not exist. Please check the input samfile name/path\n\n";
+	}
+	if (-e "$gfinal_M_dir/$id.GNORM.sam"){
+	    open(OUT2, ">$norm_shfile");
+	    print OUT2 "samtools view -bt $fai_file $gfinal_M_dir/$id.GNORM.sam > $gfinal_M_dir/$id.GNORM.bam \n";
+	    print OUT2 "lc=`cat $gfinal_M_dir/$id.GNORM.bam | wc -l`\n";
+	    print OUT2 "if [ \"\$lc\" -ne 0 ]; then rm $gfinal_M_dir/$id.GNORM.sam\n";
+	    print OUT2 "else samtools view -bt $fai_file $gfinal_M_dir/$id.GNORM.sam > $gfinal_M_dir/$id.GNORM.bam\n";
+	    print OUT2 "echo sam2bam ran twice for '$gfinal_M_dir/$id.GNORM.sam'. please make sure '$gfinal_M_dir/$id.GNORM.bam' file is not empty and delete the sam file  >> $logdir/$study.sam2bam.log\nfi\n";
+	    print OUT2 "echo \"got here \"\n";
+	    close(OUT2);
+	    while (qx{$status | wc -l} > $njobs){
+		sleep(10);
+	    }
+	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_norm.out -e $logname_norm.err < $norm_shfile`;
+	}
+        elsif (-e "$gfinal_U_dir/$id.GNORM.Unique.sam"){
+            open(OUT2, ">$norm_shfile");
+            print OUT2 "samtools view -bt $fai_file $gfinal_U_dir/$id.GNORM.Unique.sam > $gfinal_U_dir/$id.GNORM.Unique.bam \n";
+            print OUT2 "lc=`cat $gfinal_U_dir/$id.GNORM.Unique.bam | wc -l`\n";
+            print OUT2 "if [ \"\$lc\" -ne 0 ]; then rm $gfinal_U_dir/$id.GNORM.Unique.sam\n";
+            print OUT2 "else samtools view -bt $fai_file $gfinal_U_dir/$id.GNORM.Unique.sam > $gfinal_U_dir/$id.GNORM.Unique.bam\n";
+            print OUT2 "echo sam2bam ran twice for '$gfinal_U_dir/$id.GNORM.Unique.sam'.please make sure '$gfinal_U_dir/$id.GNORM.Unique.bam' file is not empty and delete the sam file  >> $logdir/$study.sam2bam.log\nfi\n";
+            print OUT2 "echo \"got here \"\n";
+            close(OUT2);
+            while (qx{$status | wc -l} > $njobs){
+                sleep(10);
+            }
+            `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_norm.out -e $logname_norm.err < $norm_shfile`;
+        }
+        elsif (-e "$gfinal_NU_dir/$id.FINAL.GNORM.NU.sam"){
+            open(OUT2, ">$norm_shfile");
+            print OUT2 "samtools view -bt $fai_file $gfinal_NU_dir/$id.GNORM.NU.sam > $gfinal_NU_dir/$id.GNORM.NU.bam \n";
+            print OUT2 "lc=`cat $gfinal_NU_dir/$id.GNORM.NU.bam | wc -l`\n";
+            print OUT2 "if [ \"\$lc\" -ne 0 ]; then rm $gfinal_NU_dir/$id.GNORM.NU.sam\n";
+            print OUT2 "else samtools view -bt $fai_file $gfinal_NU_dir/$id.GNORM.NU.sam > $gfinal_NU_dir/$id.GNORM.NU.bam\n";
+            print OUT2 "echo sam2bam ran twice for '$gfinal_NU_dir/$id.GNORM.NU.sam'.please make sure '$gfinal_NU_dir/$id.GNORM.NU.bam' file is not empty and delete the sam file  >> $logdir/$study.sam2bam.log\nfi\n";
+            print OUT2 "echo \"got here \"\n";
+            close(OUT2);
+            while (qx{$status | wc -l} > $njobs){
+                sleep(10);
+            }
+            `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_norm.out -e $logname_norm.err < $norm_shfile`;
+        }
+        else{
+            print STDOUT "WARNING: normalized sam file \"$gfinal_M_dir/$id.GNORM.sam\", \"$gfinal_U_dir/$id.GNORM.Unique.sam\", or \"$gfinal_NU_dir/$id.GNORM.NU.sam\" does not exist. Please check the input samfile name/path\n\n";
+        }
+
     }
 }
 if ($gzip_cov eq 'true'){
@@ -240,6 +291,15 @@ if ($gzip_cov eq 'true'){
 		`gzip $cov_dir/*/*cov`;
 	    }
 	}
+    }
+    if (-d $gcov_dir){
+        @a = glob("$gcov_dir/*/*cov");
+        if (@a > 0){
+            @g = glob("$gcov_dir/*/*gz");
+            if (@g eq 0){
+                `gzip $gcov_dir/*/*cov`;
+            }
+        }
     }
 }
 	

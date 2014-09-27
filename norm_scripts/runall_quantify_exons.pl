@@ -16,6 +16,8 @@ option:
 
  -se  :  set this if the data is single end, otherwise by default it will assume it's a paired end data 
 
+ -filter_highexp : set this if you want to filter reads that map to highly expressed exons
+
  -norm : set this if you want to quantify the normalized sam files
 
  -lsf : set this if you want to submit batch jobs to LSF (PMACS cluster).
@@ -59,6 +61,7 @@ $request_memory_option = "";
 $mem = "";
 $numargs = 0;
 $norm = "false";
+$filter = "false";
 for($i=4; $i<@ARGV; $i++) {
     $option_found = 'false';
     if ($ARGV[$i] eq '-max_jobs'){
@@ -85,6 +88,10 @@ for($i=4; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq '-se'){
 	$pe = "false";
 	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-filter_highexp'){
+        $filter = "true";
+        $option_found = "true";
     }
     if ($ARGV[$i] eq '-h'){
 	$option_found = "true";
@@ -148,7 +155,7 @@ if ($replace_mem eq "true"){
 
 
 $path = abs_path($0);
-$path =~ s/runall_//;
+$path =~ s/runall_quantify_exons.pl//;
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 $LOC = $ARGV[1];
@@ -178,11 +185,11 @@ while($line = <INFILE>) {
 	$filename = "$id.filtered.sam";
 	if ($nuonly eq "true"){
 	    $filename =~ s/.sam$/_nu.sam/;
-	    $dir = $dir . "/NU";
+	    $dir = $dir . "/EIJ/NU";
 	}
 	if ($nuonly eq "false"){
 	    $filename =~ s/.sam$/_u.sam/;
-	    $dir = $dir . "/Unique";
+	    $dir = $dir . "/EIJ/Unique";
 	}
     }
     if($outputsam eq "false"){
@@ -190,11 +197,11 @@ while($line = <INFILE>) {
 	    $filename = "$id.filtered.sam";
 	    if ($nuonly eq "false"){
 		$filename =~ s/.sam$/_u.sam/;
-		$final_exon_dir = "$LOC/$dir/Unique";
+		$final_exon_dir = "$LOC/$dir/EIJ/Unique";
 	    }
 	    if ($nuonly eq "true"){
                 $filename =~ s/.sam$/_nu.sam/;
-		$final_exon_dir = "$LOC/$dir/NU";
+		$final_exon_dir = "$LOC/$dir/EIJ/NU";
 	    }
 	}
 	if ($norm eq "true"){
@@ -203,7 +210,7 @@ while($line = <INFILE>) {
 	    $last_dir = $fields[@fields-1];
 	    $norm_dir = $LOC;
 	    $norm_dir =~ s/$last_dir//;
-	    $norm_dir = $norm_dir . "NORMALIZED_DATA";
+	    $norm_dir = $norm_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
 	    $exon_dir = $norm_dir . "/exonmappers";
 	    $merged_exon_dir = $exon_dir . "/MERGED";
 	    $unique_exon_dir = $exon_dir . "/Unique";
@@ -238,40 +245,61 @@ while($line = <INFILE>) {
     $intronsamoutfile =~ s/.sam/_notexonmappers.sam/;
     if($outputsam eq "true") {
 	open(OUTFILE, ">$shdir/$shfile");
-		if($nuonly eq 'false') {
-		    if ($pe eq "true"){
-			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC -depth $i_exon\n";
-		    }
-		    else {
-			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC -rpf -depth $i_exon\n";
-		    }
-		} else {
-		    $logname = "$logdir/nu.quantifyexons.$id";
-		    if ($pe eq "true"){
-			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC -NU-only -depth $i_exon\n";
-		    }
-		    else{
-			print OUTFILE "perl $path $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC -NU-only -rpf -depth $i_exon\n";
-		    }
+	if($nuonly eq 'false') {
+	    if ($pe eq "true"){
+		if ($filter eq "false"){
+		    print OUTFILE "perl $path/quantify_exons.pl $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC -depth $i_exon\n";
 		}
+		if ($filter eq "true"){
+		    print OUTFILE "perl $path/quantify_exons_filterhighexp.pl $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC $LOC/highexp_exons.txt -depth $i_exon\n";
+		}
+	    }
+	    else {
+		if ($filter eq "false"){
+		    print OUTFILE "perl $path/quantify_exons.pl $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC -rpf -depth $i_exon\n";
+		}
+		if ($filter eq "true"){
+		    print OUTFILE "perl $path/quantify_exons_filterhighexp.pl $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC $LOC/highexp_exons.txt -rpf -depth $i_exon\n";
+		}
+	    }
+	} 
+	else{
+	    $logname = "$logdir/nu.quantifyexons.$id";
+	    if ($pe eq "true"){
+		if ($filter eq "false"){
+		    print OUTFILE "perl $path/quantify_exons.pl $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC -NU-only -depth $i_exon\n";
+		}
+		if ($filter eq "true"){
+		    print OUTFILE "perl $path/quantify_exons_filterhighexp.pl $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC $LOC/highexp_exons.txt -NU-only -depth $i_exon\n";
+		}
+	    }
+	    else{
+		if ($filter eq "false"){
+		    print OUTFILE "perl $path/quantify_exons.pl $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC -NU-only -rpf -depth $i_exon\n";
+		}
+		if ($filter eq "true"){
+		    print OUTFILE "perl $path/quantify_exons_filterhighexp.pl $exons $LOC/$dir/$filename $LOC/$dir/$outfile $LOC/$dir/$exonsamoutfile $LOC/$dir/$intronsamoutfile $LOC $LOC/highexp_exons.txt -NU-only -rpf -depth $i_exon\n";
+		}
+	    }
+	}
     } 
     else {
 	open(OUTFILE, ">$shdir/$shfile2");
 	if($nuonly eq 'false') {
 	    if ($pe eq "true"){
-		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none $LOC\n";
+		print OUTFILE "perl $path/quantify_exons.pl $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none $LOC\n";
 	    }
 	    else {
-		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none $LOC -rpf\n";
+		print OUTFILE "perl $path/quantify_exons.pl $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none $LOC -rpf\n";
 	    }
 	}
 	else{
 	    $logname2 = "$logdir/nu.quantifyexons2.$id";
 	    if ($pe eq "true"){
-		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none $LOC -NU-only\n";
+		print OUTFILE "perl $path/quantify_exons.pl $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none $LOC -NU-only\n";
 	    }
 	    else{
-		print OUTFILE "perl $path $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none $LOC -NU-only -rpf\n";
+		print OUTFILE "perl $path/quantify_exons.pl $exons $final_exon_dir/$filename $final_exon_dir/$outfile none none $LOC -NU-only -rpf\n";
 	    }
 	}
     }

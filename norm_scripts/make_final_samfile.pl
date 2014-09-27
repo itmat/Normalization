@@ -48,7 +48,7 @@ $LOC =~ s/\/$//;
 $last_dir = $fields[@fields-1];
 $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
-$norm_dir = $norm_dir . "NORMALIZED_DATA";
+$norm_dir = $norm_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
 $exon_dir = $norm_dir . "/exonmappers";
 $nexon_dir = $norm_dir . "/notexonmappers";
 $finalsam_dir = "$norm_dir/FINAL_SAM";
@@ -56,7 +56,7 @@ $final_U_dir = "$finalsam_dir/Unique";
 $final_NU_dir = "$finalsam_dir/NU";
 $final_M_dir = "$finalsam_dir/MERGED";
 unless (-d $finalsam_dir){
-    `mkdir $finalsam_dir`;
+    `mkdir -p $finalsam_dir`;
 }
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){

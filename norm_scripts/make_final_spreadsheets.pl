@@ -170,7 +170,7 @@ unless (-d $shdir){
 unless (-d $logdir){
     `mkdir $logdir`;}
 
-my $norm_dir = $study_dir . "NORMALIZED_DATA";
+my $norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION";
 my $spread_dir = $norm_dir . "/SPREADSHEETS";
 unless (-d $spread_dir){
     `mkdir $spread_dir`;
@@ -178,7 +178,7 @@ unless (-d $spread_dir){
 my $novellist = "$LOC/$study.list_of_novel_exons.txt";
 my $FILE = $ARGV[0];
 
-my ($sh_exon, $sh_intron, $sh_junctions, $sh_genes, $jobname, $lognameE, $lognameI, $lognameJ, $lognameG);
+my ($sh_exon, $sh_intron, $sh_junctions, $jobname, $lognameE, $lognameI, $lognameJ);
 if ($numargs eq "0"){
     $sh_exon = "$shdir/exonquants2spreadsheet_min_max.sh";
     open(OUTexon, ">$sh_exon");
@@ -197,15 +197,10 @@ if ($numargs eq "0"){
     open(OUTjunctions, ">$sh_junctions");
     print OUTjunctions "perl $path/juncs2spreadsheet_min_max.pl $FILE $LOC";
     close(OUTjunctions);
-    $sh_genes = "$shdir/genes2spreadsheet_min_max.sh";
-    open(OUTgenes, ">$sh_genes");
-    print OUTgenes "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC genequants";
-    close(OUTgenes);
     $jobname = "$study.final_spreadsheet";
     $lognameE = "$logdir/exonquants2spreadsheet_min_max";
     $lognameI = "$logdir/intronquants2spreadsheet_min_max";
     $lognameJ = "$logdir/juncs2spreadsheet_min_max";
-    $lognameG = "$logdir/genes2spreadsheet_min_max";
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);
     }
@@ -218,11 +213,6 @@ if ($numargs eq "0"){
 	sleep(10);
     }
     `$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameJ.out -e $lognameJ.err < $sh_junctions`;
-    while (qx{$status | wc -l} > $njobs){
-	sleep(10);
-    }
-    `$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameG.out -e $lognameG.err < $sh_genes`;
-
 }
 else{
     if ($U eq "true"){
@@ -243,15 +233,10 @@ else{
 	open(OUTjunctions, ">$sh_junctions");
 	print OUTjunctions "perl $path/juncs2spreadsheet.1.pl $FILE $LOC";
 	close(OUTjunctions);
-	$sh_genes = "$shdir/genes2spreadsheet.u.sh";
-	open(OUTgenes, ">$sh_junctions");
-	print OUTgenes "perl $path/quants2spreadsheet.1.pl $FILE $LOC genequants";
-	close(OUTgenes);
 	$jobname = "$study.final_spreadsheet";
 	$lognameE ="$logdir/exonquants2spreadsheet.u";
 	$lognameI ="$logdir/intronquants2spreadsheet.u";
 	$lognameJ ="$logdir/juncs2spreadsheet.u";
-	$lognameG ="$logdir/genes2spreadsheet.u";
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
@@ -264,10 +249,6 @@ else{
 	    sleep(10);
 	}
 	`$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameJ.out -e $lognameJ.err < $sh_junctions`;
-	while (qx{$status | wc -l} > $njobs){
-	    sleep(10);
-	}
-	`$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameG.out -e $lognameG.err < $sh_genes`;
     }
     if ($NU eq "true"){
         $sh_exon = "$shdir/exonquants2spreadsheet.nu.sh";
@@ -287,15 +268,10 @@ else{
         open(OUTjunctions, ">$sh_junctions");
         print OUTjunctions "perl $path/juncs2spreadsheet.1.pl $FILE $LOC -NU";
         close(OUTjunctions);
-        $sh_genes = "$shdir/genequants2spreadsheet.nu.sh";
-        open(OUTgenes, ">$sh_genes");
-        print OUTgenes "perl $path/quants2spreadsheet.1.pl $FILE $LOC genequants -NU";
-        close(OUTgenes);
         $jobname = "$study.final_spreadsheet";
         $lognameE ="$logdir/exonquants2spreadsheet.nu";
         $lognameI ="$logdir/intronquants2spreadsheet.nu";
         $lognameJ ="$logdir/juncs2spreadsheet.nu";
-        $lognameG ="$logdir/genequants2spreadsheet.nu";
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
@@ -308,10 +284,6 @@ else{
 	    sleep(10);
 	}
         `$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameJ.out -e $lognameJ.err < $sh_junctions`;
-	while (qx{$status | wc -l} > $njobs){
-	    sleep(10);
-	}
-        `$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameG.out -e $lognameG.err < $sh_genes`;
     }
 }
 print "got here\n";

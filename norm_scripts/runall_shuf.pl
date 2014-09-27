@@ -202,30 +202,30 @@ if ($option_u_nu eq 'false'){
 	while($dirname = <INFILE>) {
 	    chomp($dirname);
 	    $id = $dirname;
-	    if(-e "$LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam") {
-		$N = `tail -1 $LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam`;
+	    if(-e "$LOC/$dirname/EIJ/Unique/$id.filtered_u_exonmappers.$i.sam") {
+		$N = `tail -1 $LOC/$dirname/EIJ/Unique/$id.filtered_u_exonmappers.$i.sam`;
 		$exonuniques = "true";
 	    } else {
-		die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to exist...\n";
-#	    $warnUE = $warnUE . "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to exist...\n";
+		die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to exist...\n";
+#	    $warnUE = $warnUE . "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to exist...\n";
 	    }
 	    if($N !~ /line count/) {
-		die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to have the proper last line...\n";
+		die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to have the proper last line...\n";
 	    }
 	    $N =~ s/[^\d]//g;
 	    $LINECOUNTS{"EU.$id.$i"} = $N;
 	    if($N < $minEU[$i]) {
 		$minEU[$i] = $N;
 	    }
-	    if(-e "$LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam") {
-		$N = `tail -1 $LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam`;
+	    if(-e "$LOC/$dirname/EIJ/NU/$id.filtered_nu_exonmappers.$i.sam") {
+		$N = `tail -1 $LOC/$dirname/EIJ/NU/$id.filtered_nu_exonmappers.$i.sam`;
 		$exonnu = "true";
 	    } else {
-		die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to exist...\n";
-#	     $warnNUE = $warnNUE . "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to exist...\n";
+		die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to exist...\n";
+#	     $warnNUE = $warnNUE . "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to exist...\n";
 	    }
 	    if($N !~ /line count/) {
-		die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to have the proper last line...\n";
+		die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to have the proper last line...\n";
 	    }
 	    $N =~ s/[^\d]//g;
 	    $LINECOUNTS{"ENU.$id.$i"} = $N;
@@ -256,30 +256,30 @@ if ($option_u_nu eq 'false'){
 	    while($dirname = <INFILE>) {
 		chomp($dirname);
 		$id = $dirname;
-		if(-e "$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam") {
-		    $N = `tail -1 $LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam`;
+		if(-e "$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam") {
+		    $N = `tail -1 $LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam`;
 		    $intronuniques = "true";
 		} else {
-		    die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
-#	    $warnUI = $warnUI . "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
+		    die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
+#	    $warnUI = $warnUI . "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
 		}
 		if($N !~ /line count/) {
-		    die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to have the proper last line...\n";
+		    die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to have the proper last line...\n";
 		}
 		$N =~ s/[^\d]//g;
 		$LINECOUNTS{"IU.$id.$i"} = $N;
 		if($N < $minIU[$i]) {
 		    $minIU[$i] = $N;
 		}
-		if(-e "$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam") {
-		    $N = `tail -1 $LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam`;
+		if(-e "$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam") {
+		    $N = `tail -1 $LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam`;
 		    $intronnu = "true";
 		} else {
-		    die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
-#	    $warnNUI = $warnNUI . "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
+		    die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
+#	    $warnNUI = $warnNUI . "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
 		}
 		if($N !~ /line count/) {
-		    die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to have the proper last line...\n";
+		    die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to have the proper last line...\n";
 		}
 		$N =~ s/[^\d]//g;
 		$LINECOUNTS{"INU.$id.$i"} = $N;
@@ -309,30 +309,30 @@ if ($option_u_nu eq 'false'){
 	while($dirname = <INFILE>) {
 	    chomp($dirname);
 	    $id = $dirname;
-	    if(-e "$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam") {
-		$N = `tail -1 $LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam`;
+	    if(-e "$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam") {
+		$N = `tail -1 $LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam`;
 		$iguniques = "true";
 	    } else {
-		die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
-#	$warnUIG = $warnUIG . "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
+		die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
+#	$warnUIG = $warnUIG . "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
 	    }
 	    if($N !~ /line count/) {
-		die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to have the proper last line...\n";
+		die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to have the proper last line...\n";
 	    }
 	    $N =~ s/[^\d]//g;
 	    $LINECOUNTS{"IGU.$id"} = $N;
 	    if($N < $minIGU) {
 		$minIGU = $N;
 	    }
-	    if(-e "$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam") {
-		$N = `tail -1 $LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam`;
+	    if(-e "$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam") {
+		$N = `tail -1 $LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam`;
 		$ignu = "true";
 	    } else {
-		die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
-#	$warnNUIG = $warnNUIG . "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
+		die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
+#	$warnNUIG = $warnNUIG . "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
 	    }
 	    if($N !~ /line count/) {
-		die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to have the proper last line...\n";
+		die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to have the proper last line...\n";
 	    }
 	    $N =~ s/[^\d]//g;
 	    $LINECOUNTS{"IGNU.$id"} = $N;
@@ -362,15 +362,15 @@ else{
 	    while($dirname = <INFILE>) {
 		chomp($dirname);
 		$id = $dirname;
-		if(-e "$LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam") {
-		    $N = `tail -1 $LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam`;
+		if(-e "$LOC/$dirname/EIJ/Unique/$id.filtered_u_exonmappers.$i.sam") {
+		    $N = `tail -1 $LOC/$dirname/EIJ/Unique/$id.filtered_u_exonmappers.$i.sam`;
 		    $exonuniques = "true";
 		} else {
-		    die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to exist...\n";
-#	    $warnUE = $warnUE . "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to exist...\n";
+		    die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to exist...\n";
+#	    $warnUE = $warnUE . "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to exist...\n";
 		}
 		if($N !~ /line count/) {
-		    die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to have the proper last line...\n";
+		    die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to have the proper last line...\n";
 		}
 		$N =~ s/[^\d]//g;
 		$LINECOUNTS{"EU.$id.$i"} = $N;
@@ -394,15 +394,15 @@ else{
 		while($dirname = <INFILE>) {
 		    chomp($dirname);
 		    $id = $dirname;
-		    if(-e "$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam") {
-			$N = `tail -1 $LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam`;
+		    if(-e "$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam") {
+			$N = `tail -1 $LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam`;
 			$intronuniques = "true";
 		    } else {
-			die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
-#	    $warnUI = $warnUI . "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
+			die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
+#	    $warnUI = $warnUI . "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
 		    }
 		    if($N !~ /line count/) {
-			die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to have the proper last line...\n";
+			die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intronmappers.$i.sam' does not seem to have the proper last line...\n";
 		    }
 		    $N =~ s/[^\d]//g;
 		    $LINECOUNTS{"IU.$id.$i"} = $N;
@@ -426,15 +426,15 @@ else{
 	    while($dirname = <INFILE>) {
 		chomp($dirname);
 		$id = $dirname;
-		if(-e "$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam") {
-		    $N = `tail -1 $LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam`;
+		if(-e "$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam") {
+		    $N = `tail -1 $LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam`;
 		$iguniques = "true";
 		} else {
-		    die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
-#	$warnUIG = $warnUIG . "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
+		    die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
+#	$warnUIG = $warnUIG . "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
 		}
 		if($N !~ /line count/) {
-		    die "ERROR: The file '$LOC/$dirname/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to have the proper last line...\n";
+		    die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_notexonmappers_intergenicmappers.sam' does not seem to have the proper last line...\n";
 		}
 		$N =~ s/[^\d]//g;
 		$LINECOUNTS{"IGU.$id"} = $N;
@@ -458,15 +458,15 @@ else{
 	    while($dirname = <INFILE>) {
 		chomp($dirname);
 		$id = $dirname;
-		if(-e "$LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam") {
-		    $N = `tail -1 $LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam`;
+		if(-e "$LOC/$dirname/EIJ/NU/$id.filtered_nu_exonmappers.$i.sam") {
+		    $N = `tail -1 $LOC/$dirname/EIJ/NU/$id.filtered_nu_exonmappers.$i.sam`;
 		    $exonnu = "true";
 		} else {
-		    die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to exist...\n";
-#	     $warnNUE = $warnNUE . "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to exist...\n";
+		    die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to exist...\n";
+#	     $warnNUE = $warnNUE . "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to exist...\n";
 		}
 		if($N !~ /line count/) {
-		    die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to have the proper last line...\n";
+		    die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to have the proper last line...\n";
 		}
 		$N =~ s/[^\d]//g;
 		$LINECOUNTS{"ENU.$id.$i"} = $N;
@@ -492,15 +492,15 @@ else{
 		while($dirname = <INFILE>) {
 		    chomp($dirname);
 		    $id = $dirname;
-		    if(-e "$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam") {
-			$N = `tail -1 $LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam`;
+		    if(-e "$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam") {
+			$N = `tail -1 $LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam`;
 			$intronnu = "true";
 		    } else {
-			die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
-#	    $warnNUI = $warnNUI . "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
+			die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
+#	    $warnNUI = $warnNUI . "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to exist...\n";
 		    }
 		    if($N !~ /line count/) {
-			die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to have the proper last line...\n";
+			die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intronmappers.$i.sam' does not seem to have the proper last line...\n";
 		    }
 		    $N =~ s/[^\d]//g;
 		    $LINECOUNTS{"INU.$id.$i"} = $N;
@@ -524,15 +524,15 @@ else{
 	    while($dirname = <INFILE>) {
 		chomp($dirname);
 		$id = $dirname;
-		if(-e "$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam") {
-		    $N = `tail -1 $LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam`;
+		if(-e "$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam") {
+		    $N = `tail -1 $LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam`;
 		    $ignu = "true";
 		} else {
-		    die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
-#	$warnNUIG = $warnNUIG . "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
+		    die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
+#	$warnNUIG = $warnNUIG . "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to exist...\n";
 		}
 		if($N !~ /line count/) {
-		    die "ERROR: The file '$LOC/$dirname/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to have the proper last line...\n";
+		    die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_notexonmappers_intergenicmappers.sam' does not seem to have the proper last line...\n";
 		}
 		$N =~ s/[^\d]//g;
 		$LINECOUNTS{"IGNU.$id"} = $N;
@@ -561,14 +561,28 @@ for($i=1; $i<=$i_exon; $i++) {
 	$total_lc = $LINECOUNTS{$for_lc};
 	$numU = $minEU[$i];
 	$numNU = $minENU[$i];
+	$dirU = $dirname . "/EIJ/Unique";
+	$dirNU = $dirname . "/EIJ/NU";
 	$filenameU = "$id.filtered_u_exonmappers.$i.sam";
 	$outfileU = $filenameU;
+	$checkU = $filenameU;
+	$checkU =~ s/.sam//g;
+	$checkU = $checkU . "_shuf_*.sam";
+	@g = glob("$LOC/$dirU/$checkU");
+	if (@g ne '0'){
+	    `rm $LOC/$dirU/$checkU`;
+	}
 	$outfileU =~ s/.sam/_shuf_$numU.sam/;
 	$filenameNU = "$id.filtered_nu_exonmappers.$i.sam";
+        $checkNU = $filenameNU;
+        $checkNU =~ s/.sam//g;
+        $checkNU = $checkNU . "_shuf_*.sam";
+        @g = glob("$LOC/$dirNU/$checkNU");
+        if (@g ne '0'){
+            `rm $LOC/$dirNU/$checkNU`;
+        }
 	$outfileNU = $filenameNU;
 	$outfileNU =~ s/.sam/_shuf_$numNU.sam/;
-	$dirU = $dirname . "/Unique";
-	$dirNU = $dirname . "/NU";
 	$shfileU[$i] = "$shdir/a" . $id . "exonmappers.u_runshuf.$i.sh";
 	$shfileNU[$i] = "$shdir/a" . $id . "exonmappers.nu_runshuf.$i.sh";
 	$jobname = "$study.shuf";
@@ -610,18 +624,32 @@ for($i=1; $i<=$i_intron; $i++) {
     while($dirname = <INFILE>) {
 	chomp($dirname);
 	$id = $dirname;
+	$dirU = $dirname . "/EIJ/Unique";
+	$dirNU = $dirname . "/EIJ/NU";
 	$for_lc = "IU.$id.$i";
 	$total_lc = $LINECOUNTS{$for_lc};
 	$numU = $minIU[$i];
 	$numNU = $minINU[$i];
 	$filenameU = "$id.filtered_u_notexonmappers_intronmappers.$i.sam";
+        $checkU = $filenameU;
+        $checkU =~ s/.sam//g;
+        $checkU = $checkU . "_shuf_*.sam";
+        @g = glob("$LOC/$dirU/$checkU");
+        if (@g ne '0'){
+            `rm $LOC/$dirU/$checkU`;
+        }
 	$outfileU = $filenameU;
 	$outfileU =~ s/.sam/_shuf_$numU.sam/;
 	$filenameNU = "$id.filtered_nu_notexonmappers_intronmappers.$i.sam";
+        $checkNU = $filenameNU;
+        $checkNU =~ s/.sam//g;
+        $checkNU = $checkNU . "_shuf_*.sam";
+        @g = glob("$LOC/$dirNU/$checkNU");
+        if (@g ne '0'){
+            `rm $LOC/$dirNU/$checkNU`;
+        }
 	$outfileNU = $filenameNU;
 	$outfileNU =~ s/.sam/_shuf_$numNU.sam/;
-	$dirU = $dirname . "/Unique";
-	$dirNU = $dirname . "/NU";
 	$shfileU[$i] = "$shdir/a" . $id . "intronmappers.u_runshuf.$i.sh";
 	$shfileNU[$i] = "$shdir/a" . $id . "intronmappers.nu_runshuf.$i.sh";
 	$jobname = "$study.shuf";
@@ -670,8 +698,14 @@ while($dirname = <INFILE>) {
     $outfileU = "$id.intergenicmappers.norm_u.sam";
     $filenameNU = "$id.filtered_nu_notexonmappers_intergenicmappers.sam";
     $outfileNU = "$id.intergenicmappers.norm_nu.sam";
-    $dirU = $dirname . "/Unique";
-    $dirNU = $dirname . "/NU";
+    $dirU = $dirname . "/EIJ/Unique";
+    $dirNU = $dirname . "/EIJ/NU";
+    if (-e "$LOC/$dirU/$outfileU"){
+	`rm $LOC/$dirU/$outfileU`;
+    }
+    if (-e "$LOC/$dirNU/$outfileNU"){
+	`rm $LOC/$dirNU/$outfileNU`;
+    }
     $shfileU = "$shdir/a" . $id . "intergenic.u_runshuf.sh";
     $shfileNU = "$shdir/a" . $id . "intergenic.nu_runshuf.sh";
     $jobname = "$study.shuf";

@@ -32,9 +32,10 @@ $outfile = $ARGV[1];
 $outname = $fields[@fields-1];
 $outfiledir = $outfile;
 $outfiledir =~ s/\/$outname//;
-$outfileU = "$outfiledir/Unique/$outname";
+$outdir = $outfiledir . "/EIJ/";
+$outfileU = "$outdir/Unique/$outname";
 $outfileU =~ s/.sam$/_u.sam/;
-$outfileNU = "$outfiledir/NU/$outname";
+$outfileNU = "$outdir/NU/$outname";
 $outfileNU =~ s/.sam$/_nu.sam/;
 
 $NU = "true";
@@ -69,14 +70,14 @@ and non-unique by default so if that's what you want don't use either arg
 }
 
 if ($U eq "true"){
-    unless(-d "$outfiledir/Unique"){
-	`mkdir $outfiledir/Unique`;
+    unless(-d "$outdir/Unique"){
+	`mkdir -p $outdir/Unique`;
     }
     open(OUTFILEU, ">$outfileU") or die "file '$outfileU' cannot open for writing\n"; # the output file
 }
 if ($NU eq "true"){
-    unless(-d "$outfiledir/NU"){
-        `mkdir $outfiledir/NU`;
+    unless(-d "$outdir/NU"){
+        `mkdir -p $outdir/NU`;
     }
     open(OUTFILENU, ">$outfileNU") or die "file '$outfileNU' cannot open for writing\n";
 }

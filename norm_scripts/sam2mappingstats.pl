@@ -17,6 +17,9 @@ options: -numreads <n>  :  This is the total number of reads.
 
          -species <s>  : <s> is hg18, hg19, mm9 or mm10, susscr3.  Use this if -cov is specified.
 
+NOTE: This script assumes ids have not been used multiple times for different reads. 
+      It's ok if forward and reverse of the same read pair use the same id. 
+
 ";
 }
 
@@ -168,16 +171,12 @@ while($line = <INFILE>) {
     if($line =~ /NH:i:(\d+)/) {
 	$n = $1;
     }
-    if($n == 0) {
-	$num_alignments = 1;
-    } else {
-	$num_alignments = $n;
-    }
+    $num_alignments = $n;
     if($num_alignments == 1) {
 	if(!(defined $U{$seqname})) {
 	    $CHR_U{$a[2]}++;
 	}
-	if ($a[1] & 1){
+	if ($a[1] & 1){ # paired end
 	    if($a[1] & 2**6) {
 		if($U{$seqname}+0==0) {
 		    $U{$seqname} = 1;   # 1 means forward found only so far
@@ -200,12 +199,11 @@ while($line = <INFILE>) {
 		}
 	    }
 	}
-	else {
+	else { # single end
 	    $U{$seqname} = 1;
 	}
-    } 
-    else {
-	if ($a[1] & 1){
+    } else {
+	if ($a[1] & 1){ # paired end
 	    if($a[1] & 2**6) {
 		if($NU{$seqname}+0==0) {
 		    $NU{$seqname} = 1;   # 1 means forward found only so far
@@ -223,7 +221,7 @@ while($line = <INFILE>) {
 		}
 	    }
 	}
-	else {
+	else { #single end
 	    $NU{$seqname} = 1;
 	}
     }

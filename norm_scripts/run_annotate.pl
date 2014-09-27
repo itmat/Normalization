@@ -143,7 +143,7 @@ unless (-d $shdir){
     `mkdir $shdir`;}
 unless (-d $logdir){
     `mkdir $logdir`;}
-$norm_dir = $study_dir . "NORMALIZED_DATA";
+$norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION";
 $spread_dir = $norm_dir . "/SPREADSHEETS";
 
 unless (-d $spread_dir){

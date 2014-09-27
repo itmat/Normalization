@@ -14,6 +14,7 @@ where
 use Cwd 'abs_path';
 $path = abs_path($0);
 $path =~ s/runall_//;
+$path =~ s/_gnorm//;
 $num_samples = $ARGV[1];
 $cutoff = $ARGV[2];
 $LOC = $ARGV[3];
@@ -22,7 +23,7 @@ $LOC =~ s/\/$//;
 $last_dir = $fields[@fields-1];
 $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
-$norm_dir = $norm_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
+$norm_dir = $norm_dir . "NORMALIZED_DATA/GENE/";
 $spread_dir = $norm_dir . "/SPREADSHEETS";
 
 unless (-d $spread_dir){
@@ -33,7 +34,6 @@ open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){
     chomp($line);
     $final_file = $line;
-    $final_file =~ s/annotated_//g;
     `perl $path $spread_dir/$line $num_samples $cutoff > $spread_dir/FINAL_$final_file`;
 }
 close(INFILE);

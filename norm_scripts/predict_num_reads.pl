@@ -78,8 +78,21 @@ my $stats_dir = $study_dir . "STATS";
 unless (-d "$stats_dir"){
     `mkdir $stats_dir`;
 }
+<<<<<<< HEAD
 my $outfile = "$stats_dir/expected_num_reads.txt";
 my $tempfile = "$stats_dir/expected_num_reads.temp";
+=======
+unless (-d "$stats_dir/EXON_INTRON_JUNCTION/"){
+    `mkdir $stats_dir/EXON_INTRON_JUNCTION/`;
+}
+my $outfile = "$stats_dir/EXON_INTRON_JUNCTION/expected_num_reads.txt";
+if (-e $outfile){
+    my $temp = $outfile;
+    $temp =~ s/.txt$/.filter_highexp.txt/;
+    $outfile = $temp;
+}
+my $tempfile = "$stats_dir/EXON_INTRON_JUNCTION/expected_num_reads.temp";
+>>>>>>> develop
 my (@sumEU, @sumENU, @sumIU, @sumINU);
 
 open(TEMP, ">$tempfile");
@@ -134,7 +147,7 @@ while(my $line = <IN>){
     print TEMP "$id\t";
     if ($U eq "true"){
 	for (my $i=1; $i<=$i_exon; $i++){
-	    my $str_e = `head -$i $LOC/$id/Unique/$id.linecounts_exons.txt | tail -1`;
+	    my $str_e = `head -$i $LOC/$id/EIJ/Unique/$id.linecounts_exons.txt | tail -1`;
 	    chomp($str_e);
 	    my @a = split (/\t/, $str_e);
 	    my $N = $a[1];
@@ -144,7 +157,7 @@ while(my $line = <IN>){
 	}
 	for (my $i=1; $i<=$i_intron; $i++){
 	    my $line_num = $i+1;
-	    my $str_i = `head -$line_num $LOC/$id/Unique/$id.linecounts_notexons.txt | tail -1`;
+	    my $str_i = `head -$line_num $LOC/$id/EIJ/Unique/$id.linecounts_notexons.txt | tail -1`;
 	    chomp($str_i);
 	    my @a = split (/\t/, $str_i);
 	    my $N = $a[1];
@@ -152,7 +165,7 @@ while(my $line = <IN>){
 	    $total_u += $N;
 	    $sumIU[$i] += $N;
 	}
-	my $str_ig = `head -1 $LOC/$id/Unique/$id.linecounts_notexons.txt`;
+	my $str_ig = `head -1 $LOC/$id/EIJ/Unique/$id.linecounts_notexons.txt`;
 	chomp($str_ig);
 	my @a = split (/\t/, $str_ig);
 	my $N = $a[1];
@@ -162,7 +175,7 @@ while(my $line = <IN>){
     }
     if ($NU eq "true"){
 	for (my $i=1; $i<=$i_exon; $i++){
-	    my $str_e = `head -$i $LOC/$id/NU/$id.linecounts_exons.txt | tail -1`;
+	    my $str_e = `head -$i $LOC/$id/EIJ/NU/$id.linecounts_exons.txt | tail -1`;
 	    chomp($str_e);
 	    my @a = split (/\t/, $str_e);
 	    my $N = $a[1];
@@ -172,7 +185,7 @@ while(my $line = <IN>){
 	}
 	for (my $i=1; $i<=$i_intron; $i++){
 	    my $line_num = $i+1;
-	    my $str_i = `head -$line_num $LOC/$id/NU/$id.linecounts_notexons.txt | tail -1`;
+	    my $str_i = `head -$line_num $LOC/$id/EIJ/NU/$id.linecounts_notexons.txt | tail -1`;
 	    chomp($str_i);
 	    my @a = split (/\t/, $str_i);
 	    my $N = $a[1];
@@ -180,7 +193,7 @@ while(my $line = <IN>){
 	    $total_nu += $N;
 	    $sumINU[$i] += $N;
 	}
-	my $str_ig = `head -1 $LOC/$id/NU/$id.linecounts_notexons.txt`;
+	my $str_ig = `head -1 $LOC/$id/EIJ/NU/$id.linecounts_notexons.txt`;
 	chomp($str_ig);
 	my @a = split (/\t/, $str_ig);
 	my $N = $a[1];
@@ -378,6 +391,7 @@ else{
 
 open(OUT, ">$outfile");
 $TOTAL = &format_large_int($TOTAL);
+print OUT "\n[EXON INTRON JUNCTION NORMALIZATION]\n";
 print OUT "\nExpected number of reads after normalization (estimate): $TOTAL";
 if (($U eq "true") && ($NU eq "true")){
     print OUT " total reads\n";

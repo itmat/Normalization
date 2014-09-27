@@ -166,11 +166,11 @@ while($line = <INFILE>) {
 	$filename = "$id.filtered_u_notexonmappers.sam";
 	if ($nuonly eq "true"){
 	    $filename =~ s/u_notexonmappers.sam$/nu_notexonmappers.sam/;
-	    $dir = $dir . "/NU";
+	    $dir = $dir . "/EIJ/NU";
 	    $logname = "$logdir/nu.quantifyintrons.$id";
 	}
 	if ($nuonly eq "false"){
-	    $dir = $dir . "/Unique";
+	    $dir = $dir . "/EIJ/Unique";
 	}
     }
     if($outputsam eq "false"){
@@ -179,7 +179,7 @@ while($line = <INFILE>) {
         $last_dir = $fields[@fields-1];
         $norm_dir = $LOC;
         $norm_dir =~ s/$last_dir//;
-        $norm_dir = $norm_dir . "NORMALIZED_DATA";
+        $norm_dir = $norm_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
         $nexon_dir = $norm_dir . "/notexonmappers";
         $unique_nexon_dir = $nexon_dir . "/Unique";
         $nu_nexon_dir = $nexon_dir . "/NU";
