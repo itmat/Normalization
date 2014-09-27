@@ -221,6 +221,6 @@ You can also run it step by step using the scripts documented in [#2. NORMALIZAT
      **-h** : print usage
 
 
-This creates `runall_normalization.sh` file in `STUDY/shell_scripts` directory and runs the entire normalization pipeline. In addition to the STDOUT and STDERR files in `STUDY/logs`, this will create a log file called **`STUDY/logs/$study.run_normalization.log`**, which you can use to check the status.
+This creates `runall_normalization.sh` file in `STUDY/shell_scripts` directory and runs the entire normalization pipeline. In addition to the STDOUT and STDERR files in `STUDY/logs`, this will create a log file called **`STUDY/logs/STUDY.run_normalization.log`**, which you can use to check the status.
 
 
