@@ -1,7 +1,6 @@
 # PORT
 ## RNA-Seq Normalization & Quantification
-
-**PORT** offers two types of normalization: __GENE Normalization__ and __EXON-INTRON-JUNCTION Normalization__.
+**PORT** offers two types of normalization: <br>__GENE Normalization__ and __EXON-INTRON-JUNCTION Normalization__.
 
 ===========================================================================================================================================================
 
