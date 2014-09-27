@@ -1,8 +1,7 @@
 # PORT
 ## RNA-Seq Normalization & Quantification
 
-**PORT** offers two normalization methods:__GENE Normalization__ and __EXON-INTRON-JUNCTION Normalization__.
-
+**PORT** offers two types of normalization: __GENE Normalization__ and __EXON-INTRON-JUNCTION Normalization__.
 ============================================================================================================================================================
 
 ### 0. Setting Up
@@ -203,9 +202,9 @@ You can also run it step by step using the scripts documented in [#2. NORMALIZAT
      **-gz** : set this if the unaligned files are compressed<br>
 
      **[normalization parameters]**<br>
-     **-cutoff_highexp &lt;n>** : <br>is cutoff % value to identify highly expressed exons.<br>
+     **-cutoff_highexp &lt;n>** : <br>is cutoff % value to identify highly expressed genes/exons.<br>
                            the script will consider genes/exons with gene/exonpercents greater than n(%) as high expressors,
-                           and **remove** the reads and filter the genes/exons.<br>
+                           remove them from the list of genes/exons and remove the reads that map to those genes/exons.<br>
                            (Default = 100; with the default cutoff, exons expressed >5% will be reported, but will not remove any exons from the list)<br>
      **-cutoff_lowexp &lt;n>** : <br>is cutoff counts to identify low expressors in the final spreadsheets (exon, intron and junc).<br>
                           the script will remove features with sum of counts less than <n> from all samples.<br>

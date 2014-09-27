@@ -1,170 +1,14 @@
-# PORT - RNA-Seq Normalization
+# PORT
+## RNA-Seq Normalization & Quantification
 
-PORT offers two normalization methods you can choose from: __GENE Normalization__ and __EXON-INTRON-JUNCTION Normalization__. The choice can be made in the [configuration file](https://github.com/itmat/Normalization/tree/master#c-configuration-file). 
+**PORT** offers two types of normalization: __GENE Normalization__ and __EXON-INTRON-JUNCTION Normalization__.
 
-============================================================================================================================================================
-
-### 0. Setting Up
-
-#####A. Clone the repository
-    
-    git clone https://github.com/itmat/Normalization.git
-
-#####B. Input Directory Structure
-- Give `STUDY` directory a unique name.
-- Make sure the unaligned reads and alignment outputs(SAM files) are in each sample directory inside the `READS` folder.
-- All alignment files (SAM files) MUST have the same name.
-- SAM files should have unique read ids.
-
-<pre>
-STUDY
-└── READS
-    ├── Sample_1
-    │   ├── Unaligned reads
-    │   └── Aligned.sam
-    ├── Sample_2
-    │   ├── Unaligned reads
-    │   └── Aligned.sam
-    ├── Sample_3
-    │   ├── Unaligned reads
-    │   └── Aligned.sam
-    └── Sample_4
-        ├── Unaligned reads
-        └── Aligned.sam
-
-</pre>
-
-#####C. Configuration File
-Obtain the `template.cfg` file from `Normalization/` and modify as you need. Follow the instructions in the config file. You can choose GENE Normalization, EXON_INTRON_JUNCTION Normalization or Both.
-
-#####D. File of Sample Directories and Unaligned Reads
-###### i. File of Sample Directories
-Create a file &lt;sample dirs> with the names of the sample directories (without path, sorted by condition).
-
-       e.g. the <sample dirs> file should look like this:
-            Sample_1
-            Sample_2
-            Sample_3
-            Sample_4
-
-###### ii. File of Unaligned Reads (Forward only)
-Create a file &lt;file of input forward fa/fq files> with full path of input forward fa or forward fq files.
-
-       e.g. the <file of input forward fa/fq files> file should look like this:
-            path/to/Sample_1.fwd.fq/fa
-            path/to/Sample_2.fwd.fq/fa
-            path/to/Sample_3.fwd.fq/fa
-            path/to/Sample_4.fwd.fq/fa
-
-#####E. Install [sam2cov](https://github.com/khayer/sam2cov/)
-This is an optional step. You can use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR. __Please make sure you have the lastest version of sam2cov__.
-
-     git clone https://github.com/khayer/sam2cov.git
-     cd sam2cov
-     make
-
-#####F. Index
-Get the gene information file and genome sequence one-line fasta file. 
-###### i. mm9, hg19, and dm3
-The following files are available for download: 
-
-     http://itmat.indexes.s3.amazonaws.com/mm9_ucsc_gene_info.txt
-     http://itmat.indexes.s3.amazonaws.com/mm9_genome_one-line-seqs.fa
-     http://itmat.indexes.s3.amazonaws.com/hg19_ucsc_gene_info.txt
-     http://itmat.indexes.s3.amazonaws.com/hg19_genome_one-line-seqs.fa
-     http://itmat.indexes.s3.amazonaws.com/dm3_refseq_gene_info.txt
-     http://itmat.indexes.s3.amazonaws.com/dm3_genome_one-line-seqs.fa
-
-###### ii. other organisms
-Follow the instructions [here](https://github.com/itmat/rum/wiki/Creating-indexes) to create indexes.
-
-#####G. Ensembl Genes
-Get Ensembl Genes file. 
-###### i. mm9, hg19 and dm3
-Tables are available for mm9, hg19 and dm3:
-
-    /path/to/Normalization/norm_scripts/mm9_ensGenes.txt
-    /path/to/Normalization/norm_scripts/hg19_ensGenes.txt
-    /path/to/Normalization/norm_scripts/dm3_ensGenes.txt
-
-###### ii. other organisms
-You can get the table from UCSC table browser. Your header must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value.
-
-#####H. Output Directory Structure
-You will find all log files and shell scripts in `STUDY/logs` and `STUDY/shell_scripts` directory, respectively. Once you complete the normalization pipeline, your directory structure will look like this if you run both Gene and Exon-Intron-Junction Normliazation (before the Clean Up step):
-<pre>
-STUDY
-│── READS
-│   ├── Sample_1
-│   │   ├── EIJ
-│   │   │   ├── NU
-│   │   │   └── Unique
-│   │   └── GNORM
-│   │       ├── NU
-│   │       └── Unique
-│   ├── Sample_2
-│   │   ├── EIJ
-│   │   │   ├── NU
-│   │   │   └── Unique
-│   │   └── GNORM
-│   │       ├── NU
-│   │       └── Unique
-│   ├── Sample_3
-│   │   ├── EIJ
-│   │   │   ├── NU
-│   │   │   └── Unique
-│   │   └── GNORM
-│   │       ├── NU
-│   │       └── Unique
-│   └── Sample_4
-│       ├── EIJ
-│       │   ├── NU
-│       │   └── Unique
-│       └── GNORM
-│           ├── NU
-│           └── Unique
-│
-├── STATS
-│   ├── EXON_INTRON_JUNCTION
-│   └── GENE
-│
-│── NORMALIZED_DATA
-│   ├── EXON_INTRON_JUNCTION
-│   │   ├── COV
-│   │   │   └── MERGED
-│   │   ├── exonmappers
-│   │   │   ├── MERGED
-│   │   │   ├── NU
-│   │   │   └── Unique
-│   │   ├── FINAL_SAM
-│   │   │   └── MERGED
-│   │   ├── JUNCTIONS
-│   │   ├── notexonmappers
-│   │   │   ├── MERGED
-│   │   │   ├── NU
-│   │   │   └── Unique
-│   │   └── SPREADSHEETS
-│   └── GENE
-│       ├── COV
-│       │   └── MERGED
-│       ├── FINAL_SAM
-│       │   ├── MERGED
-│       │   ├── NU
-│       │   └── Unique
-│       ├── JUNCTIONS
-│       └── SPREADSHEETS
-│
-│── logs
-│
-└── shell_scripts
-</pre>
-
-========================================================================================================
+===========================================================================================================================================================
 
 ### 1. RUN_NORMALIZATION
 
 This runs the Normalization pipeline. <br> 
-You can also run it step by step using the scripts documented in [#2. NORMALIZATION STEPS](https://github.com/itmat/Normalization/tree/master#2-normalization-steps).
+You can also run it step by step using the scripts documented in [#2. NORMALIZATION STEPS](https://github.com/itmat/Normalization/blob/master/documentation.md#2-normalization-steps).
 
     run_normalization --sample_dirs <file of sample_dirs> --loc <s> \
     --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
@@ -176,9 +20,9 @@ You can also run it step by step using the scripts documented in [#2. NORMALIZAT
 * --cfg <cfg file> : configuration file for the study
 * option : <br>
      **[pipeline options]**<br>
-     **By default**, the pipeline will run through the steps in [PART1](https://github.com/itmat/Normalization/tree/master#part1) and pause (recommended). You will have a chance to check the expected number of reads after normalization and the list of percent high expressors before resuming.<br>
+     **By default**, the pipeline will run through the steps in [PART1](https://github.com/itmat/Normalization/blob/master/documentation.md#part1---both-gene-and-exon-intron-junction-normalization) and pause (recommended). You will have a chance to check the expected number of reads after normalization and the list of percent high expressors before resuming.<br>
      **-part1_part2** : Use this option if you want to run steps in PART1 and PART2 without pausing. <br>
-     **-part2** : Use this option to resume the pipeline at [PART2](https://github.com/itmat/Normalization/tree/master#part2). You may edit the &lt;file of sample dirs> file and/or change the highexpressor cutoff value.<br>
+     **-part2** : Use this option to resume the pipeline at [PART2](https://github.com/itmat/Normalization/blob/master/documentation.md#part2). You may edit the &lt;file of sample dirs> file and/or change the highexpressor cutoff value.<br>
 
       **[resume options]**<br>
       You may not change the normalization parameters with resume option.<br>
@@ -192,9 +36,9 @@ You can also run it step by step using the scripts documented in [#2. NORMALIZAT
      **-gz** : set this if the unaligned files are compressed<br>
 
      **[normalization parameters]**<br>
-     **-cutoff_highexp &lt;n>** : <br>is cutoff % value to identify highly expressed exons.<br>
+     **-cutoff_highexp &lt;n>** : <br>is cutoff % value to identify highly expressed genes/exons.<br>
                            the script will consider genes/exons with gene/exonpercents greater than n(%) as high expressors,
-                           and **remove** the reads and filter the genes/exons.<br>
+                           remove them from the list of genes/exons and remove the reads that map to those genes/exons.<br>
                            (Default = 100; with the default cutoff, exons expressed >5% will be reported, but will not remove any exons from the list)<br>
      **-cutoff_lowexp &lt;n>** : <br>is cutoff counts to identify low expressors in the final spreadsheets (exon, intron and junc).<br>
                           the script will remove features with sum of counts less than <n> from all samples.<br>
@@ -670,6 +514,7 @@ Run the following command with **&lt;output sam?> = false**. By default this wil
 * option:<br>
   **-NU-only** : set this for non-unique mappers<br>
   **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
+  **-filter_highexp** : set this if you want to filter reads that map to highly expressed exons<br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
   **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
@@ -731,11 +576,11 @@ This will output `percent_high_expressor_exon_Unique.txt` or `percent_high_expre
 
 This step takes filtered sam files and splits them into 1, 2, 3 ... n exonmappers and notexonmappers (n = 20 if you don't use the -depth option).
 
-Run the following command with **&lt;output sam?> = true**. By default this will return unique exonmappers. Use -NU-only to get non-unique exonmappers:
+Run the following command with **&lt;output sam?> = true** and **-filter_highexp** option. By default this will return unique exonmappers. Use -NU-only to get non-unique exonmappers:
 
     perl runall_quantify_exons.pl <sample dirs> <loc> <exons> <output sam?> [options]
 
-> `quantify_exons.pl` available for running one sample at a time
+> `quantify_exons.pl` and `quantify_exons_filterhighexp.pl available for running one sample at a time
 
 * &lt;sample dirs> : a file with the names of the sample directories 
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
@@ -745,6 +590,7 @@ Run the following command with **&lt;output sam?> = true**. By default this will
   **-depth &lt;n>** : by default, it will output 20 exonmappers<br>
   **-NU-only** : set this for non-unique mappers<br>
   **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
+  **-filter_highexp** : set this if you want to filter reads that map to highly expressed exons<br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
   **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
@@ -1169,7 +1015,16 @@ This will output `annotated_master_list_of_*` to `STUDY/NORMALIZED_DATA/EXON_INT
 This will output `FINAL_master_list_of_genes_counts`, `FINAL_master_list_of_exons_counts`, `FINAL_master_list_of_introns_counts`, `FINAL_master_list_of_junctions_counts` to `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/SPREADSHEETS`.
 
 #### [PART2 - both Gene and Exon-Intron-Junction Normalization]
-#### 1) Data Visualization
+#### 1) Normalization Factor Statistics
+
+     perl get_normfactors_table.pl <sample dirs> <loc>
+
+* &lt;sample dirs> : a file with the names of the sample directories
+* &lt;loc> : full path of the directory with the sample directories (`READS`)
+
+This will output `exon-intron-junction_normalization_factors.txt` and/or `gene_normalization_factors.txt` file to `STUDY/STATS` directory which will give you summary of your normalization factors stats.
+
+#### 2) Data Visualization
 
 Use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR.
 
@@ -1225,7 +1080,7 @@ I. Exon-Intron-Junction Normalization
 
 This will output `*Unique.cov` and `*NU.cov` files of all samples to `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/COV`.
 
-#### 2) Clean Up
+#### 3) Clean Up
 #####A. Delete Intermediate SAM Files
 
      perl cleanup.pl <sample dirs> <loc>
