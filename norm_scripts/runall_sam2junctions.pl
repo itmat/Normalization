@@ -13,6 +13,8 @@ option:
                     <s> is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam)
                     and all sam files in each sample directory should have the same name.
 
+ -gnorm : set this to create junctions files for gene normalization output.
+
  -u  :  set this if you want to return only unique junctions, otherwise by default
          it will return merged(unique+non-unique) junctions.
 
@@ -63,6 +65,7 @@ $submit = "";
 $jobname_option = "";
 $request_memory_option = "";
 $mem = "";
+$gnorm = "false";
 for($i=4; $i<@ARGV; $i++) {
     $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -78,6 +81,11 @@ for($i=4; $i<@ARGV; $i++) {
 	$samname = $ARGV[$i+1];
 	$i++;
 	$samfilename = "true";
+    }
+    if ($ARGV[$i] eq '-gnorm'){
+	$option_found = "true";
+	$gnorm = "true";
+	$i++;
     }
     if($ARGV[$i] eq '-nu') {
         $U = "false";
@@ -167,7 +175,12 @@ unless (-d $shdir){
     `mkdir $shdir`;}
 unless (-d $logdir){
     `mkdir $logdir`;}
-$norm_dir = $study_dir . "NORMALIZED_DATA";
+if ($gnorm eq "false"){
+    $norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
+}
+if ($gnorm eq "true"){
+    $norm_dir = $study_dir . "NORMALIZED_DATA/GENE/";
+}
 $finalsam_dir = "$norm_dir/FINAL_SAM";
 $final_U_dir = "$finalsam_dir/Unique";
 $final_NU_dir = "$finalsam_dir/NU";
@@ -191,22 +204,45 @@ while($line = <INFILE>) {
 	}
 	if ($numargs eq "0"){
 	    $final_dir = $final_M_dir;
-	    $filename = "$id.FINAL.norm.sam";
+	    if ($gnorm eq "false"){
+		$filename = "$id.FINAL.norm.sam";
+	    }
+	    if ($gnorm eq "true"){
+		$filename = "$id.GNORM.sam";
+	    }
 	}
 	else{
 	    if ($U eq "true"){
 		$final_dir = $final_U_dir;
-		$filename ="$id.FINAL.norm_u.sam";
+		if ($gnorm eq "false"){
+		    $filename ="$id.FINAL.norm_u.sam";
+		}
+		if ($gnorm eq "true"){
+		    $filename ="$id.GNORM.Unique.sam";
+		}
 	    }
 	    if ($NU eq "true"){
 		$final_dir = $final_NU_dir;
-		$filename = "$id.FINAL.norm_nu.sam";
+		if ($gnorm eq "false"){
+		    $filename = "$id.FINAL.norm_nu.sam";
+		}
+		if ($gnorm eq "true"){
+		    $filename = "$id.GNORM.NU.sam";
+		}
+		
 	    }
 	}
     }
-    $shfile = "$shdir/J" . $id . $filename . ".sh";
-    $jobname = "$study.sam2junctions";
-    $logname = "$logdir/sam2junctions.$id";
+    if ($gnorm eq "false"){ 
+	$shfile = "$shdir/J" . $id . $filename . ".sh";
+	$jobname = "$study.sam2junctions";
+	$logname = "$logdir/sam2junctions.$id";
+    }
+    if ($gnorm eq "true"){
+	$shfile = "$shdir/J" . $id . $filename . ".sh";
+	$jobname = "$study.sam2junctions_gnorm";
+	$logname = "$logdir/sam2junctions_gnorm.$id";
+    }
     $outfile1 = $filename;
     $outfile1 =~ s/.sam/_junctions_all.rum/;
     $outfile2 = $filename;

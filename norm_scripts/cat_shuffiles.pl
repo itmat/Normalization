@@ -47,9 +47,9 @@ $LOC = $ARGV[1];
 $last_dir = $fields[@fields-1];
 $loc_study = $LOC;
 $loc_study =~ s/$last_dir//;
-$norm_dir = $loc_study."NORMALIZED_DATA";
+$norm_dir = $loc_study."NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
 unless (-d $norm_dir){
-    `mkdir $norm_dir`;
+    `mkdir -p $norm_dir`;
 }
 $norm_exon_dir = $norm_dir . "/exonmappers";
 unless (-d $norm_exon_dir){
@@ -69,8 +69,8 @@ open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while ($line = <INFILE>){
     chomp($line);
     $dir = $line;
-    $dirU = $dir . "/Unique";
-    $dirNU = $dir . "/NU";
+    $dirU = $dir . "/EIJ/Unique";
+    $dirNU = $dir . "/EIJ/NU";
     $id = $line;
     if ($option_found eq "false"){
 	unless (-d $norm_exon_dirU){

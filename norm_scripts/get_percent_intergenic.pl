@@ -48,9 +48,9 @@ $LOC =~ s/\/$//;
 $last_dir = $fields[@fields-1];
 $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
-$stats_dir = $study_dir . "STATS";
+$stats_dir = $study_dir . "STATS/EXON_INTRON_JUNCTION";
 unless (-d $stats_dir){
-    `mkdir $stats_dir`;}
+    `mkdir -p $stats_dir`;}
 $outfileU = "$stats_dir/percent_intergenic_Unique.txt";
 $outfileNU = "$stats_dir/percent_intergenic_NU.txt";
 
@@ -71,8 +71,8 @@ else{
 while($line = <INFILE>){
     chomp($line);
     $dir = $line;
-    $dirU = $dir . "/Unique";
-    $dirNU = $dir . "/NU";
+    $dirU = $dir . "/EIJ/Unique";
+    $dirNU = $dir . "/EIJ/NU";
     $id = $line;
     $fileU = "$LOC/$dirU/$id.filtered_u_exonquants";
     $interU = "$LOC/$dirU/$id.filtered_u_notexonmappers_intergenicmappers.sam";

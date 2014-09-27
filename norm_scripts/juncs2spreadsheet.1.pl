@@ -31,7 +31,7 @@ $study = $fields[@fields-2];
 $last_dir = $fields[@fields-1];
 $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
-$norm_dir = $norm_dir . "NORMALIZED_DATA";
+$norm_dir = $norm_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
 $junc_dir = $norm_dir . "/JUNCTIONS";
 $spread_dir = $norm_dir . "/SPREADSHEETS";
 

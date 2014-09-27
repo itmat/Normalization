@@ -8,11 +8,11 @@ where
 <sample_dirs> is the name of a file with the names of the sample directories (no paths)
 <loc> is the path to the dir with the sample dirs
 
-will output the same number of rows from each file in <loc>/<dirs>/GNORM/Unique (same for NU) to NORMALIZED_DATA/GNORM/Unique (and NU).
+will output the same number of rows from each file in <loc>/<dirs>/GNORM/Unique (same for NU) to NORMALIZED_DATA/GENE/Unique (and NU).
 
 The output file names will be modified from the input file names.
 
-** If the maximum line count is > 50,000,000, use -mem option (6G for 60 million lines, 7G for 70 million lines, 8G for 80 million lines, etc).
+** If  maximum line count is > 50,000,000, use -mem option (6G for 60 million lines, 7G for 70 million lines, 8G for 80 million lines, etc).
 
 option:  
  -u  :  set this if you want to return only unique mappers, otherwise by default it will return both unique and non-unique mappers
@@ -166,7 +166,7 @@ my $last_dir = $fields[@fields-1];
 my $study = $fields[@fields-2];
 my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
-my $gnormdir = $study_dir . "NORMALIZED_DATA/GENE_NORM/";
+my $gnormdir = $study_dir . "NORMALIZED_DATA/GENE/FINAL_SAM/";
 unless (-d $gnormdir){
     `mkdir -p $gnormdir`;
 }

@@ -39,22 +39,24 @@ OPTIONS:
      -gz : set this if the unaligned files are compressed
 
      [normalization parameters]
-     -novel_off : set this if you DO NOT want to generate/use a study-specific master list of exons 
-                  (By default, the pipeline will add inferred exons to the list of exons)
-     -min <n> : is minimum size of inferred exon for get_novel_exons.pl script (Default = 10)
-     -max <n> : is maximum size of inferred exon for get_novel_exons.pl script (Default = 2000)
-     -cutoff_highexp <n> : is cutoff % value to identify highly expressed exons. 
-                           the script will consider exons with exonpercents greater than n(%) as high expressors, 
-                           and remove them from the list of exons.
-                           (Default = 100; with the default cutoff, exons expressed >10% will be reported)
-     -depthE <n> : the pipeline splits filtered sam files into 1,2,3...n exonmappers and downsamples each separately.
-                   (Default = 20)
-     -depthI <n> : the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.
-                   (Default = 10)
+     -cutoff_highexp <n> : is cutoff % value to identify highly expressed genes/exons.
+                           the script will consider genes/exons with gene/exonpercents greater than n(%) as high expressors,
+                           remove them from the list of genes/exons and remove the reads that map to those genes/exons.
+                           (Default = 100; with the default cutoff, exons expressed >5% will be reported)
      -cutoff_lowexp <n> : is cutoff counts to identify low expressors in the final spreadsheets (exon, intron and junc).
                           the script will consider features with sum of counts for all samples less than <n> as low expressors
                           and remove them from all samples for the final spreadsheets.
                           (Default = 0; this will remove features with sum of counts = 0)
+
+     [exon-intron-junction normalization only]
+     -novel_off : set this if you DO NOT want to generate/use a study-specific master list of exons 
+                  (By default, the pipeline will add inferred exons to the list of exons)
+     -min <n> : is minimum size of inferred exon for get_novel_exons.pl script (Default = 10)
+     -max <n> : is maximum size of inferred exon for get_novel_exons.pl script (Default = 2000)
+     -depthE <n> : the pipeline splits filtered sam files into 1,2,3...n exonmappers and downsamples each separately.
+                   (Default = 20)
+     -depthI <n> : the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.
+                   (Default = 10)
      -h : print usage 
 
 ";
@@ -264,6 +266,8 @@ my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $study = $fields[@fields-2];
 
+my $GNORM = "false";
+my $EIJ = "false";
 #check_config file
 unless (-e $cfg_file){
     die "ERROR: cannot find file \"$cfg_file\". please provide a cfg file for the study\n";
@@ -296,28 +300,42 @@ unless (-e $ensGene){
     die "ERROR: cannot find file \"$ensGene\"\nYou need to provide ensembl gene file (#4 Ensembl Genes in your cfg file \"$cfg_file\")\n\n";
 }
 
+my $normcnt = 0;
+if ($GENE_NORM =~ /true/i){
+    $GNORM = "true";
+    $normcnt++;
+}
+if ($EXON_INTRON_JUNCTION_NORM =~ /^true/i){
+    $EIJ = "true";
+    $normcnt++;
+}
+
+if ($normcnt == 0){
+    die "ERROR: Please select a type of Normalization you'd like to use (#0 NORMALIZATION TYPE in your cfg file \"$cfg_file\")\n\n";
+}
+
 my $sam2cov = "false";
 my $strand_info = "";
 my $sam2cov_loc;
-if ($SAM2COV =~ /^true/ | $SAM2COV =~ /^TRUE/){
+if ($SAM2COV =~ /^true/i){
     $sam2cov = "true";
     my $num_cov = 0;
     unless (-e $SAM2COV_LOC){
 	die "You need to provide sam2cov location. (#5 DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
     }
     $sam2cov_loc = $SAM2COV_LOC;
-    if ($RUM =~ /^true/ | $RUM =~ /^TRUE/){
+    if ($RUM =~ /^true/i){
 	$aligner = "-rum";
 	$num_cov++;
     }
-    if ($STAR =~ /^true/ | $STAR =~ /^TRUE/){
+    if ($STAR =~ /^true/i){
 	$aligner = "-star";
 	$num_cov++;
     }
     if ($num_cov ne '1'){
 	die "Please specify which aligner was used. (#5 DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
     }
-    if ($STRAND_SPECIFIC =~ /^true/ | $STRAND_SPECIFIC =~ /^TRUE/){
+    if ($STRAND_SPECIFIC =~ /^true/i){
 	$strand_info = "-str";
     }
 }
@@ -325,26 +343,26 @@ my $delete_int_sam = "true";
 my $convert_sam2bam = "false";
 my $gzip_cov = "false";
 if ($DELETE_INT_SAM ne ""){
-    if ($DELETE_INT_SAM =~ /^true/ | $DELETE_INT_SAM =~ /^TRUE/){
+    if ($DELETE_INT_SAM =~ /^true/i){
 	$delete_int_sam = "true";
     }
-    if ($DELETE_INT_SAM=~ /^false/ | $DELETE_INT_SAM =~/^FALSE/){
+    if ($DELETE_INT_SAM=~ /^false/i){
 	$delete_int_sam = "false";
     }
 }
 if ($CONVERT_SAM2BAM ne ""){
-    if ($CONVERT_SAM2BAM =~ /^true/ | $CONVERT_SAM2BAM =~ /^TRUE/){
+    if ($CONVERT_SAM2BAM =~ /^true/i){
 	$convert_sam2bam = "true";
     }
-    if ($CONVERT_SAM2BAM =~ /^false/ | $CONVERT_SAM2BAM =~ /^FALSE/){
+    if ($CONVERT_SAM2BAM =~ /^false/i){
 	$convert_sam2bam= "false";
     }
 }
 if ($GZIP_COV ne ""){
-    if ($GZIP_COV =~ /^true/ | $GZIP_COV =~ /^TRUE/){
+    if ($GZIP_COV =~ /^true/i){
 	$gzip_cov = "true";
     }
-    if ($GZIP_COV =~ /^false/ | $GZIP_COV =~ /^FALSE/){
+    if ($GZIP_COV =~ /^false/i){
 	$gzip_cov = "false";
     }
 }
@@ -354,7 +372,7 @@ my $sge = "false";
 my $other = "false";
 my $num_cluster = 0;
 my ($batchjobs,  $jobname, $status, $request, $queue_4G,  $queue_6G, $queue_10G, $queue_15G, $queue_30G, $queue_45G, $queue_60G, $submit, $c_option, $maxjobs);
-if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
+if ($SGE_CLUSTER =~ /^true/i){
     $num_cluster++;
     if ($QUEUE_NAME_4G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $QUEUE_NAME_45G_sge eq "" | $QUEUE_NAME_60G_sge eq "" | $MAX_JOBS_sge eq ""){
         die "ERROR: please provide all required CLUSTER INFO for SGE_CLUSTER in the config file \"$cfg_file\"\n";
@@ -377,7 +395,7 @@ if ($SGE_CLUSTER =~ /^true/ | $SGE_CLUSTER =~ /^TRUE/) {
 	$maxjobs = $MAX_JOBS_sge;
     }
 }
-if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
+if ($LSF_CLUSTER =~ /^true/i){
     $num_cluster++;
     if ($QUEUE_NAME_4G_lsf eq "" | $QUEUE_NAME_6G_lsf eq "" | $QUEUE_NAME_10G_lsf eq "" |  $QUEUE_NAME_15G_lsf eq "" | $QUEUE_NAME_30G_lsf eq "" | $QUEUE_NAME_45G_lsf eq "" | $QUEUE_NAME_60G_lsf eq "" | $MAX_JOBS_lsf eq ""){
         die "ERROR: please provide all required CLUSTER INFO for LSF_CLUSTER in the config file \"$cfg_file\"\n";
@@ -400,7 +418,7 @@ if ($LSF_CLUSTER =~ /^true/ | $LSF_CLUSTER =~ /^TRUE/){
 	$maxjobs = $MAX_JOBS_lsf;
     }
 }
-if ($OTHER_CLUSTER =~ /^true/ | $OTHER_CLUSTER =~ /^TRUE/){
+if ($OTHER_CLUSTER =~ /^true/i){
     $num_cluster++;
     if ($SUBMIT_BATCH_JOBS eq "" | $JOB_NAME_OPTION eq "" | $CHECK_STATUS_FULLNAME eq "" | $REQUEST_RESOURCE_OPTION eq "" | $QUEUE_NAME_4G eq "" | $QUEUE_NAME_6G eq "" | $QUEUE_NAME_10G eq "" |  $QUEUE_NAME_15G eq "" | $QUEUE_NAME_30G eq "" | $QUEUE_NAME_45G eq "" | $QUEUE_NAME_60G eq "" | $MAX_JOBS eq ""){
 	die "ERROR: please provide all required CLUSTER INFO for OTHER_CLUSTER in the config file \"$cfg_file\"\n";

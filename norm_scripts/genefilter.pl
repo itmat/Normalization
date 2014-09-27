@@ -35,6 +35,7 @@ my $genesfile = $ARGV[1];
 my $output = $ARGV[2];
 
 my %ID;
+my %COUNT;
 open(GENE, $genesfile) or die "cannot find '$genesfile'\n";
 my $header = <GENE>;
 my ($nf, $nr);
@@ -82,24 +83,52 @@ while(my $read = <IN>){
     my $id = $r[0];
     $read =~ /HI:i:(\d+)/;
     my $index = $1;
+#    my $check = "$id.$index";
     if (exists $ID{$id}){
-	if ($pe eq "true"){
-	    for (my $i=0; $i<@{$ID{$id}};$i++){
-		if ("$ID{$id}[$i]" eq "$index"){
-		    print OUT "$read\n";
-		    $lc++;
-		}
+#	if ($pe eq "true"){
+	for (my $i=0; $i<@{$ID{$id}};$i++){
+	    if ("$ID{$id}[$i]" eq "$index"){
+#		    if (exists $COUNT{$check}){
+#			if ($COUNT{$check} < 2){
+		print OUT "$read\n";
+		$lc++;
+#			    $COUNT{$check}++;
+#			}
+#			else{
+#			    next;
+#			}
+#		    }
+#		    else{
+#			print OUT "$read\n";
+#			$lc++;
+#			$COUNT{$check}++;
+#		    }
 	    }
-	}
-	else{
-	    print OUT "$read\n";
-	    $lc++;
 	}
     }
 }
+#	else{
+#	    if (exists $COUNT{$check}){
+#		if ($COUNT{$check} < 1){
+#	    print OUT "$read\n";
+#	    $lc++;
+#		    $COUNT{$check}++;
+#		}
+#		else{
+#		    next;
+#		}
+#	    }
+#	    else{
+#		print OUT "$read\n";
+#		$lc++;
+#		$COUNT{$check}++;
+#	    }
+#	}
+#    }
+#}
 close(IN);
 close(OUT);
-$linecount =~ s/sam/linecount.txt/g;
+$linecount =~ s/sam$/linecount.txt/;
 open(LC, ">$linecount");
 print LC "$output\t$lc\n";
 close(LC);

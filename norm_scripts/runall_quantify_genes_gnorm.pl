@@ -2,17 +2,19 @@
 use strict;
 use warnings;
 
-my $USAGE = "\nUsage: perl runall_quantify_genes_gnorm.pl <sample dirs> <loc> <ensGene file>
+my $USAGE = "\nUsage: perl runall_quantify_genes_gnorm.pl <sample dirs> <loc> <genes>
 
 <sample dirs> is  a file of sample directories with alignment output without path
 <loc> is where the sample directories are
-<ensGene file> ensembl table must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
+<genes> master list of genes file
 
 option:
- -u  :  set this if your final (normalized) sam files have unique mappers only.
+ -norm : set this to quantify normalized sam.
+
+ -u  :  set this if your sam files have unique mappers only.
         otherwise by default it will use merged(unique+non-unique) mappers.
 
- -nu  :  set this if your final (normalized) sam files have non-unique mappers only.
+ -nu  :  set this if your sam files have non-unique mappers only.
          otherwise by default it will use merged(unique+non-unique) mappers.
  
  -se :  set this if the data is single end, otherwise by default it will assume it's a paired end data.
@@ -62,7 +64,7 @@ my $mem = "";
 my $new_mem = "";
 my $jobname_option = "";
 my $status;
-
+my $norm = "false";
 for (my $i=3; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -72,6 +74,10 @@ for (my $i=3; $i<@ARGV; $i++){
             die "-max_jobs <n> : <n> needs to be a number\n";
         }
 	$i++;
+    }
+    if ($ARGV[$i] eq "-norm"){
+	$norm = "true";
+	$option_found = "true";
     }
     if($ARGV[$i] eq '-nu') {
         $U = "false";
@@ -161,109 +167,58 @@ my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
-my $gnorm_dir = $study_dir . "NORMALIZED_DATA/GENE_NORM";
-my $gnorm_U_dir = "$gnorm_dir/Unique";
-my $gnorm_NU_dir = "$gnorm_dir/NU";
-my $gnorm_M_dir = "$gnorm_dir/MERGED";
+my $gnorm_dir = $study_dir . "NORMALIZED_DATA/GENE";
+my $gnorm_U_dir = "$gnorm_dir/FINAL_SAM/Unique";
+my $gnorm_NU_dir = "$gnorm_dir/FINAL_SAM/NU";
+my $gnorm_M_dir = "$gnorm_dir/FINAL_SAM/MERGED";
 my $ensFile = $ARGV[2];
-my (%ID, %GENECHR, %GENEST, %GENEEND);
-
-open(ENS, $ensFile) or die "cannot find file \"$ensFile\"\n";
-my $header = <ENS>;
-chomp($header);
-my @ENSHEADER = split(/\t/, $header);
-my ($genenamecol, $genesymbolcol, $txchrcol, $txstartcol, $txendcol);
-for(my $i=0; $i<@ENSHEADER; $i++){
-    if ($ENSHEADER[$i] =~ /.name2$/){
-        $genenamecol = $i;
-    }
-    if ($ENSHEADER[$i] =~ /.ensemblToGeneName.value$/){
-        $genesymbolcol = $i;
-    }
-    if ($ENSHEADER[$i] =~ /.chrom/){
-	$txchrcol = $i;
-    }
-    if ($ENSHEADER[$i] =~ /.txStart/){
-	$txstartcol = $i;
-    }
-    if ($ENSHEADER[$i] =~ /.txEnd/){
-	$txendcol = $i;
-    }
-}
-if (!defined($genenamecol) || !defined($genesymbolcol) || !defined($txchrcol) || !defined($txstartcol)|| !defined($txendcol)){
-    die "Your header must contain columns with the following suffixes: chrom, txStart, txEnd, name2, ensemblToGeneName.value\n";
-}
-while(my $line = <ENS>){
-    chomp($line);
-    my @a = split(/\t/,$line);
-    my $txchr = $a[$txchrcol];
-    my $txst = $a[$txstartcol];
-    my $txend = $a[$txendcol];
-    my $geneid = $a[$genenamecol];
-    my $genesym = $a[$genesymbolcol];
-    $ID{$geneid}= $genesym;
-    $GENECHR{$geneid} = $txchr;
-    push (@{$GENEST{$geneid}}, $txst);
-    push (@{$GENEEND{$geneid}}, $txend);
-}
-close(ENS);
-
-my $master_list_of_genes = "$LOC/master_list_of_ensGeneIDs.txt";
-open(MAS, ">$master_list_of_genes");
-foreach my $key (keys %ID){
-    my $chr = $GENECHR{$key};
-    my $min_st = &get_min(@{$GENEST{$key}});
-    my $max_end = &get_max(@{$GENEEND{$key}});
-    print MAS "$key\t$ID{$key}\t$chr:$min_st-$max_end\n";
-}
-close(MAS);
 
 open(IN, $samples) or die "cannot find file '$samples'\n"; # dirnames;
 while(my $line = <IN>){
     chomp($line);
     my $id = $line;
-    my ($filename, $outname);
-    if (-d $gnorm_M_dir){
-        $filename = "$gnorm_M_dir/$id.GNORM.genes.txt";
+    my ($filename, $outname, $jobname, $logname, $shfile);
+    if ($norm eq "true"){
+	$shfile = "$shdir/GQ.$id.quantifygenes.gnorm2.sh";
+	$jobname = "$study.quantifygenes.gnorm2";
+	$logname = "$logdir/quantifygenes.gnorm2.$id";
+	if (-d $gnorm_M_dir){
+	    $filename = "$gnorm_M_dir/$id.GNORM.genes.txt";
+	}
+	elsif ($U eq 'true'){
+	    $filename = "$gnorm_U_dir/$id.GNORM.Unique.genes.txt";
+	}
+	elsif ($NU eq 'true'){
+	    $filename = "$gnorm_NU_dir/$id.GNORM.NU.genes.txt";
+	}
     }
-    elsif ($U eq 'true'){
-        $filename = "$gnorm_U_dir/$id.GNORM.Unique.genes.txt";
-    }
-    elsif ($NU eq 'true'){
-        $filename = "$gnorm_NU_dir/$id.GNORM.NU.genes.txt";
+    if ($norm eq "false"){
+	$shfile = "$shdir/GQ.$id.quantifygenes.gnorm.sh";
+        $jobname = "$study.quantifygenes.gnorm";
+        $logname = "$logdir/quantifygenes.gnorm.$id";
+	if ($U eq "true"){
+	    $filename = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.txt";
+	}
+	elsif ($NU eq "true"){
+	    $filename = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.txt";
+	}
     }
     $outname = $filename;
     $outname =~ s/genes.txt/genequants/g;
-    my $shfile = "$shdir/GQ.$id.quantifygenes.gnorm.sh";
-    my $jobname = "$study.quantifygenes.gnorm";
-    my $logname = "$logdir/quantifygenes.gnorm.$id";
-
+    
     open(OUT, ">$shfile");
     if ($se eq "false"){
-	print OUT "perl $path/quantify_genes_gnorm.pl $filename $master_list_of_genes $outname\n";
+	print OUT "perl $path/quantify_genes_gnorm.pl $filename $ensFile $outname\n";
     }
     if ($se eq "true"){
-	print OUT "perl $path/quantify_genes.pl $filename $master_list_of_genes $outname\n";
+	print OUT "perl $path/quantify_genes.pl $filename $ensFile $outname\n";
     }
     close(OUT);
     while (qx{$status | wc -l} > $njobs){
-        sleep(10);
+	sleep(10);
     }
     `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
-
 }
 close(IN);
 print "got here\n";
-
-sub get_min(){
-    (my @array) = @_;
-    my @sorted_array = sort {$a <=> $b} @array;
-    return $sorted_array[0];
-}
-
-sub get_max(){
-    (my @array) = @_;
-    my @sorted_array = sort {$a <=> $b} @array;
-    return $sorted_array[@sorted_array-1];
-}
 

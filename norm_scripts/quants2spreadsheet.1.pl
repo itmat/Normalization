@@ -54,16 +54,23 @@ my $study = $fields[@fields-2];
 my $last_dir = $fields[@fields-1];
 my $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
-$norm_dir = $norm_dir . "NORMALIZED_DATA";
+
+if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
+    $norm_dir = $norm_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION";
+}
+if ($type =~ /^gene/i){
+    $norm_dir = $norm_dir . "NORMALIZED_DATA/GENE";
+}
+
 my $exon_dir = $norm_dir . "/exonmappers";
 my $nexon_dir = $norm_dir . "/notexonmappers";
 my $spread_dir = $norm_dir . "/SPREADSHEETS";
 
 unless (-d $spread_dir){
-    `mkdir $spread_dir`;
+    `mkdir -p $spread_dir`;
 }
 my ($out, $sample_name_file, $out_min, $out_max);
-if ($type =~ /^exon/){
+if ($type =~ /^exon/i){
     $out = "$spread_dir/master_list_of_exons_counts_u.$study.txt";
     $sample_name_file = "$norm_dir/file_exonquants_u.txt";
     if ($nuonly eq "true"){
@@ -71,7 +78,7 @@ if ($type =~ /^exon/){
 	$sample_name_file =~ s/_u.txt/_nu.txt/;
     }
 }
-elsif ($type =~ /^gene/){
+elsif ($type =~ /^gene/i){
     $out_min = "$spread_dir/master_list_of_genes_counts_u.MIN.$study.txt";
     $out_max = "$spread_dir/master_list_of_genes_counts_u.MAX.$study.txt";
     $sample_name_file = "$norm_dir/file_genequants_u.txt";
@@ -81,7 +88,7 @@ elsif ($type =~ /^gene/){
         $sample_name_file =~ s/_u.txt/_nu.txt/;
     }
 }
-elsif ($type =~ /^intron/){
+elsif ($type =~ /^intron/i){
     $out = "$spread_dir/master_list_of_introns_counts_u.$study.txt";
     $sample_name_file = "$norm_dir/file_intronquants_u.txt";
     if ($nuonly eq "true"){
@@ -94,7 +101,7 @@ else{
 }
 
 
-if($type =~ /^exon/){
+if($type =~ /^exon/i){
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     open(OUT, ">$sample_name_file");
     while (my $line = <INFILE>){
@@ -108,7 +115,7 @@ if($type =~ /^exon/){
 	}
     }
 }
-if ($type =~ /^gene/){
+if ($type =~ /^gene/i){
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     open(OUT, ">$sample_name_file");
     while (my $line = <INFILE>){
@@ -125,7 +132,7 @@ if ($type =~ /^gene/){
 close(INFILE);
 close(OUT);
 
-if ($type =~ /^intron/){
+if ($type =~ /^intron/i){
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     open(OUT, ">$sample_name_file");
     while (my $line = <INFILE>){
@@ -152,12 +159,12 @@ my $rowcnt = 0;
 my (@id, @sym, @coord);
 while(my $line = <INFILE>) {
     chomp($line);
-    if ($type =~ /^gene/){
+    if ($type =~ /^gene/i){
 	if ($line !~ /^EN/){
 	    next;
 	}
     }
-    if (($type =~ /^exon/) || ($type =~ /^intron/)){
+    if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
 	if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
 	    next;
 	}
@@ -191,13 +198,13 @@ while($file = <FILES>) {
     while(my $line = <INFILE>) {
 	chomp($line);
 	my @a = split(/\t/,$line);
-	if (($type =~ /^exon/) || ($type =~ /^intron/)){
+	if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
 	    if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
 		next;
 	    }
 	    $DATA[$filecnt][$rowcnt] = $a[1];
 	}
-	if ($type =~ /^gene/){
+	if ($type =~ /^gene/i){
 	    if ($line !~ /^EN/){
 		next;
 	    }
@@ -212,13 +219,13 @@ while($file = <FILES>) {
 close(FILES);
 
 my %NOVEL;
-if (($type =~ /^exon/) || ($type =~ /^intron/)){
+if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
     open(OUTFILE, ">$out");
     print OUTFILE "id";
     for(my $i=0; $i<@ID; $i++) {
 	print OUTFILE "\t$ID[$i]";
     }
-    if ($type =~ /^exon/){
+    if ($type =~ /^exon/i){
 	if ($novelexon eq "true"){
 	    print OUTFILE "\tNovelExon";
 	    open(IN, $novellist) or die "cannot find file \"$novellist\"\n";
@@ -231,16 +238,16 @@ if (($type =~ /^exon/) || ($type =~ /^intron/)){
     }
     print OUTFILE "\n";
     for(my $i=0; $i<$rowcnt; $i++) {
-	if ($type =~ /^exon/){
+	if ($type =~ /^exon/i){
 	    print OUTFILE "exon:$id[$i]";
 	}
-	if ($type =~ /^intron/){
+	if ($type =~ /^intron/i){
 	    print OUTFILE "intron:$id[$i]";
 	}
 	for(my $j=0; $j<$filecnt; $j++) {
 	    print OUTFILE "\t$DATA[$j][$i]";
 	}
-	if ($type =~ /^exon/){
+	if ($type =~ /^exon/i){
 	    if ($novelexon eq "true"){
 		if (exists $NOVEL{$id[$i]}){
 		    print OUTFILE "\tN";
@@ -254,7 +261,7 @@ if (($type =~ /^exon/) || ($type =~ /^intron/)){
     }
     close(OUTFILE);
 }
-if ($type =~ /^gene/){
+if ($type =~ /^gene/i){
     open(OUT_MIN, ">$out_min");
     open(OUT_MAX, ">$out_max");
     print OUT_MIN "id";

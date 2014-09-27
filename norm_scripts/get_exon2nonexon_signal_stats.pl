@@ -49,10 +49,10 @@ $last_dir = $fields[@fields-1];
 $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 $stats_dir = $study_dir . "STATS";
-unless (-d $stats_dir){
-    `mkdir $stats_dir`;}
-$outfileU = "$stats_dir/exon2nonexon_signal_stats_Unique.txt";
-$outfileNU = "$stats_dir/exon2nonexon_signal_stats_NU.txt";
+unless (-d "$stats_dir/EXON_INTRON_JUNCTION"){
+    `mkdir -p $stats_dir/EXON_INTRON_JUNCTION`;}
+$outfileU = "$stats_dir/EXON_INTRON_JUNCTION/exon2nonexon_signal_stats_Unique.txt";
+$outfileNU = "$stats_dir/EXON_INTRON_JUNCTION/exon2nonexon_signal_stats_NU.txt";
 
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; 
@@ -71,8 +71,8 @@ else{
 while($line = <INFILE>){
     chomp($line);
     $dir = $line;
-    $dirU = $dir . "/Unique";
-    $dirNU = $dir . "/NU";
+    $dirU = $dir . "/EIJ/Unique";
+    $dirNU = $dir . "/EIJ/NU";
     $id = $line;
     $fileU = "$LOC/$dirU/$id.filtered_u_exonquants";
     $fileNU = "$LOC/$dirNU/$id.filtered_nu_exonquants";

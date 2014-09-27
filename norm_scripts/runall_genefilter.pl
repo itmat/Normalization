@@ -7,6 +7,7 @@ my $USAGE = "\nUsage: perl runall_genefilter.pl <sample dirs> <loc>
 <loc> is where the sample directories are
 
 option:
+ -filter_highexp : use this if you want to filter high expressors.
 
  -se :  set this if the data is single end, otherwise by default it will assume it's a paired end data.
  
@@ -61,6 +62,7 @@ my $submit = "";
 my $jobname_option = "";
 my $status;
 my $pe = "true";
+my $filter = "false";
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -92,6 +94,10 @@ for (my $i=2; $i<@ARGV; $i++){
     if($ARGV[$i] eq '-u') {
         $NU = "false";
         $numargs_u_nu++;
+        $option_found = "true";
+    }
+    if($ARGV[$i] eq '-filter_highexp') {
+        $filter = "true";
         $option_found = "true";
     }
     if ($ARGV[$i] eq '-h'){
@@ -165,18 +171,30 @@ while(my $line = <IN>){
     my $samname_u = "$genedir/Unique/$id.filtered_u.sam";
     my $samname_nu = "$genedir/NU/$id.filtered_nu.sam";
     my $genefile_u = $samname_u;
-    $genefile_u =~ s/.sam/.genes.txt/g;
     my $outname_u = $samname_u;
-    $outname_u =~ s/.sam/_genes.sam/g;
+    $outname_u =~ s/.sam$/_genes.sam/;
     my $genefile_nu = $samname_nu;
-    $genefile_nu =~ s/.sam/.genes.txt/g;
     my $outname_nu = $samname_nu;
-    $outname_nu =~ s/.sam/_genes.sam/g;
-    my $shfile_u = "$shdir/F.$id.genefilter_u.sh";
-    my $jobname = "$study.genefilter";
-    my $logname_u = "$logdir/genefilter_u.$id";
-    my $shfile_nu = "$shdir/F.$id.genefilter_nu.sh";
-    my $logname_nu = "$logdir/genefilter_nu.$id";
+    $outname_nu =~ s/.sam$/_genes.sam/;
+    my ($shfile_u, $jobname, $logname_u, $shfile_nu, $logname_nu);
+    if ($filter eq "false"){
+	$genefile_u =~ s/.sam$/.genes.txt/;
+	$genefile_nu =~ s/.sam$/.genes.txt/;
+	$shfile_u = "$shdir/F.$id.genefilter_u.sh";
+	$jobname = "$study.genefilter_gnorm";
+	$logname_u = "$logdir/genefilter_u.$id";
+	$shfile_nu = "$shdir/F.$id.genefilter_nu.sh";
+	$logname_nu = "$logdir/genefilter_nu.$id";
+    }
+    if ($filter eq "true"){
+	$genefile_u =~ s/.sam$/.genes2.txt/;
+	$genefile_nu =~ s/.sam$/.genes2.txt/;
+	$shfile_u = "$shdir/F.$id.genefilter2_u.sh";
+	$jobname = "$study.genefilter_gnorm2";
+	$logname_u = "$logdir/genefilter2_u.$id";
+	$shfile_nu = "$shdir/F.$id.genefilter2_nu.sh";
+	$logname_nu = "$logdir/genefilter2_nu.$id";
+    }
     if ($U eq "true"){
 	open(OUT, ">$shfile_u");
 	if ($pe eq "true"){

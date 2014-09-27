@@ -128,7 +128,7 @@ $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
 my $ens_file = $ARGV[2];
-my $gnormdir = $study_dir . "NORMALIZED_DATA/GENE_NORM";
+my $gnormdir = $study_dir . "NORMALIZED_DATA/GENE/FINAL_SAM";
 my $NORM_M = "false";
 open(IN, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; # dirnames;
 while(my $line = <IN>){
@@ -166,7 +166,7 @@ while(my $line = <IN>){
 
     if ($U eq "true"){
 	my $outname_u = $filename_u;
-	$outname_u =~ s/.sam/.genes.txt/g;
+	$outname_u =~ s/.sam$/.genes.txt/;
 	open(OUT, ">$shfile_u");
 	print OUT "perl $path/sam2genes.pl $filename_u $ens_file $outname_u\n";
 	close(OUT);
@@ -177,7 +177,7 @@ while(my $line = <IN>){
     }
     if ($NU eq "true"){
 	my $outname_nu = $filename_nu;
-	$outname_nu =~ s/.sam/.genes.txt/g;
+	$outname_nu =~ s/.sam$/.genes.txt/;
 	open(OUT, ">$shfile_nu");
 	print OUT "perl $path/sam2genes.pl $filename_nu $ens_file $outname_nu\n";
 	close(OUT);
@@ -188,7 +188,7 @@ while(my $line = <IN>){
     }
     if ($NORM_M eq "true"){
 	my $outname = $filename;
-	$outname =~ s/.sam/.genes.txt/g;
+	$outname =~ s/.sam$/.genes.txt/;
 	open(OUT, ">$shfile");
 	print OUT "perl $path/sam2genes.pl $filename $ens_file $outname\n";
 	close(OUT);
