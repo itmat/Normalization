@@ -1,6 +1,6 @@
-# PORT - RNA-Seq Normalization
+# PORT - RNA-Seq Normalization & Quantification
 
-PORT offers two normalization methods you can choose from: __GENE Normalization__ and __EXON-INTRON-JUNCTION Normalization__. The choice can be made in the [configuration file](https://github.com/itmat/Normalization/tree/master#c-configuration-file). 
+PORT offers two normalization methods you can choose from:<br>__GENE Normalization__ and __EXON-INTRON-JUNCTION Normalization__.<br>(The choice can be made in the [configuration file](https://github.com/itmat/Normalization/tree/master#c-configuration-file)). 
 
 ============================================================================================================================================================
 
@@ -35,7 +35,7 @@ STUDY
 </pre>
 
 #####C. Configuration File
-Obtain the `template.cfg` file from `Normalization/` and modify as you need. Follow the instructions in the config file. You can choose GENE Normalization, EXON_INTRON_JUNCTION Normalization or Both.
+Get the `template.cfg` file from `Normalization/` and modify as you need. Follow the instructions in the config file. You can choose GENE Normalization, EXON_INTRON_JUNCTION Normalization or Both methods.
 
 #####D. File of Sample Directories and Unaligned Reads
 ###### i. File of Sample Directories
@@ -90,7 +90,17 @@ Tables are available for mm9, hg19 and dm3:
 ###### ii. other organisms
 You can get the table from UCSC table browser. Your header must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value.
 
-#####H. Output Directory Structure
+#####I. Annotation File
+###### i. mm9 and hg19
+Tables are available for mm9 and hg19:
+
+    /path/to/Normalization/norm_scripts/ucsc_known_mm9
+    /path/to/Normalization/norm_scripts/ucsc_known_hg19
+
+###### ii. other organisms
+This file should be downloaded from UCSC known-gene track including at minimum the following suffixes: name (this should correspond to your main identifier, typically some kind of transcript id), chrom, exonStarts, exonEnd, geneSymbol, and description.
+
+#####I. Output Directory Structure
 You will find all log files and shell scripts in `STUDY/logs` and `STUDY/shell_scripts` directory, respectively. Once you complete the normalization pipeline, your directory structure will look like this if you run both Gene and Exon-Intron-Junction Normliazation (before the Clean Up step):
 <pre>
 STUDY
@@ -164,7 +174,7 @@ STUDY
 ### 1. RUN_NORMALIZATION
 
 This runs the Normalization pipeline. <br> 
-You can also run it step by step using the scripts documented in [#2. NORMALIZATION STEPS](https://github.com/itmat/Normalization/tree/master#2-normalization-steps).
+You can also run it step by step using the scripts documented in [#2. NORMALIZATION STEPS](https://github.com/itmat/Normalization/blob/master/documentation.md#2-normalization-steps).
 
     run_normalization --sample_dirs <file of sample_dirs> --loc <s> \
     --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
@@ -176,9 +186,9 @@ You can also run it step by step using the scripts documented in [#2. NORMALIZAT
 * --cfg <cfg file> : configuration file for the study
 * option : <br>
      **[pipeline options]**<br>
-     **By default**, the pipeline will run through the steps in [PART1](https://github.com/itmat/Normalization/tree/master#part1) and pause (recommended). You will have a chance to check the expected number of reads after normalization and the list of percent high expressors before resuming.<br>
+     **By default**, the pipeline will run through the steps in [PART1](https://github.com/itmat/Normalization/blob/master/documentation.md#part1---both-gene-and-exon-intron-junction-normalization) and pause (recommended). You will have a chance to check the expected number of reads after normalization and the list of percent high expressors before resuming.<br>
      **-part1_part2** : Use this option if you want to run steps in PART1 and PART2 without pausing. <br>
-     **-part2** : Use this option to resume the pipeline at [PART2](https://github.com/itmat/Normalization/tree/master#part2). You may edit the &lt;file of sample dirs> file and/or change the highexpressor cutoff value.<br>
+     **-part2** : Use this option to resume the pipeline at [PART2](https://github.com/itmat/Normalization/blob/master/documentation.md#part2). You may edit the &lt;file of sample dirs> file and/or change the highexpressor cutoff value.<br>
 
       **[resume options]**<br>
       You may not change the normalization parameters with resume option.<br>
