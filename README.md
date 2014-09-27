@@ -1,6 +1,7 @@
-# PORT - RNA-Seq Normalization & Quantification
+# PORT
+## RNA-Seq Normalization & Quantification
 
-PORT offers two normalization methods you can choose from:<br>__GENE Normalization__ and __EXON-INTRON-JUNCTION Normalization__.<br>(The choice can be made in the [configuration file](https://github.com/itmat/Normalization/tree/master#c-configuration-file)). 
+**PORT** offers two normalization methods:__GENE Normalization__ and __EXON-INTRON-JUNCTION Normalization__.
 
 ============================================================================================================================================================
 
