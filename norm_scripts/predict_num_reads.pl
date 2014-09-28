@@ -78,10 +78,6 @@ my $stats_dir = $study_dir . "STATS";
 unless (-d "$stats_dir"){
     `mkdir $stats_dir`;
 }
-<<<<<<< HEAD
-my $outfile = "$stats_dir/expected_num_reads.txt";
-my $tempfile = "$stats_dir/expected_num_reads.temp";
-=======
 unless (-d "$stats_dir/EXON_INTRON_JUNCTION/"){
     `mkdir $stats_dir/EXON_INTRON_JUNCTION/`;
 }
@@ -92,7 +88,6 @@ if (-e $outfile){
     $outfile = $temp;
 }
 my $tempfile = "$stats_dir/EXON_INTRON_JUNCTION/expected_num_reads.temp";
->>>>>>> develop
 my (@sumEU, @sumENU, @sumIU, @sumINU);
 
 open(TEMP, ">$tempfile");

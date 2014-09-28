@@ -182,11 +182,7 @@ while(my $line = <INFILE>) {
     my $id = $line;
     $id =~ s/\//_/g;
     my $idsfile = "$LOC/$dir/$id.ribosomalids.txt";
-<<<<<<< HEAD
-    my $shfile = "$shdir/a" . $id . "filter.sh";
-=======
     my $shfile = "$shdir/a" . $id . "filter.gnorm.sh";
->>>>>>> develop
     my $jobname = "$study.filtersam_gnorm";
     my $logname = "$logdir/filtersam_gnorm.$id";
     open(OUTFILE, ">$shfile");

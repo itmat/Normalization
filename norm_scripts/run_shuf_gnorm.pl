@@ -3,11 +3,7 @@ use strict;
 use warnings;
 
 if(@ARGV<3){
-<<<<<<< HEAD
-    my $USAGE = "\nUsage: perl run_shuf.pl <file> <line count> <lines wanted>
-=======
     my $USAGE = "\nUsage: perl run_shuf_gnorm.pl <file> <line count> <lines wanted>
->>>>>>> develop
 
 where:
 <file> is a file to be shuffled (full path)
@@ -22,18 +18,6 @@ my $filePath = $ARGV[0];
 my $line_count = $ARGV[1];
 my $min_num = $ARGV[2];
 
-<<<<<<< HEAD
-my @shuffled = (1..$line_count);
-&fisher_yates_shuffle(\@shuffled);
-
-my %lineWanted;
-
-for (my $i=0;$i<$min_num;$i++){
-    my $num = $shuffled[$i];
-    $num =~ s/\//_/g;
-    chomp($num);
-    $lineWanted{$num} = 1;
-=======
 my $min_readpair = $min_num / 2;
 
 my @array = (1..$line_count);
@@ -53,7 +37,6 @@ for (my $i=0;$i<$min_readpair;$i++){
     my $pair = $num + 1;
     $lineWanted{$num} = 1;
     $lineWanted{$pair} = 1;
->>>>>>> develop
 }
 
 open (my $fh, "<$filePath") or die "Unable to open file \"$filePath\": $!\n";

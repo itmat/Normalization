@@ -35,10 +35,7 @@ my $genesfile = $ARGV[1];
 my $output = $ARGV[2];
 
 my %ID;
-<<<<<<< HEAD
-=======
 my %COUNT;
->>>>>>> develop
 open(GENE, $genesfile) or die "cannot find '$genesfile'\n";
 my $header = <GENE>;
 my ($nf, $nr);
@@ -86,13 +83,6 @@ while(my $read = <IN>){
     my $id = $r[0];
     $read =~ /HI:i:(\d+)/;
     my $index = $1;
-<<<<<<< HEAD
-    if (exists $ID{$id}){
-	for (my $i=0; $i<@{$ID{$id}};$i++){
-	    if ("$ID{$id}[$i]" eq "$index"){
-		print OUT "$read\n";
-		$lc++;
-=======
 #    my $check = "$id.$index";
     if (exists $ID{$id}){
 #	if ($pe eq "true"){
@@ -113,19 +103,10 @@ while(my $read = <IN>){
 #			$lc++;
 #			$COUNT{$check}++;
 #		    }
->>>>>>> develop
 	    }
 	}
     }
 }
-<<<<<<< HEAD
-close(IN);
-close(OUT);
-$linecount =~ s/sam/linecount.txt/g;
-open(LC, ">$linecount");
-print LC "$output\t$lc\n";
-close(LC);
-=======
 #	else{
 #	    if (exists $COUNT{$check}){
 #		if ($COUNT{$check} < 1){
@@ -152,4 +133,3 @@ open(LC, ">$linecount");
 print LC "$output\t$lc\n";
 close(LC);
 print "got here\n";
->>>>>>> develop

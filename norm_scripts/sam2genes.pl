@@ -83,11 +83,7 @@ close(ENS);
 
 open(SAM, $samfile) or die "cannot fine file \"$samfile\"\n";
 open(OUT, ">$outfile");
-<<<<<<< HEAD
-print OUT "readID\ttranscriptIDs\tgeneIDs\tgeneSymbols\tIndex\n";
-=======
 print OUT "readID\ttranscriptIDs\tgeneIDs\tgeneSymbols\tIndex\tTag\n";
->>>>>>> develop
 while(my $line = <SAM>){
     chomp($line);
     if ($line =~ /^@/){
@@ -95,11 +91,8 @@ while(my $line = <SAM>){
     }
     $line =~ /HI:i:(\d+)/;
     my $a_index = $1;
-<<<<<<< HEAD
-=======
     $line =~ /(N|I)H:i:(\d+)/;
     my $tag = $2;
->>>>>>> develop
     my @readStarts = ();
     my @readEnds = ();
     my $txID_list = "";
@@ -150,11 +143,7 @@ while(my $line = <SAM>){
 	    $symbol_list = $symbol_list . "$geneSYMBOL{$unique_gene_ids[$i]},";
 	}
     }
-<<<<<<< HEAD
-    print OUT "$read_id\t$txID_list\t$geneID_list\t$symbol_list\t$a_index\n";
-=======
     print OUT "$read_id\t$txID_list\t$geneID_list\t$symbol_list\t$a_index\t$tag\n";
->>>>>>> develop
 }
 close(SAM);
 close(OUT);
