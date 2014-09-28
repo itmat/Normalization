@@ -9,4 +9,3 @@ norm_scripts/runall_normalization_sep14.pl
 norm_scripts/runall_sam2genes.pl
 norm_scripts/runall_quantify_genes.pl
 norm_scripts/runall_sam2mappingstats_gnorm.pl
-
