@@ -50,10 +50,10 @@ while($line = <INFILE>){
     chomp($line);
     $id = $line;
     if($nuonly eq "true"){
-	print OUT "$junc_dir/$id.FINAL.norm_nu_junctions_all.rum\n";
+	print OUT "$junc_dir/$id.merged_junctions_all.rum\n";
     }
     if ($nuonly eq "false"){
-	print OUT "$junc_dir/$id.FINAL.norm_u_junctions_all.rum\n";
+	print OUT "$junc_dir/$id.merged_junctions_all.rum\n";
     }
 }
 close(INFILE);
@@ -66,8 +66,7 @@ while ($file = <FILES>){
     @fields = split("/",$file);
     $size = @fields;
     $id = $fields[$size-1];
-    $id =~ s/.FINAL.norm_u_junctions_all.rum//;
-    $id =~ s/.FINAL.norm_u_junctions_all.rum//;
+    $id =~ s/.merged_junctions_all.rum//;
     $ID[$filecnt] = $id;
     open(INFILE, $file);
     while($line = <INFILE>){

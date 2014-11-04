@@ -15,6 +15,8 @@ The output file names will be modified from the input file names.
 ** If  maximum line count is > 50,000,000, use -mem option (6G for 60 million lines, 7G for 70 million lines, 8G for 80 million lines, etc).
 
 option:  
+ -stranded : set this if the data is strand-specific.
+
  -u  :  set this if you want to return only unique mappers, otherwise by default it will return both unique and non-unique mappers
 
  -nu  :  set this if you want to return only non-unique mappers, otherwise by default it will return both unique and non-unique mappers
@@ -48,6 +50,7 @@ option:
 if (@ARGV <2){
     die $USAGE;
 }
+my $stranded = "false";
 my $status = "";
 my $U = 'true';
 my $NU = 'true';
@@ -75,6 +78,10 @@ for (my $i=2; $i<@ARGV; $i++){
     if ($ARGV[$i] eq '-se'){
 	$option_found = "true";
 	$se = "true";
+    }
+    if ($ARGV[$i] eq '-stranded'){
+        $option_found = "true";
+        $stranded = "true";
     }
     if ($ARGV[$i] eq '-u'){
 	$NU = "false";
@@ -166,10 +173,6 @@ my $last_dir = $fields[@fields-1];
 my $study = $fields[@fields-2];
 my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
-my $gnormdir = $study_dir . "NORMALIZED_DATA/GENE/FINAL_SAM/";
-unless (-d $gnormdir){
-    `mkdir -p $gnormdir`;
-}
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
 unless (-d $shdir){
@@ -179,27 +182,61 @@ unless (-d $logdir){
 
 my %LINECOUNTS_U;
 my %LINECOUNTS_NU;
+my %LINECOUNTS_U_A;
+my %LINECOUNTS_NU_A;
 
 my $MIN_U = 1000000000000;
 my $MIN_NU = 1000000000000;
+my $MIN_U_A = 1000000000000;
+my $MIN_NU_A = 1000000000000;
 if ($U eq 'true'){
     open(IN, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     while(my $line = <IN>){
 	chomp($line);
 	my $id = $line;
 	my $cntinfo;
-	if (-e "$LOC/$id/GNORM/Unique/$id.filtered_u_genes.linecount.txt"){
-	    $cntinfo = `cat $LOC/$id/GNORM/Unique/$id.filtered_u_genes.linecount.txt`;
+	if ($stranded eq "false"){
+	    if (-e "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.linecount.txt"){
+		$cntinfo = `cat $LOC/$id/GNORM/Unique/$id.filtered_u.genes.linecount.txt`;
+	    }
+	    else{
+		die "ERROR: The file '$LOC/$id/GNORM/Unique/$id.filtered_u.genes.linecount.txt' does not exist.\n";
+	    }
+	    my @c = split(/\t/, $cntinfo);
+	    my $N = $c[1];
+	    chomp($N);
+	    $LINECOUNTS_U{$id} = $N;
+	    if ($N < $MIN_U){
+		$MIN_U = $N;
+	    }
 	}
-	else{
-	    die "ERROR: The file '$LOC/$id/GNORM/Unique/$id.filtered_u_genes.linecount.txt' does not exist.\n";
-	}
-	my @c = split(/\t/, $cntinfo);
-	my $N = $c[1];
-	chomp($N);
-	$LINECOUNTS_U{$id} = $N;
-	if ($N < $MIN_U){
-	    $MIN_U = $N;
+	if ($stranded eq "true"){
+	    if (-e "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.sense.linecount.txt"){
+		$cntinfo = `cat $LOC/$id/GNORM/Unique/$id.filtered_u.genes.sense.linecount.txt`;
+            }
+            else{
+                die "ERROR: The file '$LOC/$id/GNORM/Unique/$id.filtered_u.genes.sense.linecount.txt' does not exist.\n";
+            }
+            my @c = split(/\t/, $cntinfo);
+            my $N = $c[1];
+            chomp($N);
+            $LINECOUNTS_U{$id} = $N;
+            if ($N < $MIN_U){
+                $MIN_U = $N;
+            }
+	    if (-e "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.antisense.linecount.txt"){
+		$cntinfo = `cat $LOC/$id/GNORM/Unique/$id.filtered_u.genes.antisense.linecount.txt`;
+            }
+            else{
+                die "ERROR: The file '$LOC/$id/GNORM/Unique/$id.filtered_u.genes.antisense.linecount.txt' does not exist.\n";
+            }
+            @c = split(/\t/, $cntinfo);
+            $N = $c[1];
+            chomp($N);
+            $LINECOUNTS_U_A{$id} = $N;
+            if ($N < $MIN_U_A){
+                $MIN_U_A = $N;
+            }
 	}
     }
     close(IN);
@@ -210,20 +247,49 @@ if ($NU eq 'true'){
 	chomp($line);
         my $id = $line;
 	my $cntinfo;
-        if (-e "$LOC/$id/GNORM/NU/$id.filtered_nu_genes.linecount.txt"){
-            $cntinfo = `cat $LOC/$id/GNORM/NU/$id.filtered_nu_genes.linecount.txt`;
-        }
-        else{
-            die "ERROR: The file '$LOC/$id/GNORM/NU/$id.filtered_nu_genes.linecount.txt' does \
-not exist.\n";
-        }
-        my @c = split(/\t/, $cntinfo);
-        my $N = $c[1];
-        chomp($N);
-        $LINECOUNTS_NU{$id} = $N;
-        if ($N < $MIN_NU){
-            $MIN_NU = $N;
-        }
+	if ($stranded eq "false"){
+	    if (-e "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.linecount.txt"){
+		$cntinfo = `cat $LOC/$id/GNORM/NU/$id.filtered_nu.genes.linecount.txt`;
+	    }
+	    else{
+		die "ERROR: The file '$LOC/$id/GNORM/NU/$id.filtered_nu.genes.linecount.txt' does not exist.\n";
+	    }
+	    my @c = split(/\t/, $cntinfo);
+	    my $N = $c[1];
+	    chomp($N);
+	    $LINECOUNTS_NU{$id} = $N;
+	    if ($N < $MIN_NU){
+		$MIN_NU = $N;
+	    }
+	}
+	if ($stranded eq "true"){
+	    if (-e "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.sense.linecount.txt"){
+                $cntinfo = `cat $LOC/$id/GNORM/NU/$id.filtered_nu.genes.sense.linecount.txt`;
+            }
+            else{
+                die "ERROR: The file '$LOC/$id/GNORM/NU/$id.filtered_nu.genes.sense.linecount.txt' does not exist.\n";
+            }
+            my @c = split(/\t/, $cntinfo);
+            my $N = $c[1];
+            chomp($N);
+            $LINECOUNTS_NU{$id} = $N;
+            if ($N < $MIN_NU){
+                $MIN_NU = $N;
+            }
+	    if (-e "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.antisense.linecount.txt"){
+                $cntinfo = `cat $LOC/$id/GNORM/NU/$id.filtered_nu.genes.antisense.linecount.txt`;
+            }
+            else{
+                die "ERROR: The file '$LOC/$id/GNORM/NU/$id.filtered_nu.genes.antisense.linecount.txt' does not exist.\n";
+            }
+            @c = split(/\t/, $cntinfo);
+            $N = $c[1];
+            chomp($N);
+            $LINECOUNTS_NU_A{$id} = $N;
+            if ($N < $MIN_NU_A){
+                $MIN_NU_A = $N;
+            }
+	}
     }
     close(IN);
 }
@@ -235,60 +301,162 @@ while(my $id = <INFILE>) {
     chomp($id);
     my $jobname = "$study.shuf_gnorm";
     if ($U eq "true"){
-	my $total_lc = $LINECOUNTS_U{$id};
-	my $filename_U = "$LOC/$id/GNORM/Unique/$id.filtered_u_genes.sam";
-	unless (-d "$gnormdir/Unique"){
-	    `mkdir $gnormdir/Unique`;
+	if ($stranded eq "false"){
+	    my $total_lc = $LINECOUNTS_U{$id};
+	    my $filename_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.sam";
+	    my $outfile_U = $filename_U;
+	    $outfile_U =~ s/.sam$/.norm.sam/;
+	    if (-e "$outfile_U"){
+		`rm $outfile_U`;
+	    }
+	    my $shfile = "$shdir/run_shuf_gnorm_u.$id.sh";
+	    my $logname = "$logdir/run_shuf_gnorm_u.$id";
+	    if (($total_lc ne '0') && ($MIN_U ne '0')){
+		open(OUTU, ">$shfile");
+		if ($se eq "false"){
+		    print OUTU "perl $path/run_shuf_gnorm.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
+		}
+		if ($se eq "true"){
+		    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
+		}
+		print OUTU "echo \"got here\"\n";
+		close(OUTU);
+		while(qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $request_memory_option$mem $jobname_option $jobname -o $logname.out -e $logname.err < $shfile`;
+	    }
 	}
-	my $outfile_U = "$gnormdir/Unique/$id.GNORM.Unique.sam";
-	if (-e "$outfile_U"){
-	    `rm $outfile_U`;
-	}
-	my $shfile = "$shdir/run_shuf_gnorm_u.$id.sh";
-	my $logname = "$logdir/run_shuf_gnorm_u.$id";
-	if (($total_lc ne '0') && ($MIN_U ne '0')){
-	    open(OUTU, ">$shfile");
-	    if ($se eq "false"){
-		print OUTU "perl $path/run_shuf_gnorm.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
+	if ($stranded eq "true"){
+	    my $total_lc = $LINECOUNTS_U{$id};
+            my $filename_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.sense.sam";
+            my $outfile_U = $filename_U;
+	    $outfile_U =~ s/.sam$/.norm.sam/;
+            if (-e "$outfile_U"){
+                `rm $outfile_U`;
+            }
+            my $shfile = "$shdir/run_shuf_gnorm_u.sense.$id.sh";
+            my $logname = "$logdir/run_shuf_gnorm_u.sense.$id";
+            if (($total_lc ne '0') && ($MIN_U ne '0')){
+                open(OUTU, ">$shfile");
+                if ($se eq "false"){
+                    print OUTU "perl $path/run_shuf_gnorm.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
+		}
+                if ($se eq "true"){
+                    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
+		}
+		print OUTU "echo \"got here\"\n";
+                close(OUTU);
+                while(qx{$status | wc -l} > $njobs){
+                    sleep(10);
+		}
+                `$submit $request_memory_option$mem $jobname_option $jobname -o $logname.out -e $logname.err < $shfile`;
+            }
+	    #antisense
+	    my $total_lc_a = $LINECOUNTS_U_A{$id};
+            my $filename_U_A = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.antisense.sam";
+            my $outfile_U_A = $filename_U_A;
+	    $outfile_U_A =~ s/.sam$/.norm.sam/;
+            if (-e "$outfile_U_A"){
+                `rm $outfile_U_A`;
+            }
+            my $shfile_a = "$shdir/run_shuf_gnorm_u.antisense.$id.sh";
+            my $logname_a = "$logdir/run_shuf_gnorm_u.antisense.$id";
+	    if (($total_lc_a ne '0') && ($MIN_U_A ne '0')){
+		open(OUTU, ">$shfile_a");
+                if ($se eq "false"){
+                    print OUTU "perl $path/run_shuf_gnorm.pl $filename_U_A $total_lc_a $MIN_U_A > $outfile_U_A\n";
+                }
+                if ($se eq "true"){
+                    print OUTU "perl $path/run_shuf.pl $filename_U_A $total_lc_a $MIN_U_A > $outfile_U_A\n";
+                }
+                print OUTU "echo \"got here\"\n";
+                close(OUTU);
+                while(qx{$status | wc -l} > $njobs){
+                    sleep(10);
+                }
+                `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_a.out -e $logname_a.err < $shfile_a`;
 	    }
-	    if ($se eq "true"){
-		print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
-	    }
-	    print OUTU "echo \"got here\"\n";
-	    close(OUTU);
-	    while(qx{$status | wc -l} > $njobs){
-		sleep(10);
-	    }
-	    `$submit $request_memory_option$mem $jobname_option $jobname -o $logname.out -e $logname.err < $shfile`;
 	}
     }
     if ($NU eq "true"){
-	my $total_lc = $LINECOUNTS_NU{$id};
-        my $filename_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu_genes.sam";
-        unless (-d "$gnormdir/NU"){
-            `mkdir $gnormdir/NU`;
-        }
-        my $outfile_NU = "$gnormdir/NU/$id.GNORM.NU.sam";
-	if (-e "$outfile_NU"){
-	    `rm $outfile_NU`;
+	if ($stranded eq "false"){
+	    my $total_lc = $LINECOUNTS_NU{$id};
+	    my $filename_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.sam";
+	    my $outfile_NU = $filename_NU;
+	    $outfile_NU =~ s/.sam$/.norm.sam/;
+	    if (-e "$outfile_NU"){
+		`rm $outfile_NU`;
+	    }
+	    my $shfile = "$shdir/run_shuf_gnorm_nu.$id.sh";
+	    my $logname = "$logdir/run_shuf_gnorm_nu.$id";
+	    if (($total_lc ne '0') && ($MIN_NU ne '0')){
+		open(OUTNU, ">$shfile");
+		if ($se eq "false"){
+		    print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
+		}
+		if ($se eq "true"){
+		    print OUTNU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
+		}
+		print OUTNU "echo \"got here\"\n";
+		close(OUTNU);
+		while(qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $request_memory_option$mem $jobname_option $jobname -o $logname.out -e $logname.err < $shfile`;
+	    }
 	}
-	my $shfile = "$shdir/run_shuf_gnorm_nu.$id.sh";
-	my $logname = "$logdir/run_shuf_gnorm_nu.$id";
-        if (($total_lc ne '0') && ($MIN_NU ne '0')){
-            open(OUTNU, ">$shfile");
-	    if ($se eq "false"){
-		print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
-	    }
-	    if ($se eq "true"){
-		print OUTNU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
-	    }
-	    print OUTNU "echo \"got here\"\n";
-            close(OUTNU);
-	    while(qx{$status | wc -l} > $njobs){
-                sleep(10);
+	if ($stranded eq "true"){
+            my $total_lc = $LINECOUNTS_NU{$id};
+            my $filename_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.sense.sam";
+            my $outfile_NU = $filename_NU;
+	    $outfile_NU =~ s/.sam$/.norm.sam/;
+	    if (-e "$outfile_NU"){
+		`rm $outfile_NU`;
             }
-            `$submit $request_memory_option$mem $jobname_option $jobname -o $logname.out -e $logname.err < $shfile`;
-	}
+            my $shfile = "$shdir/run_shuf_gnorm_nu.sense.$id.sh";
+            my $logname = "$logdir/run_shuf_gnorm_nu.sense.$id";
+            if (($total_lc ne '0') && ($MIN_NU ne '0')){
+                open(OUTNU, ">$shfile");
+                if ($se eq "false"){
+                    print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
+		}
+                if ($se eq "true"){
+                    print OUTNU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
+		}
+                print OUTNU "echo \"got here\"\n";
+                close(OUTNU);
+                while(qx{$status | wc -l} > $njobs){
+                    sleep(10);
+		}
+                `$submit $request_memory_option$mem $jobname_option $jobname -o $logname.out -e $logname.err < $shfile`;
+            }
+	    #antisense
+	    my $total_lc_a = $LINECOUNTS_NU_A{$id};
+            my $filename_NU_A = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.antisense.sam";
+            my $outfile_NU_A = $filename_NU_A;
+	    $outfile_NU_A =~ s/.sam$/.norm.sam/;
+            if (-e "$outfile_NU_A"){
+                `rm $outfile_NU_A`;
+            }
+            my $shfile_a = "$shdir/run_shuf_gnorm_nu.antisense.$id.sh";
+            my $logname_a = "$logdir/run_shuf_gnorm_nu.antisense.$id";
+            if (($total_lc_a ne '0') && ($MIN_NU_A ne '0')){
+		open(OUTNU, ">$shfile_a");
+		if ($se eq "false"){
+                    print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU_A $total_lc_a $MIN_NU_A > $outfile_NU_A\n";
+		}
+                if ($se eq "true"){
+                    print OUTNU "perl $path/run_shuf.pl $filename_NU_A $total_lc_a $MIN_NU_A > $outfile_NU_A\n";
+		}
+                print OUTNU "echo \"got here\"\n";
+		close(OUTNU);
+		while(qx{$status | wc -l} > $njobs){
+                    sleep(10);
+		}
+                `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_a.out -e $logname_a.err < $shfile_a`;
+	    }
+        }
     }
 }
 close(INFILE);

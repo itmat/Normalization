@@ -7,7 +7,11 @@ my $USAGE = "\nUsage: perl runall_genefilter.pl <sample dirs> <loc>
 <loc> is where the sample directories are
 
 option:
- -filter_highexp : use this if you want to filter high expressors.
+ -norm : set this if you're using normalized files.
+
+ -stranded : set this if your data is strand-specific.
+
+ -filter_highexp : use this if you want to filter high expressers.
 
  -se :  set this if the data is single end, otherwise by default it will assume it's a paired end data.
  
@@ -63,6 +67,10 @@ my $jobname_option = "";
 my $status;
 my $pe = "true";
 my $filter = "false";
+my $filter_highexp = "";
+my $stranded = "";
+my $str = "false";
+my $norm = "false";
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -82,9 +90,18 @@ for (my $i=2; $i<@ARGV; $i++){
             die "please provide a queue name.\n";
         }
     }
+    if ($ARGV[$i] eq '-norm'){
+        $norm = "true";
+        $option_found = "true";
+    }
     if ($ARGV[$i] eq '-se'){
 	$pe = "false";
 	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-stranded'){
+	$str = "true";
+        $stranded = "-stranded";
+        $option_found = "true";
     }
     if($ARGV[$i] eq '-nu') {
         $U = "false";
@@ -97,7 +114,8 @@ for (my $i=2; $i<@ARGV; $i++){
         $option_found = "true";
     }
     if($ARGV[$i] eq '-filter_highexp') {
-        $filter = "true";
+        $filter_highexp = "-filter_highexp";
+	$filter = "true";
         $option_found = "true";
     }
     if ($ARGV[$i] eq '-h'){
@@ -162,67 +180,133 @@ my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
+my $normdir = $study_dir . "/NORMALIZED_DATA/GENE/FINAL_SAM/";
 
 open(IN, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; # dirnames;
 while(my $line = <IN>){
     chomp($line);
     my $id = $line;
-    my $genedir = "$LOC/$id/GNORM";
-    my $samname_u = "$genedir/Unique/$id.filtered_u.sam";
-    my $samname_nu = "$genedir/NU/$id.filtered_nu.sam";
-    my $genefile_u = $samname_u;
-    my $outname_u = $samname_u;
-    $outname_u =~ s/.sam$/_genes.sam/;
-    my $genefile_nu = $samname_nu;
-    my $outname_nu = $samname_nu;
-    $outname_nu =~ s/.sam$/_genes.sam/;
-    my ($shfile_u, $jobname, $logname_u, $shfile_nu, $logname_nu);
-    if ($filter eq "false"){
-	$genefile_u =~ s/.sam$/.genes.txt/;
-	$genefile_nu =~ s/.sam$/.genes.txt/;
+    if ($norm eq "false"){
+	my $genedir = "$LOC/$id/GNORM";
+	my $samname_u = "$genedir/Unique/$id.filtered_u.sam";
+	my $samname_nu = "$genedir/NU/$id.filtered_nu.sam";
+	my $genefile_u = $samname_u;
+	my $outname_u = $samname_u;
+	$outname_u =~ s/.sam$/.genes.sam/;
+	my $genefile_nu = $samname_nu;
+	my $outname_nu = $samname_nu;
+	$outname_nu =~ s/.sam$/.genes.sam/;
+	my ($shfile_u, $jobname, $logname_u, $shfile_nu, $logname_nu);
+	$genefile_u =~ s/.sam$/.txt/;
+	$genefile_nu =~ s/.sam$/.txt/;
 	$shfile_u = "$shdir/F.$id.genefilter_u.sh";
 	$jobname = "$study.genefilter_gnorm";
 	$logname_u = "$logdir/genefilter_u.$id";
 	$shfile_nu = "$shdir/F.$id.genefilter_nu.sh";
 	$logname_nu = "$logdir/genefilter_nu.$id";
+	if ($filter eq "true"){
+	    $shfile_u = "$shdir/F.$id.genefilter2_u.sh";
+	    $jobname = "$study.genefilter_gnorm2";
+	    $logname_u = "$logdir/genefilter2_u.$id";
+	    $shfile_nu = "$shdir/F.$id.genefilter2_nu.sh";
+	    $logname_nu = "$logdir/genefilter2_nu.$id";
+	}
+	if ($U eq "true"){
+	    open(OUT, ">$shfile_u");
+	    if ($pe eq "true"){
+		print OUT "perl $path/genefilter.pl $samname_u $genefile_u $outname_u $stranded $filter_highexp\n";
+	    }
+	    else{
+		print OUT "perl $path/genefilter.pl $samname_u $genefile_u $outname_u -se $stranded $filter_highexp\n";
+	    }
+	    close(OUT);
+	    while (qx{$status | wc -l} > $njobs){
+		sleep(10);
+	    }
+	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_u.out -e $logname_u.err < $shfile_u`;
+	}
+	if ($NU eq "true"){
+	    open(OUT, ">$shfile_nu");
+	    if ($pe eq "true"){
+		print OUT "perl $path/genefilter.pl $samname_nu $genefile_nu $outname_nu $stranded $filter_highexp\n";
+	    }
+	    else{
+		print OUT "perl $path/genefilter.pl $samname_nu $genefile_nu $outname_nu -se $stranded $filter_highexp\n";
+	    }
+	    close(OUT);
+	    while (qx{$status | wc -l} > $njobs){
+		sleep(10);
+	    }
+	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_nu.out -e $logname_nu.err < $shfile_nu`;
+	}
     }
-    if ($filter eq "true"){
-	$genefile_u =~ s/.sam$/.genes2.txt/;
-	$genefile_nu =~ s/.sam$/.genes2.txt/;
-	$shfile_u = "$shdir/F.$id.genefilter2_u.sh";
-	$jobname = "$study.genefilter_gnorm2";
-	$logname_u = "$logdir/genefilter2_u.$id";
-	$shfile_nu = "$shdir/F.$id.genefilter2_nu.sh";
-	$logname_nu = "$logdir/genefilter2_nu.$id";
-    }
-    if ($U eq "true"){
-	open(OUT, ">$shfile_u");
+    if ($norm eq "true"){
+	my ($samname_a, $shfile_a, $logname_a, $samname, $shfile, $jobname, $logname, $genefile, $outname, $genefile_a, $outname_a);
+	$shfile = "$shdir/F.$id.genefilter_norm.sh";
+	$jobname = "$study.genefilter_gnorm_norm";
+	$logname = "$logdir/genefilter.norm.$id";
+	if ($str eq "true"){
+	    $shfile = "$shdir/F.$id.genefilter_norm.sense.sh";
+	    $shfile_a = "$shdir/F.$id.genefilter_norm.antisense.sh";
+	    $logname = "$logdir/genefilter.norm.$id.sense";
+	    $logname_a = "$logdir/genefilter.norm.$id.antisense";
+	}	    
+	if ($numargs_u_nu eq '0'){
+	    $samname = "$normdir/$id.gene.norm.sam";
+	    if ($str eq "true"){
+		$samname = "$normdir/sense/$id.gene.norm.sam";
+		$samname_a = "$normdir/antisense/$id.gene.norm.sam";
+	    }
+	}
+	elsif ($U eq "true"){
+	    $samname =~ s/.sam$/_u.sam/;
+	    if ($str eq "true"){
+		$samname_a =~ s/.sam$/_u.sam/;
+	    }
+	}
+	elsif ($NU eq "true"){
+	    $samname =~ s/.sam$/_nu.sam/;
+	    if ($str eq "true"){
+		$samname_a =~ s/.sam$/_nu.sam/;
+	    }
+	}
+	$genefile = $samname;
+	$genefile =~ s/.sam$/.txt/;
+	$outname = $samname;
+	$outname =~ s/.sam$/.genes.txt/;
+	open(OUT, ">$shfile");
 	if ($pe eq "true"){
-	    print OUT "perl $path/genefilter.pl $samname_u $genefile_u $outname_u\n";
+	    print OUT "perl $path/genefilter.pl $samname $genefile $outname $stranded\n";
 	}
 	else{
-	    print OUT "perl $path/genefilter.pl $samname_u $genefile_u $outname_u -se\n";
+	    print OUT "perl $path/genefilter.pl $samname $genefile $outname -se $stranded\n";
 	}
 	close(OUT);
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
-	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_u.out -e $logname_u.err < $shfile_u`;
+	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
+	if ($str eq "true"){
+	    $genefile_a = $samname_a;
+	    $genefile_a =~ s/.sam$/.txt/;
+	    $outname_a = $samname_a;
+	    $outname_a =~ s/.sam$/.genes.txt/;
+	    open(OUT, ">$shfile_a");
+	    if ($pe eq "true"){
+		print OUT "perl $path/genefilter.pl $samname_a $genefile_a $outname_a $stranded\n";
+	    }
+	    else{
+		print OUT "perl $path/genefilter.pl $samname_a $genefile_a $outname_a -se $stranded\n";
+	    }
+	    close(OUT);
+	    while (qx{$status | wc -l} > $njobs){
+		sleep(10);
+	    }
+	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_a.out -e $logname_a.err < $shfile_a`;
+	}
     }
-    if ($NU eq "true"){
-	open(OUT, ">$shfile_nu");
-	if ($pe eq "true"){
-	    print OUT "perl $path/genefilter.pl $samname_nu $genefile_nu $outname_nu\n";
-	}
-	else{
-	    print OUT "perl $path/genefilter.pl $samname_nu $genefile_nu $outname_nu -se\n";
-	}
-	close(OUT);
-	while (qx{$status | wc -l} > $njobs){
-	    sleep(10);
-	}
-	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_nu.out -e $logname_nu.err < $shfile_nu`;
-    }
+
+	
 }
 close(IN);
 print "got here\n";

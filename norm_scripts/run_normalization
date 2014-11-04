@@ -15,12 +15,12 @@ OPTIONS:
      You will have a chance to check the following before resuming:
       (1) number of reads you will have after normalization 
           - modify the list of sample directories accordingly.
-      (2) percent high expressors
-          - use -cutoff_highexp <n> option to set/change the highexpressor cutoff value.
+      (2) percent high expressers
+          - use -cutoff_highexp <n> option to set/change the highexpresser cutoff value.
 
      -part1_part2 : Use this option if you want to run steps in PART1 and PART2 without pausing. 
      -part2 : Use this option to resume the pipeline at PART2. You may edit the <file of sample_dirs> file 
-               and/or change the highexpressor cutoff value.
+               and/or change the highexpresser cutoff value.
 
      [resume options]
      You may not change the normalization parameters with resume option.
@@ -39,14 +39,19 @@ OPTIONS:
      -gz : set this if the unaligned files are compressed
 
      [normalization parameters]
-     -cutoff_highexp <n> : is cutoff % value to identify highly expressed genes/exons.
-                           the script will consider genes/exons with gene/exonpercents greater than n(%) as high expressors,
-                           remove them from the list of genes/exons and remove the reads that map to those genes/exons.
-                           (Default = 100; with the default cutoff, exons expressed >5% will be reported)
-     -cutoff_lowexp <n> : is cutoff counts to identify low expressors in the final spreadsheets (exon, intron and junc).
-                          the script will consider features with sum of counts for all samples less than <n> as low expressors
+     -cutoff_highexp <n> : is cutoff % value to identify highly expressed genes/exons/introns.
+                           the script will consider genes/exons/introns with gene/exon/intronpercents greater than n(%) as high expressers,
+                           report the list of highly expressed genes/exons and remove the reads that map to those genes/exons/introns.
+                           (Default = 100; with the default cutoff, genes/exons/introns expressed >5% will be reported)
+     -cutoff_lowexp <n> : is cutoff counts to identify low expressers in the final spreadsheets (exon, intron and junc).
+                          the script will consider features with sum of counts for all samples less than <n> as low expressers
                           and remove them from all samples for the final spreadsheets.
                           (Default = 0; this will remove features with sum of counts = 0)
+
+     -percent <n> : is used for generating master list of exons and genes.
+                    by default, 10% of the size of first and last exon of each transcript
+                    will be added to the start of the first and the end of the last exon, respectively.
+                    use this option to change the percentage <n>. (<n> has to be a number between 0-100)
 
      [exon-intron-junction normalization only]
      -novel_off : set this if you DO NOT want to generate/use a study-specific master list of exons 
@@ -75,10 +80,11 @@ my $unaligned_z = "";
 my $min = 10;
 my $max = 2000;
 my $cutoff_he = 100;
-my $filter_high_expressors = "false";
+my $percent = 10;
+my $filter_high_expressers = "false";
 my $i_exon = 20;
 my $i_intron = 10;
-my $filter_low_expressors = "false";
+my $filter_low_expressers = "false";
 my $novel = "true";
 my $shfile_name = "runall_normalization.sh";
 my $resume = "false";
@@ -205,9 +211,17 @@ for(my $i=0; $i<@ARGV; $i++) {
         $cutoff_he = $ARGV[$i+1];
         $i++;
         $option_found = "true";
-	$filter_high_expressors = "true";
+	$filter_high_expressers = "true";
         if ($cutoff_he !~ /(\d+$)/ ){
             die "-cutoff_highexp <n> : <n> needs to be a number\n";
+        }
+    }
+    if ($ARGV[$i] eq '-percent'){
+	$percent = $ARGV[$i+1];
+	$i++;
+	$option_found = "true";
+	if (($percent !~ /(\d+$)/) || ($percent > 100) || ($percent < 0) ){
+            die "-percent <n> : <n> needs to be a number between 0-100\n";
         }
     }
     if ($ARGV[$i] eq '-depthE'){
@@ -230,7 +244,7 @@ for(my $i=0; $i<@ARGV; $i++) {
         $cutoff_temp = $ARGV[$i+1];
         $i++;
         $option_found = "true";
-        $filter_low_expressors = "true";
+        $filter_low_expressers = "true";
         if ($cutoff_temp !~ /(\d+$)/ ){
             die "-cutoff_lowexp <n> : <n> needs to be a number\n";
         }
@@ -256,7 +270,7 @@ my $dirs = `wc -l $sample_dir`;
 my @a = split(" ", $dirs);
 my $num_samples = $a[0];
 my $cutoff_le = 0;
-if ($filter_low_expressors eq "true"){
+if ($filter_low_expressers eq "true"){
     $cutoff_le = $cutoff_temp;
 }
 $LOC =~ s/\/$//;
@@ -279,27 +293,6 @@ use Cwd 'abs_path';
 my $norm_script_dir = abs_path($0);
 $norm_script_dir =~ s/\/run_normalization//;
 
-my $geneinfo = $GENE_INFO_FILE;
-unless (-e $geneinfo){
-    die "ERROR: cannot find file \"$geneinfo\"\nYou need to provide [1] gene information file (#2 GENOME INFO in your cfg file \"$cfg_file\")\n\n";
-}
-my $genome = $GENOME_FA;
-unless (-e $genome){
-    die "ERROR: cannot find file \"$genome\"\nYou need to provide [2] genome sequence one-line fasta file (#2 GENOME INFO in your cfg file \"$cfg_file\")\n\n";
-}
-my $fai = $GENOME_FAI;
-unless (-e $fai){
-    die "ERROR: cannot find file \"$fai\"\nYou need to provide [3] FASTA index file (#2 GENOME INFO in your cfg file \"$cfg_file\")\n\n";
-}
-my $annot = $ANNOTATION_FILE;
-unless (-e $annot){
-    die "ERROR: cannot find file \"$annot\"\nYou need to provide annotation file (#3 ANNOTATION INFO in your cfg file \"$cfg_file\")\n\n";
-}
-my $ensGene = $ENSGENES_FILE;
-unless (-e $ensGene){
-    die "ERROR: cannot find file \"$ensGene\"\nYou need to provide ensembl gene file (#4 Ensembl Genes in your cfg file \"$cfg_file\")\n\n";
-}
-
 my $normcnt = 0;
 if ($GENE_NORM =~ /true/i){
     $GNORM = "true";
@@ -311,17 +304,63 @@ if ($EXON_INTRON_JUNCTION_NORM =~ /^true/i){
 }
 
 if ($normcnt == 0){
-    die "ERROR: Please select a type of Normalization you'd like to use (#0 NORMALIZATION TYPE in your cfg file \"$cfg_file\")\n\n";
+    die "ERROR: Please select a type of Normalization you'd like to use (# 0. NORMALIZTION and DATA TYPE - [A] Normalization Type in your cfg file \"$cfg_file\")\n\n";
+}
+my $geneinfo;
+if ($EIJ eq "true"){
+    $geneinfo = $GENE_INFO_FILE;
+    unless (-e $geneinfo){
+	die "ERROR: cannot find file \"$geneinfo\"\nYou need to provide [2] gene information file for Exon-Intron-Junction Normalization (# 2. GENE INFO in your cfg file \"$cfg_file\")\n\n";
+    }
+}
+my $genome = $GENOME_FA;
+unless (-e $genome){
+    die "ERROR: cannot find file \"$genome\"\nYou need to provide [1] genome sequence one-line fasta file (# 3. FA and FAI in your cfg file \"$cfg_file\")\n\n";
+}
+my $fai = $GENOME_FAI;
+unless (-e $fai){
+    die "ERROR: cannot find file \"$fai\"\nYou need to provide [2] index file (# 3. FA and FAI in your cfg file \"$cfg_file\")\n\n";
+}
+my $annot;
+if ($EIJ eq "true"){
+    $annot = $ANNOTATION_FILE;
+    unless (-e $annot){
+	die "ERROR: cannot find file \"$annot\"\nYou need to provide [3] Annotation file for [Exon-Intron-Junction Normalization] (# 2. GENE INFO in your cfg file \"$cfg_file\")\n\n"; 
+    }
+}
+my $ensGene;
+if ($GNORM eq "true"){
+    $ensGene = $ENSGENES_FILE;
+    unless (-e $ensGene){
+	die "ERROR: cannot find file \"$ensGene\"\nYou need to provide [1] Gene information file for [Gene Normalization] (# 2. GENE INFO in your cfg file \"$cfg_file\")\n\n";
+    }
 }
 
-my $sam2cov = "false";
+
 my $strand_info = "";
+my $strand_info_sam2cov = "";
+if ($STRANDED =~ /^true/i){
+    $strand_info_sam2cov = "-str";
+    my $strand_flag = 0;
+    if ($FWD =~ /^true/i){
+	$strand_flag++;
+	$strand_info = "-str_f";
+    }
+    if ($REV =~ /^true/i){
+	$strand_flag++;
+	$strand_info = "-str_r";
+    }
+    if ($strand_flag ne "1"){
+	die "Please specify the read orientation. (# 0. NORMALIZTION and DATA TYPE - [B] Stranded Data in your cfg file \"$cfg_file\")\n\n";
+    }
+}
+my $sam2cov = "false";
 my $sam2cov_loc;
 if ($SAM2COV =~ /^true/i){
     $sam2cov = "true";
     my $num_cov = 0;
     unless (-e $SAM2COV_LOC){
-	die "You need to provide sam2cov location. (#5 DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
+	die "You need to provide sam2cov location. (# 4. DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
     }
     $sam2cov_loc = $SAM2COV_LOC;
     if ($RUM =~ /^true/i){
@@ -333,10 +372,7 @@ if ($SAM2COV =~ /^true/i){
 	$num_cov++;
     }
     if ($num_cov ne '1'){
-	die "Please specify which aligner was used. (#5 DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
-    }
-    if ($STRAND_SPECIFIC =~ /^true/i){
-	$strand_info = "-str";
+	die "Please specify which aligner was used. (# 4. DATA VISUALIZATION in your cfg file \"$cfg_file\")\n\n";
     }
 }
 my $delete_int_sam = "true";
@@ -541,7 +577,7 @@ if ($part2 eq "true"){
     if (($p2_I > $def_I)){
 	die "ERROR: Check \"-depthI <n>\" option. <n> cannot be greater than $def_I.\n";
     }
-#if -part2 is set and $novel is true, check and make sure study-specific master list of exon exists.
+    #if -part2 is set and $novel is true, check and make sure study-specific master list of exon exists.
     if ($novel eq "true"){
 	unless (-e "$LOC/master_list_of_exons.$study.txt"){
 	    die "ERROR: cannot find file \"$LOC/master_list_of_exons.$study.txt\".\nCreate a study-specific master list of exons by running step 3)-B. Get Novel Exons.\n";

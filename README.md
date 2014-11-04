@@ -12,8 +12,8 @@
 
 #####B. Input Directory Structure
 - Give `STUDY` directory a unique name.
-- Make sure the unaligned reads and alignment outputs(SAM files) are in each sample directory inside the `READS` folder.
-- All alignment files (SAM files) MUST have the same name.
+- Make sure the unaligned reads and alignment outputs (SAM files) are in each sample directory inside the `READS` folder.
+- All alignment files (SAM files) **MUST have the same name**.
 - SAM files should have unique read ids.
 
 <pre>
@@ -35,7 +35,23 @@ STUDY
 </pre>
 
 #####C. Configuration File
-Get the `template.cfg` file from `Normalization/` and modify as you need. Follow the instructions in the config file. You can choose GENE Normalization, EXON_INTRON_JUNCTION Normalization or Both methods.
+Get the `template_version.cfg` file from `Normalization/` and modify as you need. 
+|                                                                    | OPTIONS                                                                                                                                                                                                                    | Notes                                                                                                                                                                                                   |
+|--------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0. NORMALIZATION and DATA TYPE                                     |                                                                                                                                                                                                                            |                                                                                                                                                                                                         |
+| [A] Normalization Type                                             | Set GENE_NORM, and/or EXON_INTRON_JUNCTION_NORM to TRUE                                                                                                                                                                    |                                                                                                                                                                                                         |
+| [B] Stranded Data                                                  | If the data is stranded, set STRANDED to TRUE.  Set FWD to TRUE if forward read is in the same orientation as the transcripts/genes. Set REV to TRUE if reverse read is in the same orientation as the transcripts/genes.  | When dUTP-based protocol (e.g. Illumina TruSeq stranded protocol) is used, strand information comes from reverse read.                                                                                  |
+|                                                                    |                                                                                                                                                                                                                            |                                                                                                                                                                                                         |
+| 1. CLUSTER INFO                                                    | If you're using either SGE (Sun Grid Engine) or LSF (Load Sharing Facility), simply set the cluster name to TRUE. If not, use OTHER_CLUSER option.                                                                         | You may edit the queue names and max_jobs for SGE_CLUSTER and LSF_CLUSTER option.                                                                                                                       |
+|                                                                    |                                                                                                                                                                                                                            |                                                                                                                                                                                                         |
+| 2. GENE INFO                                                       | Provide a full path to gene information file.                                                                                                                                                                              | You may use the same file for both normalization types ([1] and [2]).                                                                                                                                   |
+| [1] Gene information file for [Gene Normalization]                 | Gene info file must contain columns with the following suffixes: name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value                                                                 | * Gene normalization requires an ensembl gene info file.ensGenes files for mm9, hg19, and dm3 are available in Normalization/norm_scripts directory: /path/to/Normalization/norm_scripts/*_ensGenes.txt |
+| [2] Gene information file for [Exon-Intron-Junction Normalization] | Gene info file must contain columns with the following suffixes: chrom, strand, txStart, txEnd, exonStarts, and exonEnds.                                                                                                  | ucsc gene info files for mm9, hg19, and dm3 are available for download: http://itmat.indexes.s3.amazonaws.com/*_ucsc_gene_info_header.txt                                                               |
+| [3] Annotation file for [Exon-Intron-Junction Normalization]       | This file should be downloaded from UCSC known-gene track including the following suffixes: name, chrom, exonStarts, exonEnd, geneSymbol, and description.                                                                 | Annotation files for mm9 and hg19 are available in Normalization/norm_scripts directory: /path/to/Normalization/norm_scripts/ucsc_known_*                                                               |
+|                                                                    |                                                                                                                                                                                                                            |                                                                                                                                                                                                         |
+| 3. FA and FAI                                                      | Provide a full path to fa and fai file.                                                                                                                                                                                    |                                                                                                                                                                                                         |
+| [1] genome sequence one-line fasta file                            | ucsc genome fa files for mm9, hg19, and dm3 are available for download: http://itmat.indexes.s3.amazonaws.com/*_genome_one-line-seqs.fa                                                                                    |                                                                                                                                                                                                         |
+| [2] index file                                                     | you can get fai file using samtools (samtools faidx )                                                                                                                                                                      |                                                                                                                                                                                                         |
 
 #####D. File of Sample Directories and Unaligned Reads
 ###### i. File of Sample Directories
@@ -68,11 +84,11 @@ Get the gene information file and genome sequence one-line fasta file.
 ###### i. mm9, hg19, and dm3
 The following files are available for download: 
 
-     http://itmat.indexes.s3.amazonaws.com/mm9_ucsc_gene_info.txt
+     http://itmat.indexes.s3.amazonaws.com/mm9_ucsc_gene_info_header.txt
      http://itmat.indexes.s3.amazonaws.com/mm9_genome_one-line-seqs.fa
-     http://itmat.indexes.s3.amazonaws.com/hg19_ucsc_gene_info.txt
+     http://itmat.indexes.s3.amazonaws.com/hg19_ucsc_gene_info_header.txt
      http://itmat.indexes.s3.amazonaws.com/hg19_genome_one-line-seqs.fa
-     http://itmat.indexes.s3.amazonaws.com/dm3_refseq_gene_info.txt
+     http://itmat.indexes.s3.amazonaws.com/dm3_refseq_gene_info_header.txt
      http://itmat.indexes.s3.amazonaws.com/dm3_genome_one-line-seqs.fa
 
 ###### ii. other organisms

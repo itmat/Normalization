@@ -11,14 +11,16 @@ where:
 option:
  -NU: set this if you want to use non-unique quants, otherwise by default it will 
       use unique quants files as input
+
  -novelexon <file> : provide full path of list of novel exons file with this option to label the exons
 
+ -stranded : set this if your data is strand-specific.
 
 ";
 if(@ARGV<3) {
     die $USAGE;
 }
-
+my $stranded = "false";
 my $nuonly = 'false';
 my ($arg_recognized, $novellist);
 my $novelexon = "false";
@@ -27,6 +29,10 @@ for(my $i=3; $i<@ARGV; $i++) {
     if($ARGV[$i] eq '-NU') {
 	$nuonly = 'true';
 	$arg_recognized = 'true';
+    }
+    if ($ARGV[$i] eq '-stranded'){
+	$arg_recognized = "true";
+	$stranded = "true";
     }
     if ($ARGV[$i] eq "-novelexon"){
         $arg_recognized = "true";
@@ -62,38 +68,78 @@ if ($type =~ /^gene/i){
     $norm_dir = $norm_dir . "NORMALIZED_DATA/GENE";
 }
 
-my $exon_dir = $norm_dir . "/exonmappers";
-my $nexon_dir = $norm_dir . "/notexonmappers";
+my $exon_dir = $norm_dir . "/FINAL_SAM/exonmappers";
+my $intron_dir = $norm_dir . "/FINAL_SAM/notexonmappers";
 my $spread_dir = $norm_dir . "/SPREADSHEETS";
+my ($exon_dir_a, $intron_dir_a);
+if ($stranded eq "true"){
+    $exon_dir = $norm_dir . "/FINAL_SAM/exonmappers/sense";
+    $intron_dir = $norm_dir . "/FINAL_SAM/intronmappers/sense";
+    $exon_dir_a = $norm_dir . "/FINAL_SAM/exonmappers/antisense";
+    $intron_dir_a = $norm_dir . "/FINAL_SAM/intronmappers/antisense";
+}
 
 unless (-d $spread_dir){
     `mkdir -p $spread_dir`;
 }
 my ($out, $sample_name_file, $out_min, $out_max);
+my ($out_a, $sample_name_file_a, $out_min_a, $out_max_a);
 if ($type =~ /^exon/i){
     $out = "$spread_dir/master_list_of_exons_counts_u.$study.txt";
     $sample_name_file = "$norm_dir/file_exonquants_u.txt";
+    if ($stranded eq "true"){
+	$out = "$spread_dir/master_list_of_exons_counts_u.sense.$study.txt";
+	$sample_name_file = "$norm_dir/file_exonquants_u.sense.txt";
+	$out_a = "$spread_dir/master_list_of_exons_counts_u.antisense.$study.txt";
+	$sample_name_file_a = "$norm_dir/file_exonquants_u.antisense.txt";
+    }
     if ($nuonly eq "true"){
 	$out =~ s/_u.$study.txt/_nu.$study.txt/;
 	$sample_name_file =~ s/_u.txt/_nu.txt/;
+	$out =~ s/_u.sense.$study.txt/_nu.sense.$study.txt/;
+	$sample_name_file =~ s/_u.sense.txt/_nu.sense.txt/;
+	$out_a =~ s/_u.antisense.$study.txt/_nu.antisense.$study.txt/;
+	$sample_name_file_a =~ s/_u.antisense.txt/_nu.antisense.txt/;
     }
 }
 elsif ($type =~ /^gene/i){
     $out_min = "$spread_dir/master_list_of_genes_counts_u.MIN.$study.txt";
     $out_max = "$spread_dir/master_list_of_genes_counts_u.MAX.$study.txt";
     $sample_name_file = "$norm_dir/file_genequants_u.txt";
+    if ($stranded eq "true"){
+	$out_min = "$spread_dir/master_list_of_genes_counts_u.MIN.sense.$study.txt";
+	$out_max = "$spread_dir/master_list_of_genes_counts_u.MAX.sense.$study.txt";
+	$out_min_a = "$spread_dir/master_list_of_genes_counts_u.MIN.antisense.$study.txt";
+	$out_max_a = "$spread_dir/master_list_of_genes_counts_u.MAX.antisense.$study.txt";
+	$sample_name_file = "$norm_dir/file_genequants_u.sense.txt";
+	$sample_name_file_a = "$norm_dir/file_genequants_u.antisense.txt";
+    }
     if ($nuonly eq "true"){
         $out_min =~ s/_u.MIN/_nu.MIN/;
         $out_max =~ s/_u.MAX/_nu.MAX/;
         $sample_name_file =~ s/_u.txt/_nu.txt/;
+        $sample_name_file =~ s/_u.sense.txt/_nu.sense.txt/;
+	$out_min_a =~ s/_u.MIN/_nu.MIN/;
+	$out_max_a = s/_u.MAX/_nu.MAX/;
+	$sample_name_file_a =~ s/_u.antisense.txt/_nu.antisense.txt/;
     }
 }
 elsif ($type =~ /^intron/i){
     $out = "$spread_dir/master_list_of_introns_counts_u.$study.txt";
     $sample_name_file = "$norm_dir/file_intronquants_u.txt";
+    if ($stranded eq "true"){
+        $out = "$spread_dir/master_list_of_introns_counts_u.sense.$study.txt";
+        $sample_name_file = "$norm_dir/file_intronquants_u.sense.txt";
+        $out_a = "$spread_dir/master_list_of_introns_counts_u.antisense.$study.txt";
+        $sample_name_file_a = "$norm_dir/file_intronquants_u.antisense.txt";
+    }
     if ($nuonly eq "true"){
-	$out =~ s/_u.$study.txt/_nu.$study.txt/;
-	$sample_name_file =~ s/_u.txt/_nu.txt/;
+        $out =~ s/_u.$study.txt/_nu.$study.txt/;
+        $sample_name_file =~ s/_u.txt/_nu.txt/;
+	$out =~ s/_u.sense.$study.txt/_nu.sense.$study.txt/;
+        $sample_name_file =~ s/_u.sense.txt/_nu.sense.txt/;
+        $out_a =~ s/_u.antisense.$study.txt/_nu.antisense.$study.txt/;
+        $sample_name_file_a =~ s/_u.antisense.txt/_nu.antisense.txt/;
     }
 }
 else{
@@ -104,47 +150,102 @@ else{
 if($type =~ /^exon/i){
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     open(OUT, ">$sample_name_file");
+    if ($stranded eq "true"){
+	open(OUT_A, ">$sample_name_file_a");
+    }
     while (my $line = <INFILE>){
 	chomp($line);
 	my $id = $line;
 	if($nuonly eq "false"){
-	    print OUT "$exon_dir/Unique/$id.exonmappers.norm_u_exonquants\n";
+	    if ($stranded ne "true"){
+		print OUT "$exon_dir/$id.exonmappers.norm_u.exonquants\n";
+	    }
+	    if ($stranded eq "true"){
+		print OUT "$exon_dir/$id.exonmappers.norm_u.sense.exonquants\n";
+		print OUT_A "$exon_dir_a/$id.exonmappers.norm_u.antisense.exonquants\n";
+	    }
 	}
 	if($nuonly eq "true"){
-            print OUT "$exon_dir/NU/$id.exonmappers.norm_nu_exonquants\n";
+            if ($stranded ne "true"){
+                print OUT "$exon_dir/$id.exonmappers.norm_nu.exonquants\n";
+            }
+            if ($stranded eq "true"){
+                print OUT "$exon_dir/$id.exonmappers.norm_nu.sense.exonquants\n";
+                print OUT_A "$exon_dir_a/$id.exonmappers.norm_nu.antisense.exonquants\n";
+            }
 	}
     }
+    close(OUT);
+    close(OUT_A);
+    close(INFILE);
 }
-if ($type =~ /^gene/i){
+
+if($type =~ /^intron/i){
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     open(OUT, ">$sample_name_file");
+    if ($stranded eq "true"){
+        open(OUT_A, ">$sample_name_file_a");
+    }
     while (my $line = <INFILE>){
         chomp($line);
         my $id = $line;
         if($nuonly eq "false"){
-            print OUT "$norm_dir/FINAL_SAM/Unique/$id.FINAL.norm_u.genequants\n";
+            if ($stranded ne "true"){
+                print OUT "$intron_dir/$id.intronmappers.norm_u.intronquants\n";
+            }
+            if ($stranded eq "true"){
+                print OUT "$intron_dir/$id.intronmappers.norm_u.sense.intronquants\n";
+                print OUT_A "$intron_dir_a/$id.intronmappers.norm_u.antisense.intronquants\n";
+            }
         }
         if($nuonly eq "true"){
-            print OUT "$norm_dir/FINAL_SAM/NU/$id.FINAL.norm_nu.genequants\n";
+            if ($stranded ne "true"){
+                print OUT "$intron_dir/$id.intronmappers.norm_nu.intronquants\n";
+            }
+            if ($stranded eq "true"){
+                print OUT "$intron_dir/$id.intronmappers.norm_nu.sense.intronquants\n";
+                print OUT_A "$intron_dir_a/$id.intronmappers.norm_nu.antisense.intronquants\n";
+            }
         }
     }
+    close(OUT);
+    close(OUT_A);
+    close(INFILE);
 }
-close(INFILE);
-close(OUT);
 
-if ($type =~ /^intron/i){
+
+if ($type =~ /^gene/i){
+
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     open(OUT, ">$sample_name_file");
-    while (my $line = <INFILE>){
-	chomp($line);
-	my $id = $line;
-	if($nuonly eq "false"){
-            print OUT "$nexon_dir/Unique/$id.intronmappers.norm_u_intronquants\n";
-	}
-	if($nuonly eq "true"){
-	    print OUT "$nexon_dir/NU/$id.intronmappers.norm_nu_intronquants\n";
-	}
+    if ($stranded eq "true"){
+        open(OUT_A, ">$sample_name_file_a");
     }
+    while (my $line = <INFILE>){
+        chomp($line);
+        my $id = $line;
+        if($nuonly eq "false"){
+            if ($stranded ne "true"){
+                print OUT "$norm_dir/FINAL_SAM/$id.gene.norm_u.genefilter.genequants\n";
+            }
+            if ($stranded eq "true"){
+                print OUT "$norm_dir/FINAL_SAM/$id.gene.norm_u.genefilter.sense.genequants\n";
+                print OUT_A "$norm_dir/FINAL_SAM/$id.gene.norm_u.genefilter.antisense.genequants\n";
+            }
+        }
+        if($nuonly eq "true"){
+            if ($stranded ne "true"){
+                print OUT "$norm_dir/FINAL_SAM/$id.gene.norm_nu.genefilter.genequants\n";
+            }
+            if ($stranded eq "true"){
+                print OUT "$norm_dir/FINAL_SAM/$id.gene.norm_nu.genefilter.sense.genequants\n";
+                print OUT_A "$norm_dir/FINAL_SAM/$id.gene.norm_nu.genefilter.antisense.genequants\n";
+            }
+        }
+    }
+    close(OUT);
+    close(OUT_A);
+    close(INFILE);
 }
 close(INFILE);
 close(OUT);
@@ -185,12 +286,18 @@ while($file = <FILES>) {
     my @fields = split("/",$file);
     my $size = @fields;
     my $id = $fields[$size-1];
-    $id =~ s/.exonmappers.norm_u_exonquants//;
-    $id =~ s/.exonmappers.norm_nu_exonquants//;
-    $id =~ s/.intronmappers.norm_u_intronquants//;
-    $id =~ s/.intronmappers.norm_nu_intronquants//;
-    $id =~ s/.FINAL.norm_u.genequants//;
-    $id =~ s/.FINAL.norm_nu.genequants//;
+    $id =~ s/.exonmappers.norm_u.exonquants//;
+    $id =~ s/.exonmappers.norm_nu.exonquants//;
+    $id =~ s/.intronmappers.norm_u.intronquants//;
+    $id =~ s/.intronmappers.norm_nu.intronquants//;
+    $id =~ s/.exonmappers.norm_u.sense.exonquants//;
+    $id =~ s/.exonmappers.norm_nu.sense.exonquants//;
+    $id =~ s/.intronmappers.norm_u.sense.intronquants//;
+    $id =~ s/.intronmappers.norm_nu.sense.intronquants//;
+    $id =~ s/.gene.norm_u.genefilter.sense.genequants//;
+    $id =~ s/.gene.norm_u.genefilter.genequants//;
+    $id =~ s/.gene.norm_nu.genefilter.sense.genequants//;
+    $id =~ s/.gene.norm_nu.genefilter.genequants//;
     $ID[$filecnt] = $id;
     open(INFILE, $file);
     my $firstline = <INFILE>;
@@ -231,7 +338,10 @@ if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
 	    open(IN, $novellist) or die "cannot find file \"$novellist\"\n";
 	    while(my $line = <IN>){
 		chomp($line);
-		$NOVEL{$line} = 1;
+		my @a = split(/\t/,$line);
+		my $exon = $a[0];
+		my $strand = $a[1];
+		$NOVEL{$exon} = $strand;
 	    }
 	    close(IN);
 	}
@@ -261,6 +371,9 @@ if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
     }
     close(OUTFILE);
 }
+
+
+
 if ($type =~ /^gene/i){
     open(OUT_MIN, ">$out_min");
     open(OUT_MAX, ">$out_max");
@@ -285,4 +398,124 @@ if ($type =~ /^gene/i){
     close(OUT_MIN);
     close(OUT_MAX);
 }
+#antisense
+if ($stranded eq "true"){
+    open(FILES, $sample_name_file_a);
+    my $file = <FILES>;
+    close(FILES);
+    
+    open(INFILE, $file) or die "cannot find file \"$file\"\n";
+    my $firstline = <INFILE>;
+    my $rowcnt = 0;
+    my (@id, @sym, @coord);
+    while(my $line = <INFILE>) {
+	chomp($line);
+	if ($type =~ /^gene/i){
+	    if ($line !~ /^EN/){
+		next;
+	    }
+	}
+	if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
+	    if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
+		next;
+	    }
+	}
+	my @a = split(/\t/,$line);
+	$id[$rowcnt] = $a[0];
+	$sym[$rowcnt] = $a[3];
+	$coord[$rowcnt] = $a[4];
+	$rowcnt++;
+    }
+    close(INFILE);
+    open(FILES, $sample_name_file_a);
+    my $filecnt = 0;
+    my (@ID, @DATA, @DATA_MIN, @DATA_MAX);
+    while($file = <FILES>) {
+	chomp($file);
+	my @fields = split("/",$file);
+	my $size = @fields;
+	my $id = $fields[$size-1];
+	$id =~ s/.exonmappers.norm_u.exonquants//;
+	$id =~ s/.exonmappers.norm_nu.exonquants//;
+	$id =~ s/.intronmappers.norm_u.intronquants//;
+	$id =~ s/.intronmappers.norm_nu.intronquants//;
+	$id =~ s/.exonmappers.norm_u.sense.exonquants//;
+	$id =~ s/.exonmappers.norm_nu.sense.exonquants//;
+	$id =~ s/.intronmappers.norm_u.sense.intronquants//;
+	$id =~ s/.intronmappers.norm_nu.sense.intronquants//;
+	$id =~ s/.gene.norm_nu.genefilter.antisense.genequants//;
+	$id =~ s/.gene.norm_u.genefilter.antisense.genequants//;
+	$ID[$filecnt] = $id;
+	open(INFILE, $file);
+	my $firstline = <INFILE>;
+	my $rowcnt = 0;
+	while(my $line = <INFILE>) {
+	    chomp($line);
+	    my @a = split(/\t/,$line);
+	    if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
+		if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
+		    next;
+		}
+		$DATA[$filecnt][$rowcnt] = $a[1];
+	    }
+	    if ($type =~ /^gene/i){
+		if ($line !~ /^EN/){
+		    next;
+		}
+		$DATA_MIN[$filecnt][$rowcnt] = $a[1];
+		$DATA_MAX[$filecnt][$rowcnt] = $a[2];
+	    }
+	    $rowcnt++;
+	}
+	close(INFILE);
+	$filecnt++;
+    }
+    close(FILES);
+    my %NOVEL;
+    if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
+	open(OUTFILE, ">$out_a");
+	print OUTFILE "id";
+	for(my $i=0; $i<@ID; $i++) {
+	    print OUTFILE "\t$ID[$i]";
+	}
+	if ($type =~ /^exon/i){
+	    if ($novelexon eq "true"){
+		print OUTFILE "\tNovelExon";
+		open(IN, $novellist) or die "cannot find file \"$novellist\"\n";
+		while(my $line = <IN>){
+		    chomp($line);
+		    my @a = split(/\t/,$line);
+		    my $exon = $a[0];
+		    my $strand = $a[1];
+		    $NOVEL{$exon} = $strand;
+		}
+		close(IN);
+	    }
+	}
+	print OUTFILE "\n";
+	for(my $i=0; $i<$rowcnt; $i++) {
+	    if ($type =~ /^exon/i){
+		print OUTFILE "exon:$id[$i]";
+	    }
+	    if ($type =~ /^intron/i){
+		print OUTFILE "intron:$id[$i]";
+	    }
+	    for(my $j=0; $j<$filecnt; $j++) {
+		print OUTFILE "\t$DATA[$j][$i]";
+	    }
+	    if ($type =~ /^exon/i){
+		if ($novelexon eq "true"){
+		    if (exists $NOVEL{$id[$i]}){
+			print OUTFILE "\tN";
+		    }
+		    else{
+			print OUTFILE "\t.";
+		    }
+		}
+	    }
+	    print OUTFILE "\n";
+	}
+    }
+}
+
 print "got here\n";

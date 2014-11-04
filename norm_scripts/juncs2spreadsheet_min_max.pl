@@ -35,7 +35,7 @@ open(OUT, ">$sample_name_file");
 while($line = <INFILE>){
     chomp($line);
     $id = $line;
-    print OUT "$junc_dir/$id.FINAL.norm_junctions_all.rum\n";
+    print OUT "$junc_dir/$id.merged_junctions_all.rum\n";
 }
 close(INFILE);
 close(OUT);
@@ -47,7 +47,7 @@ while ($file = <FILES>){
     @fields = split("/",$file);
     $size = @fields;
     $id = $fields[$size-1];
-    $id =~ s/.FINAL.norm_junctions_all.rum//;
+    $id =~ s/.merged_junctions_all.rum//;
     $ID[$filecnt] = $id;
     open(INFILE, $file);
     while($line = <INFILE>){

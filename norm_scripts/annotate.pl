@@ -26,7 +26,7 @@ my $output_file = $ARGV[2];
 
 my $onecol = 'false'; 
 my $outputdesc = 'true'; 
-for(my $i=2; $i<@ARGV; $i++) {
+for(my $i=3; $i<@ARGV; $i++) {
   if($ARGV[$i] eq '-onecol') {
     $onecol = "true";
   }

@@ -54,11 +54,11 @@ my $sorted_junc = $junc_name;
 $sorted_junc =~ s/.rum/.sorted.rum/;
 my $master_list = "$LOC/master_list_of_exons.txt";
 my $final_list = "$LOC/master_list_of_exons.$study.txt";
-my $annot_file = $ARGV[3];
+my $genes_file = $ARGV[3];
 my %EX_START;
 my %EX_END;
 my %EXON_LIST;
-
+my %STR;
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while (my $line = <INFILE>){
     chomp($line);
@@ -72,10 +72,16 @@ while (my $line = <INFILE>){
     close(IN);
     foreach my $exon (@exons){
 	chomp($exon);
-	$EXON_LIST{$exon} = 1;
-	(my $chr, my $exonstart, my $exonend) = $exon =~  /^(.*):(\d*)-(\d*)$/g;
-	push (@{$EX_START{"$chr.$exonstart"}}, $exonend);
-	push (@{$EX_END{"$chr.$exonend"}}, $exonstart);
+	my @a = split(/\t/, $exon);
+	my $exon_id = $a[0];
+	my $str = $a[1];
+	$EXON_LIST{$exon_id} = 1;
+	$STR{$exon_id} = $str;
+	(my $chr, my $exonstart, my $exonend) = $exon_id =~  /^(.*):(\d*)-(\d*)$/g;
+	my $chr_st = "$chr.$exonstart";
+	my $chr_end = "$chr.$exonend";
+	push (@{$EX_START{$chr_st}}, $exonend);
+	push (@{$EX_END{$chr_end}}, $exonstart);
     }
 }
 close(INFILE);
@@ -85,16 +91,45 @@ my @exons = <IN>;
 close(IN);
 foreach my $exon (@exons){
     chomp($exon);
-    $EXON_LIST{$exon} = 2;
-    (my $chr, my $exonstart, my $exonend) = $exon =~  /^(.*):(\d*)-(\d*)$/g;
-    push (@{$EX_START{"$chr.$exonstart"} }, $exonend);
-    push (@{$EX_END{"$chr.$exonend"} }, $exonstart);
+    my @a = split(/\t/, $exon);
+    my $exon_name = $a[0];
+    my $strand = "";
+    if (@a > 1){
+	$strand = $a[1];
+	$STR{$exon_name} = $strand;
+    }
+    $EXON_LIST{$exon_name} = 2;
+    (my $chr, my $exonstart, my $exonend) = $exon_name =~  /^(.*):(\d*)-(\d*)/g;
+    my $chr_st = "$chr.$exonstart";
+    my $chr_end = "$chr.$exonend";
+    push (@{$EX_START{$chr_st} }, $exonend);
+    push (@{$EX_END{$chr_end} }, $exonstart);
 }
 
 my %gene_start;
 my %gene_end;
 
-open(GENE, $annot_file) or die "cannot find the '$annot_file' file\n";
+open(GENE, $genes_file) or die "cannot find file \"$genes_file\"\n";
+my $header = <GENE>;
+chomp($header);
+my @GHEADER = split(/\t/, $header);
+my ($txchrcol, $exonStcol, $exonEndcol);
+for(my $i=0; $i<@GHEADER; $i++){
+    if ($GHEADER[$i] =~ /.chrom/){
+        $txchrcol = $i;
+    }
+    if ($GHEADER[$i] =~ /.exonStarts$/){
+        $exonStcol = $i;
+    }
+    if ($GHEADER[$i] =~ /.exonEnds$/){
+        $exonEndcol = $i;
+    }
+}
+
+if ( !defined($txchrcol) || !defined($exonStcol) || !defined($exonEndcol)){
+    die "Your header must contain columns with the following suffixes: chrom, exonStarts, and exonEnds\n";
+}
+
 while(my $line = <GENE>){
     chomp($line);
     # skip header line
@@ -102,9 +137,9 @@ while(my $line = <GENE>){
 	next;
     }
     my @a = split(/\t/, $line);
-    my $gene_chr = $a[0];
-    my $exon_starts = $a[5];
-    my $exon_ends = $a[6];
+    my $gene_chr = $a[$txchrcol];
+    my $exon_starts = $a[$exonStcol];
+    my $exon_ends = $a[$exonEndcol];
     my @s = split(",", $exon_starts);
     my $last_exon_start = $s[@s-1] + 1;
     $gene_start{"$gene_chr.$last_exon_start"} = 1;
@@ -116,7 +151,7 @@ close(GENE);
 
 foreach my $key (keys %EXON_LIST){
     if ($EXON_LIST{$key} eq "1"){
-	(my $chr, my $exonstart, my $exonend) = $key =~  /^(.*):(\d*)-(\d*)$/g;
+	(my $chr, my $exonstart, my $exonend) = $key =~  /^(.*):(\d*)-(\d*)/g;
 	my $start = "$chr.$exonstart";
 	my $end = "$chr.$exonend";
 	if ((exists $gene_start{$start}) && (exists $gene_end{$end})){
@@ -139,7 +174,7 @@ foreach my $key (keys %EXON_LIST){
 
 # put all exon starts and exon ends into hash (annotated and novel)
 foreach my $exon (keys %EXON_LIST){
-    (my $chr, my $start, my $end) = $exon =~ /^(.*):(\d*)-(\d*)$/g;
+    (my $chr, my $start, my $end) = $exon =~ /^(.*):(\d*)-(\d*)/g;
     push (@{$EX_START{"$chr.$start"}}, $exon);
     push (@{$EX_END{"$chr.$end"}}, $exon);
 }
@@ -177,8 +212,14 @@ foreach my $exon (keys %EXON_LIST){
 open(OUT, ">$final_list");
 open(NOV, ">$LOC/$study.list_of_novel_exons.txt");
 foreach my $exon (keys %EXON_LIST){
-    print OUT "$exon\n";
-    print NOV "$exon\n" if ($EXON_LIST{$exon} eq "1");
+    if (defined $STR{$exon}){
+	print OUT "$exon\t$STR{$exon}\n";
+	print NOV "$exon\t$STR{$exon}\n" if ($EXON_LIST{$exon} eq "1");
+    }
+    else{
+	print OUT "$exon\n";
+	print NOV "$exon\n" if ($EXON_LIST{$exon} eq "1");
+    }
 }
 close(OUT);
 close(NOV);

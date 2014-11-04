@@ -8,12 +8,14 @@ where:
 <loc> is the path to the sample directories.
 
 options:
+ -stranded : set this if your data is strand-specific
+
  -novelexon : set this to label the novel exons in the final spreadsheet
 
- -u  :  set this if you want to return only unique, otherwise by default
+ -u  :  set this if you want to return only unique quants, otherwise by default
          it will use merged files and return min and max files.
 
- -nu :  set this if you want to return only non-unique, otherwise by default
+ -nu :  set this if you want to return only non-unique quants, otherwise by default
          it will use merged files and return min and max files.
 
  -lsf : set this if you want to submit batch jobs to LSF (PMACS cluster).
@@ -45,11 +47,11 @@ options:
 if(@ARGV<2) {
     die $USAGE;
 }
-
-my $novelexon = "false";
 my $U = "true";
 my $NU = "true";
 my $numargs = 0;
+my $stranded = "";
+my $novelexon = "false";
 my $njobs =200;
 my $numargs_c = 0;
 my $replace_mem = "false";
@@ -69,10 +71,6 @@ for(my $i=2; $i<@ARGV; $i++) {
         }
         $i++;
     }
-    if($ARGV[$i] eq "-novelexon"){
-	$option_found = "true";
-	$novelexon = "true";
-    }
     if($ARGV[$i] eq '-nu') {
         $U = "false";
 	$numargs++;
@@ -82,6 +80,14 @@ for(my $i=2; $i<@ARGV; $i++) {
         $NU = "false";
         $numargs++;
         $option_found = "true";
+    }
+    if($ARGV[$i] eq "-novelexon"){
+	$option_found = "true";
+	$novelexon = "true";
+    }
+    if($ARGV[$i] eq "-stranded"){
+        $option_found = "true";
+        $stranded = "-stranded";
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs_c++;
@@ -139,6 +145,7 @@ for(my $i=2; $i<@ARGV; $i++) {
         die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
+
 if($numargs > 1) {
     die "you cannot specify both -u and -nu, it will use merged files and return min and max files by default so if that's what you want don't use either arg -u or -nu.
 ";
@@ -183,15 +190,15 @@ if ($numargs eq "0"){
     $sh_exon = "$shdir/exonquants2spreadsheet_min_max.sh";
     open(OUTexon, ">$sh_exon");
     if ($novelexon eq "true"){
-	print OUTexon "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC exonquants -novelexon $novellist";
+	print OUTexon "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC exonquants -novelexon $novellist $stranded";
     }
     else{
-	print OUTexon "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC exonquants";
+	print OUTexon "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC exonquants $stranded";
     }
     close(OUTexon);
     $sh_intron = "$shdir/intronquants2spreadsheet_min_max.sh";
     open(OUTintron, ">$sh_intron");
-    print OUTintron "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC intronquants";
+    print OUTintron "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC intronquants $stranded";
     close(OUTintron);
     $sh_junctions = "$shdir/juncs2spreadsheet_min_max.sh";
     open(OUTjunctions, ">$sh_junctions");
@@ -219,24 +226,19 @@ else{
 	$sh_exon = "$shdir/exonquants2spreadsheet.u.sh";
 	open(OUTexon, ">$sh_exon");
 	if ($novelexon eq "true"){
-	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -novelexon $novellist";
+	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -novelexon $novellist $stranded";
 	}
 	else{
-	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants";
+	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants $stranded";
 	}
 	close(OUTexon);
 	$sh_intron = "$shdir/intronquants2spreadsheet.u.sh";
 	open(OUTintron, ">$sh_intron");
-	print OUTintron "perl $path/quants2spreadsheet.1.pl $FILE $LOC intronquants";
+	print OUTintron "perl $path/quants2spreadsheet.1.pl $FILE $LOC intronquants $stranded";
 	close(OUTintron);
-	$sh_junctions = "$shdir/juncs2spreadsheet.u.sh";
-	open(OUTjunctions, ">$sh_junctions");
-	print OUTjunctions "perl $path/juncs2spreadsheet.1.pl $FILE $LOC";
-	close(OUTjunctions);
 	$jobname = "$study.final_spreadsheet";
 	$lognameE ="$logdir/exonquants2spreadsheet.u";
 	$lognameI ="$logdir/intronquants2spreadsheet.u";
-	$lognameJ ="$logdir/juncs2spreadsheet.u";
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
@@ -245,33 +247,24 @@ else{
 	    sleep(10);
 	}
 	`$submit $jobname_option $jobname $request_memory_option$mem10 -o $lognameI.out -e $lognameI.err < $sh_intron`;
-	while (qx{$status | wc -l} > $njobs){
-	    sleep(10);
-	}
-	`$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameJ.out -e $lognameJ.err < $sh_junctions`;
     }
     if ($NU eq "true"){
         $sh_exon = "$shdir/exonquants2spreadsheet.nu.sh";
         open(OUTexon, ">$sh_exon");
 	if ($novelexon eq "true"){
-	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -NU -novelexon $novellist";
+	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -NU -novelexon $novellist $stranded";
 	}
 	else{
-	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -NU";
+	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -NU $stranded";
 	}
         close(OUTexon);
         $sh_intron = "$shdir/intronquants2spreadsheet.nu.sh";
         open(OUTintron, ">$sh_intron");
-        print OUTintron "perl $path/quants2spreadsheet.1.pl $FILE $LOC intronquants -NU";
+        print OUTintron "perl $path/quants2spreadsheet.1.pl $FILE $LOC intronquants -NU $stranded";
         close(OUTintron);
-        $sh_junctions = "$shdir/juncs2spreadsheet.nu.sh";
-        open(OUTjunctions, ">$sh_junctions");
-        print OUTjunctions "perl $path/juncs2spreadsheet.1.pl $FILE $LOC -NU";
-        close(OUTjunctions);
         $jobname = "$study.final_spreadsheet";
         $lognameE ="$logdir/exonquants2spreadsheet.nu";
         $lognameI ="$logdir/intronquants2spreadsheet.nu";
-        $lognameJ ="$logdir/juncs2spreadsheet.nu";
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
@@ -280,10 +273,15 @@ else{
 	    sleep(10);
 	}
         `$submit $jobname_option $jobname $request_memory_option$mem10 -o $lognameI.out -e $lognameI.err < $sh_intron`;
-	while (qx{$status | wc -l} > $njobs){
-	    sleep(10);
-	}
-        `$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameJ.out -e $lognameJ.err < $sh_junctions`;
     }
+    $sh_junctions = "$shdir/juncs2spreadsheet.u.sh";
+    open(OUTjunctions, ">$sh_junctions");
+    print OUTjunctions "perl $path/juncs2spreadsheet.1.pl $FILE $LOC";
+    close(OUTjunctions);
+    $lognameJ ="$logdir/juncs2spreadsheet.1";
+    while (qx{$status | wc -l} > $njobs){
+	sleep(10);
+    }
+    `$submit $jobname_option $jobname $request_memory_option$mem6 -o $lognameJ.out -e $lognameJ.err < $sh_junctions`;
 }
 print "got here\n";

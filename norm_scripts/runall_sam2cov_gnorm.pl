@@ -192,9 +192,7 @@ unless (-d $cov_dir){
     `mkdir $cov_dir`;
 }
 $finalsam_dir = "$norm_dir/FINAL_SAM";
-$final_U_dir = "$finalsam_dir/Unique";
-$final_NU_dir = "$finalsam_dir/NU";
-$final_M_dir = "$finalsam_dir/MERGED";
+$final_M_dir = "$finalsam_dir/merged";
 $fai_file = $ARGV[2]; # fai file
 $sam2cov = $ARGV[3];
 
@@ -203,49 +201,29 @@ while($line =  <INFILE>){
     chomp($line);
     $dir = $line;
     $id = $dir;
-    if ($numargs_u_nu eq '0'){
-	$filename = "$final_M_dir/$id.GNORM.sam";
-	unless (-d "$cov_dir/MERGED"){
-	    `mkdir "$cov_dir/MERGED"`;
-	}
-	$prefix = "$cov_dir/MERGED/$id.GNORM.sam";
+    if ($strand eq "true"){
+	$filename = "$final_M_dir/$id.merged.sam";
+	$prefix = "$cov_dir/$id.merged.sam";
 	$prefix_fwd = $prefix;
 	$prefix_rev = $prefix;
-	$prefix =~ s/sam//;
-	if ($strand eq "true"){
-	    $prefix_fwd =~ s/sam/fwd./g;
-	    $prefix_rev =~ s/sam/rev./g;
-	}
+	$prefix =~ s/sam$//;
+	$prefix_fwd =~ s/sam$/fwd./g;
+	$prefix_rev =~ s/sam$/rev./g;
     }
     else {
-	if ($U eq 'true'){
-	    $filename = "$final_U_dir/$id.GNORM.Unique.sam";
-	    unless (-d "$cov_dir/Unique"){
-		`mkdir "$cov_dir/Unique"`;
-	    }
-	    $prefix = "$cov_dir/Unique/$id.GNORM.Unique.sam";
-	    $prefix_fwd = $prefix;
-	    $prefix =~ s/sam//;
-	    $prefix_rev = $prefix;
-	    if ($strand eq "true"){
-		$prefix_fwd =~ s/sam/fwd./g;
-		$prefix_rev =~ s/sam/rev./g;
-	    }
+	if ($numargs_u_nu eq "0"){
+	    $filename = "$finalsam_dir/$id.gene.norm.sam";
+	    $prefix = "$cov_dir/$id.gene.norm.sam";
 	}
-	if ($NU eq 'true'){
-	    $filename = "$final_NU_dir/$id.GNORM.NU.sam";
-	    unless (-d "$cov_dir/NU"){
-		`mkdir "$cov_dir/NU"`;
-	    }
-	    $prefix = "$cov_dir/NU/$id.GNORM.NU.sam";
-	    $prefix_fwd = $prefix;
-	    $prefix_rev = $prefix;
-	    $prefix =~ s/sam//;
-	    if ($strand eq "true"){
-		$prefix_fwd =~ s/sam/fwd./g;
-		$prefix_rev =~ s/sam/rev./g;
-	    }
+	elsif ($U eq "true"){
+	    $filename = "$finalsam_dir/$id.gene.norm_u.sam";
+	    $prefix = "$cov_dir/$id.gene.norm_u.sam";
 	}
+	elsif ($NU eq "true"){
+	    $filename = "$finalsam_dir/$id.gene.norm_nu.sam";
+	    $prefix = "$cov_dir/$id.gene.norm_nu.sam";
+	}
+	$prefix =~ s/sam$//;
     }
     $shfile = "C.$id.sam2cov_gnorm.sh";
     $jobname = "$study.sam2cov_gnorm";

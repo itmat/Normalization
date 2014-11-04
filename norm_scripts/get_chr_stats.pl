@@ -111,10 +111,13 @@ while(my $line = <INFILE>){
     }
     foreach my $key (sort {cmpChrs($a,$b)} keys %CHR){
 	my $find = `grep -w $key $file`;
-        my @f = split(/\t/,$find);
-        my $count = $f[2];
-        chomp($count);
-        print OUT "$count\t";
+	my $count = "0.00";
+	if ($find !~ /^$/){
+	    my @f = split(/\t/,$find);
+	    $count = $f[2];
+	    chomp($count);
+	}
+	print OUT "$count\t";
     }
     print OUT "\n";
 }

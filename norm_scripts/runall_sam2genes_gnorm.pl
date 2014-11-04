@@ -5,9 +5,15 @@ my $USAGE = "\nUsage: perl runall_sam2genes_gnorm.pl <sample dirs> <loc> <ensGen
  
 <sample dirs> is  a file of sample directories with alignment output without path
 <loc> is where the sample directories are
-<ensGene file> ensembl table must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
+<ensGene file> ensembl table must contain columns with the following suffixes: name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
 
 option:
+ -se :  set this if the data is single end, otherwise by default it will assume it's a paired end data.
+
+ -str_f : set this if the data is strand-specific AND forward read is in the same orientation as the transcripts/genes.
+ 
+ -str_r : set this if the data is strand-specific AND reverse read is in the same orientation as the transcripts/genes.
+
  -u  :  set this if you are using unique mappers only.
         otherwise by default it will use both unique and non-unique mappers.
 
@@ -50,6 +56,10 @@ my $njobs = 200;
 my $submit = "";
 my $jobname_option = "";
 my $status;
+my $se = "";
+my $stranded = "false";
+my $orientation = "";
+my $str_args = 0;
 for (my $i=3; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -63,6 +73,22 @@ for (my $i=3; $i<@ARGV; $i++){
     if ($ARGV[$i] eq "-norm"){
 	$norm = "true";
 	$option_found = "true";
+    }
+    if ($ARGV[$i] eq "-se"){
+        $se = "-se";
+        $option_found = "true";
+    }
+    if ($ARGV[$i] eq "-str_f"){
+	$stranded = "true";
+	$orientation = "-str_f";
+        $option_found = "true";
+	$str_args++;
+    }
+    if ($ARGV[$i] eq "-str_r"){
+	$stranded = "true";
+	$orientation = "-str_r";
+        $option_found = "true";
+	$str_args++;
     }
     if($ARGV[$i] eq '-nu') {
         $U = "false";
@@ -108,14 +134,22 @@ for (my $i=3; $i<@ARGV; $i++){
             die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option> ,<status>\".\n";
         }
     }
+    if($option_found eq 'false') {
+	die "option \"$ARGV[$i]\" not recognized.\n";
+    }
 }
 if($numargs ne '1'){
     die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>,<jobname_option>,<status>\".\n
 ";
 }
 if($numargs_u_nu > 1) {
-    die "you cannot specify both -u and -nu\n.
+    die "you cannot use both -u and -nu\n.
 ";
+}
+if ($stranded eq "true"){
+    if ($str_args ne '1'){
+	die "please specify read orientation of stranded data: -str_f or -str-r\n";
+    }
 }
 
 my $LOC = $ARGV[1];
@@ -135,6 +169,7 @@ while(my $line = <IN>){
     chomp($line);
     my $id = $line;
     my ($filename_u, $filename_nu, $shfile_u, $shfile_nu, $logname_u, $logname_nu, $filename, $shfile, $logname);
+    my ($filename_a, $shfile_a, $logname_a);
     my $genedir = "$LOC/$id/GNORM";
     if ($norm eq "false"){
 	$filename_u = "$genedir/Unique/$id.filtered_u.sam";
@@ -145,30 +180,30 @@ while(my $line = <IN>){
 	$logname_nu = "$logdir/sam2genes_gnorm_nu.$id";
     }
     if ($norm eq "true"){
-	if (-d "$gnormdir/MERGED"){
-	    $filename = "$gnormdir/MERGED/$id.GNORM.sam";
-	    $shfile = "$shdir/G.$id.sam2genes_gnorm.2.sh";
-	    $logname = "$logdir/sam2genes_gnorm.2.$id";
-	    $U = "false";
-	    $NU = "false";
-	    $NORM_M = "true";
+	$U = "false";
+	$NU = "false";
+	$NORM_M = "true";
+	if ($stranded eq "false"){
+	    $filename = "$gnormdir/$id.gene.norm.sam";
+	    $shfile = "$shdir/G.$id.sam2genes_gnorm2.sh";
+	    $logname = "$logdir/sam2genes_gnorm2.$id";
 	}
-	else{
-	    $filename_u = "$gnormdir/Unique/$id.GNORM.Unique.sam";
-	    $filename_nu = "$gnormdir/NU/$id.GNORM.NU.sam";
-	    $shfile_u = "$shdir/G.$id.sam2genes_gnorm_u.2.sh";
-	    $logname_u = "$logdir/sam2genes_gnorm_u.2.$id";
-	    $shfile_nu = "$shdir/G.$id.sam2genes_gnorm_nu.2.sh";
-	    $logname_nu = "$logdir/sam2genes_gnorm_nu.2.$id";
+	if ($stranded eq "true"){
+	    $filename = "$gnormdir/sense/$id.gene.norm.sam";
+            $shfile = "$shdir/G.$id.sam2genes_gnorm2.sense.sh";
+            $logname = "$logdir/sam2genes_gnorm2.sense.$id";
+	    $filename_a = "$gnormdir/antisense/$id.gene.norm.sam";
+            $shfile_a = "$shdir/G.$id.sam2genes_gnorm2.antisense.sh";
+            $logname_a = "$logdir/sam2genes_gnorm2.antisense.$id";
 	}
     }
     my $jobname = "$study.sam2genes_gnorm";
 
     if ($U eq "true"){
 	my $outname_u = $filename_u;
-	$outname_u =~ s/.sam$/.genes.txt/;
+	$outname_u =~ s/.sam$/.txt/;
 	open(OUT, ">$shfile_u");
-	print OUT "perl $path/sam2genes.pl $filename_u $ens_file $outname_u\n";
+	print OUT "perl $path/sam2genes.pl $filename_u $ens_file $outname_u $se $orientation\n";
 	close(OUT);
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
@@ -177,9 +212,9 @@ while(my $line = <IN>){
     }
     if ($NU eq "true"){
 	my $outname_nu = $filename_nu;
-	$outname_nu =~ s/.sam$/.genes.txt/;
+	$outname_nu =~ s/.sam$/.txt/;
 	open(OUT, ">$shfile_nu");
-	print OUT "perl $path/sam2genes.pl $filename_nu $ens_file $outname_nu\n";
+	print OUT "perl $path/sam2genes.pl $filename_nu $ens_file $outname_nu $se $orientation\n";
 	close(OUT);
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
@@ -188,14 +223,25 @@ while(my $line = <IN>){
     }
     if ($NORM_M eq "true"){
 	my $outname = $filename;
-	$outname =~ s/.sam$/.genes.txt/;
+	$outname =~ s/.sam$/.txt/;
 	open(OUT, ">$shfile");
-	print OUT "perl $path/sam2genes.pl $filename $ens_file $outname\n";
+	print OUT "perl $path/sam2genes.pl $filename $ens_file $outname $se $orientation\n";
 	close(OUT);
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
 	`$submit $jobname_option $jobname -o $logname.out -e $logname.err < $shfile`;
+	if ($stranded eq "true"){
+	    my $outname_a = $filename_a;
+	    $outname_a =~ s/.sam$/.txt/;
+	    open(OUT, ">$shfile_a");
+	    print OUT "perl $path/sam2genes.pl $filename_a $ens_file $outname_a $se $orientation\n";
+	    close(OUT);
+	    while (qx{$status | wc -l} > $njobs){
+		sleep(10);
+	    }
+	    `$submit $jobname_option $jobname -o $logname_a.out -e $logname_a.err < $shfile_a`;
+	}
     }
 }
 close(IN);

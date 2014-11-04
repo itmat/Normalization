@@ -237,6 +237,9 @@ This outputs a file called `master_list_of_ensGenes.txt` to the `READS` director
 * &lt;ensGene file> : ensembl table must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
 
 * option:<br>
+  **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data.<br>
+  **-str_f** : set this if the data is strand-specific AND forward read is in the same orientation as the transcripts/genes.<br>
+  **-str_r** : set this if the data is strand-specific AND reverse read is in the same orientation as the transcripts/genes.<br>
   **-u**  :  set this if you are using unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
   **-nu** :  set this if you are using non-unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
   **-norm** : set this to get genes file for the gene-normalized sam files.<br>
@@ -272,7 +275,7 @@ This outputs `filtered_u_genes.sam` file to `STUDY/READS/Sample*/GNORM/Unique` a
 
     perl runall_quantify_genes_gnorm.pl <sample dirs> <loc> <genes>
 
-> `quantify_genes_gnorm.pl` and `quantify_genes.pl` available for running one sample at a time
+> `quantify_genes.pl` available for running one sample at a time
 
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
@@ -378,6 +381,7 @@ This will output `percent_high_expressor_gene_Unique.txt` or `percent_high_expre
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * option : <br>
+ **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
  **-u** : set this if you want to return number of unique reads only, otherwise by default it will return number of unique and non-unique reads <br>
  **-nu** : set this if you want to return number of non-unique reads only, otherwise by default it will return number of unique and non-unique reads <br>
 
@@ -728,6 +732,9 @@ Run the following with **-norm** option.
 * &lt;ensGene file> : ensembl table must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
 
 * option:<br>
+  **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data.<br>
+  **-str_f** : set this if the data is strand-specific AND forward read is in the same orientation as the transcripts/genes.<br>
+  **-str_r** : set this if the data is strand-specific AND reverse read is in the same orientation as the transcripts/genes.<br>
   **-u**  :  set this if you are using unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
   **-nu** :  set this if you are using non-unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
   **-norm** : set this to get genes file for the gene-normalized sam files.<br>
@@ -743,7 +750,7 @@ Run the following with **-norm** option.
 
     perl runall_quantify_genes_gnorm.pl <sample dirs> <loc> <genes>
 
-> `quantify_genes_gnorm.pl` and `quantify_genes.pl` available for running one sample at a time
+> `quantify_genes.pl` available for running one sample at a time
 
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)

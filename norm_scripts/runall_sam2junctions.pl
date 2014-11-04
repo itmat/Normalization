@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
-
-$USAGE =  "\nUsage: runall_sam2junctions.pl <sample dirs> <loc> <genes> <genome> [options]
+use strict;
+use warnings;
+my $USAGE =  "\nUsage: runall_sam2junctions.pl <sample dirs> <loc> <genes> <genome> [options]
 
 where:
 <sample dirs> is a file with the names of the sample directories
@@ -13,13 +14,10 @@ option:
                     <s> is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam)
                     and all sam files in each sample directory should have the same name.
 
- -gnorm : set this to create junctions files for gene normalization output.
+ -gnorm : set this to create junctions files for gene normalization output. 
+          (By default, only Exon-Intron-Junction normalization output will be used).
 
- -u  :  set this if you want to return only unique junctions, otherwise by default
-         it will return merged(unique+non-unique) junctions.
-
- -nu :  set this if you want to return only non-unique junctions, otherwise by default
-         it will return merged(unique+non-unique) junctions.
+ -stranded : set this if the data is strand-specific. 
 
  -lsf : set this if you want to submit batch jobs to LSF cluster (PMACS).
 
@@ -52,22 +50,23 @@ if(@ARGV<4) {
 }
 
 use Cwd 'abs_path';
-$path = abs_path($0);
+my $path = abs_path($0);
 $path =~ s/\/runall_sam2junctions.pl//;
-$U = "true";
-$NU = "true";
-$numargs = 0;
-$samfilename = "false";
-$njobs = 200;
-$numargs_c = 0;
-$replace_mem = "false";
-$submit = "";
-$jobname_option = "";
-$request_memory_option = "";
-$mem = "";
-$gnorm = "false";
-for($i=4; $i<@ARGV; $i++) {
-    $option_found = "false";
+my $samfilename = "false";
+my $samname;
+my $status;
+my $njobs = 200;
+my $numargs_c = 0;
+my $new_mem ="";
+my $replace_mem = "false";
+my $submit = "";
+my $jobname_option = "";
+my $request_memory_option = "";
+my $mem = "";
+my $gnorm = "false";
+my $stranded = "false";
+for(my $i=4; $i<@ARGV; $i++) {
+    my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];
@@ -85,17 +84,10 @@ for($i=4; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq '-gnorm'){
 	$option_found = "true";
 	$gnorm = "true";
-	$i++;
     }
-    if($ARGV[$i] eq '-nu') {
-        $U = "false";
-	$numargs++;
+    if ($ARGV[$i] eq '-stranded'){
         $option_found = "true";
-    }
-    if($ARGV[$i] eq '-u') {
-        $NU = "false";
-        $numargs++;
-        $option_found = "true";
+        $stranded = "true";
     }
     if ($ARGV[$i] eq '-h'){
         $option_found = "true";
@@ -122,8 +114,8 @@ for($i=4; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq '-other'){
 	$numargs_c++;
         $option_found = "true";
-        $argv_all = $ARGV[$i+1];
-        @a = split(",", $argv_all);
+        my $argv_all = $ARGV[$i+1];
+        my @a = split(",", $argv_all);
         $submit = $a[0];
         $jobname_option = $a[1];
         $request_memory_option = $a[2];
@@ -150,10 +142,6 @@ for($i=4; $i<@ARGV; $i++) {
         die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
-if($numargs > 1) {
-    die "you cannot specify both -u and -nu. 
-";
-}
 if($numargs_c ne '1'){
     die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit> <jobname_option> <request_memory_option> <queue_name_for_6G>\".\n";
 }
@@ -162,93 +150,70 @@ if ($replace_mem eq "true"){
 }
 
 open(INFILE, $ARGV[0]);
-$LOC = $ARGV[1];
+
+my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
-@fields = split("/", $LOC);
-$study = $fields[@fields-2];
-$last_dir = $fields[@fields-1];
-$study_dir = $LOC;
+my @fields = split("/", $LOC);
+my $study = $fields[@fields-2];
+my $last_dir = $fields[@fields-1];
+my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
-$shdir = $study_dir . "shell_scripts";
-$logdir = $study_dir . "logs";
+my $shdir = $study_dir . "shell_scripts";
+my $logdir = $study_dir . "logs";
 unless (-d $shdir){
     `mkdir $shdir`;}
 unless (-d $logdir){
     `mkdir $logdir`;}
-if ($gnorm eq "false"){
-    $norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
-}
+my $norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
 if ($gnorm eq "true"){
     $norm_dir = $study_dir . "NORMALIZED_DATA/GENE/";
 }
-$finalsam_dir = "$norm_dir/FINAL_SAM";
-$final_U_dir = "$finalsam_dir/Unique";
-$final_NU_dir = "$finalsam_dir/NU";
-$final_M_dir = "$finalsam_dir/MERGED";
-$junctions_dir = "$norm_dir/JUNCTIONS";
+my $finalsam_dir = "$norm_dir/FINAL_SAM";
+my $final_M_dir = "$finalsam_dir/merged";
+my $junctions_dir = "$norm_dir/JUNCTIONS";
 
-$genes = $ARGV[2];
-$genome = $ARGV[3];
-while($line = <INFILE>) {
+my $genes = $ARGV[2];
+my $genome = $ARGV[3];
+while(my $line = <INFILE>) {
     chomp($line);
-    $dir = $line;
-    $id = $line;
+    my $dir = $line;
+    my $id = $line;
+    my ($final_dir, $filename);
     if ($samfilename eq "true"){
 	$final_dir = "$LOC/$dir";
 	$filename = $samname;
 	$junctions_dir = "$LOC/$dir";
     }
     else {
+	$final_dir = $final_M_dir;
 	unless (-d $junctions_dir){
 	    `mkdir $junctions_dir`;
 	}
-	if ($numargs eq "0"){
-	    $final_dir = $final_M_dir;
-	    if ($gnorm eq "false"){
-		$filename = "$id.FINAL.norm.sam";
+	$filename = "$id.merged.sam";
+	if ($gnorm eq "true"){
+	    if ($stranded eq "true"){
+		$filename = "$id.merged.sam";
+		$final_dir = $final_M_dir;
 	    }
-	    if ($gnorm eq "true"){
-		$filename = "$id.GNORM.sam";
-	    }
-	}
-	else{
-	    if ($U eq "true"){
-		$final_dir = $final_U_dir;
-		if ($gnorm eq "false"){
-		    $filename ="$id.FINAL.norm_u.sam";
-		}
-		if ($gnorm eq "true"){
-		    $filename ="$id.GNORM.Unique.sam";
-		}
-	    }
-	    if ($NU eq "true"){
-		$final_dir = $final_NU_dir;
-		if ($gnorm eq "false"){
-		    $filename = "$id.FINAL.norm_nu.sam";
-		}
-		if ($gnorm eq "true"){
-		    $filename = "$id.GNORM.NU.sam";
-		}
-		
+	    if ($stranded eq "false"){
+		$final_dir = $finalsam_dir;
+		$filename = "$id.gene.norm.sam";
 	    }
 	}
     }
-    if ($gnorm eq "false"){ 
-	$shfile = "$shdir/J" . $id . $filename . ".sh";
-	$jobname = "$study.sam2junctions";
-	$logname = "$logdir/sam2junctions.$id";
-    }
+    my $shfile = "$shdir/J" . $id . $filename . ".sh";
+    my $jobname = "$study.sam2junctions";
+    my $logname = "$logdir/sam2junctions.$id";
     if ($gnorm eq "true"){
-	$shfile = "$shdir/J" . $id . $filename . ".sh";
 	$jobname = "$study.sam2junctions_gnorm";
 	$logname = "$logdir/sam2junctions_gnorm.$id";
     }
-    $outfile1 = $filename;
-    $outfile1 =~ s/.sam/_junctions_all.rum/;
-    $outfile2 = $filename;
-    $outfile2 =~ s/.sam/_junctions_all.bed/;
-    $outfile3 = $filename;
-    $outfile3 =~ s/.sam/_junctions_hq.bed/;
+    my $outfile1 = $filename;
+    $outfile1 =~ s/.sam$/_junctions_all.rum/;
+    my $outfile2 = $filename;
+    $outfile2 =~ s/.sam$/_junctions_all.bed/;
+    my $outfile3 = $filename;
+    $outfile3 =~ s/.sam$/_junctions_hq.bed/;
     open(OUTFILE, ">$shfile");
     print OUTFILE "perl $path/rum-2.0.5_05/bin/make_RUM_junctions_file.pl --genes $genes --sam-in $final_dir/$filename --genome $genome --all-rum-out $junctions_dir/$outfile1 --all-bed-out $junctions_dir/$outfile2 --high-bed-out $junctions_dir/$outfile3 -faok\n";
     close(OUTFILE);
