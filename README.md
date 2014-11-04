@@ -83,6 +83,8 @@ You will have a chance to check the expected number of reads after normalization
 #####C. Run run_normalization with -part2 option.<br>
 Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<br>
 
+
+
     run_normalization --sample_dirs <file of sample_dirs> --loc <s> \
     --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
 
