@@ -9,11 +9,15 @@ Set STRANDED to TRUE if the data is stranded.<br>
 #####ii. FWD or REV
 If STRANDED is set to TRUE, strand information needs to be provided. Set FWD to TRUE if forward read is in the same orientation as the transcripts/genes and set REV to TRUE if reverse read is in the same orientation as the transcripts/genes.<n><n>
 Note that when dUTP-based protocol (e.g. Illumina TruSeq stranded protocol) is used, strand information comes from reverse read.
+
 ========================================================================================================
+
 ###1. CLUSTER INFO
 If you're using SGE (Sun Grid Engine) or LSF (Load Sharing Facility), simply set the cluster name (SGE_CLUSTER or LSF_CLUSTER) to TRUE. You may edit the queue names and max_jobs.<br>
 If not, use OTHER_CLUSER option and specify the required parameters.
+
 ========================================================================================================
+
 ###2. GENE INFO
 Gene information file with required suffixes need to be provided. You may use the same file for [1] and [2].
 ####[1] Gene information file for [Gene Normalization]
@@ -41,7 +45,9 @@ Annotation files for mm9 and hg19 are available in Normalization/norm_scripts di
 
       mm9: /path/to/Normalization/norm_scripts/ucsc_known_mm9
       hg19: /path/to/Normalization/norm_scripts/ucsc_known_hg19
+
 ========================================================================================================
+
 ###3. FA and FAI
 ####[1] genome sequence one-line fasta file
 
@@ -55,6 +61,8 @@ Follow the instructions [here](https://github.com/itmat/rum/wiki/Creating-indexe
 
 ####[2] index file
 You can get fai file using [samtools](http://samtools.sourceforge.net/) (samtools faidx &lt;ref.fa>)
+
 ========================================================================================================
+
 ###4. DATA VISUALIZATION
 Set SAM2COV to TRUE if you want to use sam2cov to generate coverage files. sam2cov only supports reads aligned with RUM or STAR (this information also needs to be specified). Make sure you have the latest version of sam2cov. At the moment, sam2cov assumes the strand information comes from reverse read for stranded data.
