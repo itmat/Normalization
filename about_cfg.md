@@ -1,6 +1,6 @@
 ## CONFIGURATION FILE
 
-###0. NORMALIZTION and DATA TYPE
+###0. NORMALIZATION and DATA TYPE
 ####A. Normalization Type
 PORT offers **Exon-Intron-Junction** level normalization and **Gene** level normalization. Select the normalization type by setting GENE_NORM and/or EXON_INTRON_JUNCTION_NORM to TRUE. At least one normalization type needs to be used.
 ####B. Stranded Data
