@@ -67,4 +67,9 @@ You can get a fai file using [samtools](http://samtools.sourceforge.net/) (samto
 ###4. DATA VISUALIZATION
 Set SAM2COV to TRUE if you want to use sam2cov to generate coverage files. sam2cov only supports reads aligned with RUM or STAR (set aligner used to TRUE). Make sure you have the latest version of sam2cov. At the moment, sam2cov assumes the strand information comes from reverse read for stranded data.
 
+========================================================================================================
+
 ###5. CLEANUP
+By default, CLEANUP step only deletes the intermediate SAM files. Set DELETE_INT_SAM to FALSE if you wish to keep the intermediate SAM files. You can also convert sam files to bam files by setting CONVERT_SAM2BAM to TRUE and coverage files can be compressed by setting GZIP_COV to TRUE. 
+
+========================================================================================================
