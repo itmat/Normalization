@@ -13,7 +13,7 @@ where:
 <exons> master list of exons file
 
 option:
- -stranded : set this if your data is strand-specific. 
+ -stranded : set this if your data are strand-specific. 
  
  -nu :  set this if you want to return only non-unique exonpercents/intronpercents, 
         otherwise by default it will return unique exonpercents/intronpercents only.

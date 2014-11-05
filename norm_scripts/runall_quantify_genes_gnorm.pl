@@ -9,7 +9,7 @@ my $USAGE = "\nUsage: perl runall_quantify_genes_gnorm.pl <sample dirs> <loc> <g
 <genes> master list of genes file
 
 option:
- -stranded : set this if the data is strand-specific.
+ -stranded : set this if the data are strand-specific.
 
  -norm : set this to quantify normalized sam.
 
@@ -19,7 +19,7 @@ option:
  -nu  :  set this if your sam files have non-unique mappers only.
          otherwise by default it will use merged(unique+non-unique) mappers.
  
- -se :  set this if the data is single end, otherwise by default it will assume it's a paired end data.
+ -se :  set this if the data are single end, otherwise by default it will assume it's a paired end data.
 
  -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
 

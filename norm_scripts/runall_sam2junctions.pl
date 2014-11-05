@@ -17,7 +17,7 @@ option:
  -gnorm : set this to create junctions files for gene normalization output. 
           (By default, only Exon-Intron-Junction normalization output will be used).
 
- -stranded : set this if the data is strand-specific. 
+ -stranded : set this if the data are strand-specific. 
 
  -lsf : set this if you want to submit batch jobs to LSF cluster (PMACS).
 

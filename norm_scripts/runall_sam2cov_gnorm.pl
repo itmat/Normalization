@@ -10,7 +10,7 @@ $USAGE = "\nUsage: runall_sam2cov_gnorm.pl <sample dirs> <loc> <fai file> <sam2c
 ***Sam files produced by aligners other than STAR and RUM are currently not supported***
 
 option:  
- -se : set this if the data is single end, otherwise by default it will assume it's a paired end data.
+ -se : set this if the data are single end, otherwise by default it will assume it's a paired end data.
 
  -str : set this if your library is strand-specific
 

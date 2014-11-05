@@ -9,9 +9,9 @@ my $USAGE = "perl genefilter.pl <samfile> <sam2genes output> <outputfile>
 <output file> name of output file
 
 options:
-  -stranded : set this if the data is strand-specific.
+  -stranded : set this if the data are strand-specific.
 
-  -se :  set this if the data is single end, otherwise by default it will assume it's a paired end data.
+  -se :  set this if the data are single end, otherwise by default it will assume it's a paired end data.
  
   -filter_highexp : set this if you want to filter the reads that map to highly expressed genes.
 

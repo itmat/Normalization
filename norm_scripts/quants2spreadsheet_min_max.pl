@@ -12,7 +12,7 @@ where:
 options:
  -novelexon <file> : provide full path of list of novel exons file with this option to label the exons
 
- -stranded : set this if your data is strand-specific
+ -stranded : set this if your data are strand-specific
 
 ";
 if(@ARGV<3) {

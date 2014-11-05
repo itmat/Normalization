@@ -14,7 +14,7 @@ option:
   -nu :  set this if you want to return only non-unique exonpercents and intronpercents, 
          otherwise by default it will return unique exonpercents and intronpercents.
 
-  -stranded : set this if your data is strand-specific.
+  -stranded : set this if your data are strand-specific.
 
 ";
 }

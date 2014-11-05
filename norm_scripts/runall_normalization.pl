@@ -34,7 +34,7 @@ OPTIONS:
                              (e.g. \"1   \"allsteps.get_total_num_reads\"\")
 
      [data type]
-     -se : set this if the data is single end, otherwise by default it will assume it's a paired end data
+     -se : set this if the data are single end, otherwise by default it will assume it's a paired end data
      -fa : set this if the unaligned files are in fasta format 
      -fq : set this if the unaligned files are in fastq format 
      -gz : set this if the unaligned files are compressed

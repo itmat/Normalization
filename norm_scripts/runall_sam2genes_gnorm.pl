@@ -8,11 +8,11 @@ my $USAGE = "\nUsage: perl runall_sam2genes_gnorm.pl <sample dirs> <loc> <ensGen
 <ensGene file> ensembl table must contain columns with the following suffixes: name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
 
 option:
- -se :  set this if the data is single end, otherwise by default it will assume it's a paired end data.
+ -se :  set this if the data are single end, otherwise by default it will assume it's a paired end data.
 
- -str_f : set this if the data is strand-specific AND forward read is in the same orientation as the transcripts/genes.
+ -str_f : set this if the data are strand-specific AND forward read is in the same orientation as the transcripts/genes.
  
- -str_r : set this if the data is strand-specific AND reverse read is in the same orientation as the transcripts/genes.
+ -str_r : set this if the data are strand-specific AND reverse read is in the same orientation as the transcripts/genes.
 
  -u  :  set this if you are using unique mappers only.
         otherwise by default it will use both unique and non-unique mappers.

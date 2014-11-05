@@ -8,7 +8,7 @@ my $USAGE = "\nUsage: perl get_master_list_of_genes.pl <ensGenes file> <loc> [op
 <loc> is where the sample directories are
 
 option:
- -stranded: set this if your data is strand-specific.
+ -stranded: set this if your data are strand-specific.
  -percent <n> : by default, 10% of the size of first and last exon of each transcript 
                 will be added to the start of the first and the end of the last exon, respectively.
                 use this option to change the percentage <n>. (<n> has to be a number between 0-100)

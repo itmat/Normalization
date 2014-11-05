@@ -9,7 +9,7 @@ my $USAGE = "\nUsage: perl get_master_list_of_introns.pl <gene info file> <loc> 
 <loc> is where the sample directories are
 
 option:
- -stranded: set this if your data is strand-specific.
+ -stranded: set this if your data are strand-specific.
 
 ";
 

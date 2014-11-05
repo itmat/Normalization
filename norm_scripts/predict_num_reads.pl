@@ -11,7 +11,7 @@ You can remove unwanted samples from your <sample dirs> file.
 <loc> is the location where the sample directories are
 
 options:
- -stranded : set this if your data is strand-specific.
+ -stranded : set this if your data are strand-specific.
 
  -u  :  set this if you want to return number of unique reads only, otherwise by default it will return number of unique and non-unique reads
 

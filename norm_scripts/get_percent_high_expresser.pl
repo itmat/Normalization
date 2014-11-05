@@ -10,7 +10,7 @@ if(@ARGV<3) {
 <master list of exons> master list of exons file
 
 options:
- -stranded : set this if your data is strand-specific
+ -stranded : set this if your data are strand-specific
 
 ";
 }

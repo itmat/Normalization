@@ -9,7 +9,7 @@ my $USAGE = "\nUsage: perl get_normfactors_table.pl <sample_dirs> <loc> [options
 
 option:
  
- -stranded : set this if your data is stranded
+ -stranded : set this if your data are stranded
 
 ";
 

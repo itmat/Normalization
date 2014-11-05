@@ -8,7 +8,7 @@ where:
 <loc> is the path to the sample directories.
 
 options:
- -stranded : set this if your data is strand-specific
+ -stranded : set this if your data are strand-specific
 
  -novelexon : set this to label the novel exons in the final spreadsheet
 

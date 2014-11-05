@@ -9,13 +9,13 @@ where:
 <genes> master list of genes file
 
 [option]
- -stranded : set this if the data is strand-specific.
+ -stranded : set this if the data are strand-specific.
 
  -u : set this if you want to filter the high expressers from the unique reads, otherwise by default if will filter from both unique and non-unique.
 
  -nu : set this if you want to filter the high expressers from the non-unique reads, otherwise by default if will filter from both unique and non-unique.
  
- -se : set this if your data is single end.
+ -se : set this if your data are single end.
 
 ";
 

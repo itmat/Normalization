@@ -9,11 +9,11 @@ my $USAGE = "\nUsage: perl runall_genefilter.pl <sample dirs> <loc>
 option:
  -norm : set this if you're using normalized files.
 
- -stranded : set this if your data is strand-specific.
+ -stranded : set this if your data are strand-specific.
 
  -filter_highexp : use this if you want to filter high expressers.
 
- -se :  set this if the data is single end, otherwise by default it will assume it's a paired end data.
+ -se :  set this if the data are single end, otherwise by default it will assume it's a paired end data.
  
  -u  :  set this if you are using unique mappers only.
         otherwise by default it will use both unique and non-unique mappers.

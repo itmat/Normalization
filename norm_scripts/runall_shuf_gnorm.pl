@@ -15,13 +15,13 @@ The output file names will be modified from the input file names.
 ** If  maximum line count is > 50,000,000, use -mem option (6G for 60 million lines, 7G for 70 million lines, 8G for 80 million lines, etc).
 
 option:  
- -stranded : set this if the data is strand-specific.
+ -stranded : set this if the data are strand-specific.
 
  -u  :  set this if you want to return only unique mappers, otherwise by default it will return both unique and non-unique mappers
 
  -nu  :  set this if you want to return only non-unique mappers, otherwise by default it will return both unique and non-unique mappers
 
- -se :  set this if the data is single end, otherwise by default it will assume it's a paired end data.
+ -se :  set this if the data are single end, otherwise by default it will assume it's a paired end data.
 
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                    by default, <n> = 200.

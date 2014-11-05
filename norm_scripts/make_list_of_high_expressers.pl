@@ -9,7 +9,7 @@ where:
 <exons> the study specific master list of exons or master list of exons file
 
 option:
- -stranded : set this if your data is strand-specific.
+ -stranded : set this if your data are strand-specific.
 
 ";
 

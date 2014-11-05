@@ -54,9 +54,8 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
             Sample_4
 
 ##### ii. File of Unaligned Reads (Forward only)
-Create a file &lt;file of input forward fa/fq files> with full path of input forward fa or forward fq files.
+Create a file &lt;file of input forward fa/fq files> with full path of input forward fa or forward fq files. e.g. the <file of input forward fa/fq files> file should look like this:
 
-       e.g. the <file of input forward fa/fq files> file should look like this:
             /path/to/Sample_1.fwd.fq/fa
             /path/to/Sample_2.fwd.fq/fa
             /path/to/Sample_3.fwd.fq/fa

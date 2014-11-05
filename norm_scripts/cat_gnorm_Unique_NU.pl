@@ -11,7 +11,7 @@ where:
 <samfilename> 
 
 option:
- -stranded: set this if your data is strand-specific.
+ -stranded: set this if your data are strand-specific.
 
  -u  :  set this if you want to return only unique mappers, otherwise by default
         it will return both unique and non-unique mappers.

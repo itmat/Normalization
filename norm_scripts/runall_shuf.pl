@@ -15,7 +15,7 @@ The output file names will be modified from the input file names.
 
 option:  
 
- -stranded : set this if your data is stand-specific
+ -stranded : set this if your data are stand-specific
 
  -u  :  set this if you want to return only unique mappers, otherwise by default it will return both unique and non-unique mappers
 

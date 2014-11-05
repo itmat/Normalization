@@ -13,7 +13,7 @@ option:
   -nu :  set this if you want to return only non-unique genepercents, otherwise by default
          it will return unique genepercents.
 
-  -stranded : set this if the data is strand specific.
+  -stranded : set this if the data are strand specific.
 ";
 }
 

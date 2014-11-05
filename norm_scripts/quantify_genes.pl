@@ -10,7 +10,7 @@ my $USAGE = "\nUsage: perl quantify_genes.pl <sam2genes output> <genes file> <ou
 
 option:
 
-  -se :  set this if the data is single end, otherwise by default it will assume it's a paired end data.
+  -se :  set this if the data are single end, otherwise by default it will assume it's a paired end data.
 
 \n";
 

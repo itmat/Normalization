@@ -11,7 +11,7 @@ my $USAGE = "perl sam2genes.pl <samfile> <ensGene file> <outfile>
 options:
  -str_f : if forward read is in the same orientation as the transcripts/genes.
  -str_r : if reverse read is in the same orientation as the transcripts/genes.
- -se : set this if the data is single end, otherwise by default it will assume it's a paired end data.
+ -se : set this if the data are single end, otherwise by default it will assume it's a paired end data.
 ";
 
 if (@ARGV < 3){

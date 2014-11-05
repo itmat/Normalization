@@ -9,7 +9,7 @@ if(@ARGV<2) {
 <loc> is the location where the sample directories are
 
 options:
- -stranded : set this if your data is strand-specific.
+ -stranded : set this if your data are strand-specific.
 
  -u  :  set this if you want to return only unique stats, otherwise by default
          it will return both unique and non-unique stats.

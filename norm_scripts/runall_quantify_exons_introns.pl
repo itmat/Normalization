@@ -27,9 +27,9 @@ options:
 
  -depthI <n> : by default, it will output 10 intronmappers.
 
- -str_f : set this if the data is strand-specific AND forward read is in the same orientation as the transcripts/genes.
+ -str_f : set this if the data are strand-specific AND forward read is in the same orientation as the transcripts/genes.
 
- -str_r : set this if the data is strand-specific AND reverse read is in the same orientation as the transcripts/genes.
+ -str_r : set this if the data are strand-specific AND reverse read is in the same orientation as the transcripts/genes.
 
  -u  :  set this if you are using unique mappers only.
         otherwise by default it will use both unique and non-unique mappers.
