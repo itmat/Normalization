@@ -6,16 +6,16 @@
 
 ### 0. Setting Up
 
-#####A. Clone the repository
+####A. Clone the repository
 Please make sure you have the latest version of PORT.
     
     git clone https://github.com/itmat/Normalization.git
 
-#####B. Input
-###### i. Input File
+####B. Input
+##### i. Input File
 PORT takes aligned reads (SAM file) as input. You also need to provide unaligned reads (fa/fq file), gene info file, and genome fa/fai file.
  
-###### ii. Input Directory Structure
+##### ii. Input Directory Structure
 The input files need to be in the correct format for PORT to run properly.
 
 - Give `STUDY` directory a unique name.
@@ -41,11 +41,11 @@ STUDY
 
 </pre>
 
-#####C. Configuration File
+####C. Configuration File
 Get the `template_version.cfg` file from `/path/to/Normalization/` and follow the instruction in the config file. NORMALIZATION TYPE, DATA TYPE (stranded), CLUSTER INFO, GENE INFO, FA and FAI, DATA VISUALIZATION and CLEANUP options need to be specified. See [here](https://github.com/itmat/Normalization/blob/master/about_cfg.md) for more information.
 
-#####D. File of Sample Directories and Unaligned Reads
-###### i. File of Sample Directories
+####D. File of Sample Directories and Unaligned Reads
+##### i. File of Sample Directories
 Create a file &lt;sample dirs> with the names of the sample directories (without path, sorted by condition).
 
        e.g. the <sample dirs> file should look like this:
@@ -54,7 +54,7 @@ Create a file &lt;sample dirs> with the names of the sample directories (without
             Sample_3
             Sample_4
 
-###### ii. File of Unaligned Reads (Forward only)
+##### ii. File of Unaligned Reads (Forward only)
 Create a file &lt;file of input forward fa/fq files> with full path of input forward fa or forward fq files.
 
        e.g. the <file of input forward fa/fq files> file should look like this:
@@ -63,7 +63,7 @@ Create a file &lt;file of input forward fa/fq files> with full path of input for
             /path/to/Sample_3.fwd.fq/fa
             /path/to/Sample_4.fwd.fq/fa
 
-#####E. Install [sam2cov](https://github.com/khayer/sam2cov/)
+####E. Install [sam2cov](https://github.com/khayer/sam2cov/)
 This is an optional step. You can use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR. sam2cov supports stranded data, but it assumes the reverse read is in the same orientation as the transcripts/genes. __Please make sure you have the lastest version of sam2cov__. 
 
      git clone https://github.com/khayer/sam2cov.git
@@ -74,16 +74,16 @@ This is an optional step. You can use sam2cov to create coverage files and uploa
 
 ### 1. Run PORT
 
-**Recommended Workflow**<br>
+####A. Recommended Workflow
 PORT has two parts: PART1 and PART2.<br>
-#####A. Run run_normalization with no pipeline option.<br>
+#####i. Run run_normalization with no pipeline option.<br>
 If you do not provide any pipeline options, PORT will pause when all steps in PART1 completes.<br>
-#####B. Check expected number of reads and highly expressed features (exons, introns, and genes).<br>
+#####ii. Check expected number of reads and highly expressed features (exons, introns, and genes).<br>
 You will have a chance to check the expected number of reads after normalization and the list of highly expressed exons and introns for Exon-Intron-Junction Normalization and the list of highly expressed genes for Gene Normalization. Samples that lower the normalized read depth can be removed from &lt;file of sample dirs> at this point.<br>
-#####C. Run run_normalization with -part2 option.<br>
+#####iii. Run run_normalization with -part2 option.<br>
 Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<br>
 
-
+####B. Run Normalization Script
 
     run_normalization --sample_dirs <file of sample_dirs> --loc <s> \
     --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]

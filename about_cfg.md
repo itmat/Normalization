@@ -65,4 +65,4 @@ You can get fai file using [samtools](http://samtools.sourceforge.net/) (samtool
 ========================================================================================================
 
 ###4. DATA VISUALIZATION
-Set SAM2COV to TRUE if you want to use sam2cov to generate coverage files. sam2cov only supports reads aligned with RUM or STAR (this information also needs to be specified). Make sure you have the latest version of sam2cov. At the moment, sam2cov assumes the strand information comes from reverse read for stranded data.
+Set SAM2COV to TRUE if you want to use sam2cov to generate coverage files. sam2cov only supports reads aligned with RUM or STAR (set aligner used to TRUE). Make sure you have the latest version of sam2cov. At the moment, sam2cov assumes the strand information comes from reverse read for stranded data.

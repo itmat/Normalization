@@ -921,7 +921,7 @@ if ($run_prepause eq "true"){
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
-        $job = "echo \"perl $norm_script_dir/runall_quantify_genes_gnorm.pl $sample_dir $LOC $list_for_genequant $se -u $c_option $cluster_max $new_queue\" | $batchjobs $jobname \"$study.runall_quantify_genes_gnorm\" -o $logdir/$study.runall_quantify_genes_gnorm.out -e $logdir/$study.runall_quantify_genes_gnorm.err";
+        $job = "echo \"perl $norm_script_dir/runall_quantify_genes_gnorm.pl $sample_dir $LOC $list_for_genequant $se -u $c_option $cluster_max $new_queue $data_stranded\" | $batchjobs $jobname \"$study.runall_quantify_genes_gnorm\" -o $logdir/$study.runall_quantify_genes_gnorm.out -e $logdir/$study.runall_quantify_genes_gnorm.err";
         &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
         &check_exit_alljob($job, $name_of_alljob, $name_of_job,$job_num, $err_name);
         &check_err ($name_of_alljob, $err_name, $job_num);
@@ -2840,7 +2840,6 @@ sub check_err {
     my ($name_of_job, $err_name, $job_num) = @_;
     my $out_name = $err_name;
     $out_name =~ s/err/out/g;
-    print "\$out_name:$out_name\n";
     my $outfile = "$logdir/$name_of_job.out";
     my $check_out = `grep "got here" $outfile | grep -v echo | wc -l`;
     chomp($check_out);
