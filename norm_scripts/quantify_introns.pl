@@ -45,6 +45,7 @@ $LOC = $ARGV[4];
 $linecountfile = $samfile;
 $linecountfile =~ s/filtered_u_notexonmappers.sam/linecounts_notexons.txt/g;
 $linecountfile =~ s/filtered_nu_notexonmappers.sam/linecounts_notexons.txt/g;
+$linecountfile = "sample1.linecounts_notexons.txt"; #debug
 if($outputsam eq "true") {
     for ($i=1; $i<=$i_intron; $i++){
 	$intronoutfile[$i] = $intronoutfile;
@@ -91,6 +92,9 @@ $CNT_OF_FRAGS_WHICH_HIT_INTRONS=0;
 while ($line1 = <INFILE>) {
     $flag = 0;
     @a = split(/\t/,$line1);
+    print "$a[0]\t"; #debug
+    %INTRON_TO_PRINT = (); #debug
+    %IG_TO_PRINT = (); #debug
     if(@a < 10) {
 	next;
     }
@@ -190,6 +194,7 @@ while ($line1 = <INFILE>) {
 		$start_e = $1;
 		$end_e = $2;
 		if($read_segment_end >= $start_e && $read_segment_start <= $end_e) {
+		    $INTRON_TO_PRINT{$current_intron} = 1; #debug
 		    if(!(defined $done{$current_intron})) {
 			$INTRON_hash{$current_intron}++;
 			if($flag == 1) {
@@ -218,10 +223,20 @@ while ($line1 = <INFILE>) {
 	}
     } else {
 	if($outputsam eq "true") {
+	    $IG_TO_PRINT{$current_intron} = 1; #debug
 	    $outfile_cnt_ig++;
 	    print IGOUTFILE $line1;
 	}
     }
+#=comment #debug
+    foreach my $intron (sort keys %INTRON_TO_PRINT){
+	print "INTRON:$intron;";
+    }
+    foreach my $ig (sort keys %IG_TO_PRINT){
+	    print "IG:$ig;";
+    }
+    print "\n";
+#=cut
 }
 
 for($i=0; $i<@flagDist; $i++) {

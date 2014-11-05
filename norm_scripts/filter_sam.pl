@@ -15,7 +15,7 @@ option:
   -nu :  set this if you want to return only non-unique mappers, otherwise by default
          it will return both unique and non-unique mappers.  
 
-  -se :  set this if the data is single end, otherwise by default it will assume it's a paired end data.
+  -se :  set this if the data are single end, otherwise by default it will assume it's a paired end data.
  
 This will remove all rows from <sam infile> except those that satisfy all of the following:
 1. Unique mapper / Non-Unique mapper

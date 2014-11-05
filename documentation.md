@@ -4,62 +4,7 @@
 
 ===========================================================================================================================================================
 
-### 1. RUN_NORMALIZATION
-
-This runs the Normalization pipeline. <br> 
-You can also run it step by step using the scripts documented in [#2. NORMALIZATION STEPS](https://github.com/itmat/Normalization/blob/master/documentation.md#2-normalization-steps).
-
-    run_normalization --sample_dirs <file of sample_dirs> --loc <s> \
-    --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
-
-* --sample_dirs &lt;file of sample dirs> : a file with the names of the sample directories
-* --loc &lt;s> : full path of the directory with the sample directories (`READS`)
-* --unaligned &lt;file of fa/fqfiles> : file of fa/fqfiles
-* --samfilename &lt;s> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
-* --cfg <cfg file> : configuration file for the study
-* option : <br>
-     **[pipeline options]**<br>
-     **By default**, the pipeline will run through the steps in [PART1](https://github.com/itmat/Normalization/blob/master/documentation.md#part1---both-gene-and-exon-intron-junction-normalization) and pause (recommended). You will have a chance to check the expected number of reads after normalization and the list of percent high expressors before resuming.<br>
-     **-part1_part2** : Use this option if you want to run steps in PART1 and PART2 without pausing. <br>
-     **-part2** : Use this option to resume the pipeline at [PART2](https://github.com/itmat/Normalization/blob/master/documentation.md#part2). You may edit the &lt;file of sample dirs> file and/or change the highexpressor cutoff value.<br>
-
-      **[resume options]**<br>
-      You may not change the normalization parameters with resume option.<br>
-      **-resume** : Use this if you have a job that crashed or stopped. This runs job that has already been initialized or partially run after the last completed step. It may repeat the last completed step if necessary.<br>
-      **-resume_at "&lt;step>"** : Use this if you have a job that crashed or stopped. This resumes job at "&lt;step>". **make sure full step name (found in log file) is given in quotes.**<br>(e.g. "1   "STUDY.get_total_num_reads"")<br>
-
-     **[data type]**<br>
-     **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data<br>
-     **-fa** : set this if the unaligned files are in fasta format<br>
-     **-fq** : set this if the unaligned files are in fastq format<br>
-     **-gz** : set this if the unaligned files are compressed<br>
-
-     **[normalization parameters]**<br>
-     **-cutoff_highexp &lt;n>** : <br>is cutoff % value to identify highly expressed genes/exons.<br>
-                           the script will consider genes/exons with gene/exonpercents greater than n(%) as high expressors,
-                           remove them from the list of genes/exons and remove the reads that map to those genes/exons.<br>
-                           (Default = 100; with the default cutoff, exons expressed >5% will be reported, but will not remove any exons from the list)<br>
-     **-cutoff_lowexp &lt;n>** : <br>is cutoff counts to identify low expressors in the final spreadsheets (exon, intron and junc).<br>
-                          the script will remove features with sum of counts less than <n> from all samples.<br>
-                          (Default = 0; with the default cutoff, features with sum of counts = 0 will be removed from all samples)<br>
-
-     **[exon-intron-junction normalization only]**<br>
-     **-novel_off** : set this if you DO NOT want to generate/use a study-specific master list of exons<br> (By default, the pipeline will add inferred exons to the list of exons) <br>
-     **-min &lt;n>** : is minimum size of inferred exon for get_novel_exons.pl script (Default = 10)<br>
-     **-max &lt;n>** : is maximum size of inferred exon for get_novel_exons.pl script (Default = 1200)<br>
-     **-depthE &lt;n>** : the pipeline splits filtered sam files into 1,2,3...n exonmappers and downsamples each separately.<br>
-                   (Default = 20)<br>
-     **-depthI &lt;n>** : the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.<br>
-                   (Default = 10)<br>
-     **-h** : print usage
-
-
-This creates `runall_normalization.sh` file in `STUDY/shell_scripts` directory and runs the entire normalization pipeline. In addition to the STDOUT and STDERR files in `STUDY/logs`, this will create a log file called **`STUDY/logs/$study.run_normalization.log`**, which you can use to check the status.
-
-
-========================================================================================================
-
-### 2. NORMALIZATION STEPS
+### 1. NORMALIZATION STEPS
 #### [PART1 - both Gene and Exon-Intron-Junction Normalization]
 #### 1) Preprocess
 ##### A. Mapping Statistics
@@ -176,7 +121,7 @@ Run the following command. By default it will return both unique and non-unique 
 * option:<br>
   **-u** : set this if you want to return only unique mappers<br>
   **-nu** :  set this if you want to return only non-unique mappers<br>
-  **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
+  **-se** :  set this if the data are single end, otherwise by default it will assume it's a paired end data <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
   **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
@@ -237,6 +182,9 @@ This outputs a file called `master_list_of_ensGenes.txt` to the `READS` director
 * &lt;ensGene file> : ensembl table must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
 
 * option:<br>
+  **-se** : set this if the data are single end, otherwise by default it will assume it's a paired end data.<br>
+  **-str_f** : set this if the data are strand-specific AND forward read is in the same orientation as the transcripts/genes.<br>
+  **-str_r** : set this if the data are strand-specific AND reverse read is in the same orientation as the transcripts/genes.<br>
   **-u**  :  set this if you are using unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
   **-nu** :  set this if you are using non-unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
   **-norm** : set this to get genes file for the gene-normalized sam files.<br>
@@ -259,7 +207,7 @@ This outputs `*genes.txt` file to `STUDY/READS/Sample*/GNORM/Unique` and/or `STU
 * option:<br>
   **-u**  :  set this if you are using unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
   **-nu** :  set this if you are using non-unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
-  **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data.<br>
+  **-se** : set this if the data are single end, otherwise by default it will assume it's a paired end data.<br>
   **-filter_highexp** : use this if you want to filter high expressors. <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
@@ -272,7 +220,7 @@ This outputs `filtered_u_genes.sam` file to `STUDY/READS/Sample*/GNORM/Unique` a
 
     perl runall_quantify_genes_gnorm.pl <sample dirs> <loc> <genes>
 
-> `quantify_genes_gnorm.pl` and `quantify_genes.pl` available for running one sample at a time
+> `quantify_genes.pl` available for running one sample at a time
 
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
@@ -281,7 +229,7 @@ This outputs `filtered_u_genes.sam` file to `STUDY/READS/Sample*/GNORM/Unique` a
 * option:<br>
   **-u**  :  set this if you are using unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
   **-nu** :  set this if you are using non-unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
-  **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data.<br>
+  **-se** : set this if the data are single end, otherwise by default it will assume it's a paired end data.<br>
   **-norm** : set this to quantify normalized sam. <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
@@ -334,7 +282,7 @@ II. Filter High Expressors
 
 * option:<br>
   **-nu** :  set this if you're only using non-unique genepercent, otherwise by default it will only unique genepercents.<br>
-  **-se** : set this if your data is single end.<br>
+  **-se** : set this if your data are single end.<br>
 
 This will output a text file called `filtered_master_list_of_ensGenes.txt` to `STUDY/READS` directory and filter out the reads that map to high expressors from `genes.txt` file and create `genes2.txt` in each sample directory `STUDY/READS/Sample*/GNORM/Unique` and/or `STUDY/READS/Sample*/GNORM/NU`.
 
@@ -351,7 +299,7 @@ Run the following with **-filter_highexp** option.
 * option:<br>
   **-u**  :  set this if you are using unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
   **-nu** :  set this if you are using non-unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
-  **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data.<br>
+  **-se** : set this if the data are single end, otherwise by default it will assume it's a paired end data.<br>
   **-filter_highexp** : use this if you want to filter high expressors. <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
@@ -378,6 +326,7 @@ This will output `percent_high_expressor_gene_Unique.txt` or `percent_high_expre
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
 * option : <br>
+ **-se** :  set this if the data are single end, otherwise by default it will assume it's a paired end data <br>
  **-u** : set this if you want to return number of unique reads only, otherwise by default it will return number of unique and non-unique reads <br>
  **-nu** : set this if you want to return number of non-unique reads only, otherwise by default it will return number of unique and non-unique reads <br>
 
@@ -405,7 +354,7 @@ Run the following command. By default it will return both unique and non-unique 
 * option:<br>
   **-u** : set this if you want to return only unique mappers<br>
   **-nu** :  set this if you want to return only non-unique mappers<br>
-  **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
+  **-se** :  set this if the data are single end, otherwise by default it will assume it's a paired end data <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
   **-other "&lt;submit>, &lt;jobname_option>, &lt;request_memory_option>, &lt;queue_name_for_4G>, &lt;status>"** : set this if you're not on LSF or SGE cluster<br>
@@ -512,7 +461,7 @@ Run the following command with **&lt;output sam?> = false**. By default this wil
 * &lt;output sam?> : false
 * option:<br>
   **-NU-only** : set this for non-unique mappers<br>
-  **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
+  **-se** :  set this if the data are single end, otherwise by default it will assume it's a paired end data <br>
   **-filter_highexp** : set this if you want to filter reads that map to highly expressed exons<br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
@@ -588,7 +537,7 @@ Run the following command with **&lt;output sam?> = true** and **-filter_highexp
 * option:<br>
   **-depth &lt;n>** : by default, it will output 20 exonmappers<br>
   **-NU-only** : set this for non-unique mappers<br>
-  **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
+  **-se** :  set this if the data are single end, otherwise by default it will assume it's a paired end data <br>
   **-filter_highexp** : set this if you want to filter reads that map to highly expressed exons<br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
@@ -696,7 +645,7 @@ This will provide a rough estimate of number of reads you'll have after normaliz
 * option : <br>
   **-u** : set this if you want to return only unique mappers, otherwise by default it will return both unique and non-uniqe mappers<br>
   **-nu** :  set this if you want to return only non-unique mappers, otherwise by default it will return both unique and non-uniqe mappers<br>
-  **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data.<br>
+  **-se** : set this if the data are single end, otherwise by default it will assume it's a paired end data.<br>
   **-max_jobs &lt;n>** : set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time<br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
@@ -728,6 +677,9 @@ Run the following with **-norm** option.
 * &lt;ensGene file> : ensembl table must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
 
 * option:<br>
+  **-se** : set this if the data are single end, otherwise by default it will assume it's a paired end data.<br>
+  **-str_f** : set this if the data are strand-specific AND forward read is in the same orientation as the transcripts/genes.<br>
+  **-str_r** : set this if the data are strand-specific AND reverse read is in the same orientation as the transcripts/genes.<br>
   **-u**  :  set this if you are using unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
   **-nu** :  set this if you are using non-unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
   **-norm** : set this to get genes file for the gene-normalized sam files.<br>
@@ -743,7 +695,7 @@ Run the following with **-norm** option.
 
     perl runall_quantify_genes_gnorm.pl <sample dirs> <loc> <genes>
 
-> `quantify_genes_gnorm.pl` and `quantify_genes.pl` available for running one sample at a time
+> `quantify_genes.pl` available for running one sample at a time
 
 * &lt;sample dirs> : a file with the names of the sample directories
 * &lt;loc> : full path of the directory with the sample directories (`READS`)
@@ -752,7 +704,7 @@ Run the following with **-norm** option.
 * option:<br>
   **-u**  :  set this if you are using unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
   **-nu** :  set this if you are using non-unique mappers only, otherwise by default it will use both unique and non-unique mappers. <br>
-  **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data.<br>
+  **-se** : set this if the data are single end, otherwise by default it will assume it's a paired end data.<br>
   **-norm** : set this to quantify normalized sam. <br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
@@ -912,7 +864,7 @@ Run the following command with **&lt;output sam?> = false** and **-norm** option
 * &lt;output sam?> : false
 * option:<br>
   **-NU-only** : set this for non-unique mappers<br>
-  **-se** :  set this if the data is single end, otherwise by default it will assume it's a paired end data <br>
+  **-se** :  set this if the data are single end, otherwise by default it will assume it's a paired end data <br>
   **-norm** : set this if you want to quantify the normalized sam files<br>
   **-lsf** : set this if you want to submit batch jobs to LSF<br>
   **-sge** :  set this if you want to submit batch jobs to Sun Grid Engine<br>
@@ -1044,7 +996,7 @@ I. Gene Normalization
 * &lt;sam2cov> : full path of sam2cov 
 * option : <br>
   **-str** : set this if your library is strand-specific<br>
-  **-se** : set this if the data is single end, otherwise by default it will assume it's a paired end data.<br>
+  **-se** : set this if the data are single end, otherwise by default it will assume it's a paired end data.<br>
   **-u** : set this if you want to use only unique mappers to generate coverage files, otherwise by default it will use merged(unique+non-unique) mappers<br>
   **-nu** : set this if you want to use only non-unique mappers to generate coverage files, otherwise by default it will use merged(unique+non-unique) mappers<br>
   **-rum** : set this if you used RUM to align your reads<br>

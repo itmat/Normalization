@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
-
-$USAGE = "\nUsage: runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov> [options]
+use warnings;
+use strict;
+my $USAGE = "\nUsage: runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov> [options]
 
 <sample dirs> is  a file of sample directories with alignment output without path
 <loc> is where the sample directories are
@@ -11,12 +12,6 @@ $USAGE = "\nUsage: runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov> [o
 
 option:  
  -str : set this if your library is strand-specific
-
- -u  :  set this if you want to use only unique mappers to generate coverage files, 
-        otherwise by default it will use merged(unique+non-unique) mappers.
-
- -nu  :  set this if you want to use only non-unique mappers to generate coverage files,
-         otherwise by default it will use merged(unique+non-unique) mappers.
 
  -rum  :  set this if you used RUM to align your reads 
 
@@ -50,22 +45,22 @@ option:
 if (@ARGV<4){
   die $USAGE;
 }
-$numargs_a = 0;
-$numargs_u_nu = 0;
-$U = "true";
-$NU = "true";
-$star = "false";
-$strand = "false";
-$rum = "false";
-$njobs = 200;
-$replace_mem = "false";
-$numargs = 0;
-$submit = "";
-$jobname_option = "";
-$request_memory_option = "";
-$mem = "";
-for ($i=4; $i<@ARGV; $i++){
-    $option_found = "false";
+
+my $numargs_a = 0;
+my $status;
+my $star = "false";
+my $strand = "false";
+my $rum = "false";
+my $njobs = 200;
+my $replace_mem = "false";
+my $numargs = 0;
+my $submit = "";
+my $jobname_option = "";
+my $request_memory_option = "";
+my $mem = "";
+my $new_mem;
+for (my $i=4; $i<@ARGV; $i++){
+    my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];
@@ -76,16 +71,6 @@ for ($i=4; $i<@ARGV; $i++){
     }
     if($ARGV[$i] eq '-str') {
         $strand = "true";
-        $option_found = "true";
-    }
-    if($ARGV[$i] eq '-nu') {
-        $U = "false";
-	$numargs_u_nu++;
-        $option_found = "true";
-    }
-    if($ARGV[$i] eq '-u') {
-        $NU = "false";
-        $numargs_u_nu++;
         $option_found = "true";
     }
     if ($ARGV[$i] eq '-star'){
@@ -123,8 +108,8 @@ for ($i=4; $i<@ARGV; $i++){
     if ($ARGV[$i] eq '-other'){
         $numargs++;
         $option_found = "true";
-	$argv_all = $ARGV[$i+1];
-        @a = split(",", $argv_all);
+	my $argv_all = $ARGV[$i+1];
+        my @a = split(",", $argv_all);
         $submit = $a[0];
         $jobname_option = $a[1];
         $request_memory_option = $a[2];
@@ -160,89 +145,49 @@ if ($replace_mem eq "true"){
     $mem = $new_mem;
 }
 
-if($numargs_u_nu > 1) {
-    die "you cannot specify both -u and -nu\n.
-";
-}
 if($numargs_a ne '1'){
     die "you have to specify which aligner was used to align your reads. sam2cov only works with sam files aligned with STAR or RUM\n
 ";
 }
 
 
-$LOC = $ARGV[1];
+my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
-@fields = split("/", $LOC);
-$last_dir = $fields[@fields-1];
-$study = $fields[@fields-2];
-$study_dir = $LOC;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study = $fields[@fields-2];
+my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
-$shdir = $study_dir . "shell_scripts";
-$logdir = $study_dir . "logs";
-$norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
-$cov_dir = $norm_dir . "/COV";
+my $shdir = $study_dir . "shell_scripts";
+my $logdir = $study_dir . "logs";
+my $norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
+my $cov_dir = $norm_dir . "/COV";
 unless (-d $cov_dir){
     `mkdir $cov_dir`;
 }
-$finalsam_dir = "$norm_dir/FINAL_SAM";
-$final_U_dir = "$finalsam_dir/Unique";
-$final_NU_dir = "$finalsam_dir/NU";
-$final_M_dir = "$finalsam_dir/MERGED";
-$fai_file = $ARGV[2]; # fai file
-$sam2cov = $ARGV[3];
+my $finalsam_dir = "$norm_dir/FINAL_SAM";
+my $final_M_dir = "$finalsam_dir/merged";
+my $fai_file = $ARGV[2]; # fai file
+my $sam2cov = $ARGV[3];
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; # dirnames
-while($line =  <INFILE>){
+while(my $line =  <INFILE>){
     chomp($line);
-    $dir = $line;
-    $id = $dir;
-    if ($numargs_u_nu eq '0'){
-	$filename = "$final_M_dir/$id.FINAL.norm.sam";
-	unless (-d "$cov_dir/MERGED"){
-	    `mkdir "$cov_dir/MERGED"`;
-	}
-	$prefix = "$cov_dir/MERGED/$id.FINAL.norm.sam";
-	$prefix_fwd = $prefix;
-	$prefix_rev = $prefix;
-	$prefix =~ s/norm.sam//;
-	if ($strand eq "true"){
-	    $prefix_fwd =~ s/norm.sam/fwd./g;
-	    $prefix_rev =~ s/norm.sam/rev./g;
-	}
+    my $dir = $line;
+    my $id = $dir;
+    my $filename = "$final_M_dir/$id.merged.sam";
+    my $prefix = "$cov_dir/$id.norm.sam";
+    my $prefix_fwd = $prefix;
+    my $prefix_rev = $prefix;
+    $prefix =~ s/norm.sam//;
+    if ($strand eq "true"){
+	$prefix_fwd =~ s/norm.sam/fwd./g;
+	$prefix_rev =~ s/norm.sam/rev./g;
     }
-    else {
-	if ($U eq 'true'){
-	    $filename = "$final_U_dir/$id.FINAL.norm_u.sam";
-	    unless (-d "$cov_dir/Unique"){
-		`mkdir "$cov_dir/Unique"`;
-	    }
-	    $prefix = "$cov_dir/Unique/$id.FINAL.norm_u.sam";
-	    $prefix_fwd = $prefix;
-	    $prefix =~ s/norm_u.sam//;
-	    $prefix_rev = $prefix;
-	    if ($strand eq "true"){
-		$prefix_fwd =~ s/norm_u.sam/fwd./g;
-		$prefix_rev =~ s/norm_u.sam/rev./g;
-	    }
-	}
-	if ($NU eq 'true'){
-	    $filename = "$final_NU_dir/$id.FINAL.norm_nu.sam";
-	    unless (-d "$cov_dir/NU"){
-		`mkdir "$cov_dir/NU"`;
-	    }
-	    $prefix = "$cov_dir/NU/$id.FINAL.norm_nu.sam";
-	    $prefix_fwd = $prefix;
-	    $prefix_rev = $prefix;
-	    $prefix =~ s/norm_nu.sam//;
-	    if ($strand eq "true"){
-		$prefix_fwd =~ s/norm_nu.sam/fwd./g;
-		$prefix_rev =~ s/norm_nu.sam/rev./g;
-	    }
-	}
-    }
-    $shfile = "C.$id.sam2cov.sh";
-    $jobname = "$study.sam2cov";
-    $logname = "$logdir/sam2cov.$id";
+    my $shfile = "C.$id.sam2cov.sh";
+    my $jobname = "$study.sam2cov";
+    my $logname = "$logdir/sam2cov.$id";
+    my ($shfile_fwd, $shfile_rev, $logname_fwd, $logname_rev);
     if ($strand eq "true"){
 	$shfile_fwd = "C.$id.sam2cov.fwd.sh";
 	$shfile_rev = "C.$id.sam2cov.rev.sh";

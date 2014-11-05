@@ -1,25 +1,71 @@
+#!/usr/bin/env perl
 use strict;
 use warnings;
 
 my $USAGE = "perl sam2genes.pl <samfile> <ensGene file> <outfile>
 
+<samfile> input samfile (full path)
+<ensGene file> ensGenes file (full path)
+<outfile> output file (full path)
+
+options:
+ -str_f : if forward read is in the same orientation as the transcripts/genes.
+ -str_r : if reverse read is in the same orientation as the transcripts/genes.
+ -se : set this if the data are single end, otherwise by default it will assume it's a paired end data.
 ";
 
 if (@ARGV < 3){
     die $USAGE;
 }
 
+my $FWD = "false";
+my $REV = "false";
+my $pe = "true";
+my $numargs = 0;
+my $stranded = "false";
+for(my $i=3; $i<@ARGV; $i++) {
+    my $option_found = "false";
+    if($ARGV[$i] eq '-str_f') {
+	$FWD = "true";
+	$stranded = "true";
+	$numargs++;
+	$option_found = "true";
+    }
+    if($ARGV[$i] eq '-str_r') {
+	$REV = "true";
+	$stranded = "true";
+	$numargs++;
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-se'){
+	$pe = "false";
+	$option_found = "true";
+    }
+    if($option_found eq "false") {
+	die "option \"$ARGV[$i]\" was not recognized.\n";
+    }
+}
+if($stranded eq "true"){
+    if($numargs ne '1') {
+	die "You can only use one of the options \"-str_f\" or \"-str_r\".\n";
+    }
+}
+
+
 my $samfile = $ARGV[0];
 my $ens_file = $ARGV[1];
 my $outfile = $ARGV[2];
-my (%txHASH, %exSTARTS, %exENDS, %geneHASH, %geneSYMBOL);
+my (%txHASH, %exSTARTS, %exENDS, %geneHASH, %geneSYMBOL, %geneSTR, %done);
 
 open(ENS, $ens_file) or die "cannot find file \"$ens_file\"\n";
 my $header = <ENS>;
 chomp($header);
 my @ENSHEADER = split(/\t/, $header);
-my ($txnamecol, $txchrcol, $txstartcol, $txendcol, $exstartscol, $exendscol, $genenamecol, $genesymbolcol);
+my ($txnamecol, $txchrcol, $txstartcol, $txendcol, $exstartscol, $exendscol, $genenamecol, $genesymbolcol, $strandcol);
 for(my $i=0; $i<@ENSHEADER; $i++){
+    if ($ENSHEADER[$i] =~ /.strand$/){
+	$strandcol = $i;
+    }
     if ($ENSHEADER[$i] =~ /.name$/){
 	$txnamecol = $i;
     }
@@ -46,8 +92,8 @@ for(my $i=0; $i<@ENSHEADER; $i++){
     }
 }
 
-if (!defined($txnamecol) || !defined($txchrcol) || !defined($txstartcol) || !defined($txendcol) || !defined($exstartscol) || !defined($exendscol) || !defined($genenamecol) || !defined($genesymbolcol)){
-    die "Your header must contain columns with the following suffixes: name, chrom, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value\n";
+if (!defined($txnamecol) || !defined($txchrcol) || !defined($txstartcol) || !defined($txendcol) || !defined($exstartscol) || !defined($exendscol) || !defined($genenamecol) || !defined($genesymbolcol) || !defined($strandcol)){
+    die "Your header must contain columns with the following suffixes: name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value\n";
 }
 
 while(my $line = <ENS>){
@@ -61,6 +107,7 @@ while(my $line = <ENS>){
     my $tx_exonEnds = $a[$exendscol];
     my $gene_id = $a[$genenamecol];
     my $gene_symbol = $a[$genesymbolcol];
+    my $tx_strand = $a[$strandcol];
     #index by chr and first 1-3 digits of txStart and txEnd
     my $index_st = int($tx_start_loc/1000000);
     my $index_end = int($tx_end_loc/1000000);
@@ -78,30 +125,37 @@ while(my $line = <ENS>){
     #genehash with tx_id as key
     $geneHASH{$tx_id} = $gene_id;
     $geneSYMBOL{$gene_id} = $gene_symbol;
+    $geneSTR{$gene_id} = $tx_strand;
 }
 close(ENS);
 
 open(SAM, $samfile) or die "cannot fine file \"$samfile\"\n";
 open(OUT, ">$outfile");
-print OUT "readID\ttranscriptIDs\tgeneIDs\tgeneSymbols\tIndex\tTag\n";
+print OUT "readID\ttranscriptIDs\tgeneIDs\tgeneSymbols\t(N|I)H-HI\n";
 while(my $line = <SAM>){
     chomp($line);
     if ($line =~ /^@/){
 	next;
     }
-    $line =~ /HI:i:(\d+)/;
-    my $a_index = $1;
-    $line =~ /(N|I)H:i:(\d+)/;
-    my $tag = $2;
+    my $hi_tag = 0;
+    my $ih_tag = 0;
+    if ($line =~ /HI:i:(\d+)/){
+	$line =~ /HI:i:(\d+)/;
+	$hi_tag = $1;
+    }
+    if ($line =~ /(N|I)H:i:(\d+)/){
+	$line =~ /(N|I)H:i:(\d+)/;
+	$ih_tag = $2;
+    }
+    my $ih_hi = "$ih_tag:$hi_tag";
     my @readStarts = ();
     my @readEnds = ();
-    my $txID_list = "";
+    my @txIDs = ();
     my @a = split(/\t/, $line);
     my $read_id = $a[0];
     my $flag = $a[1];
     my $chr = $a[2];
     my $readSt = $a[3];
-    my $index = int($readSt/1000000);
     my $cigar = $a[5];
     my $spans = &cigar2spans($readSt, $cigar);
     my @b = split (",", $spans);
@@ -114,40 +168,195 @@ while(my $line = <SAM>){
 	push (@readStarts, $read_st);
 	push (@readEnds, $read_end);
     }
-    if (exists $txHASH{$chr}[$index]){
-	my $hashsize = @{$txHASH{$chr}[$index]};
-	for (my $j=0; $j<$hashsize; $j++){
-	    my $tx_id = $txHASH{$chr}[$index][$j];
-	    my $check = &checkCompatibility($chr, $exSTARTS{$tx_id}, $exENDS{$tx_id}, $chr, \@readStarts, \@readEnds);
-	    if ($check eq "1"){
-		$txID_list = $txID_list . "$tx_id,";
+    undef %done;
+    for(my $i=0;$i<@b;$i++){
+        $b[$i] =~ /(\d+)-(\d+)/;
+        my $read_segment_start = $1;
+        my $read_segment_end = $2;
+        my $read_segment_start_block = int($read_segment_start / 1000000);
+        my $read_segment_end_block = int($read_segment_end / 1000000);
+        for(my $index=$read_segment_start_block; $index<= $read_segment_end_block; $index++) {
+	    if (exists $txHASH{$chr}[$index]){
+		my $hashsize = @{$txHASH{$chr}[$index]};
+		for (my $j=0; $j<$hashsize; $j++){
+		    my $tx_id = $txHASH{$chr}[$index][$j];
+		    unless ($flag & 4){
+			my $check = &checkCompatibility($chr, $exSTARTS{$tx_id}, $exENDS{$tx_id}, $chr, \@readStarts, \@readEnds);
+			if (!(defined $done{$tx_id})){
+			    if ($check eq "1"){
+				push(@txIDs, $tx_id);
+			    }
+			}
+			$done{$tx_id}=1;
+		    }
+		}
 	    }
 	}
     }
+    my @uniquetxIDs = &uniq(@txIDs);
     my @geneIDs = ();
-    my @ids = split(",", $txID_list);
-    for(my $i=0; $i<@ids; $i++){
-	push (@geneIDs, $geneHASH{$ids[$i]});
+    my $txID_list = "";
+    for(my $i=0; $i<@uniquetxIDs; $i++){
+	$txID_list = $txID_list . "$uniquetxIDs[$i],";
+	push (@geneIDs, $geneHASH{$uniquetxIDs[$i]});
     }
     my @unique_gene_ids = &uniq(@geneIDs);
     my $array_size = @unique_gene_ids;
     my $geneID_list = "";
     my $symbol_list = "";
-    if ($array_size == 1){
-	$geneID_list = $unique_gene_ids[0];
-	$symbol_list = $geneSYMBOL{$unique_gene_ids[0]};
-    }
-    elsif ($array_size > 1){
-	for(my $i=0; $i<$array_size;$i++){
-	    $geneID_list = $geneID_list . "$unique_gene_ids[$i],";
-	    $symbol_list = $symbol_list . "$geneSYMBOL{$unique_gene_ids[$i]},";
+    if ($stranded eq "true"){
+	my $read_strand = "";
+	#paired end
+	if ($pe eq "true"){
+	    if ($FWD eq "true"){
+		if ($flag & 64){ #forward read
+		    if ($flag & 16){ 
+			$read_strand = "-";
+		    }
+		    elsif ($flag & 32){
+			$read_strand = "+";
+		    }
+		    if ($array_size == 1){
+			if ($read_strand eq $geneSTR{$unique_gene_ids[0]}){
+			    $geneID_list = "$unique_gene_ids[0]";
+			    $symbol_list = $geneSYMBOL{$unique_gene_ids[0]};
+			}
+			else{
+			    $geneID_list = "ANTI:$unique_gene_ids[0]";
+			    $symbol_list = "ANTI:$geneSYMBOL{$unique_gene_ids[0]}";
+			}
+		    }
+		    elsif ($array_size > 1){
+			for(my $i=0; $i<$array_size;$i++){
+			    if ($read_strand eq $geneSTR{$unique_gene_ids[$i]}){
+				$geneID_list = $geneID_list . "$unique_gene_ids[$i],";
+				$symbol_list = $symbol_list . "$geneSYMBOL{$unique_gene_ids[$i]},";
+			    }
+			    else{
+				$geneID_list = $geneID_list . "ANTI:$unique_gene_ids[$i],";
+				$symbol_list = $symbol_list . "ANTI:$geneSYMBOL{$unique_gene_ids[$i]},";
+			    }
+			}
+		    }
+		}
+		else{
+		    if ($array_size == 1){
+			$geneID_list = "$unique_gene_ids[0]";
+			$symbol_list = $geneSYMBOL{$unique_gene_ids[0]};
+		    }
+		    elsif ($array_size > 1){
+			for(my $i=0; $i<$array_size;$i++){
+			    $geneID_list = $geneID_list . "$unique_gene_ids[$i],";
+			    $symbol_list = $symbol_list . "$geneSYMBOL{$unique_gene_ids[$i]},";
+			}
+		    }
+		}
+	    }
+	    if ($REV eq "true"){
+		if ($flag & 128){ #revese read
+		    if ($flag & 16){
+			$read_strand = "-";
+		    }
+		    elsif ($flag & 32){
+			$read_strand = "+";
+		    }
+		    if ($array_size == 1){
+			if ($read_strand eq $geneSTR{$unique_gene_ids[0]}){
+			    $geneID_list = "$unique_gene_ids[0]";
+			    $symbol_list = $geneSYMBOL{$unique_gene_ids[0]};
+			}
+			else{
+                            $geneID_list = "ANTI:$unique_gene_ids[0]";
+			    $symbol_list = "ANTI:$geneSYMBOL{$unique_gene_ids[0]}";
+			}
+		    }
+		    elsif ($array_size > 1){
+			for(my $i=0; $i<$array_size;$i++){
+			    if ($read_strand eq $geneSTR{$unique_gene_ids[$i]}){
+				$geneID_list = $geneID_list . "$unique_gene_ids[$i],";
+				$symbol_list = $symbol_list . "$geneSYMBOL{$unique_gene_ids[$i]},";
+			    }
+                            else{
+                                $geneID_list = $geneID_list . "ANTI:$unique_gene_ids[$i],";
+                                $symbol_list = $symbol_list . "ANTI:$geneSYMBOL{$unique_gene_ids[$i]},";
+                            }
+			}
+		    }
+		}
+		else{
+		    if ($array_size == 1){
+			$geneID_list = "$unique_gene_ids[0]";
+			$symbol_list = $geneSYMBOL{$unique_gene_ids[0]};
+		    }
+		    elsif ($array_size > 1){
+			for(my $i=0; $i<$array_size;$i++){
+			    $geneID_list = $geneID_list . "$unique_gene_ids[$i],";
+			    $symbol_list = $symbol_list . "$geneSYMBOL{$unique_gene_ids[$i]},";
+			}
+		    }
+		}
+	    }
+	}
+	#single end
+	if ($pe eq "false"){
+	    if ($FWD eq "true"){
+		if ($flag & 16){
+		    $read_strand = "-";
+		}
+		else{
+		    $read_strand = "+";
+		}
+	    }
+	    if ($REV eq "true"){
+		if ($flag & 16){
+		    $read_strand = "+";
+		}
+		else{
+		    $read_strand = "-";
+		}
+	    }
+	    if ($array_size == 1){
+		if ($read_strand eq $geneSTR{$unique_gene_ids[0]}){
+		    $geneID_list = "$unique_gene_ids[0]";
+		    $symbol_list = $geneSYMBOL{$unique_gene_ids[0]};
+		}
+		else{
+		    $geneID_list = "ANTI:$unique_gene_ids[0]";
+		    $symbol_list = "ANTI:$geneSYMBOL{$unique_gene_ids[0]}";
+		}
+	    }
+	    elsif ($array_size > 1){
+		for(my $i=0; $i<$array_size;$i++){
+		    if ($read_strand eq $geneSTR{$unique_gene_ids[$i]}){
+			$geneID_list = $geneID_list . "$unique_gene_ids[$i],";
+			$symbol_list = $symbol_list . "$geneSYMBOL{$unique_gene_ids[$i]},";
+		    }
+		    else{
+			$geneID_list = $geneID_list . "ANTI:$unique_gene_ids[$i],";
+			$symbol_list = $symbol_list . "ANTI:$geneSYMBOL{$unique_gene_ids[$i]},";
+		    }
+		}
+	    }
 	}
     }
-    print OUT "$read_id\t$txID_list\t$geneID_list\t$symbol_list\t$a_index\t$tag\n";
+    if ($stranded eq "false"){
+	if ($array_size == 1){
+	    $geneID_list = $unique_gene_ids[0];
+	    $symbol_list = $geneSYMBOL{$unique_gene_ids[0]};
+	}
+	elsif ($array_size > 1){
+	    for(my $i=0; $i<$array_size;$i++){
+		$geneID_list = $geneID_list . "$unique_gene_ids[$i],";
+		$symbol_list = $symbol_list . "$geneSYMBOL{$unique_gene_ids[$i]},";
+	    }
+	}
+    }
+    print OUT "$read_id\t$txID_list\t$geneID_list\t$symbol_list\t$ih_hi\n";
 }
 close(SAM);
 close(OUT);
 print "got here\n";
+
 sub uniq {
     my %seen;
     grep !$seen{$_}++, @_;

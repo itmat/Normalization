@@ -11,6 +11,9 @@ You can remove unwanted samples from your <sample dirs> file.
 <loc> is the location where the sample directories are
 
 options:
+ -stranded : set this if data are strand-specific.
+
+ -se : set this if the data are single end, otherwise by default it will assume it's a paired end data
 
  -u  :  set this if you want to return number of unique reads only, otherwise by default it will return number of unique and non-unique reads
 
@@ -22,6 +25,8 @@ options:
 my $U = 'true';
 my $NU = 'true';
 my $numargs_u_nu = 0;
+my $se = "false";
+my $stranded = "false";
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-u'){
@@ -33,6 +38,14 @@ for (my $i=2; $i<@ARGV; $i++){
 	$U = "false";
 	$option_found = "true";
 	$numargs_u_nu++;
+    }
+    if ($ARGV[$i] eq '-se'){
+	$se = "true";
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-stranded'){
+        $stranded = "true";
+        $option_found = "true";
     }
     if ($option_found eq "false"){
 	die "option \"$ARGV[$i]\" was not recognized.\n";
@@ -61,7 +74,7 @@ unless (-d "$stats_dir/GENE/"){
 my $outfile = "$stats_dir/GENE/expected_num_reads_gnorm.txt";
 if (-e "$outfile"){
     my $temp = $outfile;
-    $temp =~ s/.txt$/.filter_highexp.txt/;
+    $temp =~ s/.txt$/.after_filter_high_expressers.txt/;
     $outfile = $temp;
 }
 my $tempfile = "$stats_dir/GENE/expected_num_reads_gnorm.temp";
@@ -87,19 +100,37 @@ while(my $line = <IN>){
     my $id = $line;
     print TEMP "$id\t";
     if ($U eq "true"){
-	my $str_u = `cat $LOC/$id/GNORM/Unique/$id.filtered_u_genes.linecount.txt`;
+	my $str_u;
+	if ($stranded eq "false"){
+	    $str_u = `cat $LOC/$id/GNORM/Unique/$id.filtered_u.genes.linecount.txt`;
+	}
+	if ($stranded eq "true"){
+	    $str_u = `cat $LOC/$id/GNORM/Unique/$id.filtered_u.genes.sense.linecount.txt`;
+	}
 	chomp($str_u);
 	my @a = split (/\t/, $str_u);
 	my $N2 = $a[1];
 	my $N = $N2 / 2;
+	if ($se eq "true"){
+	    $N = $N2;
+	}
 	print TEMP "$N\t";
     }
     if ($NU eq "true"){
-	my $str_nu = `cat $LOC/$id/GNORM/NU/$id.filtered_nu_genes.linecount.txt`;
+	my $str_nu;
+	if ($stranded eq "false"){
+	    $str_nu = `cat $LOC/$id/GNORM/NU/$id.filtered_nu.genes.linecount.txt`;
+	}
+	if ($stranded eq "true"){
+            $str_nu = `cat $LOC/$id/GNORM/NU/$id.filtered_nu.genes.sense.linecount.txt`;
+        }
         chomp($str_nu);
         my @a = split (/\t/, $str_nu);
         my $N2 = $a[1];
 	my $N = $N2 / 2;
+	if ($se eq "true"){
+	    $N = $N2;
+	}
         print TEMP "$N\t";
     }
     print TEMP "\n";
@@ -206,6 +237,9 @@ else{
     if ($NU eq "true"){
 	print OUT " (non-unique reads)\n";
     }
+}
+if ($stranded eq "true"){
+    print OUT "\t\t\t\t\t\t\t (*For stranded data, these numbers refer to the sense gene mappers)\n";
 }
 print OUT "\n[1] You may remove sample ids from <sample_dirs> file to get more reads:\n\n<Expected number of reads after removing samples>\n";
 

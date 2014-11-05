@@ -202,6 +202,8 @@ while ($line1 = <INFILE>) {
     $a[0] =~ s/[^\d]//g;
     $seqnum1 = $a[0];
     $chr = $a[2];
+#    print "$a[0]\t"; #debug
+#    my %EXONS_TO_PRINT = (); #debug
     if($rpf eq 'true') {
 	$forward_only = 'true';
 	$reverse_only = 'false';
@@ -513,6 +515,7 @@ while ($line1 = <INFILE>) {
 		       && ((($s==(@S-1)) && ($read_segment_end <= $end_e)) || (($s<(@S-1)) && ($read_segment_end == $end_e)))) {
 			if(!(defined $done{$current_exon})) {
 			    if($unique eq 'true') {
+				#$EXONS_TO_PRINT{$current_exon} = 1; #debug
 				$EXON_counts_unique{$current_exon}++;
 				$Flag++;
 				if($Flag == 1) {
@@ -528,7 +531,12 @@ while ($line1 = <INFILE>) {
 	    }
 	}
     }
-
+=comment #debug
+    foreach my $exon (sort keys %EXONS_TO_PRINT){
+        print "$exon;";
+    }
+    print "\n";
+=cut
     if($Flag >= 1) {
 	if($exon_sam_outfile ne "none") {
 	    if($forward_only eq 'true' && $reverse_only eq 'false') {

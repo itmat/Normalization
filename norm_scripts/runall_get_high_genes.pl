@@ -9,7 +9,9 @@ where:
 <cutoff> cutoff %
 
 option:
-  -nu :  set this if you want to return only non-unique genepercents, otherwise by default
+ -stranded : set this if the data are strand-specific.
+
+ -nu :  set this if you want to return only non-unique genepercents, otherwise by default
          it will return unique genepercents.
 
  -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
@@ -44,7 +46,7 @@ if(@ARGV<3) {
 use Cwd 'abs_path';
 my $path = abs_path($0);
 $path =~ s/runall_get_high_genes.pl//;
-
+my $stranded = "";
 my $U = "true";
 my $NU = "false";
 my $njobs = 200;
@@ -70,6 +72,10 @@ for(my $i=3; $i<@ARGV; $i++) {
         $U = "false";
 	$NU = "true";
         $option_found = "true";
+    }
+    if ($ARGV[$i] eq '-stranded'){
+        $option_found = "true";
+	$stranded = "-stranded";
     }
     if ($ARGV[$i] eq '-h'){
 	$option_found = "true";
@@ -174,10 +180,10 @@ while(my $line = <INFILE>){
     my $jobname = "$study.get_genepercents";
     open(OUT, ">$shfile");
     if ($U eq "true"){
-	print OUT "perl $path/get_genepercents.pl $sampledir $cutoff $outfile\n";
+	print OUT "perl $path/get_genepercents.pl $sampledir $cutoff $outfile $stranded\n";
     }
     if ($NU eq "true"){
-	print OUT "perl $path/get_genepercents.pl $sampledir $cutoff $outfile -nu \n";
+	print OUT "perl $path/get_genepercents.pl $sampledir $cutoff $outfile -nu $stranded\n";
     }
     close(OUT);
     while (qx{$status | wc -l} > $njobs){

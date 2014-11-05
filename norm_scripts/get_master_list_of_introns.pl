@@ -2,24 +2,21 @@
 use strict;
 use warnings;
 
-my $USAGE = "\nUsage: perl get_master_list_of_genes.pl <ensGenes file> <loc> [option]
+my $USAGE = "\nUsage: perl get_master_list_of_introns.pl <gene info file> <loc> [option]
 
-<ensGene file> ensembl table must contain columns with the following suffixes: name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
+
+<gene info file> gene info file must contain columns with the following suffixes: chrom, strand, exonStarts, and exonEnds.
 <loc> is where the sample directories are
 
 option:
  -stranded: set this if your data are strand-specific.
- -percent <n> : by default, 10% of the size of first and last exon of each transcript 
-                will be added to the start of the first and the end of the last exon, respectively.
-                use this option to change the percentage <n>. (<n> has to be a number between 0-100)
-
 
 ";
 
 if (@ARGV <2 ){
     die $USAGE;
 }
-my $percent = 10;
+
 my $stranded = "false";
 for(my $i=2; $i<@ARGV; $i++) {
     my $option_found = "false";
@@ -27,123 +24,92 @@ for(my $i=2; $i<@ARGV; $i++) {
 	$stranded = "true";
 	$option_found = "true";
     }
-    if ($ARGV[$i] eq "-percent"){
-        $option_found = "true";
-        $percent = $ARGV[$i+1];
-        $i++;
-	if (($percent !~ /(\d+$)/) || ($percent > 100) || ($percent < 0) ){
-            die "-percent <n> : <n> needs to be a number between 0-100\n";
-        }
-    }
     if($option_found eq "false") {
 	die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
 
-
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
-my $ensFile = $ARGV[0];
-my (%ID, %GENECHR, %GENEST, %GENEEND);
-open(ENS, $ensFile) or die "cannot find file \"$ensFile\"\n";
-my $header = <ENS>;
+my $geneinfoFile = $ARGV[0];
+my (%ID, %EXONCHR, %EXONST, %EXONEND);
+open(GENE, $geneinfoFile) or die "cannot find file \"$geneinfoFile\"\n";
+my $header = <GENE>;
 chomp($header);
-my @ENSHEADER = split(/\t/, $header);
-my ($genenamecol, $genesymbolcol, $txchrcol, $txstartcol, $txendcol, $strandcol, $exonStcol, $exonEndcol);
-for(my $i=0; $i<@ENSHEADER; $i++){
-    if ($ENSHEADER[$i] =~ /.name2$/){
-        $genenamecol = $i;
-    }
-    if ($ENSHEADER[$i] =~ /.strand$/){
+my @GHEADER = split(/\t/, $header);
+my ($chrcol, $exonstartcol, $exonendcol, $strandcol);
+for(my $i=0; $i<@GHEADER; $i++){
+    if ($GHEADER[$i] =~ /.strand$/){
         $strandcol = $i;
     }
-    if ($ENSHEADER[$i] =~ /.ensemblToGeneName.value$/){
-        $genesymbolcol = $i;
+    if ($GHEADER[$i] =~ /.chrom$/){
+        $chrcol = $i;
     }
-    if ($ENSHEADER[$i] =~ /.chrom/){
-        $txchrcol = $i;
+    if ($GHEADER[$i] =~ /.exonStarts$/){
+        $exonstartcol = $i;
     }
-    if ($ENSHEADER[$i] =~ /.txStart/){
-        $txstartcol = $i;
-    }
-    if ($ENSHEADER[$i] =~ /.txEnd/){
-        $txendcol = $i;
-    }
-    if ($ENSHEADER[$i] =~ /.exonStarts$/){
-        $exonStcol = $i;
-    }
-    if ($ENSHEADER[$i] =~ /.exonEnds$/){
-        $exonEndcol = $i;
+    if ($GHEADER[$i] =~ /.exonEnds$/){
+        $exonendcol = $i;
     }
 }
 
-if (!defined($genenamecol) || !defined($genesymbolcol) || !defined($txchrcol) || !defined($txstartcol)|| !defined($txendcol) || !defined($strandcol) || !defined($exonStcol) || !defined($exonEndcol)){
-    die "Your header must contain columns with the following suffixes: name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value\n";
+if (!defined($chrcol) || !defined($exonstartcol) || !defined($exonendcol) || !defined($strandcol)){
+    die "Your header must contain columns with the following suffixes: chrom, strand, exonStarts and exonEnds\n";
 }
-my %STR;
-while(my $line = <ENS>){
+my (%INTRONS, %STR);
+while(my $line = <GENE>){
     chomp($line);
     my @a = split(/\t/,$line);
-    my $txchr = $a[$txchrcol];
-    my $txst = $a[$txstartcol];
-    my $txend = $a[$txendcol];
-    my $exonStarts = $a[$exonStcol];
-    my @s = split(",", $exonStarts);
-    my $exonEnds = $a[$exonEndcol];
-    my @e = split(",", $exonEnds);
-    my $geneid = $a[$genenamecol];
-    my $genesym = $a[$genesymbolcol];
-    my $txstrand = $a[$strandcol];
-    $txst = $txst - int(($e[0]-$s[0]) * $percent / 100);
-    if ($txst < 0){
-	$txst = 0;
+    my $chr = $a[$chrcol];
+    my $exonSt = $a[$exonstartcol];
+    my $exonEnd = $a[$exonendcol];
+    my $strand = $a[$strandcol];
+    
+    $exonSt =~ s/\s*,\s*$//;
+    $exonSt =~ s/^\s*,\s*//;
+    $exonEnd =~ s/\s*,\s*$//;
+    $exonEnd =~ s/^\s*,\s*//;
+    my @S = split(/,/,$exonSt);
+    my @E = split(/,/,$exonEnd);
+    my $N = @S;
+    for(my $e=0; $e<$N-1; $e++) {
+	$E[$e]++;
+	my $intron = "$chr:$E[$e]-$S[$e+1]";
+	if ($stranded eq "false"){
+	    $INTRONS{$intron} = 1;
+	}
+	if ($stranded eq "true"){
+	    if (exists $STR{$intron}){
+		my $old_strand = $STR{$intron};
+		if ($old_strand eq $strand){
+		    next;
+		}
+		$intron = "$intron" . ".1";
+		$INTRONS{$intron} = 1;
+		$STR{$intron} = $strand;
+	    }
+	    else{
+		$INTRONS{$intron} = 1;
+		$STR{$intron} = $strand;
+	    }
+	}
     }
-    $txend = $txend + int(($e[@s-1]-$s[@s-1]) * $percent / 100);
-    $txst++;
-    $ID{$geneid}= $genesym;
-    $GENECHR{$geneid} = $txchr;
-    push (@{$GENEST{$geneid}}, $txst);
-    push (@{$GENEEND{$geneid}}, $txend);
-    $STR{$geneid} = $txstrand;
 }
-close(ENS);
+close(GENE);
 
-my %GENESORT;
-foreach my $key (keys %ID){
-    my $chr = $GENECHR{$key};
-    my $min_st = &get_min(@{$GENEST{$key}});
-    my $max_end = &get_max(@{$GENEEND{$key}});
-    my $coord = "$chr:$min_st-$max_end";
-    $GENESORT{$key} = $coord;
-}
-close(MAS);
-my $master_list_of_genes = "$LOC/master_list_of_genes.txt";
-open(MAS, ">$master_list_of_genes");
-
-foreach my $key (sort {cmpChrs($GENESORT{$a},$GENESORT{$b})} keys %GENESORT){
-    my $coord = $GENESORT{$key};
-    my $strand = $STR{$key};
-    print MAS "$key\t$ID{$key}\t$coord\t";
+my $master_list_of_introns = "$LOC/master_list_of_introns.txt";
+open(MAS, ">$master_list_of_introns");
+foreach my $intron (sort {cmpChrs($a,$b)} keys %INTRONS) {
+    if ($stranded eq "false"){
+	print MAS "$intron\n";
+    }
     if ($stranded eq "true"){
-	print MAS "$strand";
+	print MAS "$intron\t$STR{$intron}\n";
     }
-    print MAS "\n";
 }
 close(MAS);
 
 print "got here\n";
-
-sub get_min(){
-    (my @array) = @_;
-    my @sorted_array = sort {$a <=> $b} @array;
-    return $sorted_array[0];
-}
-
-sub get_max(){
-    (my @array) = @_;
-    my @sorted_array = sort {$a <=> $b} @array;
-    return $sorted_array[@sorted_array-1];
-}
 
 sub cmpChrs ($$) {
     my $a2_c = lc($_[1]);
@@ -182,7 +148,6 @@ sub cmpChrs ($$) {
     if ($b2_c =~ /$a2_c/) {
         return 1;
     }
-
     # dealing with roman numerals starts here
     if ($a2_c =~ /chr([ivx]+)/ && $b2_c =~ /chr([ivx]+)/) {
         $a2_c =~ /chr([ivx]+)/;
@@ -323,7 +288,7 @@ sub cmpChrs ($$) {
     }
     my $flag_c = 0;
     while ($flag_c == 0) {
-	$flag_c = 1;
+        $flag_c = 1;
         if ($a2_c =~ /^([^\d]*)(\d+)/) {
             my $stem1_c = $1;
             my $num1_c = $2;
@@ -342,14 +307,16 @@ sub cmpChrs ($$) {
                     $flag_c = 0;
                 }
             }
-	}
+        }
     }
     if ($a2_c le $b2_c) {
-	return 1;
+        return 1;
     }
     if ($b2_c le $a2_c) {
-	return -1;
+        return -1;
     }
+
+
     return 1;
 }
 sub arabic($) {
@@ -372,8 +339,7 @@ sub isroman($) {
     my $arg = shift;
     return $arg ne '' and
 	$arg =~ /^(?: M{0,3})
-                 (?: D?C{0,3} | C[DM])
-                 (?: L?X{0,3} | X[LC])
-                 (?: V?I{0,3} | I[VX])$/ix;
+	(?: D?C{0,3} | C[DM])
+	(?: L?X{0,3} | X[LC])
+	(?: V?I{0,3} | I[VX])$/ix;
 }
-

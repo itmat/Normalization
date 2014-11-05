@@ -39,13 +39,14 @@ for(my $i=2; $i<@ARGV; $i++) {
 	die "ERROR: command line arugument '$ARGV[$i]' not recognized.\n";
     }
 }
-
+my (%STR, %INF_STR, %START_CNT);
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 my $line = <INFILE>;
 while($line = <INFILE>){
     chomp($line);
     my @a = split(/\t/, $line);
     my $intron = $a[0];
+    my $strand = $a[1];
     my $score = $a[2];
     (my $int_chr, my $int_start, my $int_end) = $intron =~  /^(.*):(\d*)-(\d*)$/g;
     my $ex_end = $int_start - 1;
@@ -62,10 +63,15 @@ while($line = <INFILE>){
 	foreach my $exon_start (keys %EXON_START){
 	    my $ex_start_score = $EXON_START{$exon_start};
 	    my $ex_end_score = $score;
+	    my $start_strand = $STR{$exon_start};
+	    if (($START_CNT{$exon_start} == 1) && ($start_strand ne $strand)){
+		next;
+	    }
 	    my @SCORE = ($ex_start_score, $ex_end_score);
 	    my $diff = $ex_end - $exon_start + 1;
 	    if (($diff >= $min) && ($diff <= $max)){
 		my $inferred_exon = "$int_chr:$exon_start-$ex_end";
+		$INF_STR{$inferred_exon} = $strand;
 		#if $inferred_exon is already in hash %INF_EXONS, 
   		# add ex_start_score and ex_end_scores,
 		if (exists $INF_EXONS{$inferred_exon}){
@@ -84,6 +90,8 @@ while($line = <INFILE>){
 	$EXON_START{$ex_start} = $score;
     }
     $current_n = $chr_n;
+    $STR{$ex_start} = $strand;
+    $START_CNT{$ex_start}++;
 }
 close(INFILE);
 
@@ -118,7 +126,7 @@ while($line = <TEMP2>){
     # when you get to new chr write out the exons in temp_hash and empty temp_hash 
     if ($curr_chr ne $exon_chr){
         for my $key (keys %temp_hash){
-	    print OUT "$key\n";
+	    print OUT "$key\t$INF_STR{$key}\n";
 	}
 	for (keys %temp_hash){
 	    delete $temp_hash{$_};
@@ -131,7 +139,7 @@ while($line = <TEMP2>){
 	(my $temp_chr, my $temp_start, my $temp_end) = $key =~  /^(.*):(\d*)-(\d*)$/g;
 	my $overlap = $temp_end - $exon_start;
 	if ($overlap < 0){
-	    print OUT "$key\n";
+	    print OUT "$key\t$INF_STR{$key}\n";
 	    delete $temp_hash{$key};
 	}
     }

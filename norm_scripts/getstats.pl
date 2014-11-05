@@ -1,15 +1,9 @@
 #!/usr/bin/env perl
-
-$USAGE = "\nUsage: perl getstats.pl <dirs> <loc> [option]
+my $USAGE = "\nUsage: perl getstats.pl <dirs> <loc> 
 
 where 
 <dirs> is a file of directory names (without path)
 <loc> is where the sample directories are
-
-option:
- -norm : set this if you want to generate summary table for normalized sam files (Unique + NU MERGED)
- -norm_u : set this if you want to generate summary table for normalized sam files (Unique)
- -norm_nu : set this if you want to generate summary table for normalized sam files (NU)
 
 This will parse the mapping_stats.txt files for all dirs
 and output a table with summary info across all samples.
@@ -18,57 +12,26 @@ if(@ARGV<2) {
     die $USAGE;
 }
 
-$norm = "false";
-$norm_u = "false";
-$norm_nu = "false";
-for ($i=2; $i<@ARGV; $i++){
-    $option_found = "false";
-    if ($ARGV[$i] eq '-norm'){
-        $option_found = "true";
-        $norm = "true";
-    }
-    if ($ARGV[$i] eq '-norm_u'){
-        $option_found = "true";
-        $norm_u = "true";
-    }
-    if ($ARGV[$i] eq '-norm_nu'){
-        $option_found = "true";
-        $norm_nu = "true";
-    }
-}
-
-$dirs = $ARGV[0];
-$LOC = $ARGV[1];
+my $dirs = $ARGV[0];
+my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
-@fields = split("/", $LOC);
-$last_dir = $fields[@fields-1];
-$study_dir = $LOC;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
-$stats_dir = $study_dir . "STATS";
+my $stats_dir = $study_dir . "STATS";
 unless (-d $stats_dir){
     `mkdir $stats_dir`;}
 
-$cwd = `pwd`;
 open(DIRS, $dirs) or die "cannot find file '$dirs'\n";
-while($dir = <DIRS>) {
+while(my $dir = <DIRS>) {
     chomp($dir);
-    $id = $dir;
-    if ($norm eq "true"){
-	$filename = "$study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/MERGED/$id.FINAL.norm.mappingstats.txt";
-    }
-    elsif ($norm_u eq "true"){
-	$filename = "$study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/Unique/$id.FINAL.norm_u.mappingstats.txt";
-    }
-    elsif ($norm_nu eq "true"){
-	$filename = "$study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/NU/$id.FINAL.norm_nu.mappingstats.txt";
-    }
-    else{
-	$filename = "$LOC/$dir/$id.mappingstats.txt";
-    }
+    my $id = $dir;
+    my $filename = "$LOC/$dir/$id.mappingstats.txt";
     if(!(-e "$filename")) {
 	next;
     }
-    $x = `head -1 $filename`;
+    my $x = `head -1 $filename`;
     chomp($x);
     $x =~ s/[^\d,]//g;
     $total{$dir} = $x;
@@ -174,9 +137,7 @@ while($dir = <DIRS>) {
     if ($x eq ''){
 	$x = '0';
     }
-    unless($norm_nu eq "true"){
-	$y = int($x / $UTOTAL_F_or_R_CONS * 1000) / 10;
-    }
+    $y = int($x / $UTOTAL_F_or_R_CONS * 1000) / 10;
     $min_chrm = $x;
     $x2 = &format_large_int($x);
     if ($x2 eq ''){
@@ -192,45 +153,12 @@ $max4 = 0;
 $max5 = 0;
 $max6 = 0;
 
-if ($norm eq "true"){
-    $outfile = "$stats_dir/EXON_INTRON_JUNCTION/num_reads_after_normalization.txt";
-}
-elsif ($norm_u eq "true"){
-    $outfile = "$stats_dir/EXON_INTRON_JUNCTION/num_reads_after_normalization_u.txt";
-}
-elsif ($norm_nu eq "true"){
-    $outfile = "$stats_dir/EXON_INTRON_JUNCTION/num_reads_after_normalization_nu.txt";
-}
-else{
-    $outfile = "$stats_dir/mappingstats_summary.txt";
-}
+$outfile = "$stats_dir/mappingstats_summary.txt";
 open(OUT, ">$outfile");
 #print OUT "id\ttotal\t!<>\t!<|>\t!chrM(%!)\t\%overlap\t~!<>\t~!<|>\t<|>\n";
-if ($norm eq "true"){
-    print OUT "id\ttotalreads\tUnique\tNon-Unique\n";
-}
-elsif ($norm_u eq "true"){
-    print OUT "id\ttotalreads\tUnique\n";
-}
-elsif ($norm_nu eq "true"){
-    print OUT "id\ttotalreads\tNon-Unique\n";
-}
-else{
-    print OUT "id\ttotalreads\tUniqueFWDandREV\tUniqueFWDorREV\tUniqueChrM\t%overlap\tNon-UniqueFWDandREV\tNon-UniqueFWDorREV\tFWDorREVmapped\n";
-}
+print OUT "id\ttotalreads\tUniqueFWDandREV\tUniqueFWDorREV\tUniqueChrM\t%overlap\tNon-UniqueFWDandREV\tNon-UniqueFWDorREV\tFWDorREVmapped\n";
 foreach $dir (keys %UchrM) {
-    if ($norm eq "true"){
-	print OUT "$dir\t$total{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$NUandAtLeastOneMapped{$dir}\n";
-    }
-    elsif ($norm_u eq "true"){
-	print OUT "$dir\t$total{$dir}\t$uniqueandAtLeastOneMapped{$dir}\n";
-    }
-    elsif ($norm_nu eq "true"){
-	print OUT "$dir\t$total{$dir}\t$NUandAtLeastOneMapped{$dir}\n";
-    }
-    else{
-	print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$UchrM{$dir}\t$Pover{$dir}\%\t$NUandFRconsistently{$dir}\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped{$dir}\n";
-    }
+    print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$UchrM{$dir}\t$Pover{$dir}\%\t$NUandFRconsistently{$dir}\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped{$dir}\n";
     $x = $total{$dir};
     $x =~ s/,//g;
     if($x < $min_total) {
@@ -318,18 +246,7 @@ $min_nutotal = &format_large_int($min_nutotal);
 $min_total_UorNU = &format_large_int($min_total_UorNU);
 $min_nutotal_f_or_r = &format_large_int($min_nutotal_f_or_r);
 $min_chrm = &format_large_int($min_chrm);
-if ($norm eq "true"){
-    print OUT "mins\t$min_total\t$min_utotal_f_or_r_cons\t$min_nutotal_f_or_r\n";
-}
-elsif ($norm_u eq "true"){
-    print OUT "mins\t$min_total\t$min_utotal_f_or_r_cons\n";
-}
-elsif ($norm_nu eq "true"){
-    print OUT "mins\t$min_total\t$min_nutotal_f_or_r\n";
-}
-else{
-    print OUT "mins\t$min_total\t$min_total_frcons\t$min_utotal_f_or_r_cons\t$min_chrm\t$min_pover\%\t$min_nutotal\t$min_nutotal_f_or_r\t$min_total_UorNU\n";
-}
+print OUT "mins\t$min_total\t$min_total_frcons\t$min_utotal_f_or_r_cons\t$min_chrm\t$min_pover\%\t$min_nutotal\t$min_nutotal_f_or_r\t$min_total_UorNU\n";
 $max_total = &format_large_int($max_total);
 $max_total_frcons = &format_large_int($max_total_frcons);
 $max_utotal_f_or_r_cons = &format_large_int($max_utotal_f_or_r_cons);
@@ -337,18 +254,7 @@ $max_nutotal = &format_large_int($max_nutotal);
 $max_nutotal_f_or_r = &format_large_int($max_nutotal_f_or_r);
 $max_total_UorNU = &format_large_int($max_total_UorNU);
 $max_chrm = &format_large_int($max_chrm);
-if ($norm eq "true"){
-    print OUT "maxs\t$max_total\t$max_utotal_f_or_r_cons\t$max_nutotal_f_or_r\n";
-}
-elsif ($norm_u eq "true"){
-    print OUT "maxs\t$max_total\t$max_utotal_f_or_r_cons\n";
-}
-elsif ($norm_nu eq "true"){
-    print OUT "maxs\t$max_total\t$max_nutotal_f_or_r\n";
-}
-else{
-    print OUT "maxs\t$max_total\t$max_total_frcons\t$max_utotal_f_or_r_cons\t$max_chrm\t$max_pover\%\t$max_nutotal\t$max_nutotal_f_or_r\t$max_total_UorNU\n";
-}
+print OUT "maxs\t$max_total\t$max_total_frcons\t$max_utotal_f_or_r_cons\t$max_chrm\t$max_pover\%\t$max_nutotal\t$max_nutotal_f_or_r\t$max_total_UorNU\n";
 
 sub format_large_int () {
     ($int) = @_;

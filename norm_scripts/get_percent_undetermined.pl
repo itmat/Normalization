@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 if(@ARGV<2) {
-    die "Usage: perl get_percent_intergenic.pl <sample dirs> <loc> [option]
+    die "Usage: perl get_percent_undetermined.pl <sample dirs> <loc> [option]
 
 <sample dirs> is the file with the names of the sample directories
 <loc> is the location where the sample directories are
@@ -19,7 +19,7 @@ options:
 
 ";
 }
-#Percent of intergenic mappers (out of all reads)
+#Percent of undetermined reads (out of all reads)
 my $U = "true";
 my $NU = "true";
 my $numargs = 0;
@@ -60,18 +60,18 @@ $study_dir =~ s/$last_dir//;
 my $stats_dir = $study_dir . "STATS/EXON_INTRON_JUNCTION";
 unless (-d $stats_dir){
     `mkdir -p $stats_dir`;}
-my $outfileU = "$stats_dir/percent_intergenic_Unique.txt";
-my $outfileNU = "$stats_dir/percent_intergenic_NU.txt";
+my $outfileU = "$stats_dir/percent_undetermined_Unique.txt";
+my $outfileNU = "$stats_dir/percent_undetermined_NU.txt";
 
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; 
 if ($U eq "true"){
     open(OUTU, ">$outfileU") or die "file '$outfileU' cannot open for writing.\n";
-    print OUTU "sample\t%intergenicU\t(#unique intergenic mappers / #total unique mappers)\n";
+    print OUTU "sample\t%undeterminedU\t(# unique undetermined reads / # total unique mappers)\n";
 }
 if ($NU eq "true"){
     open(OUTNU, ">$outfileNU") or die "file '$outfileNU' cannot open for writing.\n";
-    print OUTNU "sample\t%intergenicNU\t(#non-unique intergenic mappers / #total non-unique mappers)\n";
+    print OUTNU "sample\t%undeterminedNU\t(# non-unique undetermined reads / # total non-unique mappers)\n";
 }
 while(my $line = <INFILE>){
     chomp($line);
@@ -83,38 +83,38 @@ while(my $line = <INFILE>){
     if ($stranded eq "true"){
 	$fileU = "$LOC/$dirU/sense/$id.filtered_u.sense.exonquants";
     }
-    my $interU = "$LOC/$dirU/$id.filtered_u_intergenicmappers.sam";
+    my $undU = "$LOC/$dirU/$id.filtered_u_undetermined_reads.sam";
     my $fileNU = "$LOC/$dirNU/$id.filtered_nu.exonquants";
     if ($stranded eq "true"){
 	$fileNU = "$LOC/$dirNU/sense/$id.filtered_nu.sense.exonquants";
     }
-    my $interNU = "$LOC/$dirNU/$id.filtered_nu_intergenicmappers.sam";
+    my $undNU = "$LOC/$dirNU/$id.filtered_nu_undetermined_reads.sam";
     if ($U eq "true"){
-	my ($xU, $tot_interU, $tot_nonexonU, $tot_exonU, $ratioU);
-	$xU = `tail -1 $interU`;
+	my ($xU, $tot_undU, $tot_nonexonU, $tot_exonU, $ratioU);
+	$xU = `tail -1 $undU`;
 	$xU =~ /(\d+)$/;
-	$tot_interU = $1;
+	$tot_undU = $1;
 	$xU = `head -4 $fileU | tail -1`;
 	$xU =~ /(\d+)$/;
 	$tot_nonexonU = $1;
 	$xU = `head -1 $fileU`;
 	$xU =~ /(\d+)$/;
 	$tot_exonU = $1;
-	$ratioU = int($tot_interU / ($tot_exonU + $tot_nonexonU) * 10000) / 100;
+	$ratioU = int($tot_undU / ($tot_exonU + $tot_nonexonU) * 10000) / 100;
 	print OUTU "$dir\t$ratioU\n";
     }
     if ($NU eq "true"){
-	my ($xNU, $tot_interNU, $tot_nonexonNU, $tot_exonNU, $ratioNU);
-        $xNU = `tail -1 $interNU`;
+	my ($xNU, $tot_undNU, $tot_nonexonNU, $tot_exonNU, $ratioNU);
+        $xNU = `tail -1 $undNU`;
         $xNU =~ /(\d+)$/;
-        $tot_interNU = $1;
+        $tot_undNU = $1;
 	$xNU = `head -4 $fileNU | tail -1`;
         $xNU =~ /(\d+)$/;
 	$tot_nonexonNU = $1;
 	$xNU = `head -1 $fileNU`;
 	$xNU =~ /(\d+)$/;
         $tot_exonNU = $1;
-        $ratioNU = int($tot_interNU / ($tot_exonNU + $tot_nonexonNU) * 10000) / 100;
+        $ratioNU = int($tot_undNU / ($tot_exonNU + $tot_nonexonNU) * 10000) / 100;
 	print OUTNU "$dir\t$ratioNU\n";
     }
 }

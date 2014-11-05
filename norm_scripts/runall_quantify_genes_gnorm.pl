@@ -9,6 +9,8 @@ my $USAGE = "\nUsage: perl runall_quantify_genes_gnorm.pl <sample dirs> <loc> <g
 <genes> master list of genes file
 
 option:
+ -stranded : set this if the data are strand-specific.
+
  -norm : set this to quantify normalized sam.
 
  -u  :  set this if your sam files have unique mappers only.
@@ -17,7 +19,7 @@ option:
  -nu  :  set this if your sam files have non-unique mappers only.
          otherwise by default it will use merged(unique+non-unique) mappers.
  
- -se :  set this if the data is single end, otherwise by default it will assume it's a paired end data.
+ -se :  set this if the data are single end, otherwise by default it will assume it's a paired end data.
 
  -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
 
@@ -51,7 +53,7 @@ if (@ARGV < 3){
 use Cwd 'abs_path';
 my $path = abs_path($0);
 $path =~ s/\/runall_quantify_genes_gnorm.pl//;
-my $se = "false";
+my $se = "";
 my $numargs_u_nu = 0;
 my $numargs = 0;
 my $U = "true";
@@ -65,6 +67,7 @@ my $new_mem = "";
 my $jobname_option = "";
 my $status;
 my $norm = "false";
+my $stranded = "false";
 for (my $i=3; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -79,13 +82,17 @@ for (my $i=3; $i<@ARGV; $i++){
 	$norm = "true";
 	$option_found = "true";
     }
+    if ($ARGV[$i] eq "-stranded"){
+        $stranded = "true";
+        $option_found = "true";
+    }
     if($ARGV[$i] eq '-nu') {
         $U = "false";
 	$numargs_u_nu++;
         $option_found = "true";
     }
     if($ARGV[$i] eq '-se') {
-        $se = "true";
+        $se = "-se";
         $option_found = "true";
     }
     if($ARGV[$i] eq '-u') {
@@ -167,10 +174,7 @@ my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
-my $gnorm_dir = $study_dir . "NORMALIZED_DATA/GENE";
-my $gnorm_U_dir = "$gnorm_dir/FINAL_SAM/Unique";
-my $gnorm_NU_dir = "$gnorm_dir/FINAL_SAM/NU";
-my $gnorm_M_dir = "$gnorm_dir/FINAL_SAM/MERGED";
+my $gnorm_dir = $study_dir . "NORMALIZED_DATA/GENE/FINAL_SAM/";
 my $ensFile = $ARGV[2];
 
 open(IN, $samples) or die "cannot find file '$samples'\n"; # dirnames;
@@ -178,46 +182,120 @@ while(my $line = <IN>){
     chomp($line);
     my $id = $line;
     my ($filename, $outname, $jobname, $logname, $shfile);
+    my ($filename_a, $outname_a, $logname_a, $shfile_a);
     if ($norm eq "true"){
-	$shfile = "$shdir/GQ.$id.quantifygenes.gnorm2.sh";
-	$jobname = "$study.quantifygenes.gnorm2";
-	$logname = "$logdir/quantifygenes.gnorm2.$id";
-	if (-d $gnorm_M_dir){
-	    $filename = "$gnorm_M_dir/$id.GNORM.genes.txt";
+	if ($stranded eq "false"){
+	    $shfile = "$shdir/GQ.$id.quantifygenes.gnorm2.sh";
+	    $jobname = "$study.quantifygenes.gnorm2";
+	    $logname = "$logdir/quantifygenes.gnorm2.$id";
+	    $filename = "$gnorm_dir/$id.gene.norm.genefilter.txt";
 	}
-	elsif ($U eq 'true'){
-	    $filename = "$gnorm_U_dir/$id.GNORM.Unique.genes.txt";
+	if ($stranded eq "true"){
+	    $shfile = "$shdir/GQ.$id.quantifygenes.gnorm2.sense.sh";
+	    $shfile_a = "$shdir/GQ.$id.quantifygenes.gnorm2.antisense.sh";
+	    $jobname = "$study.quantifygenes.gnorm2";
+	    $logname = "$logdir/quantifygenes.gnorm2.sense.$id";
+	    $logname_a = "$logdir/quantifygenes.gnorm2.antisense.$id";
+	    $filename = "$gnorm_dir/sense/$id.gene.norm.genefilter.sense.txt";
+	    $filename_a = "$gnorm_dir/antisense/$id.gene.norm.genefilter.antisense.txt";
 	}
-	elsif ($NU eq 'true'){
-	    $filename = "$gnorm_NU_dir/$id.GNORM.NU.genes.txt";
+	$outname = $filename;
+	$outname =~ s/.txt$/.genequants/;
+	open(OUT, ">$shfile");
+	print OUT "perl $path/quantify_genes.pl $filename $ensFile $outname $se\n";
+	close(OUT);
+	while (qx{$status | wc -l} > $njobs){
+	    sleep(10);
+	}
+	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
+	if ($stranded eq "true"){
+	    $outname_a = $filename_a;
+	    $outname_a =~ s/.txt$/.genequants/;
+	    open(OUT, ">$shfile_a");
+	    print OUT "perl $path/quantify_genes.pl $filename_a $ensFile $outname_a $se\n";
+	    close(OUT);
+	    while (qx{$status | wc -l} > $njobs){
+		sleep(10);
+	    }
+	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_a.out -e $logname_a.err < $shfile_a`;
 	}
     }
     if ($norm eq "false"){
-	$shfile = "$shdir/GQ.$id.quantifygenes.gnorm.sh";
+	my ($filename_u, $filename_nu, $outname_u, $outname_nu);
+	my ($filename_u_a, $filename_nu_a, $outname_u_a, $outname_nu_a);
+	my $shfile_u = "$shdir/GQ.$id.quantifygenes.gnorm_u.sh";
+	my $shfile_nu = "$shdir/GQ.$id.quantifygenes.gnorm_nu.sh";
         $jobname = "$study.quantifygenes.gnorm";
-        $logname = "$logdir/quantifygenes.gnorm.$id";
+        my $logname_u = "$logdir/quantifygenes.gnorm_u.$id";
+        my $logname_nu = "$logdir/quantifygenes.gnorm_nu.$id";
+	my ($shfile_u_a, $shfile_nu_a, $logname_u_a, $logname_nu_a);
+	if ($stranded eq "true"){
+	    $shfile_u = "$shdir/GQ.$id.quantifygenes.gnorm_u.sense.sh";
+	    $shfile_nu = "$shdir/GQ.$id.quantifygenes.gnorm_nu.sense.sh";
+	    $shfile_u_a = "$shdir/GQ.$id.quantifygenes.gnorm_u.antisense.sh";
+	    $shfile_nu_a = "$shdir/GQ.$id.quantifygenes.gnorm_nu.antisense.sh";
+	    $logname_u = "$logdir/quantifygenes.gnorm_u.sense.$id";
+	    $logname_nu = "$logdir/quantifygenes.gnorm_nu.sense.$id";
+	    $logname_u_a = "$logdir/quantifygenes.gnorm_u.antisense.$id";
+	    $logname_nu_a = "$logdir/quantifygenes.gnorm_nu.antisense.$id";
+	}
 	if ($U eq "true"){
-	    $filename = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.txt";
+	    $filename_u = "$LOC/$id/GNORM/Unique/$id.filtered_u.genefilter.txt";
+	    if ($stranded eq "true"){
+		$filename_u = "$LOC/$id/GNORM/Unique/$id.filtered_u.genefilter.sense.txt";
+	    }
+	    $outname_u = $filename_u;
+	    $outname_u =~ s/.txt$/.genequants/;
+	    open(OUT, ">$shfile_u");
+	    print OUT "perl $path/quantify_genes.pl $filename_u $ensFile $outname_u $se\n";
+	    close(OUT);
+	    while (qx{$status | wc -l} > $njobs){
+		sleep(10);
+	    }
+	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_u.out -e $logname_u.err < $shfile_u`;
+	    if ($stranded eq "true"){
+		$filename_u_a = "$LOC/$id/GNORM/Unique/$id.filtered_u.genefilter.antisense.txt";
+		$outname_u_a = $filename_u_a;
+		$outname_u_a =~ s/.txt$/.genequants/;
+		open(OUT, ">$shfile_u_a");
+		print OUT "perl $path/quantify_genes.pl $filename_u_a $ensFile $outname_u_a $se\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_u_a.out -e $logname_u_a.err < $shfile_u_a`;
+	    }
 	}
-	elsif ($NU eq "true"){
-	    $filename = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.txt";
+	if ($NU eq "true"){
+	    $filename_nu = "$LOC/$id/GNORM/NU/$id.filtered_nu.genefilter.txt";
+	    if ($stranded eq "true"){
+                $filename_nu = "$LOC/$id/GNORM/NU/$id.filtered_nu.genefilter.sense.txt";
+            }
+            $outname_nu = $filename_nu;
+            $outname_nu =~ s/.txt$/.genequants/;
+            open(OUT, ">$shfile_nu");
+            print OUT "perl $path/quantify_genes.pl $filename_nu $ensFile $outname_nu $se\n";
+            close(OUT);
+	    while (qx{$status | wc -l} > $njobs){
+                sleep(10);
+            }
+            `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_nu.out -e $logname_nu.err < $shfile_nu`;
+	    if ($stranded eq "true"){
+		$filename_nu_a = "$LOC/$id/GNORM/NU/$id.filtered_nu.genefilter.antisense.txt";
+                $outname_nu_a = $filename_nu_a;
+		$outname_nu_a =~ s/.txt$/.genequants/;
+                open(OUT, ">$shfile_nu_a");
+                print OUT "perl $path/quantify_genes.pl $filename_nu_a $ensFile $outname_nu_a $se\n";
+                close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+                    sleep(10);
+                }
+                `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_nu_a.out -e $logname_nu_a.err < $shfile_nu_a`;
+	    }
+
 	}
     }
-    $outname = $filename;
-    $outname =~ s/genes.txt/genequants/g;
     
-    open(OUT, ">$shfile");
-    if ($se eq "false"){
-	print OUT "perl $path/quantify_genes_gnorm.pl $filename $ensFile $outname\n";
-    }
-    if ($se eq "true"){
-	print OUT "perl $path/quantify_genes.pl $filename $ensFile $outname\n";
-    }
-    close(OUT);
-    while (qx{$status | wc -l} > $njobs){
-	sleep(10);
-    }
-    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
 }
 close(IN);
 print "got here\n";

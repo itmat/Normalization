@@ -1,4 +1,6 @@
 #!/usr/bin/env perl
+use strict;
+use warnings;
 if (@ARGV < 2){
     die "usage: perl cat_shuffiles.pl <sample dirs> <loc> [options]
 
@@ -7,6 +9,8 @@ where:
 <loc> is the path to the sample directories
 
 option:
+  -stranded : set this if your data are strand-specific.
+
   -u  :  set this if you want to return only unique mappers, otherwise by default
          it will return both unique and non-unique mappers.
 
@@ -16,11 +20,12 @@ option:
 }
 
 
-$NU = "true";
-$U = "true";
-$numargs = 0;
-for($i=2; $i<@ARGV; $i++) {
-    $option_found = "false";
+my $NU = "true";
+my $U = "true";
+my $numargs = 0;
+my $stranded = "false";
+for(my$i=2; $i<@ARGV; $i++) {
+    my $option_found = "false";
     if($ARGV[$i] eq '-nu') {
 	$U = "false";
 	$numargs++;
@@ -29,6 +34,10 @@ for($i=2; $i<@ARGV; $i++) {
     if($ARGV[$i] eq '-u') {
 	$NU = "false";
 	$numargs++;
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-stranded'){
+	$stranded = "true";
 	$option_found = "true";
     }
     if($option_found eq "false") {
@@ -42,117 +51,212 @@ and non-unique by default so if that's what you want don't use either arg
 ";
 }
 
-$LOC = $ARGV[1];
-@fields = split("/", $LOC);
-$last_dir = $fields[@fields-1];
-$loc_study = $LOC;
+my $LOC = $ARGV[1];
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $loc_study = $LOC;
 $loc_study =~ s/$last_dir//;
-$norm_dir = $loc_study."NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
+my $norm_dir = $loc_study."NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/";
 unless (-d $norm_dir){
     `mkdir -p $norm_dir`;
 }
-$norm_exon_dir = $norm_dir . "/exonmappers";
+my $norm_exon_dir = $norm_dir . "/exonmappers";
 unless (-d $norm_exon_dir){
     `mkdir $norm_exon_dir`;
 }
-$norm_exon_dirU = $norm_exon_dir . "/Unique";
-$norm_exon_dirNU= $norm_exon_dir . "/NU";
 
-$norm_notexon_dir = $norm_dir . "/notexonmappers";
-unless (-d $norm_notexon_dir){
-    `mkdir $norm_notexon_dir`;
+my $norm_intron_dir = $norm_dir . "/intronmappers";
+unless (-d $norm_intron_dir){
+    `mkdir $norm_intron_dir`;
 }
-$norm_notexon_dirU = $norm_notexon_dir . "/Unique";
-$norm_notexon_dirNU = $norm_notexon_dir . "/NU";
+my $norm_ig_dir = $norm_dir . "/intergenicmappers";
+unless (-d $norm_ig_dir){
+    `mkdir $norm_ig_dir`;
+}
+my $norm_und_dir = $norm_dir . "/undetermined";
+unless (-d $norm_und_dir){
+    `mkdir $norm_und_dir`;
+}
+
 my @g;
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
-while ($line = <INFILE>){
+while (my $line = <INFILE>){
     chomp($line);
-    $dir = $line;
-    $dirU = $dir . "/EIJ/Unique";
-    $dirNU = $dir . "/EIJ/NU";
-    $id = $line;
-    if ($option_found eq "false"){
-	unless (-d $norm_exon_dirU){
-	    `mkdir $norm_exon_dirU`;
+    my $dir = $line;
+    my $id = $dir;
+    my $current_LOC = "$LOC/$dir";
+    if ($stranded eq "false"){
+	if ($numargs eq '0'){
+	    #exonmappers
+	    print "$current_LOC/EIJ/*/$id.*_exonmappers.*_shuf_*.sam\n";
+	    @g = glob("$current_LOC/EIJ/*/$id.*_exonmappers.*_shuf_*.sam");
+	    if (@g ne '0'){
+		`cat $current_LOC/EIJ/*/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/$id.exonmappers.norm.sam`;
+	    }
+	    #intronmappers
+	    @g = glob("$current_LOC/EIJ/*/$id.*_intronmappers.*_shuf_*.sam");
+	    if (@g ne '0'){
+		`cat $current_LOC/EIJ/*/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/$id.intronmappers.norm.sam`;
+	    }
+	    #intergenicmappers
+	    @g = glob("$current_LOC/EIJ/*/$id.intergenicmappers.norm_*.sam");
+	    if (@g ne '0'){
+		`cat $current_LOC/EIJ/*/$id.intergenicmappers.norm_*.sam > $norm_ig_dir/$id.intergenicmappers.norm.sam`;
+	    }
+            #undetermined_reads
+            @g = glob("$current_LOC/EIJ/*/$id.undetermined_reads.norm_*.sam");
+            if (@g ne '0'){
+                `cat $current_LOC/EIJ/*/$id.undetermined_reads.norm_*.sam > $norm_und_dir/$id.undetermined_reads.norm.sam`;
+            }
 	}
-	unless (-d $norm_exon_dirNU){
-	    `mkdir $norm_exon_dirNU`;
+	elsif ($U eq "true"){
+           #exonmappers
+            @g = glob("$current_LOC/EIJ/Unique/$id.*_exonmappers.*_shuf_*.sam");
+            if (@g ne '0'){
+                `cat $current_LOC/EIJ/Unique/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/$id.exonmappers.norm_u.sam`;
+            }
+            #intronmappers
+            @g = glob("$current_LOC/EIJ/Unique/$id.*_intronmappers.*_shuf_*.sam");
+            if (@g ne '0'){
+		`cat $current_LOC/EIJ/NU/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/$id.intronmappers.norm_u.sam`;
+            }
+            #intergenicmappers
+            @g = glob("$current_LOC/EIJ/Unique/$id.intergenicmappers.norm_*.sam");
+            if (@g ne '0'){
+                `cat $current_LOC/EIJ/Unique/$id.intergenicmappers.norm_*.sam > $norm_ig_dir/$id.intergenicmappers.norm_u.sam`;
+            }
+            #undetermined_reads
+            @g = glob("$current_LOC/EIJ/Unique/$id.undetermined_reads.norm_*.sam");
+            if (@g ne '0'){
+                `cat $current_LOC/EIJ/Unique/$id.undetermined_reads.norm_*.sam > $norm_und_dir/$id.undetermined_reads.norm_u.sam`;
+            }
+
 	}
-	#exonmappers
-	@g = glob("$LOC/$dirU/$id.*_exonmappers.*_shuf_*.sam");
-	if (@g ne '0'){
-	    `cat $LOC/$dirU/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dirU/$id.exonmappers.norm_u.sam`;
-	}
-	@g = glob("$LOC/$dirNU/$id.*_exonmappers.*_shuf_*.sam");
-	if (@g ne '0'){
-	    `cat $LOC/$dirNU/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dirNU/$id.exonmappers.norm_nu.sam`;
-	}
-        unless (-d $norm_notexon_dirU){
-            `mkdir $norm_notexon_dirU`;
-        }
-        unless (-d $norm_notexon_dirNU){
-            `mkdir $norm_notexon_dirNU`;
-        }
-	#intronmappers
-        @g = glob("$LOC/$dirU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam");
-	if (@g ne '0'){
-	`cat $LOC/$dirU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam > $norm_notexon_dirU/$id.intronmappers.norm_u.sam`;
-	}
-        @g = glob("$LOC/$dirNU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam");
-	if (@g ne '0'){
-	    `cat $LOC/$dirNU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam > $norm_notexon_dirNU/$id.intronmappers.norm_nu.sam`;
-	}
-	#intergenicmappers
-        @g = glob("$LOC/$dirU/$id.intergenicmappers.norm_u.sam");
-	if (@g ne '0'){
-	    `cp $LOC/$dirU/$id.intergenicmappers.norm_u.sam $norm_notexon_dirU/`;
-	}
-        @g = glob("$LOC/$dirNU/$id.intergenicmappers.norm_nu.sam");
-	if (@g ne '0'){
-	    `cp $LOC/$dirNU/$id.intergenicmappers.norm_nu.sam $norm_notexon_dirNU/`;
+	elsif ($NU eq "true"){
+	    #exonmappers
+	    @g = glob("$current_LOC/EIJ/NU/$id.*_exonmappers.*_shuf_*.sam");
+	    if (@g ne '0'){
+                `cat $current_LOC/EIJ/NU/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/$id.exonmappers.norm_nu.sam`;
+            }
+            #intronmappers
+            @g = glob("$current_LOC/EIJ/NU/$id.*_intronmappers.*_shuf_*.sam");
+            if (@g ne '0'){
+                `cat $current_LOC/EIJ/NU/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/$id.intronmappers.norm_nu.sam`;
+            }
+            #intergenicmappers
+            @g = glob("$current_LOC/EIJ/NU/$id.intergenicmappers.norm_*.sam");
+            if (@g ne '0'){
+		`cat $current_LOC/EIJ/NU/$id.intergenicmappers.norm_*.sam > $norm_ig_dir/$id.intergenicmappers.norm_nu.sam`;
+            }        
+            #undetermined_reads
+            @g = glob("$current_LOC/EIJ/NU/$id.undetermined_reads.norm_*.sam");
+            if (@g ne '0'){
+                `cat $current_LOC/EIJ/NU/$id.undetermined_reads.norm_*.sam > $norm_und_dir/$id.undetermined_reads.norm_nu.sam`;
+            }
 	}
     }
-    else{
-	if ($U eq "true"){
-	    unless (-d $norm_exon_dirU){
-		`mkdir $norm_exon_dirU`;
-	    }
-	    unless (-d $norm_notexon_dirU){
-		`mkdir $norm_notexon_dirU`;
-	    }
-	    @g = glob("$LOC/$dirU/$id.*_exonmappers.*_shuf_*.sam");
+    if ($stranded eq "true"){
+	unless (-d "$norm_exon_dir/sense"){
+	    `mkdir $norm_exon_dir/sense`;
+	}
+	unless (-d "$norm_exon_dir/antisense"){
+	    `mkdir $norm_exon_dir/antisense`;
+	}
+	unless (-d "$norm_intron_dir/sense"){
+	    `mkdir $norm_intron_dir/sense`;
+        }
+        unless (-d "$norm_intron_dir/antisense"){
+            `mkdir $norm_intron_dir/antisense`;
+        }
+	if ($numargs eq "0"){
+	    #exonmappers
+	    @g = glob("$current_LOC/EIJ/*/sense/$id.*_exonmappers.*_shuf_*.sam");
 	    if (@g ne '0'){
-		`cat $LOC/$dirU/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dirU/$id.exonmappers.norm_u.sam`;
+		`cat $current_LOC/EIJ/*/sense/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/sense/$id.exonmappers.norm.sam`;
 	    }
-	    @g = glob("$LOC/$dirU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam");
+	    @g = glob("$current_LOC/EIJ/*/antisense/$id.*_exonmappers.*_shuf_*.sam");
 	    if (@g ne '0'){
-		`cat $LOC/$dirU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam > $norm_notexon_dirU/$id.intronmappers.norm_u.sam`;
+		`cat $current_LOC/EIJ/*/antisense/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/antisense/$id.exonmappers.norm.sam`;
 	    }
-	    @g = glob("$LOC/$dirU/$id.intergenicmappers.norm_u.sam");
+	    #intronmappers
+	    @g = glob("$current_LOC/EIJ/*/sense/$id.*_intronmappers.*_shuf_*.sam");
 	    if (@g ne '0'){
-	    `cp $LOC/$dirU/$id.intergenicmappers.norm_u.sam $norm_notexon_dirU/`;
+		`cat $current_LOC/EIJ/*/sense/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/sense/$id.intronmappers.norm.sam`;
+	    }
+	    @g = glob("$current_LOC/EIJ/*/antisense/$id.*_intronmappers.*_shuf_*.sam");
+	    if (@g ne '0'){
+		`cat $current_LOC/EIJ/*/antisense/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/antisense/$id.intronmappers.norm.sam`;
+	    }
+	    #intergenicmappers
+	    @g = glob("$current_LOC/EIJ/*/$id.intergenicmappers.norm_*.sam");
+	    if (@g ne '0'){
+		`cat $current_LOC/EIJ/*/$id.intergenicmappers.norm_*.sam > $norm_ig_dir/$id.intergenicmappers.norm.sam`;
+	    }
+	    #undetermined_reads
+	    @g = glob("$current_LOC/EIJ/*/$id.undetermined_reads.norm_*.sam");
+	    if (@g ne '0'){
+		`cat $current_LOC/EIJ/*/$id.undetermined_reads.norm_*.sam > $norm_und_dir/$id.undetermined_reads.norm.sam`;
 	    }
 	}
-	if ($NU eq "true"){
-            unless (-d $norm_exon_dirNU){
-                `mkdir $norm_exon_dirNU`;
-            }
-            unless (-d $norm_notexon_dirNU){
-                `mkdir $norm_notexon_dirNU`;
-            }
-	    @g = glob("$LOC/$dirNU/$id.*_exonmappers.*_shuf_*.sam");
-	    if (@g ne '0'){
-		`cat $LOC/$dirNU/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dirNU/$id.exonmappers.norm_nu.sam`;
-	    }
-	    @g = glob("$LOC/$dirNU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam");
+	elsif($U eq "true"){
+	    #exonmappers
+	    @g = glob("$current_LOC/EIJ/Unique/sense/$id.*_exonmappers.*_shuf_*.sam");
             if (@g ne '0'){
-		`cat $LOC/$dirNU/$id.*_notexonmappers_intronmappers.*_shuf_*.sam > $norm_notexon_dirNU/$id.intronmappers.norm_nu.sam`;
-	    }
-	    @g = glob("$LOC/$dirNU/$id.intergenicmappers.norm_nu.sam");
+		`cat $current_LOC/EIJ/Unique/sense/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/sense/$id.exonmappers.norm_u.sam`;
+            }
+            @g = glob("$current_LOC/EIJ/Unique/antisense/$id.*_exonmappers.*_shuf_*.sam");
             if (@g ne '0'){
-		`cp $LOC/$dirNU/$id.intergenicmappers.norm_nu.sam $norm_notexon_dirNU/`;
-	    }
+                `cat $current_LOC/EIJ/Unique/antisense/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/antisense/$id.exonmappers.norm_u.sam`;
+            }
+            #intronmappers
+	    @g = glob("$current_LOC/EIJ/Unique/sense/$id.*_intronmappers.*_shuf_*.sam");
+            if (@g ne '0'){
+                `cat $current_LOC/EIJ/Unique/sense/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/sense/$id.intronmappers.norm_u.sam`;
+            }
+            @g = glob("$current_LOC/EIJ/Unique/antisense/$id.*_intronmappers.*_shuf_*.sam");
+            if (@g ne '0'){
+                `cat $current_LOC/EIJ/Unique/antisense/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/antisense/$id.intronmappers.norm_u.sam`;
+            }
+	    #intergenicmappers
+	    @g = glob("$current_LOC/EIJ/Unique/$id.intergenicmappers.norm_*.sam");
+            if (@g ne '0'){
+		`cat $current_LOC/EIJ/Unique/$id.intergenicmappers.norm_*.sam > $norm_ig_dir/$id.intergenicmappers.norm_u.sam`;
+            }
+	    #undetermined_reads
+	    @g = glob("$current_LOC/EIJ/Unique/$id.undetermined_reads.norm_*.sam");
+            if (@g ne '0'){
+		`cat $current_LOC/EIJ/Unique/$id.undetermined_reads.norm_*.sam > $norm_und_dir/$id.undetermined_reads.norm_u.sam`;
+            }
+	}
+	elsif($NU eq "true"){
+	    #exonmappers
+	    @g = glob("$current_LOC/EIJ/NU/sense/$id.*_exonmappers.*_shuf_*.sam");
+            if (@g ne '0'){
+                `cat $current_LOC/EIJ/NU/sense/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/sense/$id.exonmappers.norm_nu.sam`;
+            }
+            @g = glob("$current_LOC/EIJ/NU/antisense/$id.*_exonmappers.*_shuf_*.sam");
+            if (@g ne '0'){
+                `cat $current_LOC/EIJ/NU/antisense/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/antisense/$id.exonmappers.norm_nu.sam`;
+            }
+	    #intronmappers
+            @g = glob("$current_LOC/EIJ/NU/sense/$id.*_intronmappers.*_shuf_*.sam");
+            if (@g ne '0'){
+                `cat $current_LOC/EIJ/NU/sense/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/sense/$id.intronmappers.norm_nu.sam`;
+            }
+            @g = glob("$current_LOC/EIJ/NU/antisense/$id.*_intronmappers.*_shuf_*.sam");
+            if (@g ne '0'){
+                `cat $current_LOC/EIJ/NU/antisense/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/antisense/$id.intronmappers.norm_nu.sam`;
+            }
+            #intergenicmappers
+            @g = glob("$current_LOC/EIJ/NU/$id.intergenicmappers.norm_*.sam");
+            if (@g ne '0'){
+                `cat $current_LOC/EIJ/NU/$id.intergenicmappers.norm_*.sam > $norm_ig_dir/$id.intergenicmappers.norm_nu.sam`;
+            }
+            #undetermined_reads
+            @g = glob("$current_LOC/EIJ/NU/$id.undetermined_reads.norm_*.sam");
+            if (@g ne '0'){
+                `cat $current_LOC/EIJ/NU/$id.undetermined_reads.norm_*.sam > $norm_und_dir/$id.undetermined_reads.norm_nu.sam`;
+            }
 	}
     }
 }

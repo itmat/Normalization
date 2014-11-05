@@ -1,11 +1,1 @@
-norm_scripts/run_normalization_head
-norm_scripts/runall_normalization_head.pl
-norm_scripts/run_normalization_aug14
-norm_scripts/runall_normalization_aug14.pl
-norm_scripts/predict_num_reads_blast.pl
-norm_scripts/runall_head.pl
-norm_scripts/run_normalization_sep14
-norm_scripts/runall_normalization_sep14.pl
-norm_scripts/runall_sam2genes.pl
-norm_scripts/runall_quantify_genes.pl
-norm_scripts/runall_sam2mappingstats_gnorm.pl
+documentation.md

@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 if(@ARGV < 3) {
-    die  "usage: perl filter_low_expressors.pl <file> <number_of_samples> <cutoff>
+    die  "usage: perl filter_low_expressers.pl <file> <number_of_samples> <cutoff>
 
 where
 <file> is quants file without path
