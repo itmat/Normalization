@@ -61,9 +61,9 @@ OPTIONS:
                   (By default, the pipeline will add inferred exons to the list of exons)
      -min <n> : is minimum size of inferred exon for get_novel_exons.pl script (Default = 10)
      -max <n> : is maximum size of inferred exon for get_novel_exons.pl script (Default = 800)
-     -depthE <n> : the pipeline splits filtered sam files into 1,2,3...n exonmappers and downsamples each separately.
+     -depthExon <n> : the pipeline splits filtered sam files into 1,2,3...n exonmappers and downsamples each separately.
                    (Default = 20)
-     -depthI <n> : the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.
+     -depthIntron <n> : the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.
                    (Default = 10)
      -h : print usage 
 
@@ -230,18 +230,18 @@ for(my $i=0; $i<@ARGV; $i++) {
             die "-cutoff_highexp <n> : <n> needs to be a number\n";
         }
     }
-    if ($ARGV[$i] eq '-depthE'){
+    if ($ARGV[$i] eq '-depthExon'){
 	$i_exon = $ARGV[$i+1];
 	if ($i_exon !~ /(\d+$)/ ){
-	    die "-depthE <n> : <n> needs to be a number\n";
+	    die "-depthExon <n> : <n> needs to be a number\n";
 	}
 	$i++;
 	$option_found = "true";
     }
-    if ($ARGV[$i] eq '-depthI'){
+    if ($ARGV[$i] eq '-depthIntron'){
 	$i_intron = $ARGV[$i+1];
 	if ($i_intron !~ /(\d+$)/ ){
-	    die "-depthI <n> : <n> needs to be a number\n";
+	    die "-depthIntron <n> : <n> needs to be a number\n";
 	}
 	$i++;
 	$option_found = "true";
