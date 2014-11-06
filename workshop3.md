@@ -2,8 +2,12 @@
 
 > November 6, 2014
 
+---
+
 ### Link to GitHub repository:
 https://github.com/itmat/Normalization
+
+---
 
 ### 0. Set up
 
@@ -28,7 +32,6 @@ https://github.com/itmat/Normalization
     cp /path/to/workshopdata/sample3_*.fq $HOME/workshop/reads/sample3/ 
     cp /path/to/workshopdata/sample4_*.fq $HOME/workshop/reads/sample4/ 
 
----
 
 ### 1. STAR
 
@@ -58,7 +61,6 @@ https://github.com/itmat/Normalization
     ls $HOME/workshop/reads/*/*forward.fq > $HOME/workshop/unaligned.txt 
     more /path/to/workshop.cfg
 
----
 
 ####*[PART1]*
 
@@ -83,11 +85,7 @@ https://github.com/itmat/Normalization
 
 ###3. Data Visualization 
 
-<a href="http://genome.ucsc.edu/cgi-bin/hgTracks?hgS_doOtherUser=submit&hgS_otherUserName=ITMAT&hgS_otherUserSessionName=hide_all&knownGene=pack&singleSearch=knownGene&position=chr2:12219870-12235708 &hubUrl=http://itmat.data.s3.amazonaws.com/workshop/all_samples.txt" target="_blank">UCSC Track Hubs</a>
-
 <a href="http://genome.ucsc.edu/index.html" target="_blank">UCSC Genome Browser</a>
-
----
 
     http://itmat.data.s3.amazonaws.com/workshop/mm9/sample1.junctions_hq.bb
     http://itmat.data.s3.amazonaws.com/workshop/mm9/sample1.Unique.bw
@@ -95,10 +93,12 @@ https://github.com/itmat/Normalization
     http://itmat.data.s3.amazonaws.com/workshop/mm9/sample2.Unique.bw
     http://itmat.data.s3.amazonaws.com/workshop/mm9/sample3.junctions_hq.bb
     http://itmat.data.s3.amazonaws.com/workshop/mm9/sample3.Unique.bw
-    http://itmat.data.s3.amazonaws.com/workshop/mm9/sample4.junctions_hq.bb    
+    http://itmat.data.s3.amazonaws.com/workshop/mm9/sample4.junctions_hq.bb
     http://itmat.data.s3.amazonaws.com/workshop/mm9/sample4.Unique.bw
 
----
+
+<a href="http://genome.ucsc.edu/cgi-bin/hgTracks?hgS_doOtherUser=submit&hgS_otherUserName=ITMAT&hgS_otherUserSessionName=hide_all&knownGene=pack&singleSearch=knownGene&position=chr2:12219870-12235708 &hubUrl=http://itmat.data.s3.amazonaws.com/workshop/all_samples.txt" target="_blank">UCSC Track Hubs</a>
+
 
 ###4. Differential Expression Analysis
 
@@ -107,11 +107,9 @@ https://github.com/itmat/Normalization
     cd $HOME/differential_expression
     R
 
-In R:
-
+**In R:**
 
     d = read.csv("/path/to/workshopdata/ control_vs_treatment.csv",header=T,row.names=1)
-
     head(d)
 
 ---    
@@ -151,3 +149,4 @@ In R:
 
     write.csv(out_table_sorted, file="wilcox_BH_treatment_vs_ctrl.csv")
 
+---
