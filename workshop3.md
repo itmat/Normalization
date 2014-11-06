@@ -37,6 +37,7 @@ https://github.com/itmat/Normalization
 
 ---
 
+    cd $HOME/workshop
     cat > $HOME/workshop/sample_dirs.txt
     sample1
     sample2
@@ -53,8 +54,9 @@ https://github.com/itmat/Normalization
 
 ### 2. PORT
 
-
+    cd $HOME/workshop
     ls $HOME/workshop/reads/*/*forward.fq > $HOME/workshop/unaligned.txt 
+    more /path/to/workshop.cfg
 
 ---
 
@@ -67,7 +69,7 @@ https://github.com/itmat/Normalization
     more $HOME/workshop/logs/workshop.run_normalization.log
     less -S $HOME/workshop/STATS/GENE/expected_num_reads_gnorm.txt
     less -S $HOME/workshop/STATS/EXON_INTRON_JUNCTION/expected_num_reads.txt
-    more $HOM$/workshop/STATS/*/percent_high_expresser_*.txt
+    more $HOME/workshop/STATS/*/percent_high_expresser_*.txt
 
 ####*[PART2]*
 
@@ -81,10 +83,71 @@ https://github.com/itmat/Normalization
 
 ###3. Data Visualization 
 
-    wget http://itmat.data.s3.amazonaws.com/workshop/workshop_bw_bb.tar.gz
+<a href="http://genome.ucsc.edu/cgi-bin/hgTracks?hgS_doOtherUser=submit&hgS_otherUserName=ITMAT&hgS_otherUserSessionName=hide_all&knownGene=pack&singleSearch=knownGene&position=chr2:12219870-12235708 &hubUrl=http://itmat.data.s3.amazonaws.com/workshop/all_samples.txt" target="_blank">UCSC Track Hubs</a>
+
+<a href="http://genome.ucsc.edu/index.html" target="_blank">UCSC Genome Browser</a>
 
 ---
 
-[Genome browser link](http://genome.ucsc.edu/cgi-bin/hgTracks?hgS_doOtherUser=submit&hgS_otherUserName=ITMAT&hgS_otherUserSessionName=hide_all&knownGene=pack&singleSearch=knownGene&position=chr2:12219870-12235708 &hubUrl=http://itmat.data.s3.amazonaws.com/workshop/all_samples.txt)
- 
+    http://itmat.data.s3.amazonaws.com/workshop/mm9/sample1.junctions_hq.bb
+    http://itmat.data.s3.amazonaws.com/workshop/mm9/sample1.Unique.bw
+    http://itmat.data.s3.amazonaws.com/workshop/mm9/sample2.junctions_hq.bb
+    http://itmat.data.s3.amazonaws.com/workshop/mm9/sample2.Unique.bw
+    http://itmat.data.s3.amazonaws.com/workshop/mm9/sample3.junctions_hq.bb
+    http://itmat.data.s3.amazonaws.com/workshop/mm9/sample3.Unique.bw
+    http://itmat.data.s3.amazonaws.com/workshop/mm9/sample4.junctions_hq.bb    
+    http://itmat.data.s3.amazonaws.com/workshop/mm9/sample4.Unique.bw
+
+---
+
+###4. Differential Expression Analysis
+
+    cd $HOME
+    mkdir $HOME/differential_expression
+    cd $HOME/differential_expression
+    R
+
+In R:
+
+
+    d = read.csv("/path/to/workshopdata/ control_vs_treatment.csv",header=T,row.names=1)
+
+    head(d)
+
+---    
+
+    png("eucl_dist.png")
+    trans = t(d)
+    hc <- hclust(dist(trans))
+    plot(hc,  main="Euclidian distance", xlab = "")
+    dev.off() 
+
+---
+
+    png("corr_dist.png")
+    dd <- as.dist((1 - cor(d))/2)
+    plot(hclust(dd), main=sprintf("sum of dist. %f, Correlation Distance", sum(dd)),ylim =   400)
+    dev.off()
+
+---
+
+    data=d
+    p_val = as.data.frame(c(rep(NA,dim(data)[1])))
+    colnames(p_val) = "P_VAL"
+
+    for (i in 1:dim(data)[1]) {
+      p_val_cur <- tryCatch(
+        wilcox.test(as.matrix(data[i,1:4]),as.matrix(data[i,5:8]),alternative="two.sided",exact=TRUE)$p.value, error=function(x) 1 )
+      p_val$P_VAL[i]=p_val_cur
+    }
+
+---
+
+    FDR <- as.data.frame(p.adjust(p_val$P_VAL, method="BH"))
+    colnames(FDR) = "FDR"
+    out_table = cbind(data,p_val,FDR)
+
+    out_table_sorted = out_table[order(out_table$FDR),]
+
+    write.csv(out_table_sorted, file="wilcox_BH_treatment_vs_ctrl.csv")
 
