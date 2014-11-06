@@ -2,8 +2,6 @@
 
 > November 6, 2014
 
----
-
 ### Link to GitHub repository:
 https://github.com/itmat/Normalization
 
@@ -27,10 +25,10 @@ https://github.com/itmat/Normalization
 
 ---
 
-    cp /path/to/workshopdata/sample1_*.fq $HOME/workshop/reads/sample1/ 
-    cp /path/to/workshopdata/sample2_*.fq $HOME/workshop/reads/sample2/ 
-    cp /path/to/workshopdata/sample3_*.fq $HOME/workshop/reads/sample3/ 
-    cp /path/to/workshopdata/sample4_*.fq $HOME/workshop/reads/sample4/ 
+    cp /opt/rna_seq/data/sample1_*.fq $HOME/workshop/reads/sample1/ 
+    cp /opt/rna_seq/data/sample2_*.fq $HOME/workshop/reads/sample2/ 
+    cp /opt/rna_seq/data/sample3_*.fq $HOME/workshop/reads/sample3/ 
+    cp /opt/rna_seq/data/sample4_*.fq $HOME/workshop/reads/sample4/ 
 
 
 ### 1. STAR
@@ -45,11 +43,12 @@ https://github.com/itmat/Normalization
     sample1
     sample2
     sample3
-    sample4 
+    sample4
 
 ---
 
-    perl /path/to/workshop_scripts/runstar_workshop.pl $HOME/workshop/sample_dirs.txt $HOME/workshop/reads/ /path/to/star_chr1and2andM/ 
+    perl /opt/rna_seq/scripts/runstar_workshop.pl $HOME/workshop/sample_dirs.txt \
+    $HOME/workshop/reads/ /opt/rna_seq/data/star_chr1and2andM/
 
 ---
 
@@ -58,13 +57,15 @@ https://github.com/itmat/Normalization
 ### 2. PORT
 
     cd $HOME/workshop
+    tree
     ls $HOME/workshop/reads/*/*forward.fq > $HOME/workshop/unaligned.txt 
-    more /path/to/workshop.cfg
-
+    more /opt/rna_seq/scripts/workshop.cfg
 
 ####*[PART1]*
 
-    run_normalization --sample_dirs $HOME/reads/sample_dirs.txt --loc $HOME/workshop/reads/ --unaligned $HOME/workshop/unaligned.txt --samfilename Aligned.out.sam --cfg /path/to/workshop_scripts/workshop.cfg -fq -depthExon 3 -depthIntron 3 
+    run_normalization --sample_dirs $HOME/workshop/sample_dirs.txt --loc $HOME/workshop/reads/ \
+    --unaligned $HOME/workshop/unaligned.txt --samfilename Aligned.out.sam \
+    --cfg /opt/rna_seq/scripts/workshop.cfg -fq -depthExon 3 -depthIntron 3
 
 ---
 
@@ -75,10 +76,14 @@ https://github.com/itmat/Normalization
 
 ####*[PART2]*
 
-    run_normalization --sample_dirs $HOME/reads/sample_dirs.txt --loc $HOME/workshop/reads/ --unaligned $HOME/workshop/unaligned.txt --samfilename Aligned.out.sam --cfg /path/to/workshop_scripts/workshop.cfg -fq -depthExon 3 -depthIntron 3 -part2 -cutoff_highexp 5
+    run_normalization --sample_dirs $HOME/workshop/sample_dirs.txt --loc $HOME/workshop/reads/ \
+    --unaligned $HOME/workshop/unaligned.txt --samfilename Aligned.out.sam \
+    --cfg /opt/rna_seq/scripts/workshop.cfg -fq -depthExon 3 -depthIntron 3 -part2 -cutoff_highexp 5
 
 ---
 
+    cd $HOME/workshop/
+    tree -d
     more $HOME/workshop/logs/workshop.run_normalization.log
 
 ---
@@ -109,7 +114,7 @@ https://github.com/itmat/Normalization
 
 **In R:**
 
-    d = read.csv("/path/to/workshopdata/ control_vs_treatment.csv",header=T,row.names=1)
+    d = read.csv("/opt/rna_seq/data/control_vs_treatment.csv",header=T,row.names=1)
     head(d)
 
 ---    
