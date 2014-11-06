@@ -108,6 +108,10 @@ https://github.com/itmat/Normalization
     http://itmat.data.s3.amazonaws.com/workshop/mm9/sample4.junctions_hq.bb
     http://itmat.data.s3.amazonaws.com/workshop/mm9/sample4.Unique.bw
 
+    chr2:12,219,870-12,235,708
+
+    color=255,0,0
+    itemRgb=on
 
 <a href="http://genome.ucsc.edu/cgi-bin/hgTracks?hgS_doOtherUser=submit&hgS_otherUserName=ITMAT&hgS_otherUserSessionName=hide_all&knownGene=pack&singleSearch=knownGene&position=chr2:12219870-12235708 &hubUrl=http://itmat.data.s3.amazonaws.com/workshop/all_samples.txt" target="_blank">UCSC Track Hubs</a>
 
