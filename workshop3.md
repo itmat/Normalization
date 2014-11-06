@@ -53,6 +53,8 @@ https://github.com/itmat/Normalization
 
 ---
 
+    bjobs -w
+    ls -ltr $HOME/workshop/logs/
     more $HOME/workshop/shell_scripts/sample1.runstar.sh
 
 ### 2. PORT
@@ -70,7 +72,9 @@ https://github.com/itmat/Normalization
 
 ---
 
-    more $HOME/workshop/logs/workshop.run_normalization.log
+    bjobs -w
+    ls -ltr $HOME/workshop/logs/
+    tail -f $HOME/workshop/logs/workshop.run_normalization.log
     less -S $HOME/workshop/STATS/GENE/expected_num_reads_gnorm.txt
     less -S $HOME/workshop/STATS/EXON_INTRON_JUNCTION/expected_num_reads.txt
     more $HOME/workshop/STATS/*/percent_high_expresser_*.txt
@@ -83,9 +87,11 @@ https://github.com/itmat/Normalization
 
 ---
 
+    bjobs -w
+    ls -ltr $HOME/workshop/logs/
+    tail -f $HOME/workshop/logs/workshop.run_normalization.log
     cd $HOME/workshop/
     tree -d
-    more $HOME/workshop/logs/workshop.run_normalization.log
 
 ---
 
