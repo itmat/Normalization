@@ -7,13 +7,23 @@
 ### 0. Setting Up
 
 ####A. Clone the repository
-Please make sure you have the latest version of PORT.
+Initial check-out:
     
     git clone https://github.com/itmat/Normalization.git
 
+Make sure you have the latest version of PORT:
+
+    git pull
+
 ####B. Input
 ##### i. Input Files
-PORT takes aligned reads (SAM file) as input. You also need to provide unaligned reads (fasta/fastq file), gene info file, and genome fa/fai file.
+
+- Unaligned reads (fasta/fastq file)
+- Aligned reads (SAM) 
+ - SAM files need to have unique read ids. 
+ - Paired End data: mated alignments need to be in adjacent lines.
+- Gene info file
+- Genome fa/fai
  
 ##### ii. Input Directory Structure
 The input files need to be organized into a specific directory structure for PORT to run properly.
@@ -22,7 +32,6 @@ The input files need to be organized into a specific directory structure for POR
 - Sample directories (Sample_1, Sample_2, etc) can have any name.
 - Make sure the unaligned reads and alignment outputs (SAM files) are in each sample directory inside the `READS` folder.
 - All alignment files (SAM files) **MUST have the same name** across samples.
-- SAM files should have unique read ids.
 
 <pre>
 STUDY
@@ -183,9 +192,28 @@ PORT outputs gene counts spreadsheets to `STUDY/NORMALIZED_DATA/GENE/SPREADSHEET
 
 #####iii. Normalization Factors Statistics
 ######-Exon-Intron-Junction Normalization:<br>
-`STUDY/STATS/exon-intron-junction_normalization_factors.txt` file provides summary statistics of the normalization factors used: total number of reads, %chrM, %non-unique reads, %ribosomal, %exonic, %one_exonmapper, %intergenic, %undetermined (and %senseExon, %senseIntron for stranded data). 
+`STUDY/STATS/exon-intron-junction_normalization_factors.txt` file provides summary statistics of the normalization factors used: 
+
+- Total read count
+- Ribosomal content
+- Mitochondrial content
+- Fragment length
+- Proportion of Non-Unique reads (multi-mappers)
+- Percent exon to non-exon signal
+- 3' biased-ness
+- Proportion of intergenic signal
+- Sense vs. anti-sense transcription
+
 ######-Gene Normalization:<br>
-`STUDY/STATS/gene_normalization_factors.txt` file provides summary statistics	of the normalization factors used: total number of reads, %chrM, %non-unique reads, %ribosomal, %genemappers, (and %senseGene for stranded data).<br><br>
+`STUDY/STATS/gene_normalization_factors.txt` file provides summary statistics	of the normalization factors used: 
+
+- Total read count
+- Ribosomal content
+- Mitochondrial content
+- Proportion of Non-Unique reads (multi-mappers)
+- Proportion of genemappers
+- Sense vs. anti-sense transcription
+
 Percentage of reads mapping to each chromosome (`STUDY/STATS/percent_reads_chr*txt`) and percentage of highly expressed features (`STUDY/STATS/*/percent_high_expresser_*.txt`) are also provided (for both normalization types).
 #####iv. Coverage/Junction Files 
 Coverage (`STUDY/NORMALIZED_DATA/*/COV`) and Junctions (`STUDY/NORMALIZED_DATA/*/JUNCTION`) files are generated from uniquely merged sam files for each sample and can be used for data visualization.<br>
