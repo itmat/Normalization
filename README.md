@@ -18,11 +18,11 @@ Make sure you have the latest version of PORT:
 ####B. Input
 ##### i. Input Files
 
-- Unaligned reads (fasta/fastq file)
+- Unaligned reads (fasta/fastq)
 - Aligned reads (SAM) 
  - SAM files need to have unique read ids. 
  - Paired End data: mated alignments need to be in adjacent lines.
-- Gene info file
+- Gene info files
 - Genome fa/fai
  
 ##### ii. Input Directory Structure

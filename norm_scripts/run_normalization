@@ -578,9 +578,11 @@ if ($part2 eq "true"){
 	die "ERROR: Check \"-depthI <n>\" option. <n> cannot be greater than $def_I.\n";
     }
     #if -part2 is set and $novel is true, check and make sure study-specific master list of exon exists.
-    if ($novel eq "true"){
-	unless (-e "$LOC/master_list_of_exons.$study.txt"){
-	    die "ERROR: cannot find file \"$LOC/master_list_of_exons.$study.txt\".\nCreate a study-specific master list of exons by running step 3)-B. Get Novel Exons.\n";
+    if ($EIJ eq "true"){
+	if ($novel eq "true") {
+	    unless (-e "$LOC/master_list_of_exons.$study.txt"){
+		die "ERROR: cannot find file \"$LOC/master_list_of_exons.$study.txt\".\nCreate a study-specific master list of exons by running step 3)-B. Get Novel Exons.\n";
+	    }
 	}
     }
 }
