@@ -1857,33 +1857,35 @@ if ($run_norm eq "true"){
 	$job_num++;
     }
 
-    #runall_genefilter_norm
-    $name_of_alljob = "$study.runall_genefilter_gnorm_norm";
-    if (($resume eq "true")&&($run_job eq "false")){
-        if ($name_of_alljob =~ /.$name_to_check$/){
-            $run_job = "true";
-            $job_num = $res_num;
-        }
-    }
-    if (($run_job eq "true") && ($GNORM eq "true")){
-        $name_of_job = "$study.genefilter_gnorm_norm";
-        $err_name = "genefilter.norm.*.err";
-        &clear_log($name_of_alljob, $err_name);
-        if ($other eq "true"){
-            $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_10G, $stat\\\"";
-            $new_queue = "";
-        }
-        else{
-            $new_queue = "-mem $queue_10G";
-        }
-        while(qx{$stat | wc -l} > $maxjobs){
-            sleep(10);
-        }
-        $job = "echo \"perl $norm_script_dir/runall_genefilter.pl $sample_dir $LOC $se $c_option $cluster_max $new_queue $data_stranded -norm\" | $batchjobs $jobname \"$study.runall_genefilter_gnorm_norm\" -o $logdir/$study.runall_genefilter_gnorm_norm.out -e $logdir/$study.runall_genefilter_gnorm_norm.err";
-        &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
-        &check_exit_alljob($job, $name_of_alljob,$name_of_job, $job_num, $err_name);
-        &check_err ($name_of_alljob, $err_name, $job_num);
-        $job_num++;
+    if ($STRANDED =~ /^true/i){
+	#runall_genefilter_norm
+	$name_of_alljob = "$study.runall_genefilter_gnorm_norm";
+	if (($resume eq "true")&&($run_job eq "false")){
+	    if ($name_of_alljob =~ /.$name_to_check$/){
+		$run_job = "true";
+		$job_num = $res_num;
+	    }
+	}
+	if (($run_job eq "true") && ($GNORM eq "true")){
+	    $name_of_job = "$study.genefilter_gnorm_norm";
+	    $err_name = "genefilter.norm.*.err";
+	    &clear_log($name_of_alljob, $err_name);
+	    if ($other eq "true"){
+		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_10G, $stat\\\"";
+		$new_queue = "";
+	    }
+	    else{
+		$new_queue = "-mem $queue_10G";
+	    }
+	    while(qx{$stat | wc -l} > $maxjobs){
+		sleep(10);
+	    }
+	    $job = "echo \"perl $norm_script_dir/runall_genefilter.pl $sample_dir $LOC $se $c_option $cluster_max $new_queue $data_stranded -norm\" | $batchjobs $jobname \"$study.runall_genefilter_gnorm_norm\" -o $logdir/$study.runall_genefilter_gnorm_norm.out -e $logdir/$study.runall_genefilter_gnorm_norm.err";
+	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
+	    &check_exit_alljob($job, $name_of_alljob,$name_of_job, $job_num, $err_name);
+	    &check_err ($name_of_alljob, $err_name, $job_num);
+	    $job_num++;
+	}
     }
 
     #runall_quantifygenes_gnorm2
@@ -2225,7 +2227,7 @@ if ($run_norm eq "true"){
 			while(qx{$stat | wc -l} > $maxjobs){
 			    sleep(10);
 			}
-			$job = "echo \"perl $norm_script_dir/get_sense2antisense_stats.pl $sample_dir $LOC $data_stranded\" | $batchjobs  $jobname \"$study.get_sense2antisense_stats_p2\" -o $logdir/$study.get_sense2antisense_stats_p2.out -e $logdir/$study.get_sense2antisense_stats_p2.err";
+			$job = "echo \"perl $norm_script_dir/get_sense2antisense_stats.pl $sample_dir $LOC\" | $batchjobs  $jobname \"$study.get_sense2antisense_stats_p2\" -o $logdir/$study.get_sense2antisense_stats_p2.out -e $logdir/$study.get_sense2antisense_stats_p2.err";
 
 			&onejob($job, $name_of_job, $job_num);
 			&check_exit_onejob($job, $name_of_job, $job_num);

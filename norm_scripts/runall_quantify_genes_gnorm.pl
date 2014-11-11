@@ -188,7 +188,7 @@ while(my $line = <IN>){
 	    $shfile = "$shdir/GQ.$id.quantifygenes.gnorm2.sh";
 	    $jobname = "$study.quantifygenes.gnorm2";
 	    $logname = "$logdir/quantifygenes.gnorm2.$id";
-	    $filename = "$gnorm_dir/$id.gene.norm.genefilter.txt";
+	    $filename = "$gnorm_dir/$id.gene.norm.txt";
 	}
 	if ($stranded eq "true"){
 	    $shfile = "$shdir/GQ.$id.quantifygenes.gnorm2.sense.sh";

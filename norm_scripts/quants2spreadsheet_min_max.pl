@@ -175,7 +175,7 @@ if ($type =~ /^gene/i){
         chomp($line);
         my $id = $line;
         if ($stranded ne "true"){
-            print OUT "$norm_dir/FINAL_SAM/$id.gene.norm.genefilter.genequants\n";
+            print OUT "$norm_dir/FINAL_SAM/$id.gene.norm.genequants\n";
         }
         if ($stranded eq "true"){
             print OUT "$norm_dir/FINAL_SAM/sense/$id.gene.norm.genefilter.sense.genequants\n";
