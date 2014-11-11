@@ -28,9 +28,7 @@ while(my $line = <IN>){
     if ($chr eq "*"){
 	next;
     }
-    $chr =~ m/chr(.*)/;
-    my $num = $1;
-    $CHR{$num}++;
+    $CHR{$chr}++;
     $TOTAL++
 }
 close(IN);
@@ -40,7 +38,7 @@ print OUT "TOTAL:$TOTAL\n";
 print OUT "chr\treads\t%\n";
 foreach my $key (keys %CHR){
     my $percent = ($CHR{$key}/$TOTAL) * 100;
-    print OUT "chr$key\t$CHR{$key}\t";
+    print OUT "$key\t$CHR{$key}\t";
     printf OUT "%.2f\n", $percent;
 }
 print "got here\n";

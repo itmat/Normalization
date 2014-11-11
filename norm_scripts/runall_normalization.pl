@@ -359,6 +359,7 @@ if ($SAM2COV =~ /^true/i){
 my $delete_int_sam = "true";
 my $convert_sam2bam = "false";
 my $gzip_cov = "false";
+my $samtools = $SAMTOOLS;
 if ($DELETE_INT_SAM ne ""){
     if ($DELETE_INT_SAM =~ /^true/i){
 	$delete_int_sam = "true";
@@ -375,6 +376,12 @@ if ($CONVERT_SAM2BAM ne ""){
 	$convert_sam2bam= "false";
     }
 }
+if ($convert_sam2bam eq "true"){
+    unless (-e $samtools) {
+	die "You need to provide samtools location. (# 5. CLEANUP in your cfg file \"$cfg_file\")\n";
+    }
+}
+
 if ($GZIP_COV ne ""){
     if ($GZIP_COV =~ /^true/i){
         $gzip_cov = "true";
@@ -1946,7 +1953,7 @@ if ($run_norm eq "true"){
 	    while(qx{$stat | wc -l} > $maxjobs){
 		sleep(10);
 	    }
-	    $job = "echo \"perl $norm_script_dir/unique_merge_gnorm.pl $sample_dir $LOC \" | $batchjobs  $jobname \"$name_of_job\"  $request$queue_6G -o $logdir/$name_of_job.out -e $logdir/$name_of_job.err";
+	    $job = "echo \"perl $norm_script_dir/unique_merge_gnorm.pl $sample_dir $LOC $se\" | $batchjobs  $jobname \"$name_of_job\"  $request$queue_6G -o $logdir/$name_of_job.out -e $logdir/$name_of_job.err";
 
 	    &onejob($job, $name_of_job, $job_num);
 	    &check_exit_onejob($job, $name_of_job, $job_num);
@@ -2633,6 +2640,10 @@ if ($run_norm eq "true"){
     }
     #cleanup: compress 
     if ($convert_sam2bam eq "true" | $gzip_cov eq "true"){
+	my $samtoolcmd = "";
+	if ($convert_sam2bam eq "true"){
+	    $samtoolcmd = "-samtools $samtools";
+	}
 	$name_of_alljob = "$study.runall_compress";
 	if (($resume eq "true")&&($run_job eq "false")){
 	    if ($name_of_alljob =~ /.$name_to_check$/){
@@ -2662,7 +2673,7 @@ if ($run_norm eq "true"){
 	    while (qx{$status | wc -l} > $maxjobs){
 		sleep(10);
 	    }
-	    $job = "echo \"perl $norm_script_dir/runall_compress.pl $sample_dir $LOC $samfilename $fai $c_option $new_queue $option $cluster_max\" | $batchjobs  $jobname \"$study.runall_compress\" -o $logdir/$study.runall_compress.out -e $logdir/$study.runall_compress.err ";
+	    $job = "echo \"perl $norm_script_dir/runall_compress.pl $sample_dir $LOC $samfilename $fai $c_option $new_queue $option $cluster_max $samtoolcmd\" | $batchjobs  $jobname \"$study.runall_compress\" -o $logdir/$study.runall_compress.out -e $logdir/$study.runall_compress.err ";
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    if ($convert_sam2bam eq "true"){
 		&check_exit_alljob($job, $name_of_alljob,$name_of_job, $job_num, $err_name);

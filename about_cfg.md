@@ -70,6 +70,6 @@ Set SAM2COV to TRUE if you want to use sam2cov to generate coverage files. sam2c
 ========================================================================================================
 
 ###5. CLEANUP
-By default, CLEANUP step only deletes the intermediate SAM files. Set DELETE_INT_SAM to FALSE if you wish to keep the intermediate SAM files. You can also convert sam files to bam files by setting CONVERT_SAM2BAM to TRUE and coverage files can be compressed by setting GZIP_COV to TRUE. 
+By default, CLEANUP step only deletes the intermediate SAM files. Set DELETE_INT_SAM to FALSE if you wish to keep the intermediate SAM files. You can also convert sam files to bam files by setting CONVERT_SAM2BAM to TRUE (and provide the location of your copy of samtools) and coverage files can be compressed by setting GZIP_COV to TRUE. 
 
 ========================================================================================================

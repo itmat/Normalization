@@ -14,10 +14,13 @@ option:
 
   -nu :  set this if you want to return only non-unique mappers, otherwise by default
          it will return both unique and non-unique mappers.
+
+  -se : set this for single end data
+
 ";
 }
 
-
+my $pe = "true";
 my $NU = "true";
 my $U = "true";
 my $numargs = 0;
@@ -26,6 +29,10 @@ for(my$i=2; $i<@ARGV; $i++) {
     if($ARGV[$i] eq '-nu') {
 	$U = "false";
 	$numargs++;
+	$option_found = "true";
+    }
+    if($ARGV[$i] eq '-se'){
+	$pe = "false";
 	$option_found = "true";
     }
     if($ARGV[$i] eq '-u') {
@@ -91,7 +98,7 @@ while (my $line = <INFILE>){
 	}
     }
     close(GENE);
-
+    
     my $last_1000 = `tail -1000 $genefile_a`;
     my @tail = split(/\n/, $last_1000);
     for my $seq (@tail){
@@ -106,69 +113,149 @@ while (my $line = <INFILE>){
     $common_str = &LCP(@NAME);
     my %READ_HASH;
     # READ IN FILES
-    # exonmapper file
+    # genefile sense
     open(GENE, $genefile);
     while(my $line = <GENE>){
 	chomp($line);
 	if ($line =~ /^@/){
 	    next;
 	}
-	my @a = split (/\t/, $line);
-	my $readname = $a[0];
-	$readname =~ s/[^A-Za-z0-9 ]//g;
-	$readname =~ s/$common_str//;
-	my $chr = $a[2];
-	my ($HI_tag, $IH_tag);
-	if ($line =~ /(N|I)H:i:(\d+)/){
-	    $line =~ /(N|I)H:i:(\d+)/;
-	    $IH_tag = $2;
-	}
-	if ($line =~ /HI:i:(\d+)/){
-	    $line =~ /HI:i:(\d+)/;
-	    $HI_tag = $1;
-	}
-	my $for_hash = "$readname:$IH_tag:$HI_tag";
-
-	if (exists $READ_HASH{$chr}{$for_hash}){
-	    next;
-	}
-	else{
-	    print OUTFILE "$line\n"; 
+	if ($pe eq "false"){
+	    my @a = split (/\t/, $line);
+	    my $readname = $a[0];
+	    $readname =~ s/[^A-Za-z0-9 ]//g;
+	    $readname =~ s/$common_str//;
+	    my $chr = $a[2];
+	    my ($HI_tag, $IH_tag);
+	    if ($line =~ /(N|I)H:i:(\d+)/){
+		$line =~ /(N|I)H:i:(\d+)/;
+		$IH_tag = $2;
+	    }
+	    if ($line =~ /HI:i:(\d+)/){
+		$line =~ /HI:i:(\d+)/;
+		$HI_tag = $1;
+	    }
+	    my $for_hash = "$readname:$IH_tag:$HI_tag";
 	    $READ_HASH{$chr}{$for_hash} = 1;
+	    print OUTFILE "$line\n"; 
+	}
+	if ($pe eq "true"){
+	    my $line_r = <GENE>;
+	    chomp($line_r);
+	    my @a = split (/\t/, $line);
+	    my @r = split(/\t/, $line_r);
+            my $readname = $a[0];
+	    my $readname_r = $r[0];
+	    $readname =~ s/[^A-Za-z0-9 ]//g;
+	    $readname =~ s/$common_str//;
+	    $readname_r =~ s/[^A-Za-z0-9 ]//g;
+	    $readname_r =~ s/$common_str//;
+	    my $chr = $a[2];
+	    my ($HI_tag, $IH_tag);
+	    if ($line =~ /(N|I)H:i:(\d+)/){
+		$line =~ /(N|I)H:i:(\d+)/;
+		$IH_tag = $2;
+	    }
+	    if ($line =~ /HI:i:(\d+)/){
+		$line =~ /HI:i:(\d+)/;
+		$HI_tag = $1;
+	    }
+	    my ($HI_tag_r, $IH_tag_r);
+	    if ($line_r =~ /(N|I)H:i:(\d+)/){
+		$line_r =~ /(N|I)H:i:(\d+)/;
+		$IH_tag_r = $2;
+	    }
+	    if ($line_r =~ /HI:i:(\d+)/){
+		$line_r =~ /HI:i:(\d+)/;
+		$HI_tag_r = $1;
+	    }
+	    my $for_hash = "$readname:$IH_tag:$HI_tag";
+	    my $for_hash_r = "$readname_r:$IH_tag_r:$HI_tag_r";
+	    if ($for_hash ne $for_hash_r){
+		die "fwd and rev reads need to be in adjacent lines\n\n";
+	    }
+	    $READ_HASH{$chr}{$for_hash} = 1;
+	    print OUTFILE "$line\n$line_r\n";
 	}
     }
     close(GENE);
+    #antisense file
     open(GENE_A, $genefile_a);
     while(my $line = <GENE_A>){
 	chomp($line);
 	if ($line =~ /^@/){
 	    next;
 	}
-	my @a = split (/\t/, $line);
-	my $readname = $a[0];
-	$readname =~ s/[^A-Za-z0-9 ]//g;
-	$readname =~ s/$common_str//;
-	my $chr = $a[2];
-	my ($HI_tag, $IH_tag);
-	if ($line =~ /(N|I)H:i:(\d+)/){
-	    $line =~ /(N|I)H:i:(\d+)/;
-	    $IH_tag = $2;
+	if ($pe eq "false"){
+	    my @a = split (/\t/, $line);
+	    my $readname = $a[0];
+	    $readname =~ s/[^A-Za-z0-9 ]//g;
+	    $readname =~ s/$common_str//;
+	    my $chr = $a[2];
+	    my ($HI_tag, $IH_tag);
+	    if ($line =~ /(N|I)H:i:(\d+)/){
+		$line =~ /(N|I)H:i:(\d+)/;
+		$IH_tag = $2;
 	    }
-	if ($line =~ /HI:i:(\d+)/){
-	    $line =~ /HI:i:(\d+)/;
+	    if ($line =~ /HI:i:(\d+)/){
+		$line =~ /HI:i:(\d+)/;
 		$HI_tag = $1;
+	    }
+	    my $for_hash = "$readname:$IH_tag:$HI_tag";
+	    if (exists $READ_HASH{$chr}{$for_hash}){
+		next;
+	    }
+	    else{
+		print OUTFILE "$line\n";
+	    }
 	}
-	my $for_hash = "$readname:$IH_tag:$HI_tag";
-	if (exists $READ_HASH{$chr}{$for_hash}){
-	    next;
+	if ($pe eq "true"){
+	    my $line_r = <GENE_A>;
+	    chomp($line_r);
+	    my @a = split (/\t/, $line);
+	    my @a_r = split (/\t/, $line_r);
+	    my $readname = $a[0];
+	    my $readname_r = $a_r[0];
+	    $readname =~ s/[^A-Za-z0-9 ]//g;
+	    $readname =~ s/$common_str//;
+	    $readname_r =~ s/[^A-Za-z0-9 ]//g;
+	    $readname_r =~ s/$common_str//;
+	    my $chr = $a[2];
+	    my ($HI_tag, $IH_tag);
+	    if ($line =~ /(N|I)H:i:(\d+)/){
+		$line =~ /(N|I)H:i:(\d+)/;
+		$IH_tag = $2;
+	    }
+	    if ($line =~ /HI:i:(\d+)/){
+		$line =~ /HI:i:(\d+)/;
+		$HI_tag = $1;
+	    }
+	    my ($HI_tag_r, $IH_tag_r);
+            if ($line_r =~ /(N|I)H:i:(\d+)/){
+                $line_r =~ /(N|I)H:i:(\d+)/;
+                $IH_tag_r = $2;
+            }
+            if ($line_r =~ /HI:i:(\d+)/){
+                $line_r =~ /HI:i:(\d+)/;
+                $HI_tag_r = $1;
+            }
+	    my $for_hash = "$readname:$IH_tag:$HI_tag";
+	    my $for_hash_r = "$readname_r:$IH_tag_r:$HI_tag_r";
+	    if ($for_hash ne $for_hash_r){
+		die "fwd and rev reads need to be in adjacent lines\n\n";
+	    }
+	    if (exists $READ_HASH{$chr}{$for_hash}){
+		next;
+	    }
+	    else{
+		print OUTFILE "$line\n$line_r\n";
+	    }
 	}
-	else{
-	    print OUTFILE "$line\n";
-	    $READ_HASH{$chr}{$for_hash} = 1;
-	}
+	
     }
     close(GENE_A);
 }
+
 close(INFILE);
 
 

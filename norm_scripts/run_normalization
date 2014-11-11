@@ -378,6 +378,7 @@ if ($SAM2COV =~ /^true/i){
 my $delete_int_sam = "true";
 my $convert_sam2bam = "false";
 my $gzip_cov = "false";
+my $samtools = "";
 if ($DELETE_INT_SAM ne ""){
     if ($DELETE_INT_SAM =~ /^true/i){
 	$delete_int_sam = "true";
@@ -392,6 +393,12 @@ if ($CONVERT_SAM2BAM ne ""){
     }
     if ($CONVERT_SAM2BAM =~ /^false/i){
 	$convert_sam2bam= "false";
+    }
+}
+if ($convert_sam2bam eq "true"){
+    $samtools = $SAMTOOLS;
+    if ($samtools =~ /^$/){
+        die "You need to provide samtools location. (# 5. CLEANUP in your cfg file \"$cfg_file\")\n";
     }
 }
 if ($GZIP_COV ne ""){

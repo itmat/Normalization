@@ -10,6 +10,8 @@ where:
 <fai file> fai file (full path)
 
 option:
+ -samtools <s> : provide location of samtools <s>
+
  -dont_cov : set this if you DO NOT want to gzip the coverage files (By default, it will gzip the coverage files).
 
  -dont_bam : set this if you DO NOT convert SAM to bam (By default, it will convert sam to bam).
@@ -52,6 +54,7 @@ my $gzip_cov = 'true';
 my $sam2bam = 'true';
 my $njobs = 200;
 my ($status, $new_mem) ;
+my $samtools = "";
 for (my $i=4; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -61,6 +64,11 @@ for (my $i=4; $i<@ARGV; $i++){
             die "-max_jobs <n> : <n> needs to be a number\n";
         }
         $i++;
+    }
+    if ($ARGV[$i] eq '-samtools'){
+        $option_found = 'true';
+        $samtools = $ARGV[$i+1];
+	$i++;
     }
     if ($ARGV[$i] eq '-h'){
         $option_found = "true";
@@ -157,6 +165,9 @@ my $bam_name = $sam_name;
 $bam_name =~ s/.sam$/.bam/;
 my $fai_file = $ARGV[3];
 if ($sam2bam eq 'true'){
+    unless (-e $samtools){
+	die "cannot find $samtools\n\n";
+    }
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     while (my $line = <INFILE>){
 	chomp($line);
@@ -256,10 +267,10 @@ if ($sam2bam eq 'true'){
 	    my $sh = $shfile;
 	    my $log = $logname;
 	    open(OUT, ">$sh");
-	    print OUT "samtools view -bt $fai_file $sam > $bam\n";
+	    print OUT "$samtools view -bt $fai_file $sam > $bam\n";
 	    print OUT "lc=`cat $bam | wc -l`\n";
 	    print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-	    print OUT "else samtools view -bt $fai_file $sam > $bam\n";
+	    print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
 	    print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
 	    print OUT "echo \"got here \"\n";
 	    close(OUT);
@@ -278,10 +289,10 @@ if ($sam2bam eq 'true'){
             my $sh = $shfile_m;
             my $log = $logname_m;
             open(OUT, ">$sh");
-            print OUT "samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
             print OUT "lc=`cat $bam | wc -l`\n";
             print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
             print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
             print OUT "echo \"got here \"\n";
             close(OUT);
@@ -297,10 +308,10 @@ if ($sam2bam eq 'true'){
             my $sh = $shfile_ex;
             my $log = $logname_ex;
             open(OUT, ">$sh");
-            print OUT "samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
             print OUT "lc=`cat $bam | wc -l`\n";
             print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
             print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
             print OUT "echo \"got here \"\n";
             close(OUT);
@@ -319,10 +330,10 @@ if ($sam2bam eq 'true'){
             my $sh = $shfile_ex_a;
             my $log = $logname_ex_a;
             open(OUT, ">$sh");
-            print OUT "samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
             print OUT "lc=`cat $bam | wc -l`\n";
             print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
             print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
             print OUT "echo \"got here \"\n";
             close(OUT);
@@ -338,10 +349,10 @@ if ($sam2bam eq 'true'){
             my $sh = $shfile_int;
             my $log = $logname_int;
             open(OUT, ">$sh");
-            print OUT "samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
             print OUT "lc=`cat $bam | wc -l`\n";
             print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
             print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
             print OUT "echo \"got here \"\n";
             close(OUT);
@@ -360,10 +371,10 @@ if ($sam2bam eq 'true'){
             my $sh = $shfile_int_a;
             my $log = $logname_int_a;
             open(OUT, ">$sh");
-            print OUT "samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
             print OUT "lc=`cat $bam | wc -l`\n";
             print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
             print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
             print OUT "echo \"got here \"\n";
             close(OUT);
@@ -379,10 +390,10 @@ if ($sam2bam eq 'true'){
             my $sh = $shfile_ig;
             my $log = $logname_ig;
             open(OUT, ">$sh");
-            print OUT "samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
             print OUT "lc=`cat $bam | wc -l`\n";
             print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
             print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
             print OUT "echo \"got here \"\n";
             close(OUT);
@@ -398,10 +409,10 @@ if ($sam2bam eq 'true'){
             my $sh = $shfile_und;
             my $log = $logname_und;
             open(OUT, ">$sh");
-            print OUT "samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
             print OUT "lc=`cat $bam | wc -l`\n";
             print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
             print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
             print OUT "echo \"got here \"\n";
             close(OUT);
@@ -417,10 +428,10 @@ if ($sam2bam eq 'true'){
             my $sh = $shfile_g;
             my $log = $logname_g;
             open(OUT, ">$sh");
-            print OUT "samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
             print OUT "lc=`cat $bam | wc -l`\n";
             print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
             print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
             print OUT "echo \"got here \"\n";
             close(OUT);
@@ -439,10 +450,10 @@ if ($sam2bam eq 'true'){
             my $sh = $shfile_g_a;
             my $log = $logname_g_a;
             open(OUT, ">$sh");
-            print OUT "samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
             print OUT "lc=`cat $bam | wc -l`\n";
             print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
             print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
             print OUT "echo \"got here \"\n";
             close(OUT);
@@ -458,10 +469,10 @@ if ($sam2bam eq 'true'){
             my $sh = $shfile_g_m;
             my $log = $logname_g_m;
             open(OUT, ">$sh");
-            print OUT "samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
             print OUT "lc=`cat $bam | wc -l`\n";
             print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else samtools view -bt $fai_file $sam > $bam\n";
+            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
             print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
             print OUT "echo \"got here \"\n";
             close(OUT);
