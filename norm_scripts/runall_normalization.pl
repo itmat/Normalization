@@ -2826,6 +2826,9 @@ sub check_exit_alljob{
 	if (qx{grep "SAM header" $logdir/$err_name | wc -l} > 0){
 	    `sed -i '/SAM header/d' $logdir/$err_name`;
 	}
+	if (qx{grep "sam_header_read" $logdir/$err_name | wc -l} > 0){
+	    `sed -i '/sam_header_read/d' $logdir/$err_name`;
+	}
 	chomp($wc_out);
 	chomp($check_out);
 	if ($check_out ne $wc_out){

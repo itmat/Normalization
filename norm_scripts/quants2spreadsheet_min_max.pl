@@ -226,10 +226,10 @@ while($file = <FILES>) {
     my $size = @fields;
     my $id = $fields[$size-1];
     $id =~ s/.exonmappers.norm.exonquants//;
-    $id =~ s/.intronquants.norm.intronquants//;
+    $id =~ s/.intronmappers.norm.intronquants//;
     $id =~ s/.exonmappers.norm.sense.exonquants//;
-    $id =~ s/.intronquants.norm.sense.intronquants//;
-    $id =~ s/.gene.norm.genefilter.genequants//;
+    $id =~ s/.intronmappers.norm.sense.intronquants//;
+    $id =~ s/.gene.norm.genequants//;
     $id =~ s/.gene.norm.genefilter.sense.genequants//;
     $ID[$filecnt] = $id;
     open(INFILE, $file);
@@ -371,7 +371,7 @@ if ($stranded eq "true"){
 	my $size = @fields;
 	my $id = $fields[$size-1];
 	$id =~ s/.exonmappers.norm.antisense.exonquants//;
-	$id =~ s/.intronquants.norm.antisense.intronquants//;
+	$id =~ s/.intronmappers.norm.antisense.intronquants//;
 	$id =~ s/.gene.norm.genefilter.antisense.genequants//;
 	$ID[$filecnt] = $id;
 	open(INFILE, $file);

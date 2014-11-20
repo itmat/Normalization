@@ -806,7 +806,7 @@ for($i=1; $i<=$i_intron; $i++) {
 		$total_lc_a = $LINECOUNTS{$for_lc_a};
 		if (($total_lc_s ne '0') && ($numNU_S ne '0')){
                     open(OUTFILENU, ">$shfileNU_S[$i]");
-                    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/sense/$filenameNU_S $total_lc_s $numNU_S > $LOC/$dirNU/sense/$outfileNU_S\n";
+                    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/sense/$filenameNU $total_lc_s $numNU_S > $LOC/$dirNU/sense/$outfileNU_S\n";
                     print OUTFILENU "echo \"got here\"\n";;
                     close(OUTFILENU);
                     while(qx{$status | wc -l} > $njobs){
@@ -816,7 +816,7 @@ for($i=1; $i<=$i_intron; $i++) {
 		}
 		if (($total_lc_a ne '0') && ($numNU_A ne '0')){
                     open(OUTFILENU, ">$shfileNU_A[$i]");
-                    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/antisense/$filenameNU_A $total_lc_a $numNU_A > $LOC/$dirNU/antisense/$outfileNU_A\n";
+                    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/antisense/$filenameNU $total_lc_a $numNU_A > $LOC/$dirNU/antisense/$outfileNU_A\n";
                     print OUTFILENU "echo \"got here\"\n";;
                     close(OUTFILENU);
                     while(qx{$status | wc -l} > $njobs){

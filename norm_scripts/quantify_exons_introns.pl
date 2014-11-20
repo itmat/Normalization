@@ -478,6 +478,8 @@ while(my $line = <SAM>){
     if ($line =~ /^@/){
 	next;
     }
+    my $sense = "false";
+
     my $exonFlag = 0;
     my $AexonFlag = 0;
     my $intronFlag = 0;
@@ -508,6 +510,12 @@ while(my $line = <SAM>){
     my $chr = $a[2];
     my $readSt = $a[3];
     my $cigar = $a[5];
+    while ($cigar =~ /(\d+)M(\d+)D(\d+)M/){
+	my $N = $1+$2+$3;
+	my $str = $1 . "M" . $2 . "D" . $3 . "M";
+	my $new_str = $N . "M";
+	$cigar =~ s/$str/$new_str/;
+    }
     my $spans = &cigar2spans($readSt, $cigar);
 #    print "$read_id\t"; #debug
     my %EXONS = (); #debug
@@ -538,6 +546,70 @@ while(my $line = <SAM>){
 	my $read_segment_start_block = int($read_segment_start / 1000);
 	my $read_segment_end_block = int($read_segment_end / 1000);
 	for(my $index=$read_segment_start_block; $index<= $read_segment_end_block; $index++) {
+	    # if stranded, check read orientation using exon
+	    if ($stranded eq "true"){
+		if (exists $exonHASH{$chr}[$index]){
+		    my $hashsize = @{$exonHASH{$chr}[$index]};
+		    for (my $j=0; $j<$hashsize; $j++){
+			my $exon = $exonHASH{$chr}[$index][$j];
+			my $check = &checkCompatibility($chr, $exSTART{$exon}, $exEND{$exon}, $chr, \@readStarts, \@readEnds);
+			my $read_strand = "";
+			if ($FWD eq "true"){
+			    if ($bitflag & 16){
+				$read_strand = "-";
+			    }
+			    else{
+				$read_strand = "+";
+			    }
+			}
+			if ($REV eq "true"){
+			    if ($bitflag & 16){
+				$read_strand = "+";
+			    }
+			    else{
+				$read_strand = "-";
+			    }
+			}
+			if ($check eq "1"){
+			    if ($read_strand eq $exonSTR{$exon}){ #sense
+				$sense = "true";
+			    }
+			}
+		    }
+		}
+		# if not mapped to sense-exon, check intron orientation
+		if ($sense eq "false"){
+		    if (exists $intronHASH{$chr}[$index]){
+			my $hashsize = @{$intronHASH{$chr}[$index]};
+			for (my $j=0; $j<$hashsize; $j++){
+			    my $intron = $intronHASH{$chr}[$index][$j];
+			    my $check = &compareSegments_overlap($chr, $chr, $intSTART{$intron}->[0], $intEND{$intron}->[0], \@readStarts, \@readEnds);
+			    my $read_strand = "";
+			    if ($FWD eq "true"){
+				if ($bitflag & 16){
+				    $read_strand = "-";
+				}
+				else{
+				    $read_strand = "+";
+				}
+			    }
+			    if ($REV eq "true"){
+				if ($bitflag & 16){
+				    $read_strand = "+";
+				}
+				else{
+				    $read_strand = "-";
+				}
+			    }
+			    if ($check eq "1"){
+				if ($read_strand eq $intronSTR{$intron}){ #sense
+				    $sense = "true";
+				}
+			    }
+			}
+		    }
+		}
+	    }
 	    if ($qexon eq "true"){
 		# check if read span maps to exon
 		if (exists $exonHASH{$chr}[$index]){
@@ -587,7 +659,7 @@ while(my $line = <SAM>){
 				    }
 				    $doneEXON{$exon} = 1;
 				}
-				else{ # antisense
+				elsif ($sense eq "false"){ # antisense
 				    if (!(defined $doneEXON_ANTI{$exon})){
 					$A_EXONS{$exon} = 1; #debug
 					if (exists $REMOVE_E_A{$exon}){
@@ -610,7 +682,7 @@ while(my $line = <SAM>){
 				    $doneEXON_ANTI{$exon}=1;
 				}
 			    }
-			    if (($check_anti eq "1") && ($read_strand ne $exonSTR{$exon})){ # antisense
+			    if (($sense eq "false") && ($check_anti eq "1") && ($read_strand ne $exonSTR{$exon})){ # antisense
 				if (!(defined $doneEXON_ANTI{$exon})){
 				    $A_EXONS{$exon} = 1; #debug
 				    if (exists $REMOVE_E_A{$exon}){
@@ -727,29 +799,31 @@ while(my $line = <SAM>){
 				}
 			    }
 			    if ($check eq "1"){
-				if ($read_strand eq $intronSTR{$intron}){ #sense
-				    if (!(defined $doneINTRON{$intron})){
-					$INTRONS{$intron} = 1; #debug
-					if (exists $REMOVE_I{$intron}){
-					    $print_intron = "false";
-					    delete $ML_I{$intron};
+				if ($sense eq "true"){
+				    if ($read_strand eq $intronSTR{$intron}){ #sense
+					if (!(defined $doneINTRON{$intron})){
+					    $INTRONS{$intron} = 1; #debug
+					    if (exists $REMOVE_I{$intron}){
+						$print_intron = "false";
+						delete $ML_I{$intron};
+					    }
+					    else{
+						$intronFlag++;
+						if($intronFlag == 1) {
+						    $CNT_OF_FRAGS_WHICH_HIT_INTRONS++;
+						}
+						if ($UNIQUE eq "true"){
+						    $intron_uniqueCOUNT{$intron}++;
+						}
+						elsif ($NU eq "true"){
+						    $intron_nuCOUNT{$intron}++;
+						}
+					    }
 					}
-					else{
-					    $intronFlag++;
-					    if($intronFlag == 1) {
-						$CNT_OF_FRAGS_WHICH_HIT_INTRONS++;
-					    }
-					    if ($UNIQUE eq "true"){
-						$intron_uniqueCOUNT{$intron}++;
-					    }
-					    elsif ($NU eq "true"){
-						$intron_nuCOUNT{$intron}++;
-					    }
-					}
+					$doneINTRON{$intron} = 1;
 				    }
-				    $doneINTRON{$intron} = 1;
 				}
-				else{ #antisense
+				elsif ($sense eq "false"){ #antisense
 				    if (!(defined $doneINTRON_ANTI{$intron})){
 					$A_INTRONS{$intron} = 1; #debug				
 					if (exists $REMOVE_I_A{$intron}){

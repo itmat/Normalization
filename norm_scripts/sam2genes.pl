@@ -157,6 +157,12 @@ while(my $line = <SAM>){
     my $chr = $a[2];
     my $readSt = $a[3];
     my $cigar = $a[5];
+    while ($cigar =~ /(\d+)M(\d+)D(\d+)M/){
+        my $N = $1+$2+$3;
+        my $str = $1 . "M" . $2 . "D" . $3 . "M";
+        my $new_str = $N . "M";
+        $cigar =~ s/$str/$new_str/;
+    }
     my $spans = &cigar2spans($readSt, $cigar);
     my @b = split (",", $spans);
     for (my $i=0; $i<@b; $i++){

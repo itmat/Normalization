@@ -159,14 +159,6 @@ if ($filter eq "false"){
 			}
 		    }
 		}
-		if ($anti eq "true"){
-		    my $new_fwd = $forward;
-		    $new_fwd =~ s/$geneid_f/$new_geneid_a/;
-		    my $new_rev = $reverse;
-		    $new_rev =~ s/$geneid_r/$new_geneid_a/;
-		    print OUT_A "$new_fwd\n$new_rev\n";
-		    push (@{$ID_A{$id_f}}, $ih_hi_f);
-		}
 		if ($sense eq "true"){
 		    my $new_fwd = $forward;
 		    $new_fwd =~ s/$geneid_f/$new_geneid_s/;
@@ -175,6 +167,15 @@ if ($filter eq "false"){
 		    print OUT_S "$new_fwd\n$new_rev\n";
 		    push (@{$ID{$id_f}}, $ih_hi_f);
 		}
+		elsif ($anti eq "true"){
+		    my $new_fwd = $forward;
+		    $new_fwd =~ s/$geneid_f/$new_geneid_a/;
+		    my $new_rev = $reverse;
+		    $new_rev =~ s/$geneid_r/$new_geneid_a/;
+		    print OUT_A "$new_fwd\n$new_rev\n";
+		    push (@{$ID_A{$id_f}}, $ih_hi_f);
+		}
+
 	    }
 	}
 	else{
@@ -219,17 +220,17 @@ if ($filter eq "false"){
 			}
 		    }
 		}
-		if ($anti eq "true"){
-		    my $new_fwd = $forward;
-		    $new_fwd =~ s/$geneid_f/$new_geneid_a/;
-		    print OUT_A "$new_fwd\n";
-		    push (@{$ID_A{$id_f}}, $ih_hi_f);
-		}
 		if ($sense eq "true"){
 		    my $new_fwd = $forward;
 		    $new_fwd =~ s/$geneid_f/$new_geneid_s/;
 		    print OUT_S "$new_fwd\n";
 		    push (@{$ID{$id_f}}, $ih_hi_f);
+		}
+		elsif ($anti eq "true"){
+		    my $new_fwd = $forward;
+		    $new_fwd =~ s/$geneid_f/$new_geneid_a/;
+		    print OUT_A "$new_fwd\n";
+		    push (@{$ID_A{$id_f}}, $ih_hi_f);
 		}
 	    }
 	}
