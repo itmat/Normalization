@@ -539,15 +539,15 @@ while(my $line = <SAM>){
     undef %doneEXON_ANTI;
     undef %doneINTRON_ANTI;
     undef %doneIG;
-    for(my $i=0;$i<@b;$i++){
-	$b[$i] =~ /(\d+)-(\d+)/;
-	my $read_segment_start = $1;
-	my $read_segment_end = $2;
-	my $read_segment_start_block = int($read_segment_start / 1000);
-	my $read_segment_end_block = int($read_segment_end / 1000);
-	for(my $index=$read_segment_start_block; $index<= $read_segment_end_block; $index++) {
-	    # if stranded, check read orientation using exon
-	    if ($stranded eq "true"){
+    # if stranded, check read orientation using exon
+    if ($stranded eq "true"){
+	for(my $i=0;$i<@b;$i++){
+	    $b[$i] =~ /(\d+)-(\d+)/;
+	    my $read_segment_start = $1;
+	    my $read_segment_end = $2;
+	    my $read_segment_start_block = int($read_segment_start / 1000);
+	    my $read_segment_end_block = int($read_segment_end / 1000);
+	    for(my $index=$read_segment_start_block; $index<= $read_segment_end_block; $index++) {
 		if (exists $exonHASH{$chr}[$index]){
 		    my $hashsize = @{$exonHASH{$chr}[$index]};
 		    for (my $j=0; $j<$hashsize; $j++){
@@ -577,8 +577,17 @@ while(my $line = <SAM>){
 			}
 		    }
 		}
-		# if not mapped to sense-exon, check intron orientation
-		if ($sense eq "false"){
+	    }
+	}
+	# if not mapped to sense-exon, check intron orientation
+	if ($sense eq "false"){
+	    for(my $i=0;$i<@b;$i++){
+		$b[$i] =~ /(\d+)-(\d+)/;
+		my $read_segment_start = $1;
+		my $read_segment_end = $2;
+		my $read_segment_start_block = int($read_segment_start / 1000);
+		my $read_segment_end_block = int($read_segment_end / 1000);
+		for(my $index=$read_segment_start_block; $index<= $read_segment_end_block; $index++) {
 		    if (exists $intronHASH{$chr}[$index]){
 			my $hashsize = @{$intronHASH{$chr}[$index]};
 			for (my $j=0; $j<$hashsize; $j++){
@@ -610,6 +619,15 @@ while(my $line = <SAM>){
 		    }
 		}
 	    }
+	}
+    }
+    for(my $i=0;$i<@b;$i++){
+	$b[$i] =~ /(\d+)-(\d+)/;
+	my $read_segment_start = $1;
+	my $read_segment_end = $2;
+	my $read_segment_start_block = int($read_segment_start / 1000);
+	my $read_segment_end_block = int($read_segment_end / 1000);
+	for(my $index=$read_segment_start_block; $index<= $read_segment_end_block; $index++) {
 	    if ($qexon eq "true"){
 		# check if read span maps to exon
 		if (exists $exonHASH{$chr}[$index]){
