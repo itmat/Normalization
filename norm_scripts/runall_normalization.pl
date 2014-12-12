@@ -595,7 +595,7 @@ if ($run_prepause eq "true"){
 	&clear_log($name_of_alljob, $err_name);
 	
 	$total = "$study_dir/STATS/total_num_reads.txt";
-	$sorted = `cut -f 2 $total | sort`;
+	$sorted = `cut -f 2 $total | sort -n`;
 	@a = split (/\n/, $sorted);
 	$max_map = $a[@a-1];
 	if ($other eq "true"){
