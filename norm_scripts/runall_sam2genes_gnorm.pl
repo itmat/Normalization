@@ -26,13 +26,20 @@ option:
 
  -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI) cluster.
 
- -other \"<submit>,<jobname_option>,<status>\":
-        set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
-        **make sure the arguments are comma separated inside the quotes**
+ -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_3G>, <status>\":
+         set this if you're not on LSF (PMACS) or SGE (PGFI) cluster.
+         **make sure the arguments are comma separated inside the quotes**
 
-        <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
-        <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
-        <status> : command for checking batch job status (e.g. bjobs, qstat)
+         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
+         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
+         <request_memory_option> : is option for requesting resources for batch job submission command
+                                  (e.g. -q, -l h_vmem=)
+         <queue_name_for_3G> : is queue name for 3G (e.g. normal, 3G)
+         <status> : command for checking batch job status (e.g. bjobs, qstat)
+
+ -mem <s> : set this if your job requires more memory.
+            <s> is the queue name for required mem.
+            Default: 3G
 
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. 
                    by default it will submit 200 jobs at a time.
@@ -55,11 +62,15 @@ my $NU = "true";
 my $njobs = 200;
 my $submit = "";
 my $jobname_option = "";
+my $request_memory_option = "";
+my $mem = "";
 my $status;
 my $se = "";
 my $stranded = "false";
 my $orientation = "";
 my $str_args = 0;
+my $replace_mem = "false";
+my $new_mem = "";
 for (my $i=3; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -109,6 +120,8 @@ for (my $i=3; $i<@ARGV; $i++){
         $option_found = "true";
         $submit = "bsub";
         $jobname_option = "-J";
+	$request_memory_option = "-q";
+	$mem = "normal";
 	$status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
@@ -116,8 +129,11 @@ for (my $i=3; $i<@ARGV; $i++){
         $option_found = "true";
         $submit = "qsub -cwd";
         $jobname_option = "-N";
+	$request_memory_option = "-l h_vmem=";
+	$mem = "3G";
 	$status = "qstat";
     }
+
     if ($ARGV[$i] eq '-other'){
         $numargs++;
         $option_found = "true";
@@ -125,13 +141,24 @@ for (my $i=3; $i<@ARGV; $i++){
         my @a = split(",", $argv_all);
         $submit = $a[0];
         $jobname_option = $a[1];
-	$status = $a[2];
+        $request_memory_option = $a[2];
+        $mem = $a[3];
+	$status = $a[4];
         $i++;
-        if ($submit eq "-max_jobs" | $submit eq "" | $jobname_option eq "" |  $status eq ""){
-            die "please provide \"<submit>, <jobname_option>,<status>\"\n";
+        if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem eq ""| $status eq ""){
+            die "please provide \"<submit>, <jobname_option>,<request_memory_option>, <queue_name_for_3G>, <status>\"\n";
         }
         if ($submit eq "-lsf" | $submit eq "-sge"){
-            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option> ,<status>\".\n";
+            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_3G>, <status>\".\n";
+        }
+    }
+    if ($ARGV[$i] eq '-mem'){
+        $option_found = "true";
+        $new_mem = $ARGV[$i+1];
+        $replace_mem = "true";
+        $i++;
+        if ($new_mem eq ""){
+            die "please provide a queue name.\n";
         }
     }
     if($option_found eq 'false') {
@@ -139,7 +166,7 @@ for (my $i=3; $i<@ARGV; $i++){
     }
 }
 if($numargs ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>,<jobname_option>,<status>\".\n
+    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>,<jobname_option>,<request_memory_option>, <queue_name_for_3G>,<status>\".\n
 ";
 }
 if($numargs_u_nu > 1) {
@@ -151,7 +178,9 @@ if ($stranded eq "true"){
 	die "please specify read orientation of stranded data: -str_f or -str-r\n";
     }
 }
-
+if ($replace_mem eq "true"){
+    $mem = $new_mem;
+}
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 my @fields = split("/", $LOC);
@@ -208,7 +237,7 @@ while(my $line = <IN>){
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
-	`$submit $jobname_option $jobname -o $logname_u.out -e $logname_u.err < $shfile_u`;
+	`$submit $request_memory_option$mem $jobname_option $jobname -o $logname_u.out -e $logname_u.err < $shfile_u`;
     }
     if ($NU eq "true"){
 	my $outname_nu = $filename_nu;
@@ -219,7 +248,7 @@ while(my $line = <IN>){
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
-	`$submit $jobname_option $jobname -o $logname_nu.out -e $logname_nu.err < $shfile_nu`;
+	`$submit $request_memory_option$mem $jobname_option $jobname -o $logname_nu.out -e $logname_nu.err < $shfile_nu`;
     }
     if ($NORM_M eq "true"){
 	my $outname = $filename;
@@ -230,7 +259,7 @@ while(my $line = <IN>){
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
-	`$submit $jobname_option $jobname -o $logname.out -e $logname.err < $shfile`;
+	`$submit $request_memory_option$mem $jobname_option $jobname -o $logname.out -e $logname.err < $shfile`;
 	if ($stranded eq "true"){
 	    my $outname_a = $filename_a;
 	    $outname_a =~ s/.sam$/.txt/;
@@ -240,7 +269,7 @@ while(my $line = <IN>){
 	    while (qx{$status | wc -l} > $njobs){
 		sleep(10);
 	    }
-	    `$submit $jobname_option $jobname -o $logname_a.out -e $logname_a.err < $shfile_a`;
+	    `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_a.out -e $logname_a.err < $shfile_a`;
 	}
     }
 }

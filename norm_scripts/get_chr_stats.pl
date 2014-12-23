@@ -53,14 +53,14 @@ my $gstatsdir = $study_dir . "/STATS/GENE";
 my $outfile;
 if ($gnorm eq "true"){
     unless (-d $gstatsdir){
-	`mkdir -p $gstatsdir`;
+	my $make = `mkdir -p $gstatsdir`;
     }
 
     $outfile = $statsdir . "/percent_reads_chr_gene.txt";
 }
 if ($eij eq "true"){
     unless (-d $statsdir){
-	`mkdir -p $statsdir`;
+	my $make = `mkdir -p $statsdir`;
     }
 
     $outfile = $statsdir . "/percent_reads_chr_exon-intron-junction.txt";

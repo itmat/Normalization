@@ -15,7 +15,7 @@ my $USAGE = "perl quanitfy_exons_introns.pl <samfile> <exons file> <introns file
 options:
  -exon_only : set this if you want to quantify exons only (this option does not work when -outputsam flag is used). 
               By default, this script will output both exon and intronquants
- -intron_only : set this if you want to quantify exons only (this option does not work when -outputsam flag is used).
+ -intron_only : set this if you want to quantify introns only (this option does not work when -outputsam flag is used).
                 By default, this script will output both exon and intronquants
  -filter_highexp : set this if you want to filter out the reads that map to highly expressed exons and introns.
  -outputsam : set this if you want to output the sam files of exon mappers, intronmappers and intronmappers.

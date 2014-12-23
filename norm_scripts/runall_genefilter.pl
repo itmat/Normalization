@@ -158,6 +158,9 @@ for (my $i=2; $i<@ARGV; $i++){
             die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option>,<request_memory_option>, <queue_name_for_10G> ,<status>\".\n";
         }
     }
+    if($option_found eq "false") {
+	die "option \"$ARGV[$i]\" was not recognized.\n";
+    }
 }
 if($numargs ne '1'){
     die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>,<jobname_option>,<request_memory_option>, <queue_name_for_10G>,<status>\".\n

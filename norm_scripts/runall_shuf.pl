@@ -11,7 +11,7 @@ of the same type. (ditto for NU)
 
 The output file names will be modified from the input file names.
 
-** If the maximum line count in `STUDY/READS/sample_dir/linecounts.txt` is > 50,000,000, use -mem option (6G for 60 million lines, 7G for 70 million lines, 8G for 80 million lines, etc).
+** If the maximum line count in `STUDY/READS/sample_dir/EIJ/Unique/linecounts.txt` is > 50,000,000, use -mem option (6G for 60 million lines, 7G for 70 million lines, 8G for 80 million lines, etc).
 
 option:  
 
