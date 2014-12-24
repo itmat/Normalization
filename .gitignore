@@ -1,3 +1,8 @@
 documentation.md
 norm_scripts/resolve_multimappers.pl
 norm_scripts/filter_and_label.pl
+norm_scripts/add_highexp_counts.pl
+norm_scripts/filter_and_label_gnorm.pl
+norm_scripts/filter_and_resolve.pl
+norm_scripts/filter_and_resolve_gnorm.pl
+norm_scripts/runblast_dev.pl
