@@ -78,18 +78,37 @@ if (-e "$outfile"){
     $outfile = $temp;
 }
 my $tempfile = "$stats_dir/GENE/expected_num_reads_gnorm.temp";
-my (@sumEU, @sumENU, @sumIU, @sumINU);
 
 open(TEMP, ">$tempfile");
 #print header for the table
 print TEMP "ID\t";
 #Unique
 if ($U eq "true"){
-    print TEMP "Unique\t";
+    if ($stranded eq "true"){
+	print TEMP "senseUnique\t";
+    }
+    if ($stranded eq "false"){
+	print TEMP "Unique\t";
+    }
 }
 #Non-Unique
 if ($NU eq "true"){
-    print TEMP "NU\t";
+    if ($stranded eq "true"){
+	print TEMP "senseNU\t";
+    }
+    if ($stranded eq "false"){
+	print TEMP "NU\t";
+    }
+}
+
+#antisense
+if ($stranded eq "true"){
+    if ($U eq "true"){
+	print TEMP "antisenseUnique\t";
+    }
+    if ($NU eq "true"){
+	print TEMP "antisenseNU\t";
+    }
 }
 
 print TEMP "\n";
@@ -133,11 +152,37 @@ while(my $line = <IN>){
 	}
         print TEMP "$N\t";
     }
+    if ($stranded eq "true"){
+	if ($U eq "true"){
+	    my $str_u_a = `cat $LOC/$id/GNORM/Unique/$id.filtered_u.genes.antisense.linecount.txt`;
+	    chomp($str_u_a);
+	    my @a = split (/\t/, $str_u_a);
+	    my $N2 = $a[1];
+	    my $N = $N2 / 2;
+	    if ($se eq "true"){
+		$N = $N2;
+	    }
+	    print TEMP "$N\t";
+	}
+	if ($NU eq "true"){
+	    my $str_nu_a = `cat $LOC/$id/GNORM/NU/$id.filtered_nu.genes.antisense.linecount.txt`;
+	    chomp($str_nu_a);
+	    my @a = split (/\t/, $str_nu_a);
+	    my $N2 = $a[1];
+	    my $N = $N2 / 2;
+	    if ($se eq "true"){
+		$N = $N2;
+	    }
+	    print TEMP "$N\t";
+	}
+    }
     print TEMP "\n";
 }
 close(TEMP);
 my $SUM_U = 0;
 my $SUM_NU = 0;
+my $SUM_U_A = 0;
+my $SUM_NU_A = 0;
 
 `sort -nk 2 $tempfile > $tempfile.sorted`;
 
@@ -152,6 +197,8 @@ for(my $i=0;$i<=@s;$i++){
 
 my @COLUMN_U;
 my @COLUMN_NU;
+my @COLUMN_U_A;
+my @COLUMN_NU_A;
 
 # predict # reads after removing samples
 open(IN, "$tempfile.sorted");
@@ -159,16 +206,26 @@ my $header = <IN>;
 while(my $line = <IN>){
     chomp($line);
     my @a = split(/\t/, $line);
-    if ($numargs_u_nu eq '0'){
+    if ($numargs_u_nu eq '0'){ #both u and nu true
 	push (@COLUMN_U, $a[1]);
 	push (@COLUMN_NU, $a[2]);
+	if ($stranded eq "true"){
+	    push (@COLUMN_U_A, $a[3]);
+	    push (@COLUMN_NU_A, $a[4]);
+	}
     }
     else{
 	if ($U eq 'true'){
 	    push (@COLUMN_U, $a[1]);
+	    if ($stranded eq "true"){
+		push (@COLUMN_U_A, $a[2]);
+	    }
 	}
 	else{
 	    push (@COLUMN_NU, $a[1]);
+            if ($stranded eq "true"){
+		push (@COLUMN_NU_A, $a[2]);
+            }
 	}
     }
 }
@@ -176,6 +233,8 @@ close(IN);
 
 my @P_U;
 my @P_NU;
+my @P_U_A;
+my @P_NU_A;
 if ($U eq "true"){
     my $min = &get_min(@COLUMN_U);
     $P_U[0] = $min;
@@ -194,16 +253,37 @@ if ($NU eq "true"){
 	$P_NU[$i] = $min;
     }
 }
+if ($stranded eq "true"){
+    if ($U eq "true"){
+	my $min = &get_min(@COLUMN_U_A);
+	$P_U_A[0] = $min;
+	for(my $i=1; $i<$size;$i++){
+	    shift @COLUMN_U_A;
+	    $min = &get_min(@COLUMN_U_A);
+	    $P_U_A[$i] = $min;
+	}
+    }
+    if ($NU eq "true"){
+	my $min = &get_min(@COLUMN_NU_A);
+	$P_NU_A[0] += $min;
+	for(my $i=1; $i<$size;$i++){
+	    shift @COLUMN_NU_A;
+	    $min = &get_min(@COLUMN_NU_A);
+	    $P_NU_A[$i] = $min;
+	}
+    }
+}
 #debug
 =comment
 for(my $i=0;$i<$size;$i++){
-    print "$i\t$ID[$i]\t$P_U[$i]\t$P_NU[$i]\n";
+    print "$i\t$ID[$i]\t$P_U[$i]\t$P_NU[$i]\t$P_U_A[$i]\t$P_NU_A[$i]\n";
 }
 =cut
 
 my $sorted = `cat $tempfile.sorted`;
 
 my $TOTAL;
+my $TOTAL_A;
 if (($U eq "true") && ($NU eq "true")){
     $TOTAL = $P_U[0] + $P_NU[0];
     $SUM_U = &format_large_int($P_U[0]);
@@ -219,62 +299,138 @@ else{
 	$SUM_NU = &format_large_int($P_NU[0]);
     }
 }
-#print "exonu = $new_exon_u\nintronu = $new_intron_u\n exonnu = $new_exon_nu\n intronnu = $new_intron_nu\n";
+if ($stranded eq "true"){
+    if (($U eq "true") && ($NU eq "true")){
+	$TOTAL_A = $P_U_A[0] + $P_NU_A[0];
+	$SUM_U_A = &format_large_int($P_U_A[0]);
+	$SUM_NU_A = &format_large_int($P_NU_A[0]);
+    }
+    else{
+	if ($U eq "true"){
+	    $TOTAL_A = $P_U_A[0];
+	    $SUM_U_A = &format_large_int($P_U_A[0]);
+	}
+	if ($NU eq "true"){
+	    $TOTAL_A = $P_NU_A[0];
+	    $SUM_NU_A = &format_large_int($P_NU_A[0]);
+	}
+    }
+}
 
 open(OUT, ">$outfile");
 $TOTAL = &format_large_int($TOTAL);
+if ($stranded eq "true"){
+    $TOTAL_A = &format_large_int($TOTAL_A);
+}
 print OUT "\n[GENE NORMALIZATION]\n";
-print OUT "\nExpected number of reads after normalization (estimate): $TOTAL";
+print OUT "\nExpected number of reads after normalization (estimate): ";
 if (($U eq "true") && ($NU eq "true")){
-    print OUT " total reads\n";
-    print OUT "\t\t\t\t\t\t\t $SUM_U unique reads\n";
-    print OUT "\t\t\t\t\t\t\t $SUM_NU non-unique reads\n";
+    if ($stranded eq "false"){
+	print OUT "$TOTAL total reads\n";
+	print OUT "\t\t\t\t\t\t\t $SUM_U unique\n";
+	print OUT "\t\t\t\t\t\t\t $SUM_NU non-unique\n";
+    }
+    if ($stranded eq "true"){
+	print OUT "$TOTAL sense reads\t$TOTAL_A antisense reads\n";
+        print OUT "\t\t\t\t\t\t\t $SUM_U sense unique\t$SUM_U_A antisense unique\n";
+        print OUT "\t\t\t\t\t\t\t $SUM_NU sense non-unique\t$SUM_NU_A antisense non-unique\n";
+    }
 }
 else{
     if ($U eq "true"){
-	print OUT " (unique reads)\n";
+	if ($stranded eq "false"){
+	    print OUT "$TOTAL unique reads\n";
+	}
+	if ($stranded eq "true"){
+	    print OUT "$TOTAL sense unique\t$TOTAL_A antisense unique\n";
+	}
     }
     if ($NU eq "true"){
-	print OUT " (non-unique reads)\n";
+	if ($stranded eq "false"){
+            print OUT "$TOTAL non-unique reads\n";
+	}
+	if ($stranded eq "true"){
+	    print OUT "$TOTAL sense non-unique\t$TOTAL_A antisense non-unique\n";
+        }
     }
 }
-if ($stranded eq "true"){
-    print OUT "\t\t\t\t\t\t\t (*For stranded data, these numbers refer to the sense gene mappers)\n";
-}
+
 print OUT "\n[1] You may remove sample ids from <sample_dirs> file to get more reads:\n\n<Expected number of reads after removing samples>\n";
 
 my $num_to_remove;
 if ($numargs_u_nu eq '0'){
-    print OUT "#ids-to-rm\tUnique\tNU\tTOTAL\tSampleID\n";
+    if ($stranded eq "true"){
+	print OUT "#ids-to-rm\tsenseUnique\tsenseNU\tsenseTOTAL\tantisenseUnique\tantisenseNU\tantisenseTOTAL\tSampleID\n";
+    }
+    if ($stranded eq "false"){
+	print OUT "#ids-to-rm\tUnique\tNU\tTOTAL\tSampleID\n";
+    }
     $num_to_remove = @P_U;
 }
 else{
     if ($U eq "true"){
-	print OUT "#ids-to-rm\tUnique\tSampleID\n";
+	if ($stranded eq "true"){
+            print OUT "#ids-to-rm\tsenseUnique\tantisenseUnique\tSampleID\n";
+	}
+	if ($stranded eq "false"){
+	    print OUT "#ids-to-rm\tUnique\tSampleID\n";
+	}
 	$num_to_remove = @P_U;
     }
-    else{ 
-	print OUT "#ids-to-rm\tNU\tSampleID\n";
+    else{
+	if ($stranded eq "true"){
+            print OUT "#ids-to-rm\tsenseNU\tantisenseNU\tSampleID\n";
+	}
+	if ($stranded eq "false"){
+	    print OUT "#ids-to-rm\tNU\tSampleID\n";
+	}
 	$num_to_remove = @P_NU;
     }
 }
 
 for(my $i=0; $i<$num_to_remove;$i++){
     if ($numargs_u_nu eq '0'){
-	my $P_TOTAL = $P_U[$i]+$P_NU[$i];
-	$P_TOTAL = &format_large_int($P_TOTAL);
-	my $P_U_F = &format_large_int($P_U[$i]);
-	my $P_NU_F = &format_large_int($P_NU[$i]);
-	print OUT "$i\t$P_U_F\t$P_NU_F\t$P_TOTAL\t$ID[$i]\n";
+	if ($stranded eq "false"){
+	    my $P_TOTAL = $P_U[$i]+$P_NU[$i];
+	    $P_TOTAL = &format_large_int($P_TOTAL);
+	    my $P_U_F = &format_large_int($P_U[$i]);
+	    my $P_NU_F = &format_large_int($P_NU[$i]);
+	    print OUT "$i\t$P_U_F\t$P_NU_F\t$P_TOTAL\t$ID[$i]\n";
+	}
+	if ($stranded eq "true"){
+	    my $P_TOTAL = $P_U[$i]+$P_NU[$i];
+            $P_TOTAL = &format_large_int($P_TOTAL);
+	    my $P_U_F = &format_large_int($P_U[$i]);
+            my $P_NU_F = &format_large_int($P_NU[$i]);
+	    my $P_TOTAL_A = $P_U_A[$i]+$P_NU_A[$i];
+	    $P_TOTAL_A = &format_large_int($P_TOTAL_A);
+	    my $P_U_F_A = &format_large_int($P_U_A[$i]);
+            my $P_NU_F_A = &format_large_int($P_NU_A[$i]);
+            print OUT "$i\t$P_U_F\t$P_NU_F\t$P_TOTAL\t$P_U_F_A\t$P_NU_F_A\t$P_TOTAL_A\t$ID[$i]\n";
+	}
     }
     else{
 	if ($U eq "true"){
-	    my $P_U_F = &format_large_int($P_U[$i]);
-	    print OUT "$i\t$P_U_F\t$ID[$i]\n";
+	    if ($stranded eq "false"){
+		my $P_U_F = &format_large_int($P_U[$i]);
+		print OUT "$i\t$P_U_F\t$ID[$i]\n";
+	    }
+	    if ($stranded eq "true"){
+                my $P_U_F = &format_large_int($P_U[$i]);
+                my $P_U_F_A = &format_large_int($P_U_A[$i]);
+                print OUT "$i\t$P_U_F\t$P_U_F_A\t$ID[$i]\n";
+	    }
 	}
 	if ($NU eq "true"){
-	    my $P_NU_F = &format_large_int($P_NU[$i]);
-	    print OUT "$i\t$P_NU_F\t$ID[$i]\n";
+	    if ($stranded eq "false"){
+		my $P_NU_F = &format_large_int($P_NU[$i]);
+		print OUT "$i\t$P_NU_F\t$ID[$i]\n";
+	    }
+	    if ($stranded eq "true"){
+		my $P_NU_F = &format_large_int($P_NU[$i]);
+		my $P_NU_F_A = &format_large_int($P_NU_A[$i]);
+                print OUT "$i\t$P_NU_F\t$P_NU_F_A\t$ID[$i]\n";
+	    }
 	}
     }
 }

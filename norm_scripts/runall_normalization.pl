@@ -2062,6 +2062,28 @@ if ($run_norm eq "true"){
         &check_err ($name_of_job, $err_name, $job_num);
         $job_num++;
     }
+    
+    #add_highexp_counts
+    $name_of_job = "$study.add_highexp_counts";
+    if (($resume eq "true")&&($run_job eq "false")){
+        if ($name_of_job =~ /.$name_to_check$/){
+            $run_job = "true";
+            $job_num = $res_num;
+        }
+    }
+    if (($filter_gene eq "true") && ($run_job eq "true") && ($GNORM eq "true")){
+        $err_name = "$name_of_job.err";
+        &clear_log($name_of_job, $err_name);
+        while(qx{$stat | wc -l} > $maxjobs){
+            sleep(10);
+        }
+        $job = "echo \"perl $norm_script_dir/add_highexp_counts.pl $LOC $data_stranded\" | $batchjobs $mem $jobname \"$name_of_job\" -o $logdir/$name_of_job.out -e $logdir/$name_of_job.err";
+
+        &onejob($job, $name_of_job, $job_num);
+        &check_exit_onejob($job, $name_of_job, $job_num);
+        &check_err ($name_of_job, $err_name, $job_num);
+	$job_num++;
+    }
 
     if ($run_job eq "true"){
 	if (($GNORM eq "true") && ($EIJ eq "true")){
@@ -2991,5 +3013,3 @@ sub clear_log{
     }
 }    
 
-
-#  LocalWords:  usr
