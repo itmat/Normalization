@@ -4,8 +4,16 @@ use warnings;
 
 my $USAGE = "\nUsage: perl get_master_list_of_intergenic_regions.pl <gene info file> <loc> [option]
 
-<gene info file> gene info file must contain columns with the following suffixes: chrom, txStart, and txEnd.
+<gene info file> gene info file must contain columns with the following suffixes: chrom, strand, txStart, and txEnd.
 <loc> is where the sample directories are
+
+options:
+ -stranded: set this if your data are strand-specific.
+ -FR <n> : by default, 5000 bases up/downstream of each gene 
+           will be considered flanking regions. 
+           use this option to change the size <n>. 
+ -readlength <n> : by default, 100bp will be used as readlength.
+                   use this option to change the readlength <n>.
 
 ";
 
@@ -13,19 +21,46 @@ if (@ARGV <2 ){
     die $USAGE;
 }
 
+my $FR = 5000;
+my $stranded = "false";
+my $readlength = 100;
+for(my$i=2;$i<@ARGV;$i++){
+    my $option_found = "false";
+    if ($ARGV[$i] eq "-FR"){
+	$option_found = "true";
+	$FR = $ARGV[$i+1];
+	$i++;
+    }
+    if ($ARGV[$i] eq '-readlength'){
+	$option_found = "true";
+	$readlength = $ARGV[$i+1];
+	$i++;
+    }
+    if ($ARGV[$i] eq '-stranded'){
+	$stranded = "true";
+	$option_found = "true";
+    }
+    if($option_found eq "false") {
+	die "option \"$ARGV[$i]\" was not recognized.\n";
+    }
+}
+
+
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 my $geneinfoFile = $ARGV[0];
 my (%IG, %GENESTART);
-
 open(GENE, $geneinfoFile) or die "cannot find file \"$geneinfoFile\"\n";
 my $header = <GENE>;
 chomp($header);
 my @GHEADER = split(/\t/, $header);
-my ($chrcol, $txstartcol, $txendcol);
+my ($chrcol, $txstartcol, $txendcol, $strandcol);
 for(my $i=0; $i<@GHEADER; $i++){
     if ($GHEADER[$i] =~ /.chrom$/){
         $chrcol = $i;
+    }
+    if ($GHEADER[$i] =~ /.strand$/){
+        $strandcol = $i;
     }
     if ($GHEADER[$i] =~ /.txStart$/){
         $txstartcol = $i;
@@ -35,81 +70,295 @@ for(my $i=0; $i<@GHEADER; $i++){
     }
 }
 
-if (!defined($chrcol) || !defined($txstartcol) || !defined($txendcol)){
-    die "Your header must contain columns with the following suffixes: chrom, txStart and txEnd\n";
+if (!defined($chrcol) || !defined($txstartcol) || !defined($txendcol) || !defined($strandcol)){
+    die "Your header must contain columns with the following suffixes: chrom, strand, txStart and txEnd\n";
 }
 
-my %TX;
+my %TX_tmp;
 while(my $line = <GENE>){
     chomp($line);
     my @a = split(/\t/,$line);
     my $chr = $a[$chrcol];
     my $txSt = $a[$txstartcol];
     my $txEnd = $a[$txendcol];
-#    $txSt++;
+    my $str = $a[$strandcol];
+    $txSt++;#to 1-based coord
     my $tx = "$chr:$txSt-$txEnd";
-    $TX{$tx} = 1;
+    push(@{$TX_tmp{$tx}},$str);
 }
 close(GENE);
 
+my %TX;
+my %BOTH;
 my $tempfile = "$LOC/temp_tx.txt";
+my $readlength_2 = int($readlength/2);
 open(TEMP, ">$tempfile");
-foreach my $tx (sort {cmpChrs($a,$b)} keys %TX) {
-    print TEMP "$tx\n";
+foreach my $tx (sort {cmpChrs($a,$b)} keys %TX_tmp) {
+    my @unique = &uniq(@{$TX_tmp{$tx}});
+    my $size = @unique;
+    if ($size == 1){
+	print TEMP "$tx\n";
+	$TX{$tx} = $unique[0];
+    }
+    else{
+	print TEMP "$tx\n";
+	$TX{$tx} = $unique[0];
+	$BOTH{$tx} = 1;
+
+	my $tmptx = "$tx.1";
+	$TX{$tmptx} = $unique[1];
+    }
 }
 close(TEMP);
 
+my %INF_INTRON;
 
 open(TEMP, $tempfile) or die "cannot find '$tempfile\n'";
 my $firstcoord = <TEMP>;
+chomp($firstcoord);
 (my $chr, my $start, my $end) = $firstcoord =~  /^(.*):(\d*)-(\d*)$/g;
-# 0 to first gene
-my $interg = "$chr:0-$start";
-$IG{$interg} = 1;
-while(my $coord = <TEMP>){
-    chomp($coord);
-    (my $tx_chr, my $tx_start, my $tx_end) = $coord =~  /^(.*):(\d*)-(\d*)$/g;    
-#    print "\$chr:\$start-\$end:$chr:$start-$end\n"; #debug
-#    print "\$tx_chr:\$tx_start-\$tx_end:$tx_chr:$tx_start-$tx_end\n"; #debug
-    if ($chr eq $tx_chr){
-	my $overlap = $tx_start - $end;
-	# does not overlap
-	if ($overlap > 0){
-	    my $interg_start = $end+1;
-	    my $interg_end = $tx_start;
-	    my $interg = "$tx_chr:$interg_start-$interg_end";
-	    $start = $tx_start;
-	    $end = $tx_end;
+my ($interg_end, $intron, $interg, $intron_end, $intron_start, $interg_start);
+if ($start > 1){
+    if ($start >= $readlength_2){
+	#1 to first tx start - FR : IG
+	$intron_end = $start - 1;
+	if ($intron_end > $FR){
+	    $interg_end = $intron_end - $FR; 
+	    $interg = "$chr:1-$interg_end";
 	    $IG{$interg} = 1;
-#	    print "$interg\n"; #debug
+	    # ig_end+1 to start : INF_INTRON
+	    my $intron_start = $interg_end + 1;
+	    $intron = "$chr:$intron_start-$intron_end";
 	}
-	else{
-	    my @starts = ($start, $tx_start);
-	    my @ends = ($end, $tx_end);
-	    $start = &get_min(@starts);
-	    $end = &get_max(@ends);
+	else{ # if 1 to first tx start is <= $FR
+	    $intron = "$chr:1-$intron_end";
+	}
+	$INF_INTRON{$intron} = $TX{$firstcoord};
+	#print "$firstcoord\ninterg:$interg\nintron:$intron\t$TX{$firstcoord}\n";#debug
+	if ($stranded eq "true"){
+	    if (exists $BOTH{$firstcoord}){
+		my $tmpfirstcoord = $firstcoord . ".1";
+		$intron = $intron . ".1";
+		$INF_INTRON{$intron} = $TX{$tmpfirstcoord};
+		#print "$tmpfirstcoord\ninterg:$interg\nintron:$intron\t$TX{$tmpfirstcoord}\n";#debug
+	    }
 	}
     }
     else{
-	# last end to the end of chrom
-	my $interg_start = $end + 1;
-	my $interg_end = $interg_start * 2;
-	my $interg_last = "$chr:$interg_start-$interg_end";
-	$IG{$interg_last} = 1;
-	# 0 to first gene
-	my $interg_first = "$tx_chr:0-$tx_start";
-	$IG{$interg_first} = 1;
+	$interg_end = $start - 1;
+	$interg = "$chr:1-$interg_end";
+	$IG{$interg} = 1;
+	#print "$firstcoord\ninterg:$interg\n";#debug
+    }
+}
+#print "\n====\n";#debug
+
+while(my $coord = <TEMP>){
+    chomp($coord);
+    (my $tx_chr, my $tx_start, my $tx_end) = $coord =~  /^(.*):(\d*)-(\d*)$/g;
+    #print "\$chr:\$start-\$end:$chr:$start-$end\n"; #debug
+    #print "\$tx_chr:\$tx_start-\$tx_end:$tx_chr:$tx_start-$tx_end\n"; #debug
+    if ($chr eq $tx_chr){
+        my $overlap = $tx_start - $end;
+        # does not overlap
+        if ($overlap > 1){
+	    if ($overlap >= $readlength_2){
+		my $FR_2 = $FR * 2;
+		if ($overlap > $FR_2){
+		    my $int_start_1 = $end + 1;
+		    my $int_end_2 = $tx_start - 1;
+		    
+		    my $int_end_1 = $end + $FR;
+		    $interg_start = $int_end_1 + 1;
+		    $interg_end = $int_end_2 - $FR;
+		    my $int_start_2 = $interg_end + 1;
+		    
+		    my $intron1 = "$chr:$int_start_1-$int_end_1";
+		    $interg = "$chr:$interg_start-$interg_end";
+		    my $intron2 = "$chr:$int_start_2-$int_end_2";
+		    my $prev_coord = "$chr:$start-$end";
+		    #print "$intron1:$TX{$prev_coord}\n";#debug
+		    #print "$interg\n";#debug
+		    #print "$intron2:$TX{$coord}\n";#debug
+
+		    $INF_INTRON{$intron1} = $TX{$prev_coord};
+		    $IG{$interg} = 1;
+		    $INF_INTRON{$intron2} = $TX{$coord};
+		    if ($stranded eq "true"){
+			my $tx1 = "$chr:$start-$end";
+			my $tx2 = "$coord";
+			if (exists $BOTH{$tx1}){
+			    my $tmp1 = $tx1 . ".1";
+			    $intron1 = $intron1 . ".1";
+			    $INF_INTRON{$intron1} = $TX{$tmp1};
+			    #print "str---$intron1\t$TX{$tmp1}\n";#debug
+			}
+			if (exists $BOTH{$tx2}){
+			    my $tmp2 = $tx2 . ".1";
+			    $intron2 = $intron2 . ".1";
+			    $INF_INTRON{$intron2} = $TX{$tmp2};
+			    #print "str---$intron2\t$TX{$tmp2}\n";#debug
+			}
+		    }
+		}
+		else{
+		    if ($overlap <= $readlength){
+			my $int_start = $end + 1;
+			my $int_end = $tx_start - 1;
+			$intron = "$chr:$int_start-$int_end";
+			my $tx1 = "$chr:$start-$end";
+			my $tx2 = "$coord";
+			$INF_INTRON{$intron} = $TX{$tx1};
+			#print "$intron\t$TX{$tx1}\n";#debug
+			if ($stranded eq "true"){
+			    if ($TX{$tx1} ne $TX{$tx2}){
+				$intron = $intron . ".1";
+				$INF_INTRON{$intron} = $TX{$tx2};
+				#print "str---$intron\t$TX{$tx2}\n";#debug
+			    }
+			}
+		    }
+		    else{
+			my $size = int($overlap/2);
+			$size--;
+			my $int_start_1 = $end + 1;
+			my $int_end_2 = $tx_start - 1;
+			
+			my $int_end_1 = $int_start_1 + $size;
+			my $int_start_2 = $int_end_1 + 1;
+		    
+			my $intron1 = "$chr:$int_start_1-$int_end_1";
+			my $intron2 = "$chr:$int_start_2-$int_end_2";
+			my $prev_coord = "$chr:$start-$end";
+			$INF_INTRON{$intron1} = $TX{$prev_coord};
+			$INF_INTRON{$intron2} = $TX{$coord};
+		    
+			#print "overlap:$overlap\n";#debug
+			#print "size:$size\n";#debug
+			#print "$intron1\t$TX{$prev_coord}\n";#debug
+			#print "$intron2\t$TX{$coord}\n";#debug
+
+			if ($stranded eq "true"){
+			    my $tx1 = "$chr:$start-$end";
+			    my $tx2 = "$coord";
+			    if (exists $BOTH{$tx1}){
+				my $tmp1 = $tx1 . ".1";
+				$intron1 = $intron1 . ".1";
+				$INF_INTRON{$intron1} = $TX{$tmp1};
+				#print "str---$intron1\t$TX{$tmp1}\n";#debug
+			    }
+			    if (exists $BOTH{$tx2}){
+				my $tmp2 = $tx2 . ".1";
+				$intron2 = $intron2 . ".1";
+				$INF_INTRON{$intron2} = $TX{$tmp2};
+				#print "str---$intron2\t$TX{$tmp2}\n";#debug
+			    }
+			}
+		    }
+		}
+	    }
+=comment # gap < readlength/2: ignore or consider intergenic?
+	    else{
+		$interg_start = $end + 1;
+		$interg_end = $tx_start - 1;
+		$interg = "$chr:$interg_start-$interg_end";
+		$IG{$interg} = 1;
+		print "GAP<READLENGTH/2\tinterg:$interg\n";#debug
+	    }
+=cut
+	    $start = $tx_start;
+            $end = $tx_end;
+	}
+        else{
+	    if ($tx_end > $end){
+		$start = $tx_start;
+		$end = $tx_end;
+	    }
+        }
+    }
+    else{
+        # current chr: last end to the end of chrom
+	$intron_start = $end + 1;
+	$intron_end = $intron_start + $FR - 1;
+	
+        $interg_start = $intron_end + 1;
+        $interg_end = $interg_start * 2;
+	my $prev_coord = "$chr:$start-$end";
+	$intron = "$chr:$intron_start-$intron_end";
+	$INF_INTRON{$intron} = $TX{$prev_coord};
+        $interg = "$chr:$interg_start-$interg_end";
+        $IG{$interg} = 1;
+	#print "LASTOFCHR:$prev_coord\ninterg:$interg\nintron:$intron\t$TX{$prev_coord}\n";#debug
+	if ($stranded eq "true"){
+	    if (exists $BOTH{$prev_coord}){
+		my $tmptx2 = $prev_coord . ".1";
+		my $intron = $intron . ".1";
+		$INF_INTRON{$intron} = $TX{$tmptx2};
+		#print "str---$intron:$TX{$tmptx2}\n";#debug
+	    }
+	}
+        # next chr: 0 to first gene
+	#print "start:$tx_start\treadlength_2:$readlength_2\n";
+	if ($tx_start > 1){
+	    if ($tx_start >= $readlength_2){
+		$intron_end = $tx_start - 1;
+		if ($intron_end > $FR){
+		    $interg_end = $intron_end - $FR;
+		    $interg = "$tx_chr:1-$interg_end";
+		    $IG{$interg} = 1;
+		    # interg_end+1 to start : INF_INTRON
+		    $intron_start = $interg_end + 1;
+		    $intron = "$tx_chr:$intron_start-$intron_end";
+		    #print "FIRSTOFNEWCHR:$coord\ninterg:$interg\nintron:$intron\t$TX{$coord}\n";#debug
+		}
+		else{ # if 0 to first tx start is <= $FR
+		    $intron = "$tx_chr:1-$intron_end";
+		    #print "FIRSTOFNEWCHR:$coord\nintron:$intron\t$TX{$coord}\n";#debug
+		}
+		$INF_INTRON{$intron} = $TX{$coord};
+		if ($stranded eq "true"){
+		    if (exists $BOTH{$coord}){
+			my $tmp = $coord . ".1";
+			$intron = $intron . ".1";
+			$INF_INTRON{$intron} = $TX{$tmp};
+			#print "str---intron:$intron\t$TX{$tmp}\n";#debug
+		    }
+		}
+	    }
+	    else{
+		$interg_end = $tx_start - 1;
+		$interg = "$tx_chr:1-$interg_end";
+		$IG{$interg} = 1;
+		#print "$coord\ninterg:$interg\n";#debug
+	    }
+	}
 	$start = $tx_start;
 	$end = $tx_end;
     }
-    $chr = $tx_chr;    
+    $chr = $tx_chr;
+    #print "\n========\n";#debug
 }
-# last gene to max
-my $interg_start = $end + 1;
-my $interg_end = $interg_start + $interg_start * 2;
-my $interg_last = "$chr:$interg_start-$interg_end";
-$IG{$interg_last} = 1;
 close(TEMP);
+
+# last gene to max
+$intron_start = $end + 1;
+$intron_end = $intron_start + $FR - 1;
+$interg_start = $intron_end + 1;
+$interg_end = $interg_start * 2;
+$intron = "$chr:$intron_start-$intron_end";
+my $prev_coord = "$chr:$start-$end";
+$INF_INTRON{$intron}=$TX{$prev_coord};
+$interg = "$chr:$interg_start-$interg_end";
+$IG{$interg} = 1;
+#print "LAST:$prev_coord\nintron:$intron\t$TX{$prev_coord}\ninterg:$interg\n";#debug
+if ($stranded eq "true"){
+    if (exists $BOTH{$prev_coord}){
+	my $tmptx = $prev_coord . ".1";
+	my $intron = $intron . ".1";
+	$INF_INTRON{$intron} = $TX{$tmptx};
+	#print "str---$intron:$TX{$tmptx}\n";#debug
+    }
+}
 
 my $master_list_of_interg = "$LOC/master_list_of_intergenic_regions.txt";
 open(MAS, ">$master_list_of_interg");
@@ -117,8 +366,21 @@ foreach my $interg (sort {cmpChrs($a,$b)} keys %IG) {
     print MAS "$interg\n";
 }
 close(MAS);
+
+my $flanking_regions = "$LOC/list_of_flanking_regions.txt";
+open(FR, ">$flanking_regions");
+foreach my $int (sort {cmpChrs($a,$b)} keys %INF_INTRON){
+    print FR "$int\t";
+    if ($stranded eq "true"){
+	print FR "$INF_INTRON{$int}";
+    }
+    print FR "\n";
+}
+close(FR);
+
 `rm $tempfile`;
 print "got here\n";
+
 
 sub get_min(){
     (my @array) = @_;
@@ -364,4 +626,9 @@ sub isroman($) {
 	(?: D?C{0,3} | C[DM])
 	(?: L?X{0,3} | X[LC])
 	(?: V?I{0,3} | I[VX])$/ix;
+}
+
+sub uniq {
+    my %seen;
+    grep !$seen{$_}++, @_;
 }

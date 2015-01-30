@@ -141,7 +141,7 @@ if($U eq "true"){
             my $intron = $a[0];
             my $quant = $a[1];
             $total_u_i = $total_u_i + $quant;
-            $UNIQUE{$intron} = $quant;
+            $UNIQUE_I{$intron} = $quant;
         }
         close(INFILE_U_I);
     }

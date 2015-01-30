@@ -5,7 +5,7 @@ my $USAGE =  "\nUsage: run_normalization --sample_dirs <file of sample_dirs> --l
 where:
 --sample_dirs <file of sample_dirs> : is a file of sample directories with alignment output without path
 --loc <s> : /path/to/directory with the sample directories
---unaligned <file of fa/fqfiles> : is a file with the full path of input forward fa or forward fq files
+--unaligned <file of fa/fqfiles> : is a file with the full path of all input fa or fq files
 --samfilename <s> : is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam) 
 --cfg <cfg file> : is a cfg file for the study
 
@@ -33,7 +33,8 @@ OPTIONS:
                              (e.g. \"1    \"allsteps.get_total_num_reads\"\")
 
      [data type]
-     -se : set this if the data are single end, otherwise by default it will assume it's a paired end data
+     -se : set this if the data are single end, 
+           otherwise by default it will assume it's a paired end data
      -fa : set this if the unaligned files are in fasta format 
      -fq : set this if the unaligned files are in fastq format 
      -gz : set this if the unaligned files are compressed
@@ -48,16 +49,15 @@ OPTIONS:
                           and remove them from all samples for the final spreadsheets.
                           (Default = 0; this will remove features with sum of counts = 0)
 
-     -percent <n> : is used for generating master list of exons and genes.
-                    by default, 10% of the size of first and last exon of each transcript
-                    will be added to the start of the first and the end of the last exon, respectively.
-                    use this option to change the percentage <n>. (<n> has to be a number between 0-100)
+     -flanking_region <n> : is used for generating list of flanking regions.
+                            by default, 5000 bp up/downstream of each gene will be considered a flanking region.
+                            use this option to change the size <n>.
 
      [exon-intron-junction normalization only]
-     -novel_off : set this if you DO NOT want to generate/use a study-specific master list of exons 
-                  (By default, the pipeline will add inferred exons to the list of exons)
-     -min <n> : is minimum size of inferred exon for get_novel_exons.pl script (Default = 10)
-     -max <n> : is maximum size of inferred exon for get_novel_exons.pl script (Default = 2000)
+     -novel_off : set this if you DO NOT want to generate/use a study-specific master list of exons/introns 
+                  (By default, the pipeline will add inferred exons/introns to the list of exons/introns)
+     -min <n> : is minimum size of inferred exon for get_inferred_exons.pl script (Default = 10)
+     -max <n> : is maximum size of inferred exon for get_inferred_exons.pl script (Default = 2000)
      -depthExon <n> : the pipeline splits filtered sam files into 1,2,3...n exonmappers and downsamples each separately.
                    (Default = 20)
      -depthIntron <n> : the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.
@@ -80,7 +80,7 @@ my $unaligned_z = "";
 my $min = 10;
 my $max = 2000;
 my $cutoff_he = 100;
-my $percent = 10;
+my $flanking = 5000;
 my $filter_high_expressers = "false";
 my $i_exon = 20;
 my $i_intron = 10;
@@ -216,12 +216,12 @@ for(my $i=0; $i<@ARGV; $i++) {
             die "-cutoff_highexp <n> : <n> needs to be a number\n";
         }
     }
-    if ($ARGV[$i] eq '-percent'){
-	$percent = $ARGV[$i+1];
+    if ($ARGV[$i] eq '-flanking_region'){
+	$flanking = $ARGV[$i+1];
 	$i++;
 	$option_found = "true";
-	if (($percent !~ /(\d+$)/) || ($percent > 100) || ($percent < 0) ){
-            die "-percent <n> : <n> needs to be a number between 0-100\n";
+	if (($flanking !~ /(\d+$)/) || ($flanking < 0) ){
+            die "-flanking_region <n> : <n> needs to be a number greater than 0\n";
         }
     }
     if ($ARGV[$i] eq '-depthExon'){
@@ -265,7 +265,6 @@ if ($count_b > 1){
 if ($count_r > 1){
     die "you can only set one of the following options: -resume, -resume_at \"<step>\"\n";
 }
-
 my $dirs = `wc -l $sample_dir`;
 my @a = split(" ", $dirs);
 my $num_samples = $a[0];
@@ -301,6 +300,11 @@ if ($GENE_NORM =~ /true/i){
 if ($EXON_INTRON_JUNCTION_NORM =~ /^true/i){
     $EIJ = "true";
     $normcnt++;
+}
+
+my $read_length = $READ_LENGTH;
+if (($read_length !~ /(\d+$)/) || ($read_length <= 0) ){
+    die "ERROR: Please provide # 0. NORMALIZATION and DATA TYPE - [C] Read Length in your cfg file \"$cfg_file\")\n\n";
 }
 
 if ($normcnt == 0){

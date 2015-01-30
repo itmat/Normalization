@@ -44,6 +44,14 @@ if (-d $gene_dir){
     if (@g > 0){
 	`rm $gene_dir/*/*gene.norm.genes.txt`;
     }
+    @g = glob("$gene_dir/sam2genes_temp.*");
+    if (@g > 0){
+	`rm $gene_dir/sam2genes_temp.*`;
+    }
+    @g = glob("$gene_dir/*/sam2genes_temp.*");
+    if (@g > 0){
+        `rm $gene_dir/*/sam2genes_temp.*`;
+    }
     if (-d "$gene_dir/merged"){
 	`rm -r $gene_dir/merged`;
     }

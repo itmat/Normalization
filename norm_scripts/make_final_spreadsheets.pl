@@ -10,7 +10,7 @@ where:
 options:
  -stranded : set this if your data are strand-specific
 
- -novelexon : set this to label the novel exons in the final spreadsheet
+ -novel : set this to label the novel exons/introns in the final spreadsheet
 
  -u  :  set this if you want to return only unique quants, otherwise by default
          it will use merged files and return min and max files.
@@ -51,7 +51,7 @@ my $U = "true";
 my $NU = "true";
 my $numargs = 0;
 my $stranded = "";
-my $novelexon = "false";
+my $novel = "";
 my $njobs =200;
 my $numargs_c = 0;
 my $replace_mem = "false";
@@ -81,9 +81,9 @@ for(my $i=2; $i<@ARGV; $i++) {
         $numargs++;
         $option_found = "true";
     }
-    if($ARGV[$i] eq "-novelexon"){
+    if($ARGV[$i] eq "-novel"){
 	$option_found = "true";
-	$novelexon = "true";
+	$novel = "-novel";
     }
     if($ARGV[$i] eq "-stranded"){
         $option_found = "true";
@@ -182,23 +182,17 @@ my $spread_dir = $norm_dir . "/SPREADSHEETS";
 unless (-d $spread_dir){
     `mkdir $spread_dir`;
 }
-my $novellist = "$LOC/$study.list_of_novel_exons.txt";
 my $FILE = $ARGV[0];
 
 my ($sh_exon, $sh_intron, $sh_junctions, $jobname, $lognameE, $lognameI, $lognameJ);
 if ($numargs eq "0"){
     $sh_exon = "$shdir/exonquants2spreadsheet_min_max.sh";
     open(OUTexon, ">$sh_exon");
-    if ($novelexon eq "true"){
-	print OUTexon "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC exonquants -novelexon $novellist $stranded";
-    }
-    else{
-	print OUTexon "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC exonquants $stranded";
-    }
+    print OUTexon "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC exonquants $novel $stranded";
     close(OUTexon);
     $sh_intron = "$shdir/intronquants2spreadsheet_min_max.sh";
     open(OUTintron, ">$sh_intron");
-    print OUTintron "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC intronquants $stranded";
+    print OUTintron "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC intronquants $novel $stranded";
     close(OUTintron);
     $sh_junctions = "$shdir/juncs2spreadsheet_min_max.sh";
     open(OUTjunctions, ">$sh_junctions");
@@ -225,16 +219,11 @@ else{
     if ($U eq "true"){
 	$sh_exon = "$shdir/exonquants2spreadsheet.u.sh";
 	open(OUTexon, ">$sh_exon");
-	if ($novelexon eq "true"){
-	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -novelexon $novellist $stranded";
-	}
-	else{
-	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants $stranded";
-	}
+	print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants $novel $stranded";
 	close(OUTexon);
 	$sh_intron = "$shdir/intronquants2spreadsheet.u.sh";
 	open(OUTintron, ">$sh_intron");
-	print OUTintron "perl $path/quants2spreadsheet.1.pl $FILE $LOC intronquants $stranded";
+	print OUTintron "perl $path/quants2spreadsheet.1.pl $FILE $LOC intronquants $novel $stranded";
 	close(OUTintron);
 	$jobname = "$study.final_spreadsheet";
 	$lognameE ="$logdir/exonquants2spreadsheet.u";
@@ -251,16 +240,11 @@ else{
     if ($NU eq "true"){
         $sh_exon = "$shdir/exonquants2spreadsheet.nu.sh";
         open(OUTexon, ">$sh_exon");
-	if ($novelexon eq "true"){
-	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -NU -novelexon $novellist $stranded";
-	}
-	else{
-	    print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -NU $stranded";
-	}
+	print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -NU $novel $stranded";
         close(OUTexon);
         $sh_intron = "$shdir/intronquants2spreadsheet.nu.sh";
         open(OUTintron, ">$sh_intron");
-        print OUTintron "perl $path/quants2spreadsheet.1.pl $FILE $LOC intronquants -NU $stranded";
+        print OUTintron "perl $path/quants2spreadsheet.1.pl $FILE $LOC intronquants -NU $novel $stranded";
         close(OUTintron);
         $jobname = "$study.final_spreadsheet";
         $lognameE ="$logdir/exonquants2spreadsheet.nu";
