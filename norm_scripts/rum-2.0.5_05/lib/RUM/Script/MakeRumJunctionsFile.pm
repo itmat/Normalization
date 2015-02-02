@@ -194,21 +194,43 @@ sub main {
 
     if ($gene_annot ne "none") {
         open(INFILE, $gene_annot) or die "\nError: in script make_RUM_junctions_file.pl: cannot open file '$gene_annot' for reading\n\n";
+	my $header_gene = <INFILE>;
+	chomp($header_gene);
+	my @GHEADER = split(/\t/, $header_gene);
+	my ($chrcol, $strandcol, $exonStcol, $exonEndcol);
+	for(my $i=0; $i<@GHEADER; $i++){
+	    if ($GHEADER[$i] =~ /.chrom$/){
+		$chrcol = $i;
+	    }
+	    if ($GHEADER[$i] =~ /.strand$/){
+		$strandcol = $i;
+	    }
+	    if ($GHEADER[$i] =~ /.exonStarts$/){
+		$exonStcol = $i;
+	    }
+	    if ($GHEADER[$i] =~ /.exonEnds$/){
+		$exonEndcol = $i;
+	    }
+	}
+
+	if ( !defined($chrcol) || !defined($strandcol) || !defined($exonStcol) || !defined($exonEndcol)){
+	    die "Your header must contain columns with the following suffixes: chrom, strand, exonStarts, and exonEnds\n";
+	}
         while ($line = <INFILE>) {
             @a = split(/\t/, $line);
-            if ($strand eq "-" && $a[1] eq "+") {
+            if ($strand eq "-" && $a[$strandcol] eq "+") {
                 next;
             }
-            if ($strand eq "+" && $a[1] eq "-" && $strandspecified eq 'true') {
+            if ($strand eq "+" && $a[$strandcol] eq "-" && $strandspecified eq 'true') {
                 next;
             }
-            $chr = $a[0];
-            $a[5] =~ s/\s*,\s*$//;
-            $a[6] =~ s/\s*,\s*$//;
-            $a[5] =~ s/^\s*,\s*//;
-            $a[6] =~ s/^\s*,\s*//;
-            @starts = split(/\s*,\s*/,$a[5]);
-            @ends = split(/\s*,\s*/,$a[6]);
+            $chr = $a[$chrcol];
+            $a[$exonStcol] =~ s/\s*,\s*$//;
+            $a[$exonEndcol] =~ s/\s*,\s*$//;
+            $a[$exonStcol] =~ s/^\s*,\s*//;
+            $a[$exonEndcol] =~ s/^\s*,\s*//;
+            @starts = split(/\s*,\s*/,$a[$exonStcol]);
+            @ends = split(/\s*,\s*/,$a[$exonEndcol]);
             for ($i=0; $i<@starts-1; $i++) {
                 $S = $ends[$i] + 1;
                 $E = $starts[$i+1];

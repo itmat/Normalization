@@ -1,165 +1,191 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use Cwd 'abs_path';
-if(@ARGV<2) {
-    die "Usage: perl get_novel_exons.pl <junctions_all.rum file> <output file>[options]
 
-where
-<junctions_all.rum file> input junctions file (needs to be sorted by id)
-<output file> output file (full path)
+my $USAGE = "\nUsage: perl get_novel_exons.pl <sample dirs> <loc> <gene info file> [options]
 
-options: -min <n> : min is set at 10 by default
-        
-         -max <n> : max is set at 1200 by default
+where:
+<sample dirs> is  a file of sample directories with alignment output without path
+<loc> is where the sample directories are
+<gene info file> a gene annotation file including chrom, strand, txStrand, txEnd, exonCount, exonStarts, exonEnds, and name
 
 ";
+
+if(@ARGV<3){
+    die $USAGE;
 }
 
-my $min = 10;
-my $max = 1200;
-my %EXON_START;
-my %INF_EXONS;
-my $current_n = "1";
-my $outfile = $ARGV[1];
+my $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+my @fields = split("/", $LOC);
+my $study = $fields[@fields-2];
 
-for(my $i=2; $i<@ARGV; $i++) {
-    my $argument_recognized = 0;
-    if($ARGV[$i] eq '-min') {
-	$min = $ARGV[$i+1];
-	$i++;
-	$argument_recognized = 1;
-    }
-    if($ARGV[$i] eq '-max') {
-	$max = $ARGV[$i+1];
-	$i++;
-	$argument_recognized = 1;
-    }
-    if($argument_recognized == 0) {
-	die "ERROR: command line arugument '$ARGV[$i]' not recognized.\n";
-    }
-}
-my (%STR, %INF_STR, %START_CNT);
-open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
-my $line = <INFILE>;
-while($line = <INFILE>){
+my $master_list = "$LOC/master_list_of_exons.txt";
+my $final_list = "$LOC/master_list_of_exons.$study.txt";
+my $genes_file = $ARGV[2];
+my %EX_START;
+my %EX_END;
+my %EXON_LIST;
+my %STR;
+
+open(SAM, $ARGV[0]) or die "cannot find file '$ARGV[0]'";
+while(my $line = <SAM>){
     chomp($line);
+    my $inf_file = "$LOC/$line/$line.list_of_inferred_exons.txt";
+    open(IN, "<$inf_file") or die "cannot find file '$inf_file'\n";
+    my @exons = <IN>;
+    close(IN);
+    foreach my $exon (@exons){
+	chomp($exon);
+	my @a = split(/\t/, $exon);
+	my $exon_id = $a[0];
+	my $str = $a[1];
+	$EXON_LIST{$exon_id} = 1;
+	$STR{$exon_id} = $str;
+	(my $chr, my $exonstart, my $exonend) = $exon_id =~  /^(.*):(\d*)-(\d*)$/g;
+	my $chr_st = "$chr.$exonstart";
+	my $chr_end = "$chr.$exonend";
+	push (@{$EX_START{$chr_st}}, $exonend);
+	push (@{$EX_END{$chr_end}}, $exonstart);
+    }
+}
+close(SAM);
+
+open(IN, "<$master_list") or die "cannot find the 'master_list_of_exons.txt' file\n";
+my @exons = <IN>;
+close(IN);
+foreach my $exon (@exons){
+    chomp($exon);
+    my @a = split(/\t/, $exon);
+    my $exon_name = $a[0];
+    my $strand = "";
+    if (@a > 1){
+        $strand = $a[1];
+        $STR{$exon_name} = $strand;
+    }
+    $EXON_LIST{$exon_name} = 2;
+    (my $chr, my $exonstart, my $exonend) = $exon_name =~  /^(.*):(\d*)-(\d*)/g;
+    my $chr_st = "$chr.$exonstart";
+    my $chr_end = "$chr.$exonend";
+    push (@{$EX_START{$chr_st} }, $exonend);
+    push (@{$EX_END{$chr_end} }, $exonstart);
+}
+
+my %gene_start;
+my %gene_end;
+
+open(GENE, $genes_file) or die "cannot find file \"$genes_file\"\n";
+my $header = <GENE>;
+chomp($header);
+my @GHEADER = split(/\t/, $header);
+my ($txchrcol, $exonStcol, $exonEndcol);
+for(my $i=0; $i<@GHEADER; $i++){
+    if ($GHEADER[$i] =~ /.chrom/){
+        $txchrcol = $i;
+    }
+    if ($GHEADER[$i] =~ /.exonStarts$/){
+        $exonStcol = $i;
+    }
+    if ($GHEADER[$i] =~ /.exonEnds$/){
+        $exonEndcol = $i;
+    }
+}
+
+if ( !defined($txchrcol) || !defined($exonStcol) || !defined($exonEndcol)){
+    die "Your header must contain columns with the following suffixes: chrom, exonStarts, and exonEnds\n";
+}
+while(my $line = <GENE>){
+    chomp($line);
+    # skip header line
+    if ($line =~ /^#/ || $line =~ /^chrom/){
+        next;
+    }
     my @a = split(/\t/, $line);
-    my $intron = $a[0];
-    my $strand = $a[1];
-    my $score = $a[2];
-    (my $int_chr, my $int_start, my $int_end) = $intron =~  /^(.*):(\d*)-(\d*)$/g;
-    my $ex_end = $int_start - 1;
-    my $ex_start = $int_end + 1;
-    my $chr_n = $int_chr;
-    $chr_n =~ s/chr//;
-    #empty %EXON_START hash for new chr
-    if ($current_n ne $chr_n){
-	for (keys %EXON_START){
-	    delete $EXON_START{$_};
-	}
-    }
-    if ($score >= 5){
-	foreach my $exon_start (keys %EXON_START){
-	    my $ex_start_score = $EXON_START{$exon_start};
-	    my $ex_end_score = $score;
-	    my $start_strand = $STR{$exon_start};
-	    if (($START_CNT{$exon_start} == 1) && ($start_strand ne $strand)){
-		next;
-	    }
-	    my @SCORE = ($ex_start_score, $ex_end_score);
-	    my $diff = $ex_end - $exon_start + 1;
-	    if (($diff >= $min) && ($diff <= $max)){
-		my $inferred_exon = "$int_chr:$exon_start-$ex_end";
-		$INF_STR{$inferred_exon} = $strand;
-		#if $inferred_exon is already in hash %INF_EXONS, 
-  		# add ex_start_score and ex_end_scores,
-		if (exists $INF_EXONS{$inferred_exon}){
-		    my $old_start_score = @{$INF_EXONS{$inferred_exon}}[0];
-		    my $old_end_score = @{$INF_EXONS{$inferred_exon}}[1];
-		    my $new_start_score = $ex_start_score + $old_start_score;
-		    my $new_end_score = $ex_end_score + $old_end_score;
-		    my @NEW_SCORE = ($new_start_score, $new_end_score);
-		    $INF_EXONS{$inferred_exon} = [@NEW_SCORE];
-		}
-		elsif ($diff <= $max){
-		    $INF_EXONS{$inferred_exon} = [@SCORE];
-		}
-	    }
-	}
-	$EXON_START{$ex_start} = $score;
-    }
-    $current_n = $chr_n;
-    $STR{$ex_start} = $strand;
-    $START_CNT{$ex_start}++;
+    my $gene_chr = $a[$txchrcol];
+    my $exon_starts = $a[$exonStcol];
+    my $exon_ends = $a[$exonEndcol];
+    my @s = split(",", $exon_starts);
+    my $last_exon_start = $s[@s-1] + 1;
+    $gene_start{"$gene_chr.$last_exon_start"} = 1;
+    my @e = split(",", $exon_ends);
+    my $first_exon_end =$e[0];
+    $gene_end{"$gene_chr.$first_exon_end"} = 1;
 }
-close(INFILE);
+close(GENE);
 
-my $temp1 = "$outfile.temp1";
-open(TEMP1, ">$temp1");
-foreach my $key (keys %INF_EXONS){ 
-    # switch order if score_start is > than score_end;
-    if($INF_EXONS{$key}[0] > $INF_EXONS{$key}[1]) {
-	my $temp = $INF_EXONS{$key}[0];
-	$INF_EXONS{$key}[0] = $INF_EXONS{$key}[1];
-	$INF_EXONS{$key}[1] = $temp;
+foreach my $key (keys %EXON_LIST){
+    if ($EXON_LIST{$key} eq "1"){
+        (my $chr, my $exonstart, my $exonend) = $key =~  /^(.*):(\d*)-(\d*)/g;
+        my $start = "$chr.$exonstart";
+        my $end = "$chr.$exonend";
+        if ((exists $gene_start{$start}) && (exists $gene_end{$end})){
+            delete $EXON_LIST{$key};
+        }
+        elsif ((exists $EX_START{$start}) && (exists $EX_END{$end})){
+            my @sorted_exonend = sort {$a <=> $b} @{$EX_START{$start}};
+            my @sorted_exonstart = sort {$a <=> $b} @{$EX_END{$end}};
+            my $min_end = $sorted_exonend[0];
+            my $max_start = $sorted_exonstart[@sorted_exonstart-1];
+            if ($min_end < $max_start){
+                delete $EXON_LIST{$key};
+            }
+        }
     }
-    #inferred exon
-    print TEMP1 "$key\n";
 }
-close(TEMP1);
 
-#sort inferred exons by location
-my $path = abs_path($0);
-$path =~ s/get_novel_exons.pl//g;
-my $sort_script = "$path/rum-2.0.5_05/bin/sort_by_location.pl";
-my $temp2 = "$outfile.temp2";
-`perl $sort_script -o $temp2 --location 1 $temp1`;
+%EX_START = ();
+%EX_END = ();
 
-my $curr_chr = "";
-my %temp_hash;
-open(TEMP2, $temp2);
-open(OUT, ">$outfile");
-while($line = <TEMP2>){
-    chomp($line);
-    (my $exon_chr, my $exon_start, my $exon_end) = $line =~  /^(.*):(\d*)-(\d*)$/g;
-    # when you get to new chr write out the exons in temp_hash and empty temp_hash 
-    if ($curr_chr ne $exon_chr){
-        for my $key (keys %temp_hash){
-	    print OUT "$key\t$INF_STR{$key}\n";
-	}
-	for (keys %temp_hash){
-	    delete $temp_hash{$_};
-	}
+# put all exon starts and exon ends into hash (annotated and novel)
+foreach my $exon (keys %EXON_LIST){
+    (my $chr, my $start, my $end) = $exon =~ /^(.*):(\d*)-(\d*)/g;
+    push (@{$EX_START{"$chr.$start"}}, $exon);
+    push (@{$EX_END{"$chr.$end"}}, $exon);
+}
+
+# loop through novel exons and delete from hash if it connects two shorter exons that don't overlap
+foreach my $exon (keys %EXON_LIST){
+    if ($EXON_LIST{$exon} eq "1"){
+        (my $chr, my $start, my $end) = $exon =~ /^(.*):(\d*)-(\d*)$/g;
+        my $CHECK_START = "$chr.$start";
+        my $size_start = @{$EX_START{$CHECK_START}};
+        my $CHECK_END = "$chr.$end";
+        my $size_end = @{$EX_END{$CHECK_END}};
+        if (($size_start > 1) && ($size_end > 1)){
+            for (my $i=0;$i<$size_start;$i++){
+                unless ($exon eq $EX_START{$CHECK_START}[$i]){
+                    my $exon1 = $EX_START{$CHECK_START}[$i];
+                    (my $exon1_chr, my $exon1_st, my $exon1_end) = $exon1 =~ /^(.*):(\d*)-(\d*)$/g;
+                    for (my $j=0;$j<$size_end;$j++){
+                        unless ($exon eq $EX_END{$CHECK_END}[$j]){
+                            my $exon2 = $EX_END{$CHECK_END}[$j];
+                            (my $exon2_chr, my $exon2_st, my $exon2_end) = $exon2 =~ /^(.*):(\d*)-(\d*)$/g;
+                            my $diff = $exon1_end - $exon2_st;
+                            if ($diff <= 0){
+                                delete $EXON_LIST{$exon};
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
-    # for every inferred exon in hash, 
-    # if exon end is smaller than new exon_start (not overlapping), 
-    # write that exon out to a final list and remove from temp_hash
-    foreach my $key (keys %temp_hash){
-	(my $temp_chr, my $temp_start, my $temp_end) = $key =~  /^(.*):(\d*)-(\d*)$/g;
-	my $overlap = $temp_end - $exon_start;
-	if ($overlap < 0){
-	    print OUT "$key\t$INF_STR{$key}\n";
-	    delete $temp_hash{$key};
-	}
+}
+open(OUT, ">$final_list");
+open(NOV, ">$LOC/$study.list_of_novel_exons.txt");
+foreach my $exon (keys %EXON_LIST){
+    if (defined $STR{$exon}){
+        print OUT "$exon\t$STR{$exon}\n";
+        print NOV "$exon\t$STR{$exon}\n" if ($EXON_LIST{$exon} eq "1");
     }
-    # add exon to temp_hash
-    $temp_hash{$line} = $INF_EXONS{$line};
-    my $count = scalar keys %temp_hash;
-    if ($count >= 5){
-	# sort -r exons hash by min score and then max score 
-	my @temp_keys = sort {
-	    $temp_hash{$b}[0] <=> $temp_hash{$a}[0]
-		or 
-	    $temp_hash{$b}[1] <=> $temp_hash{$a}[1]
-	} keys %temp_hash;
-	# only keep exons with 5 highest scores
-	for(my $i=5; $i<@temp_keys; $i++){
-	    delete $temp_hash{$temp_keys[$i]};
-	}
+    else{
+        print OUT "$exon\n";
+	print NOV "$exon\n" if ($EXON_LIST{$exon} eq "1");
     }
-    $curr_chr = $exon_chr;
 }
 close(OUT);
-`rm $temp1 $temp2`;
+close(NOV);
+print "got here\n";
+
+
 

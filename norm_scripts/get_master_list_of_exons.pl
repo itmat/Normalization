@@ -10,7 +10,7 @@ my $USAGE = "\nUsage: perl get_master_list_of_exons.pl <gene info file> <loc> [o
 
 option:
  -stranded: set this if your data are strand-specific.
- -percent <n> : by default, 10% of the size of first and last exon of each transcript
+ -percent <n> : by default, 0% of the size of first and last exon of each transcript
                 will be added to the start of the first and the end of the last exon, respectively.
                 use this option to change the percentage <n>. (<n> has to be a number between 0-100)
 
@@ -21,7 +21,7 @@ if (@ARGV <2 ){
 }
 
 my $stranded = "false";
-my $percent = 10;
+my $percent = 0;
 for(my $i=2; $i<@ARGV; $i++) {
     my $option_found = "false";
     if ($ARGV[$i] eq '-stranded'){

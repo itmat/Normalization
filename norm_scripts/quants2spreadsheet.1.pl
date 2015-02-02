@@ -12,7 +12,7 @@ option:
  -NU: set this if you want to use non-unique quants, otherwise by default it will 
       use unique quants files as input
 
- -novelexon <file> : provide full path of list of novel exons file with this option to label the exons
+ -novel : set this to label the novel exons/introns
 
  -stranded : set this if your data are strand-specific.
 
@@ -22,10 +22,9 @@ if(@ARGV<3) {
 }
 my $stranded = "false";
 my $nuonly = 'false';
-my ($arg_recognized, $novellist);
-my $novelexon = "false";
+my $novel = "false";
 for(my $i=3; $i<@ARGV; $i++) {
-    $arg_recognized = 'false';
+    my $arg_recognized = 'false';
     if($ARGV[$i] eq '-NU') {
 	$nuonly = 'true';
 	$arg_recognized = 'true';
@@ -34,14 +33,9 @@ for(my $i=3; $i<@ARGV; $i++) {
 	$arg_recognized = "true";
 	$stranded = "true";
     }
-    if ($ARGV[$i] eq "-novelexon"){
+    if ($ARGV[$i] eq "-novel"){
         $arg_recognized = "true";
-        $novelexon = "true";
-        $novellist = $ARGV[$i+1];
-        if ($novellist =~ /^$/){
-            die "please provide a list of novel exons\n";
-        }
-        $i++;
+        $novel = "true";
     }
     if ($ARGV[$i] eq "-h"){
         $arg_recognized = "true";
@@ -57,6 +51,10 @@ $LOC =~ s/\/$//;
 my $type = $ARGV[2];
 my @fields = split("/", $LOC);
 my $study = $fields[@fields-2];
+my $novellist_exon = "$LOC/$study.list_of_novel_exons.txt";
+my $novellist_intron = "$LOC/$study.list_of_novel_introns.txt";
+my $list_of_fr = "$LOC/list_of_flanking_regions.txt";
+
 my $last_dir = $fields[@fields-1];
 my $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
@@ -324,8 +322,44 @@ while($file = <FILES>) {
     $filecnt++;
 }
 close(FILES);
+my %NOVEL_E;
+my %NOVEL_I;
+my %FR;
+if ($type =~ /^intron/i){
+    open(IN, $list_of_fr) or die "cannot find file \"$list_of_fr\"\n";
+    while(my $line =<IN>){
+	chomp($line);
+	my @a = split(/\t/,$line);
+	my $flank = $a[0];
+	my $strand = $a[1];
+	$FR{$flank} = $strand;
+    }
+}
+if ($novel eq "true"){
+    if ($type =~ /^exon/i){
+	open(IN, $novellist_exon) or die "cannot find file \"$novellist_exon\"\n";
+	while(my $line = <IN>){
+	    chomp($line);
+	    my @a = split(/\t/,$line);
+	    my $exon = $a[0];
+	    my $strand = $a[1];
+	    $NOVEL_E{$exon} = $strand;
+	}
+	close(IN);
+    }
+    if ($type =~ /^intron/i){
+	open(IN, $novellist_intron) or die "cannot find file \"$novellist_intron\"\n";
+	while(my $line = <IN>){
+            chomp($line);
+            my @a = split(/\t/,$line);
+            my $intron = $a[0];
+            my $strand = $a[1];
+	    $NOVEL_I{$intron} = $strand;
+        }
+        close(IN);
+    }
+}
 
-my %NOVEL;
 if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
     open(OUTFILE, ">$out");
     print OUTFILE "id";
@@ -333,17 +367,16 @@ if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
 	print OUTFILE "\t$ID[$i]";
     }
     if ($type =~ /^exon/i){
-	if ($novelexon eq "true"){
+	if ($novel eq "true"){
 	    print OUTFILE "\tNovelExon";
-	    open(IN, $novellist) or die "cannot find file \"$novellist\"\n";
-	    while(my $line = <IN>){
-		chomp($line);
-		my @a = split(/\t/,$line);
-		my $exon = $a[0];
-		my $strand = $a[1];
-		$NOVEL{$exon} = $strand;
-	    }
-	    close(IN);
+	}
+    }
+    if ($type =~ /^intron/i){
+	if ($novel eq "true"){
+	    print OUTFILE "\tNovelIntron/FlankingRegion";
+	}
+	else{
+	    print OUTFILE "\tFlankingRegion";
 	}
     }
     print OUTFILE "\n";
@@ -358,8 +391,8 @@ if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
 	    print OUTFILE "\t$DATA[$j][$i]";
 	}
 	if ($type =~ /^exon/i){
-	    if ($novelexon eq "true"){
-		if (exists $NOVEL{$id[$i]}){
+	    if ($novel eq "true"){
+		if (exists $NOVEL_E{$id[$i]}){
 		    print OUTFILE "\tN";
 		}
 		else{
@@ -367,10 +400,32 @@ if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
 		}
 	    }
 	}
+	if ($type =~ /^intron/i){
+	    if (exists $FR{$id[$i]}){
+		print OUT_MIN "\tF";
+		print OUT_MAX "\tF";
+	    }
+	    else{
+		if ($novel eq "true"){
+		    if (exists $NOVEL_I{$id[$i]}){
+			print OUT_MIN "\tN";
+			print OUT_MAX "\tN";
+		    }
+		    else{
+			print OUT_MIN "\t.";
+			print OUT_MAX "\t.";
+		    }
+		}
+		else{
+		    print OUT_MIN "\t.";
+		    print OUT_MAX "\t.";
+		}
+	    }
+	}
 	print OUTFILE "\n";
     }
-    close(OUTFILE);
 }
+close(OUTFILE);
 
 
 
@@ -471,7 +526,6 @@ if ($stranded eq "true"){
 	$filecnt++;
     }
     close(FILES);
-    my %NOVEL;
     if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
 	open(OUTFILE, ">$out_a");
 	print OUTFILE "id";
@@ -479,17 +533,16 @@ if ($stranded eq "true"){
 	    print OUTFILE "\t$ID[$i]";
 	}
 	if ($type =~ /^exon/i){
-	    if ($novelexon eq "true"){
+	    if ($novel eq "true"){
 		print OUTFILE "\tNovelExon";
-		open(IN, $novellist) or die "cannot find file \"$novellist\"\n";
-		while(my $line = <IN>){
-		    chomp($line);
-		    my @a = split(/\t/,$line);
-		    my $exon = $a[0];
-		    my $strand = $a[1];
-		    $NOVEL{$exon} = $strand;
-		}
-		close(IN);
+	    }
+	}
+	if ($type =~ /^intron/i){
+	    if ($novel eq "true"){
+		print OUTFILE "\tNovelIntron/FlankingRegion";
+	    }
+	    else{
+		print OUTFILE "\tFlankingRegion";
 	    }
 	}
 	print OUTFILE "\n";
@@ -504,8 +557,8 @@ if ($stranded eq "true"){
 		print OUTFILE "\t$DATA[$j][$i]";
 	    }
 	    if ($type =~ /^exon/i){
-		if ($novelexon eq "true"){
-		    if (exists $NOVEL{$id[$i]}){
+		if ($novel eq "true"){
+		    if (exists $NOVEL_E{$id[$i]}){
 			print OUTFILE "\tN";
 		    }
 		    else{
@@ -513,9 +566,32 @@ if ($stranded eq "true"){
 		    }
 		}
 	    }
+	    if ($type =~ /^intron/i){
+		if (exists $FR{$id[$i]}){
+		    print OUT_MIN "\tF";
+		    print OUT_MAX "\tF";
+		}
+		else{
+		    if ($novel eq "true"){
+			if (exists $NOVEL_I{$id[$i]}){
+			    print OUT_MIN "\tN";
+			    print OUT_MAX "\tN";
+			}
+			else{
+			    print OUT_MIN "\t.";
+			    print OUT_MAX "\t.";
+			}
+		    }
+		    else{
+			print OUT_MIN "\t.";
+			print OUT_MAX "\t.";
+		    }
+		}
+	    }
 	    print OUTFILE "\n";
 	}
     }
 }
-
+close(OUT_MIN);
+close(OUT_MAX);
 print "got here\n";
