@@ -2904,7 +2904,7 @@ sub onejob {
 sub runalljob{
     my ($job, $name_of_alljob, $name_of_job, $job_num, $err_name) =@_;
     my $out_name = $err_name;
-    $out_name =~ s/err/out/g;
+    $out_name =~ s/err$/out/g;
     `$job`;
     my $date = `date`;
     print LOG "$job_num  \"$name_of_alljob\"\n\tSTARTED: $date";
@@ -2963,7 +2963,7 @@ sub check_exit_alljob{
 	sleep(10);
     }
     my $out_name = $err_name;
-    $out_name =~ s/err/out/g;
+    $out_name =~ s/err$/out/g;
     my $check_out_all = `grep "got here" $outfile_all | grep -v echo | wc -l`;
     chomp($check_out_all);
     if ($check_out_all eq '0'){
@@ -2986,7 +2986,7 @@ sub check_exit_alljob{
     }
     else{
 	my $out_name = $err_name;
-	$out_name =~ s/err/out/g;
+	$out_name =~ s/err$/out/g;
 	my $wc_out = `ls $logdir/$out_name | wc -l`;
 	my $check_out = `grep "got here" $logdir/$out_name | grep -v echo | wc -l`;
 	if (qx{grep "SAM header" $logdir/$err_name | wc -l} > 0){
@@ -3021,7 +3021,7 @@ sub check_exit_alljob{
 sub check_err {
     my ($name_of_job, $err_name, $job_num) = @_;
     my $out_name = $err_name;
-    $out_name =~ s/err/out/g;
+    $out_name =~ s/err$/out/g;
     my $outfile = "$logdir/$name_of_job.out";
     my $check_out = `grep "got here" $outfile | grep -v echo | wc -l`;
     chomp($check_out);
@@ -3122,7 +3122,7 @@ sub only_err{
 sub clear_log{
     my ($name_of_job, $err_name) = @_;
     my $out_name = $err_name;
-    $out_name =~ s/err/out/g;
+    $out_name =~ s/err$/out/g;
     my @g = glob("$logdir/$out_name*");
     if (@g ne '0'){
 	`rm $logdir/$out_name`;
