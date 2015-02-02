@@ -123,7 +123,7 @@ while(my $line = <IN>){
 	}
     }
     if ($norm eq "true"){
-	my $temp_prefix = "$filedir/sam2genes_temp.0";
+	my $temp_prefix = "$filedir/$id.sam2genes_temp.0";
         my $outfile = $filename;
         $outfile =~ s/.sam$/.txt/;
         if (-e $outfile){
@@ -138,7 +138,7 @@ while(my $line = <IN>){
 	    }
 	}
 	if ($stranded eq "true"){
-	    my $temp_prefix = "$filedir_a/sam2genes_temp.0";
+	    my $temp_prefix = "$filedir_a/$id.sam2genes_temp.0";
 	    my $outfile = $filename_a;
 	    $outfile =~ s/.sam$/.txt/;
 	    if (-e $outfile){
