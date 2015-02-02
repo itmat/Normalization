@@ -106,7 +106,7 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
 
 * --sample_dirs [&lt;file of sample dirs>](https://github.com/itmat/Normalization/tree/master/#i-file-of-sample-directories) : a file with the names of the sample directories
 * --loc &lt;s> : full path of the directory with the sample directories (`READS`)
-* --unaligned [&lt;file of fa/fqfiles>](https://github.com/itmat/Normalization/tree/master/#ii-file-of-unaligned-reads-Both-forward-and-reverse-reads-for-paired-end-data) : file of fa/fqfiles
+* --unaligned [&lt;file of fa/fqfiles>](https://github.com/itmat/Normalization/tree/master/#ii-file-of-unaligned-reads-both-forward-and-reverse-reads-for-paired-end-data) : file of fa/fqfiles
 * --samfilename &lt;s> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
 * --cfg [<cfg file>](https://github.com/itmat/Normalization/tree/master/#c-configuration-file) : configuration file for the study
 * option : <br>
