@@ -9,6 +9,8 @@ Set STRANDED to TRUE if the data are stranded.<br>
 #####ii. FWD or REV
 If STRANDED is set to TRUE, strand information needs to be provided. Set FWD to TRUE if forward read is in the same orientation as the transcripts/genes (sense) and set REV to TRUE if reverse read is in the same orientation as the transcripts/genes (sense).<br>
 Note that when dUTP-based protocol (e.g. Illumina TruSeq stranded protocol) is used, strand information comes from reverse read.
+####C. Read Length
+Provide sequencing read length of your data.
 
 ========================================================================================================
 

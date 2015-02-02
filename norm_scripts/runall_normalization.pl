@@ -1395,7 +1395,7 @@ if ($run_prepause eq "true"){
 	    $job_num = $res_num;
 	}
     }
-    if ($run_job eq "true"){
+    if (($run_job eq "true") && ($EIJ eq "true")){
 	$err_name = "$name_of_job.err";
 	&clear_log($name_of_job, $err_name);
 

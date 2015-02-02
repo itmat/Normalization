@@ -63,13 +63,17 @@ Create a text file listing the names of the sample directories (without path, so
             Sample_3
             Sample_4
 
-##### ii. File of Unaligned Reads (Forward only)
+##### ii. File of Unaligned Reads (Both forward and reverse reads for paired end data)
 Create a text file listing the full paths of the input forward fasta or fastq files. When running PORT you will enter the name of this file for the '--unaligned' argument. e.g. the file should look like this:
 
             /path/to/Sample_1.fwd.fq/fa
+            /path/to/Sample_1.rev.fq/fa
             /path/to/Sample_2.fwd.fq/fa
+            /path/to/Sample_2.rev.fq/fa
             /path/to/Sample_3.fwd.fq/fa
+            /path/to/Sample_3.rev.fq/fa
             /path/to/Sample_4.fwd.fq/fa
+            /path/to/Sample_4.rev.fq/fa
 
 ####E. Install [sam2cov](https://github.com/khayer/sam2cov/)
 This is an optional step. You can use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR. sam2cov supports stranded data, but it assumes the reverse read is in the same orientation as the transcripts/genes (sense). __Please make sure you have the latest version of sam2cov__. 
@@ -102,7 +106,7 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
 
 * --sample_dirs [&lt;file of sample dirs>](https://github.com/itmat/Normalization/tree/master/#i-file-of-sample-directories) : a file with the names of the sample directories
 * --loc &lt;s> : full path of the directory with the sample directories (`READS`)
-* --unaligned [&lt;file of fa/fqfiles>](https://github.com/itmat/Normalization/tree/master/#ii-file-of-unaligned-reads-forward-only) : file of fa/fqfiles
+* --unaligned [&lt;file of fa/fqfiles>](https://github.com/itmat/Normalization/tree/master/#ii-file-of-unaligned-reads-Both-forward-and-reverse-reads-for-paired-end-data) : file of fa/fqfiles
 * --samfilename &lt;s> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
 * --cfg [<cfg file>](https://github.com/itmat/Normalization/tree/master/#c-configuration-file) : configuration file for the study
 * option : <br>
@@ -130,7 +134,7 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
                           (Default = 0; with the default cutoff, features with sum of counts = 0 will be removed from all samples)<br>
 
      **[exon-intron-junction normalization only]**<br>
-     **-novel_off** : set this if you DO NOT want to use the inferred exons for quantification<br> (By default, the pipeline will use inferred exons) <br>
+     **-novel_off** : set this if you DO NOT want to use the inferred exons/introns for quantification<br> (By default, the pipeline will use inferred exons/introns) <br>
      **-min &lt;n>** : is minimum size of inferred exon for get_novel_exons.pl script (Default = 10)<br>
      **-max &lt;n>** : is maximum size of inferred exon for get_novel_exons.pl script (Default = 1200)<br>
      **-depthExon &lt;n>** : the pipeline splits filtered sam files into reads mapping to 1,2,3,...,n exons and downsamples each separately.<br>
