@@ -276,12 +276,8 @@ if ($type =~ /^exon/i){
 }
 if ($type =~ /^intron/i){
     if ($novel eq "true"){
-	print OUT_MIN "\tNovelIntron/FlankingRegion";
-	print OUT_MAX "\tNovelIntron/FlankingRegion";
-    }
-    else{
-	print OUT_MIN "\tFlankingRegion";
-	print OUT_MAX "\tFlankingRegion";
+	print OUT_MIN "\tNovelIntron";
+	print OUT_MAX "\tNovelIntron";
     }
 }
 
@@ -331,8 +327,14 @@ for(my $i=0; $i<$rowcnt; $i++) {
 	print OUT_MAX "exon:$id[$i]";
     }
     if ($type =~ /^intron/i){
-	print OUT_MIN "intron:$id[$i]";
-	print OUT_MAX "intron:$id[$i]";
+	if (exists $FR{$id[$i]}){
+            print OUT_MIN "flanking:$id[$i]";
+	    print OUT_MAX "flanking:$id[$i]";
+	}
+	else{
+	    print OUT_MIN "intron:$id[$i]";
+	    print OUT_MAX "intron:$id[$i]";
+	}
     }
     if ($type =~ /^gene/i){
 	print OUT_MIN "gene:$id[$i]";
@@ -359,20 +361,10 @@ for(my $i=0; $i<$rowcnt; $i++) {
 	}
     }
     if ($type =~ /^intron/i){
-	if (exists $FR{$id[$i]}){
-	    print OUT_MIN "\tF";
-	    print OUT_MAX "\tF";
-	}
-	else{
-	    if ($novel eq "true"){
-		if (exists $NOVEL_I{$id[$i]}){
-		    print OUT_MIN "\tN";
-		    print OUT_MAX "\tN";
-		}
-		else{
-		    print OUT_MIN "\t.";
-		    print OUT_MAX "\t.";
-		}
+	if ($novel eq "true"){
+	    if (exists $NOVEL_I{$id[$i]}){
+		print OUT_MIN "\tN";
+		print OUT_MAX "\tN";
 	    }
 	    else{
 		print OUT_MIN "\t.";
@@ -475,12 +467,8 @@ if ($stranded eq "true"){
     }
     if ($type =~ /^intron/i){
 	if ($novel eq "true"){
-	    print OUT_MIN_A "\tNovelIntron/FlankingRegion";
-	    print OUT_MAX_A "\tNovelIntron/FlankingRegion";
-	}
-	else{
-	    print OUT_MIN_A "\tFlankingRegion";
-	    print OUT_MAX_A "\tFlankingRegion";
+	    print OUT_MIN_A "\tNovelIntron";
+	    print OUT_MAX_A "\tNovelIntron";
 	}
     }
     print OUT_MIN_A "\n";
@@ -492,8 +480,14 @@ if ($stranded eq "true"){
 	    print OUT_MAX_A "exon:$id[$i]";
 	}
 	if ($type =~ /^intron/i){
-	    print OUT_MIN_A "intron:$id[$i]";
-	    print OUT_MAX_A "intron:$id[$i]";
+	    if (exists $FR{$id[$i]}){
+		print OUT_MIN_A "flanking:$id[$i]";
+		print OUT_MAX_A "flanking:$id[$i]";
+	    }
+	    else{
+		print OUT_MIN_A "intron:$id[$i]";
+		print OUT_MAX_A "intron:$id[$i]";
+	    }
 	}
 	if ($type =~ /^gene/i){
 	    print OUT_MIN_A "gene:$id[$i]";
@@ -520,20 +514,10 @@ if ($stranded eq "true"){
 	    }
 	}
 	if ($type =~ /^intron/i){
-	    if (exists $FR{$id[$i]}){
-		print OUT_MIN_A "\tF";
-		print OUT_MAX_A "\tF";
-	    }
-	    else{
-		if ($novel eq "true"){
-		    if (exists $NOVEL_I{$id[$i]}){
-			print OUT_MIN_A "\tN";
-			print OUT_MAX_A "\tN";
-		    }
-		    else{
-			print OUT_MIN_A "\t.";
-			print OUT_MAX_A "\t.";
-		    }
+	    if ($novel eq "true"){
+		if (exists $NOVEL_I{$id[$i]}){
+		    print OUT_MIN_A "\tN";
+		    print OUT_MAX_A "\tN";
 		}
 		else{
 		    print OUT_MIN_A "\t.";

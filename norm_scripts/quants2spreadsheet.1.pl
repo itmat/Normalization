@@ -373,10 +373,7 @@ if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
     }
     if ($type =~ /^intron/i){
 	if ($novel eq "true"){
-	    print OUTFILE "\tNovelIntron/FlankingRegion";
-	}
-	else{
-	    print OUTFILE "\tFlankingRegion";
+	    print OUTFILE "\tNovelIntron";
 	}
     }
     print OUTFILE "\n";
@@ -385,7 +382,12 @@ if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
 	    print OUTFILE "exon:$id[$i]";
 	}
 	if ($type =~ /^intron/i){
-	    print OUTFILE "intron:$id[$i]";
+	    if (exists $FR{$id[$i]}){
+		print OUTFILE "flanking:$id[$i]";
+	    }
+	    else{
+		print OUTFILE "intron:$id[$i]";
+	    }
 	}
 	for(my $j=0; $j<$filecnt; $j++) {
 	    print OUTFILE "\t$DATA[$j][$i]";
@@ -401,20 +403,10 @@ if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
 	    }
 	}
 	if ($type =~ /^intron/i){
-	    if (exists $FR{$id[$i]}){
-		print OUT_MIN "\tF";
-		print OUT_MAX "\tF";
-	    }
-	    else{
-		if ($novel eq "true"){
-		    if (exists $NOVEL_I{$id[$i]}){
-			print OUT_MIN "\tN";
-			print OUT_MAX "\tN";
-		    }
-		    else{
-			print OUT_MIN "\t.";
-			print OUT_MAX "\t.";
-		    }
+	    if ($novel eq "true"){
+		if (exists $NOVEL_I{$id[$i]}){
+		    print OUT_MIN "\tN";
+		    print OUT_MAX "\tN";
 		}
 		else{
 		    print OUT_MIN "\t.";
@@ -539,10 +531,7 @@ if ($stranded eq "true"){
 	}
 	if ($type =~ /^intron/i){
 	    if ($novel eq "true"){
-		print OUTFILE "\tNovelIntron/FlankingRegion";
-	    }
-	    else{
-		print OUTFILE "\tFlankingRegion";
+		print OUTFILE "\tNovelIntron";
 	    }
 	}
 	print OUTFILE "\n";
@@ -551,7 +540,12 @@ if ($stranded eq "true"){
 		print OUTFILE "exon:$id[$i]";
 	    }
 	    if ($type =~ /^intron/i){
-		print OUTFILE "intron:$id[$i]";
+		if (exists $FR{$id[$i]}){
+		    print OUTFILE "flanking:$id[$i]";
+		}
+		else{
+		    print OUTFILE "intron:$id[$i]";
+		}
 	    }
 	    for(my $j=0; $j<$filecnt; $j++) {
 		print OUTFILE "\t$DATA[$j][$i]";
