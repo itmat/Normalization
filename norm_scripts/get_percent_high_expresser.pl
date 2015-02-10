@@ -297,10 +297,11 @@ while(my $line = <INFILE>){
     chomp($line);
     my $dir = $line;
     my $id = $line;
-    my $row = "$id\t";
+    my $row = "";
     if ($stranded eq "false"){
 	#exon
 	my $size = keys( %HIGH_EXON );
+	$row = "$id\t";
 	if ($size > 0){
 	    foreach my $exon (keys %HIGH_EXON){
 		chomp($exon);
@@ -312,10 +313,10 @@ while(my $line = <INFILE>){
 		$row = $row . "$val\t";
 	    }
 	    print OUTE "$row\n";
-	    print OUTE "$lastrow\n";
 	}
 	#intron
 	$size = keys( %HIGH_INTRON );
+	$row = "$id\t";
 	if ($size > 0){
 	    foreach my $intron (keys %HIGH_INTRON){
 		chomp($intron);
@@ -332,6 +333,7 @@ while(my $line = <INFILE>){
     if ($stranded eq "true"){
 	#sense exon
 	my $size = keys( %HIGH_EXON_S );
+	$row = "$id\t";
 	if ($size > 0){
 	    foreach my $exon (keys %HIGH_EXON_S){
 		chomp($exon);
@@ -343,10 +345,11 @@ while(my $line = <INFILE>){
 		$row = $row . "$val\t";
 	    }
 	    print OUTE_S "$row\n";
-	    print OUTE_S "$lastrow_s\n";
 	}
+
         #antisense exon
 	$size = keys( %HIGH_EXON_A );
+	$row = "$id\t";
 	if ($size > 0){
 	    foreach my $exon (keys %HIGH_EXON_A){
 		chomp($exon);
@@ -362,6 +365,7 @@ while(my $line = <INFILE>){
 
 	#sense intron
 	$size = keys( %HIGH_INTRON_S );
+	$row = "$id\t";
 	if ($size > 0){
 	    foreach my $intron (keys %HIGH_INTRON_S){
 		chomp($intron);
@@ -376,6 +380,7 @@ while(my $line = <INFILE>){
 	}
 	#antisense intron
 	$size = keys( %HIGH_INTRON_A );
+	$row = "$id\t";
 	if ($size > 0){
 	    foreach my $intron (keys %HIGH_INTRON_A){
 		chomp($intron);
@@ -392,10 +397,16 @@ while(my $line = <INFILE>){
 }
 close(INFILE);
 if ($stranded eq "false"){
+    if (-e $outfileE){
+	print OUTE "$lastrow\n";
+    }
     close(OUTE);
     close(OUTI);
 }
 if ($stranded eq "true"){
+    if (-e $outfileE_S){
+	print OUTE_S "$lastrow_s\n";
+    }
     close(OUTE_S);
     close(OUTE_A);
     close(OUTI_S);
