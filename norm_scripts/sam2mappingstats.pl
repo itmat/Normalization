@@ -368,7 +368,7 @@ print OUT "Uniquely mapping reads per chromosome
 chr\tnum\t%ofU\t%allMapped\t%ofAll
 ";
 
-foreach $chr (sort {cmpChrs($a,$b)} keys %CHR_U) {
+foreach $chr (sort {&cmpChrs($a,$b)} keys %CHR_U) {
     $pall = int($CHR_U{$chr} / $num_ids * 1000) / 10;
     $pU = int($CHR_U{$chr} / $atleastoneforwardorreverse * 1000) / 10;
     $ptm = int($CHR_U{$chr} / $total * 1000) / 10;
@@ -376,7 +376,7 @@ foreach $chr (sort {cmpChrs($a,$b)} keys %CHR_U) {
 }
 print OUT "\nNon-Uniquely mapping reads per chromosome\n-----------------------------------------\n";
 print OUT "chr\tnum\t%ofNU\t%allMapped\t%ofAll\n";
-foreach $chr (sort {cmpChrs($a,$b)} keys %CHR_NU) {
+foreach $chr (sort {&cmpChrs($a,$b)} keys %CHR_NU) {
     $totalNU = $bothmappedNU + $forwardonlyNU + $reverseonlyNU;
     $pall = int($CHR_NU{$chr} / $num_ids * 1000) / 10;
     $pNU = int($CHR_NU{$chr} / $totalNU * 1000) / 10;
@@ -480,7 +480,7 @@ sub cmpChrs () {
 	    undef %temphash;
 	    $temphash{$tempa}=1;
 	    $temphash{$tempb}=1;
-	    foreach $tempkey (sort {cmpChrs($a,$b)} keys %temphash) {
+	    foreach $tempkey (sort {&cmpChrs($a,$b)} keys %temphash) {
 		if($tempkey eq $tempa) {
 		    return 1;
 		} else {
@@ -523,7 +523,7 @@ sub cmpChrs () {
 		undef %temphash;
 		$temphash{$tempa}=1;
 		$temphash{$tempb}=1;
-		foreach $tempkey (sort {cmpChrs($a,$b)} keys %temphash) {
+		foreach $tempkey (sort {&cmpChrs($a,$b)} keys %temphash) {
 		    if($tempkey eq $tempa) {
 			return 1;
 		    } else {

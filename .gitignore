@@ -1,10 +1,9 @@
 documentation.md
 norm_scripts/resolve_multimappers.pl
 norm_scripts/filter_and_label.pl
-norm_scripts/filter_and_label_gnorm.pl
-norm_scripts/filter_and_resolve.pl
-norm_scripts/filter_and_resolve_gnorm.pl
-norm_scripts/cat_genes_files_resolve.pl
-norm_scripts/resolve_multimappers_gnorm.pl
-norm_scripts/runall_filter_and_resolve.pl
-norm_scripts/runall_sam2genes_gnorm_resolve.pl
+norm_scripts/cat_genes_files_0.pl
+norm_scripts/filter_sam_gnorm_0.pl
+norm_scripts/run_normalization_0
+norm_scripts/runall_filter_gnorm_0.pl
+norm_scripts/runall_normalization_0.pl
+norm_scripts/runall_sam2genes_gnorm_0.pl

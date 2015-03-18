@@ -1022,7 +1022,7 @@ if ($qexon eq "true"){
     for(my $i=0; $i<=$max_exon; $i++) {
 	print OUT "$i\t$EXON_FLAG_DIST[$i]\n";
     }
-    foreach my $exon (sort {cmpChrs($a,$b)} keys %ML_E){
+    foreach my $exon (sort {&cmpChrs($a,$b)} keys %ML_E){
 	my $maxcount = $exon_uniqueCOUNT{$exon} + $exon_nuCOUNT{$exon};
 	print OUT "$exon\t$exon_uniqueCOUNT{$exon}\t$maxcount\n";
     }
@@ -1038,7 +1038,7 @@ if ($qintron eq "true"){
     for(my $i=0; $i<=$max_intron; $i++) {
 	print OUT "$i\t$INTRON_FLAG_DIST[$i]\n";
     }
-    foreach my $intron (sort {cmpChrs($a,$b)} keys %ML_I){
+    foreach my $intron (sort {&cmpChrs($a,$b)} keys %ML_I){
     my $maxcount = $intron_uniqueCOUNT{$intron} + $intron_nuCOUNT{$intron};
     print OUT "$intron\t$intron_uniqueCOUNT{$intron}\t$maxcount\n";
     }
@@ -1053,7 +1053,7 @@ if ($stranded eq "true"){
 	for(my $i=0; $i<=$max_exon; $i++) {
 	    print OUTA "$i\t$EXON_FLAG_DIST_ANTI[$i]\n";
 	}
-	foreach my $exon (sort {cmpChrs($a,$b)} keys %ML_E_A){
+	foreach my $exon (sort {&cmpChrs($a,$b)} keys %ML_E_A){
 	    my $maxcount = $exon_uniqueCOUNT_anti{$exon} + $exon_nuCOUNT_anti{$exon};
 	    print OUTA "$exon\t$exon_uniqueCOUNT_anti{$exon}\t$maxcount\n";
 	}
@@ -1068,7 +1068,7 @@ if ($stranded eq "true"){
 	for(my $i=0; $i<=$max_intron; $i++) {
 	    print OUTAI "$i\t$INTRON_FLAG_DIST_ANTI[$i]\n";
 	}
-	foreach my $intron (sort {cmpChrs($a,$b)} keys %ML_I_A){
+	foreach my $intron (sort {&cmpChrs($a,$b)} keys %ML_I_A){
 	    my $maxcount = $intron_uniqueCOUNT_anti{$intron} + $intron_nuCOUNT_anti{$intron};
 	    print OUTAI "$intron\t$intron_uniqueCOUNT_anti{$intron}\t$maxcount\n";
 	}
@@ -1207,7 +1207,7 @@ sub cmpChrs ($$) {
             my %temphash;
             $temphash{$tempa}=1;
             $temphash{$tempb}=1;
-            foreach my $tempkey (sort {cmpChrs($a,$b)} keys %temphash) {
+            foreach my $tempkey (sort {&cmpChrs($a,$b)} keys %temphash) {
                 if ($tempkey eq $tempa) {
                     return 1;
                 } else {
@@ -1261,7 +1261,7 @@ sub cmpChrs ($$) {
                 my %temphash;
                 $temphash{$tempa}=1;
                 $temphash{$tempb}=1;
-                foreach my $tempkey (sort {cmpChrs($a,$b)} keys %temphash) {
+                foreach my $tempkey (sort {&cmpChrs($a,$b)} keys %temphash) {
                     if ($tempkey eq $tempa) {
                         return 1;
                     } else {

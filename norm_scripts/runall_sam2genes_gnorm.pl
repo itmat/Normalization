@@ -22,6 +22,8 @@ option:
 
  -norm : set this to get genes file for the gene-normalized sam files.
 
+ -filter : set this to run sam2genes during filter step.
+
  -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
 
  -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI) cluster.
@@ -55,6 +57,7 @@ use Cwd 'abs_path';
 my $path = abs_path($0);
 $path =~ s/\/runall_sam2genes_gnorm.pl//;
 my $norm = "false";
+my $filter = "false";
 my $numargs_u_nu = 0;
 my $numargs = 0;
 my $U = "true";
@@ -86,6 +89,12 @@ for (my $i=3; $i<@ARGV; $i++){
 	$U = "false";
 	$NU = "false";
 	$option_found = "true";
+    }
+    if ($ARGV[$i] eq "-filter"){
+        $filter = "true";
+        $U = "false";
+        $NU = "false";
+        $option_found = "true";
     }
     if ($ARGV[$i] eq "-se"){
         $se = "-se";
@@ -200,6 +209,9 @@ while(my $line = <IN>){
     my $id = $line;
     my ($filename_a, $shfile_a, $logname_a, $filedir_a);
     my $genedir = "$LOC/$id/GNORM";
+    my $filename_f = "$genedir/$id.filtered_nu.sam";
+    my $logname_f = "$logdir/sam2genes_gnorm_f.$id";
+    my $shfile_f = "$shdir/G.$id.sam2genes_gnorm_f.sh";
     my $filedir_u = "$genedir/Unique/";
     my $filedir_nu = "$genedir/NU/";
     my $filename_u = "$genedir/Unique/$id.filtered_u.sam";
@@ -224,6 +236,42 @@ while(my $line = <IN>){
     }
     my $jobname = "$study.sam2genes_gnorm";
 
+    if ($filter eq "true"){
+	unless (-e $filename_f){
+	    die "ERROR: $filename_f does not exist\n";
+	}
+	my $total_lc = `wc -l $filename_f`;
+	$total_lc =~ /^(\d+)/;
+        my $div_5 = int($1/5);
+        my $x = `split -d --lines $div_5 $filename_f $genedir/sam2genes_temp.`;
+        my $temp_prefix = "$genedir/sam2genes_temp.0";
+	for (my $i=0;$i<5;$i++){
+            my $infile = $temp_prefix . "$i";
+            my $outfile = $infile . ".txt";
+            my $sh = $shfile_nu;
+            $sh =~ s/.sh$/.$i.filter.sh/;
+            open(OUT, ">$sh");
+            print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
+            close(OUT);
+            while (qx{$status | wc -l} > $njobs){
+                sleep(10);
+            }
+            `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_nu.$i.filter.out -e $logname_nu.$i.filter.err < $sh`;
+        }
+	my $infile = $temp_prefix . "5";
+        if (-e "$infile"){
+            my $outfile = "$infile.txt";
+            my $sh = $shfile_nu;
+            $sh =~ s/.sh$/.5.filter.sh/;
+            open(OUT, ">$sh");
+            print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
+            close(OUT);
+            while (qx{$status | wc -l} > $njobs){
+                sleep(10);
+            }
+            `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_nu.5.filter.out -e $logname_nu.5.filter.err < $sh`;
+        }
+    }
     if ($U eq "true"){
 	unless (-e $filename_u){
 	    die "ERROR: $filename_u does not exist\n";

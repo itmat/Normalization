@@ -17,6 +17,8 @@ options:
  -nu  :  set this if you are using non-unique mappers only.
         otherwise by default it will use both unique and non-unique mappers.
 
+ -filter : set this to run sam2genes during filter step.
+
  -norm : set this to get genes file for the gene-normalized sam files.
 
 ";
@@ -30,7 +32,7 @@ my $numargs = 0;
 my $U = "true";
 my $NU = "true";
 my $stranded = "false";
-
+my $filter = "false";
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq "-norm"){
@@ -42,6 +44,12 @@ for (my $i=2; $i<@ARGV; $i++){
     if ($ARGV[$i] eq "-stranded"){
 	$stranded = "true";
 	$option_found = "true";
+    }
+    if($ARGV[$i] eq '-filter'){
+	$filter = "true";
+	$option_found = "true";
+	$NU = "false";
+	$U = "false";
     }
     if($ARGV[$i] eq '-nu') {
         $U = "false";
@@ -77,6 +85,7 @@ while(my $line = <IN>){
     chomp($line);
     my $id = $line;
     my $genedir = "$LOC/$id/GNORM";
+    my $filename_f = "$genedir/$id.filtered_nu.sam";
     my $filedir_u = "$genedir/Unique/";
     my $filedir_nu = "$genedir/NU/";
     my $filename_u = "$genedir/Unique/$id.filtered_u.sam";
@@ -152,6 +161,22 @@ while(my $line = <IN>){
 		    $x = `cat $infile | grep -v readID >> $outfile`;
 		}
 	    }
+	}
+    }
+    if ($filter eq "true"){
+	my $temp_prefix = "$genedir/sam2genes_temp.0";
+        my $outfile = $filename_f;
+        $outfile =~ s/.sam$/.txt/;
+        if (-e $outfile){
+            `rm $outfile`;
+        }
+        my $infile0 = $temp_prefix . "0.txt";
+        my $x = `cat $infile0 > $outfile`;
+        for (my $i=1;$i<=5;$i++){
+            my $infile = $temp_prefix . "$i.txt";
+            if (-e $infile){
+                $x = `cat $infile | grep -v readID >> $outfile`;
+            }
 	}
     }
 }

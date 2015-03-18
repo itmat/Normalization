@@ -49,10 +49,6 @@ OPTIONS:
                           and remove them from all samples for the final spreadsheets.
                           (Default = 0; this will remove features with sum of counts = 0)
 
-     -flanking_region <n> : is used for generating list of flanking regions.
-                            by default, 5000 bp up/downstream of each gene will be considered a flanking region.
-                            use this option to change the size <n>.
-
      [exon-intron-junction normalization only]
      -novel_off : set this if you DO NOT want to generate/use a study-specific master list of exons/introns 
                   (By default, the pipeline will add inferred exons/introns to the list of exons/introns)
@@ -62,6 +58,9 @@ OPTIONS:
                    (Default = 20)
      -depthIntron <n> : the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.
                    (Default = 10)
+     -flanking_region <n> : is used for generating list of flanking regions.
+                            by default, 5000 bp up/downstream of each gene will be considered a flanking region.
+                            use this option to change the size <n>.
      -h : print usage 
 
 ";

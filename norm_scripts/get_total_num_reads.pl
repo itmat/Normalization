@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
-
-$USAGE = "\nUsage: perl get_total_num_reads.pl <sample dirs> <loc> <file of input forward fa/fq files> [options]
+use strict;
+use warnings;
+my $USAGE = "\nUsage: perl get_total_num_reads.pl <sample dirs> <loc> <file of input forward fa/fq files> [options]
 
 <sample dirs> is a file with the names of the sample directories (without path)
 <loc> is the location where the sample directories are
@@ -41,18 +42,19 @@ if(@ARGV<3) {
     die $USAGE;
 }
 
-$fa = "false";
-$fq = "false";
-$gz = "false";
-$njobs = 200;
-$numargs = 0;
-$numargs_2 = 0;
-$jobname_option = "";
-$mem = "";
-$new_mem = "";
-$replace_mem = "false";
-for ($i=3; $i<@ARGV; $i++){
-    $option_found = "false";
+my $fa = "false";
+my $fq = "false";
+my $gz = "false";
+my $njobs = 200;
+my $numargs = 0;
+my $numargs_2 = 0;
+my $jobname_option = "";
+my $mem = "";
+my $new_mem = "";
+my $replace_mem = "false";
+my ($submit, $request_memory_option, $status);
+for (my $i=3; $i<@ARGV; $i++){
+    my $option_found = "false";
     if ($ARGV[$i] eq '-fa'){
 	$fa = "true";
 	$numargs++;
@@ -100,8 +102,8 @@ for ($i=3; $i<@ARGV; $i++){
     if ($ARGV[$i] eq '-other'){
         $numargs_2++;
         $option_found = "true";
-	$argv_all = $ARGV[$i+1];
-        @a = split(",", $argv_all);
+	my $argv_all = $ARGV[$i+1];
+        my @a = split(",", $argv_all);
         $submit = $a[0];
         $jobname_option = $a[1];
         $request_memory_option = $a[2];
@@ -139,37 +141,37 @@ if($numargs_2 ne '1'){
 if ($replace_mem eq "true"){
     $mem = $new_mem;
 }
-$sample_dirs = $ARGV[0];
-$LOC = $ARGV[1];
+my $sample_dirs = $ARGV[0];
+my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
-@fields = split("/", $LOC);
-$last_dir = $fields[@fields-1];
-$study = $fields[@fields-2];
-$study_dir = $LOC;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study = $fields[@fields-2];
+my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
-$stats_dir = $study_dir . "STATS";
-$logdir = $study_dir . "logs";
+my $stats_dir = $study_dir . "STATS";
+my $logdir = $study_dir . "logs";
 unless (-d $logdir){
     `mkdir $logdir`;}
 unless (-d $stats_dir){
     `mkdir $stats_dir`;}
-$input_files = $ARGV[2];
-$temp_file = "$stats_dir/temp";
-@t = glob ("$temp_file*$study");
+my $input_files = $ARGV[2];
+my $temp_file = "$stats_dir/temp";
+my @t = glob ("$temp_file*$study");
 if (@t > 0){
     `rm $temp_file*$study`;
 }
 
-$jobname = "numreads";
-$logname = "$logdir/$study.numreads";
-@l = glob ("$logname*");
+my $jobname = "numreads";
+my $logname = "$logdir/$study.numreads";
+my @l = glob ("$logname*");
 if (@l > 0){
     `rm $logname*`;
 }
 
 open(INFILE, $input_files) or die "cannot find file '$input_files'\n";
-$i = 0;
-while($line = <INFILE>){
+my $i = 0;
+while(my $line = <INFILE>){
     chomp($line);
     unless (-e $line){
 	die "ERROR: cannot find \"$line\"\n";
@@ -187,7 +189,7 @@ while($line = <INFILE>){
 }
 close(INFILE);
 
-$outfile_final = "$stats_dir/total_num_reads.txt";
+my $outfile_final = "$stats_dir/total_num_reads.txt";
 while (qx{$status | grep $jobname | wc -l} > 0){
     sleep(10);
 }
@@ -197,14 +199,21 @@ if (qx{cat $logname.*.err | wc -l} > 0){
 
 open(DIRS, $sample_dirs) or die "cannot find file '$sample_dirs'\n";
 open(OUTFINAL, ">$outfile_final");
-while($dir = <DIRS>){
+while(my $dir = <DIRS>){
     chomp($dir);
-    $id = $dir;
-    $total_num_reads = `grep -w $id $temp_file.*.$study`;
-    @fields = split(" ", $total_num_reads);
-    $first = $fields[0];
-    @a = split(":", $first);
-    $num = $a[1];
+    my $num;
+    my $id = $dir;
+    my $total_num_reads = `grep -w $id $temp_file.*.$study`;
+    my @fields = split(" ", $total_num_reads);
+    my @t = glob ("$temp_file*$study");
+    if (@t > 1){
+	my $first = $fields[0];
+	my @a = split(":", $first);
+	$num = $a[1];
+    }
+    else{
+	$num = $fields[0];
+    }
     if ($fq eq "true"){
 	$num = $num/4;
     }

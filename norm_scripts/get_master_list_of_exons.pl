@@ -118,7 +118,7 @@ while(my $line = <GENE>){
 close(GENE);
 my $master_list_of_exons = "$LOC/master_list_of_exons.txt";
 open(MAS, ">$master_list_of_exons");
-foreach my $exon (sort{cmpChrs($a,$b)} keys %EXONS) {
+foreach my $exon (sort{&cmpChrs($a,$b)} keys %EXONS) {
     if ($stranded eq "false"){
 	print MAS "$exon\n";
     }
@@ -189,7 +189,7 @@ sub cmpChrs ($$) {
             my %temphash;
             $temphash{$tempa}=1;
             $temphash{$tempb}=1;
-            foreach my $tempkey (sort {cmpChrs($a,$b)} keys %temphash) {
+            foreach my $tempkey (sort {&cmpChrs($a,$b)} keys %temphash) {
                 if ($tempkey eq $tempa) {
                     return 1;
                 } else {
@@ -243,7 +243,7 @@ sub cmpChrs ($$) {
                 my %temphash;
                 $temphash{$tempa}=1;
                 $temphash{$tempb}=1;
-                foreach my $tempkey (sort {cmpChrs($a,$b)} keys %temphash) {
+                foreach my $tempkey (sort {&cmpChrs($a,$b)} keys %temphash) {
                     if ($tempkey eq $tempa) {
                         return 1;
                     } else {

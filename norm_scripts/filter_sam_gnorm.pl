@@ -1,10 +1,10 @@
 #!/usr/bin/env perl
 use strict;
-
+use warnings;
 
 $| = 1;
 if(@ARGV<3) {
-    die "Usage: perl filter_sam_gnorm.pl <sam infile> <sam outfile> <more ids> [options]
+    die "Usage: perl filter_and_resolve_gnorm.pl <sam infile> <sam outfile> <more ids> [options]
 
 where 
 <sam infile> is input sam file (aligned sam) to be filtered 
@@ -12,11 +12,6 @@ where
 <more ids> ribosomalids file
 
 option:
-  -u  :  set this if you want to return only unique mappers, otherwise by default
-         it will return both unique and non-unique mappers.  
-
-  -nu :  set this if you want to return only non-unique mappers, otherwise by default
-         it will return both unique and non-unique mappers.  
 
   -se :  set this if the data are single end, otherwise by default it will assume it's a paired end data.
  
@@ -28,33 +23,23 @@ This will remove all rows from <sam infile> except those that satisfy all of the
 
 ";
 }
-
+use Cwd 'abs_path';
+my $path = abs_path($0);
+$path =~ s/\/filter_and_resolve_gnorm.pl//;
 my $outfile = $ARGV[1];
 my @fields = split("/", $outfile);
 my $outname = $fields[@fields-1];
 my $outfiledir = $outfile;
 $outfiledir =~ s/\/$outname//;
-my $outfileU = "$outfiledir/Unique/$outname";
-$outfileU =~ s/.sam$/_u.sam/;
-my $outfileNU = "$outfiledir/NU/$outname";
-$outfileNU =~ s/.sam$/_nu.sam/;
-
-my $NU = "true";
-my $U = "true";
+$outfiledir .= "/GNORM/";
+my $f_outfile_u = "$outfiledir/$outname";
+$f_outfile_u =~ s/.sam$/_u.sam/;
+my $f_outfile_nu = "$outfiledir/$outname";
+$f_outfile_nu =~ s/.sam$/_nu.sam/;
 my $pe = "true";
 my $numargs = 0;
 for(my $i=3; $i<@ARGV; $i++) {
     my $option_found = "false";
-    if($ARGV[$i] eq '-nu') {
-	$U = "false";
-	$numargs++;
-	$option_found = "true";
-    }
-    if($ARGV[$i] eq '-u') {
-	$NU = "false";
-	$numargs++;
-	$option_found = "true";
-    }
     if ($ARGV[$i] eq '-se'){
 	$pe = "false";
 	$option_found = "true";
@@ -63,28 +48,12 @@ for(my $i=3; $i<@ARGV; $i++) {
 	die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
-if($numargs > 1) {
-    die "you cannot specify both -u and -nu, it will output both unique
-and non-unique by default so if that's what you want don't use either arg
--u or -nu.
-";
-}
-unless (-d $outfiledir){
-    `mkdir $outfiledir`;
-}
 
-if ($U eq "true"){
-    unless(-d "$outfiledir/Unique"){
-	`mkdir $outfiledir/Unique`;
-    }
-    open(OUTFILEU, ">$outfileU") or die "file '$outfileU' cannot open for writing\n"; # the output file
+unless (-d $outfiledir){
+    `mkdir -p $outfiledir`;
 }
-if ($NU eq "true"){
-    unless(-d "$outfiledir/NU"){
-        `mkdir $outfiledir/NU`;
-    }
-    open(OUTFILENU, ">$outfileNU") or die "file '$outfileNU' cannot open for writing\n";
-}
+open(OUTFILEU, ">$f_outfile_u") or die "file '$f_outfile_u' cannot open for writing\n"; # the output file
+open(OUTFILENU, ">$f_outfile_nu") or die "file '$f_outfile_nu' cannot open for writing\n"; # the output file
 
 my $ribofile = $ARGV[2]; # file with id's that have the ribo reads
 my %RIBO_IDs;
@@ -113,8 +82,6 @@ open(INFILE, $ARGV[0]);  # the sam file
 for(my $i=0; $i<$cnt; $i++) { # skip header
     my $line = <INFILE>;
 }
-my $cntU = 0;
-my $cntNU = 0;
 my $id;
 while(my $forward = <INFILE>) {
     my $len;
@@ -173,19 +140,13 @@ while(my $forward = <INFILE>) {
 	$Nf = $2;
 	$reverse =~ /(N|I)H:i:(\d+)/;
 	$Nr = $2;
-	if($U eq "true") {
-	    if($Nf == 1 && $Nr == 1 && $F[5] ne '*' && $R[5] ne '*') {
-		print OUTFILEU "$forward\n";
-		print OUTFILEU "$reverse\n";
-		$cntU++;
-	    }
+	if($Nf == 1 && $Nr == 1 && $F[5] ne '*' && $R[5] ne '*') {
+	    print OUTFILEU "$forward\n";
+	    print OUTFILEU "$reverse\n";
 	} 
-	if($NU eq "true") {
-	    if($Nf != 1 && $Nr != 1 && $F[5] ne '*' && $R[5] ne '*') {
-		print OUTFILENU "$forward\n";
-		print OUTFILENU "$reverse\n";
-		$cntNU++;
-	    }
+	if($Nf != 1 && $Nr != 1 && $F[5] ne '*' && $R[5] ne '*') {
+	    print OUTFILENU "$forward\n";
+	    print OUTFILENU "$reverse\n";
 	}
     }
     else{
@@ -206,17 +167,11 @@ while(my $forward = <INFILE>) {
 	my $Nf = "";
 	$forward =~ /(N|I)H:i:(\d+)/;
         $Nf = $2;
-	if($U eq "true") {
-            if($Nf == 1  && $F[5] ne '*') {
-                print OUTFILEU "$forward\n";
-		$cntU++;
-            }
+	if($Nf == 1  && $F[5] ne '*') {
+	    print OUTFILEU "$forward\n";
         }
-	if($NU eq "true") {
-            if($Nf != 1 && $F[5] ne '*') {
-                print OUTFILENU "$forward\n";
-                $cntNU++;
-            }
+	if($Nf != 1 && $F[5] ne '*') {
+	    print OUTFILENU "$forward\n";
 	}
     }
 }
