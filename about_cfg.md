@@ -64,6 +64,13 @@ For other organisms, follow the instructions [here](https://github.com/itmat/rum
 ####[2] index file
 You can get the index file (*.fai) using [samtools](http://samtools.sourceforge.net/) (samtools faidx &lt;ref.fa>)
 
+####[3] rRNA sequence fasta file
+rRNA sequence file for mm9 (can be used for all mammal) is available in Normalization/norm_scripts directory:
+
+      mm9: /path/to/Normalization/norm_scripts/rRNA_mm9.fa
+
+For other organisms, extract rRNA sequences and create a fasta file.
+
 ========================================================================================================
 
 ###4. DATA VISUALIZATION

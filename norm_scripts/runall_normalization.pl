@@ -319,6 +319,8 @@ my $geneinfo = $GENE_INFO_FILE;
 my $genome = $GENOME_FA;
 my $annot = $ANNOTATION_FILE;
 my $fai = $GENOME_FAI;
+my $rRNA = $rRNA_FA;
+my $mito = $CHRM;
 my $ensGene = $ENSGENES_FILE;
 
 my $strand_info = "";
@@ -679,7 +681,7 @@ if ($run_prepause eq "true"){
 	while(qx{$stat | wc -l} > $maxjobs){
 	    sleep(10);
 	}
-	$job = "echo \"perl $norm_script_dir/runall_runblast.pl $sample_dir $LOC $unaligned_file $norm_script_dir/ncbi-blast-2.2.30+ $norm_script_dir/rRNA_mm9.fa $unaligned_type $unaligned_z $c_option $new_queue $cluster_max\" | $batchjobs $mem $jobname \"$study.runall_runblast\" -o $logdir/$study.runall_runblast.out -e $logdir/$study.runall_runblast.err";
+	$job = "echo \"perl $norm_script_dir/runall_runblast.pl $sample_dir $LOC $unaligned_file $norm_script_dir/ncbi-blast-2.2.30+ $rRNA $unaligned_type $unaligned_z $c_option $new_queue $cluster_max\" | $batchjobs $mem $jobname \"$study.runall_runblast\" -o $logdir/$study.runall_runblast.out -e $logdir/$study.runall_runblast.err";
 
 	&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	&check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);

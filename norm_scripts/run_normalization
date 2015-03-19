@@ -317,6 +317,11 @@ if ($EIJ eq "true"){
 	die "ERROR: cannot find file \"$geneinfo\"\nYou need to provide [2] gene information file for Exon-Intron-Junction Normalization (# 2. GENE INFO in your cfg file \"$cfg_file\")\n\n";
     }
 }
+my $mito = $CHRM;
+if ($mito =~ /^$/){
+    die "ERROR: You need to provide [4] Name of mitochondrial chromosome (# 2. GENE INFO in your cfg file \"$cfg_file\")\n\n";
+}
+
 my $genome = $GENOME_FA;
 unless (-e $genome){
     die "ERROR: cannot find file \"$genome\"\nYou need to provide [1] genome sequence one-line fasta file (# 3. FA and FAI in your cfg file \"$cfg_file\")\n\n";
@@ -324,6 +329,10 @@ unless (-e $genome){
 my $fai = $GENOME_FAI;
 unless (-e $fai){
     die "ERROR: cannot find file \"$fai\"\nYou need to provide [2] index file (# 3. FA and FAI in your cfg file \"$cfg_file\")\n\n";
+}
+my $rRNA = $rRNA_FA;
+unless (-e $rRNA){
+    die "ERROR: cannot find file \"$rRNA\"\nYou need to provide [3] rRNA sequence fasta file (# 3. FA and FAI in your cfg file \"$cfg_file\")\n\n";
 }
 my $annot;
 if ($EIJ eq "true"){

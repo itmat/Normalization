@@ -1,17 +1,47 @@
 #!/usr/bin/env perl
-my $USAGE = "\nUsage: perl getstats.pl <dirs> <loc> 
-
+my $USAGE = "\nUsage: perl getstats.pl <dirs> <loc> [option]
 where 
 <dirs> is a file of directory names (without path)
 <loc> is where the sample directories are
 
+[option]
+  -mito \"<name>, <name>, ... ,<name>\": name(s) of mitochondrial chromosomes
+
 This will parse the mapping_stats.txt files for all dirs
 and output a table with summary info across all samples.
+
 ";
+
 if(@ARGV<2) {
     die $USAGE;
 }
-
+my %MITO;
+my $count = 0;
+for(my $i=2;$i<@ARGV;$i++){
+    my $option_found = "false";
+    if ($ARGV[$i] eq '-mito'){
+        my $argv_all = $ARGV[$i+1];
+        chomp($argv_all);
+        unless ($argv_all =~ /^$/){
+            $count=1;
+        }
+        $option_found = "true";
+        my @a = split(",", $argv_all);
+        for(my $i=0;$i<@a;$i++){
+            my $name = $a[$i];
+            chomp($name);
+            $name =~ s/^\s+|\s+$//g;
+            $MITO{$name}=1;
+        }
+        $i++;
+    }
+    if($option_found eq "false") {
+        die "option \"$ARGV[$i]\" was not recognized.\n";
+    }
+}
+if($count == 0){
+   die "please provide mitochondrial chromosome name using -mito \"<name>\" option.\n";
+}
 my $dirs = $ARGV[0];
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
@@ -124,35 +154,28 @@ while(my $dir = <DIRS>) {
     $min_pover = $Pover{$dir};
     $min_pover =~ s/,//g;
 
-
-    $x = `grep chrM $filename | head -1`;
-    chomp($x);
-    if($x eq '') {
-	$x = `grep MT $filename | head -1`;
-	chomp($x);
+    foreach my $key (sort keys %MITO){
+        $x = `grep $key $filename | head -1`;
+        @a1 = split(/\t/,$x);
+        $a1[1] =~ s/[^\d]//g;
+        $x = $a1[1];
+        if ($x eq ''){
+	    $x = '0';
+        }
+        $y = int($x / $UTOTAL_F_or_R_CONS * 1000) / 10;
+        $min_chrm = $x;
+        $x2 = &format_large_int($x);
+        if ($x2 eq ''){
+	    $x2 = '0';
+        }
+        $UchrM{$dir}{$key} = "$x2 ($y%)";
     }
-    @a1 = split(/\t/,$x);
-    $a1[1] =~ s/[^\d]//g;
-    $x = $a1[1];
-    if ($x eq ''){
-	$x = '0';
-    }
-    $y = int($x / $UTOTAL_F_or_R_CONS * 1000) / 10;
-    $min_chrm = $x;
-    $x2 = &format_large_int($x);
-    if ($x2 eq ''){
-	$x2 = '0';
-    }
-    $UchrM{$dir} = "$x2 ($y%)";
 }
-
-$max1 = 0;
-$max2 = 0;
-$max3 = 0;
-$max4 = 0;
-$max5 = 0;
-$max6 = 0;
-
+foreach my $key (keys %UchrM){
+print "$key\n";
+foreach my $key2 $UchrM{$key}
+}
+=comment
 $outfile = "$stats_dir/mappingstats_summary.txt";
 open(OUT, ">$outfile");
 #print OUT "id\ttotal\t!<>\t!<|>\t!chrM(%!)\t\%overlap\t~!<>\t~!<|>\t<|>\n";
@@ -255,7 +278,7 @@ $max_nutotal_f_or_r = &format_large_int($max_nutotal_f_or_r);
 $max_total_UorNU = &format_large_int($max_total_UorNU);
 $max_chrm = &format_large_int($max_chrm);
 print OUT "maxs\t$max_total\t$max_total_frcons\t$max_utotal_f_or_r_cons\t$max_chrm\t$max_pover\%\t$max_nutotal\t$max_nutotal_f_or_r\t$max_total_UorNU\n";
-
+=cut
 sub format_large_int () {
     ($int) = @_;
     @a = split(//,"$int");
