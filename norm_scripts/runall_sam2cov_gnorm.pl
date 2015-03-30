@@ -204,11 +204,11 @@ while($line =  <INFILE>){
     if ($strand eq "true"){
 	$filename = "$final_M_dir/$id.merged.sam";
 	$prefix = "$cov_dir/$id.merged.sam";
-	$prefix_fwd = $prefix;
-	$prefix_rev = $prefix;
+	$prefix_sense = $prefix;
+	$prefix_antisense = $prefix;
 	$prefix =~ s/sam$//;
-	$prefix_fwd =~ s/sam$/fwd./g;
-	$prefix_rev =~ s/sam$/rev./g;
+	$prefix_sense =~ s/sam$/sense./g;
+	$prefix_antisense =~ s/sam$/antisense./g;
     }
     else {
 	if ($numargs_u_nu eq "0"){
@@ -229,10 +229,10 @@ while($line =  <INFILE>){
     $jobname = "$study.sam2cov_gnorm";
     $logname = "$logdir/sam2cov_gnorm.$id";
     if ($strand eq "true"){
-	$shfile_fwd = "C.$id.sam2cov_gnorm.fwd.sh";
-	$shfile_rev = "C.$id.sam2cov_gnorm.rev.sh";
-	$logname_fwd = "$logdir/sam2cov_gnorm.fwd.$id";
-	$logname_rev = "$logdir/sam2cov_gnorm.rev.$id";
+	$shfile_sense = "C.$id.sam2cov_gnorm.sense.sh";
+	$shfile_antisense = "C.$id.sam2cov_gnorm.antisense.sh";
+	$logname_sense = "$logdir/sam2cov_gnorm.sense.$id";
+	$logname_antisense = "$logdir/sam2cov_gnorm.antisense.$id";
     }
     if ($strand eq "false"){
 	open(OUTFILE, ">$shdir/$shfile");
@@ -259,50 +259,50 @@ while($line =  <INFILE>){
 	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shdir/$shfile`;
     }
     if ($strand eq "true"){
-	open(OUTFILEF, ">$shdir/$shfile_fwd");
+	open(OUTFILEF, ">$shdir/$shfile_sense");
 	if ($rum eq 'true'){
 	    if ($se eq "true"){
-		print OUTFILEF "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_fwd $fai_file $filename"; 
+		print OUTFILEF "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_sense $fai_file $filename"; 
 	    }
 	    if ($se eq "false"){
-		print OUTFILEF "$sam2cov -r 1 -e 1 -s 1 -u -p $prefix_fwd $fai_file $filename"; 
+		print OUTFILEF "$sam2cov -r 1 -e 1 -s 1 -u -p $prefix_sense $fai_file $filename"; 
 	    }
 	}
 	if ($star eq 'true'){
 	    if ($se eq "true"){
-		print OUTFILEF "$sam2cov -u -e 0 -s 1 -p $prefix_fwd $fai_file $filename"; 
+		print OUTFILEF "$sam2cov -u -e 0 -s 1 -p $prefix_sense $fai_file $filename"; 
 	    }
 	    if ($se eq "false"){
-		print OUTFILEF "$sam2cov -u -e 1 -s 1 -p $prefix_fwd $fai_file $filename"; 
+		print OUTFILEF "$sam2cov -u -e 1 -s 1 -p $prefix_sense $fai_file $filename"; 
 	    }
 	}
 	close(OUTFILEF);
-	open(OUTFILER, ">$shdir/$shfile_rev");
+	open(OUTFILER, ">$shdir/$shfile_antisense");
 	if ($rum eq 'true'){
 	    if ($se eq "true"){
-		print OUTFILER "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_rev $fai_file $filename"; 
+		print OUTFILER "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_antisense $fai_file $filename"; 
 	    }
 	    if ($se eq "false"){
-		print OUTFILER "$sam2cov -r 1 -e 1 -s 2 -u -p $prefix_rev $fai_file $filename"; 
+		print OUTFILER "$sam2cov -r 1 -e 1 -s 2 -u -p $prefix_antisense $fai_file $filename"; 
 	    }
 	}
 	if ($star eq 'true'){
 	    if ($se eq "true"){
-		print OUTFILER "$sam2cov -u -e 0 -s 2 -p $prefix_rev $fai_file $filename"; 
+		print OUTFILER "$sam2cov -u -e 0 -s 2 -p $prefix_antisense $fai_file $filename"; 
 	    }
 	    if ($se eq "false"){
-		print OUTFILER "$sam2cov -u -e 1 -s 2 -p $prefix_rev $fai_file $filename"; 
+		print OUTFILER "$sam2cov -u -e 1 -s 2 -p $prefix_antisense $fai_file $filename"; 
 	    }
 	}
 	close(OUTFILER);
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
-	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_fwd.out -e $logname_fwd.err < $shdir/$shfile_fwd`;
+	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_sense.out -e $logname_sense.err < $shdir/$shfile_sense`;
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
-	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_rev.out -e $logname_rev.err < $shdir/$shfile_rev`;
+	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_antisense.out -e $logname_antisense.err < $shdir/$shfile_antisense`;
     }
 }
 close(INFILE);

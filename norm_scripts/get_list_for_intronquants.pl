@@ -33,10 +33,9 @@ my $study = $fields[@fields-2];
 
 my $master_list = "$LOC/master_list_of_introns.txt";
 my $flanking = "$LOC/list_of_flanking_regions.txt";
-my $final_list = "$LOC/list_for_intronquants.txt";
+my $final_list = "$LOC/list_for_intronquants.$study.txt";
 if ($novel eq "true"){
     $master_list =~ s/txt$/$study.txt/;
-    $final_list =~ s/txt/$study.txt/;
 }
 
 unless (-e $master_list){

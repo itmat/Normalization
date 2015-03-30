@@ -650,7 +650,7 @@ if ($run_prepause eq "true"){
 	    sleep(10);
 	}
 	
-	$job = "echo \"perl $norm_script_dir/getstats.pl $sample_dir $LOC\" | $batchjobs $mem $jobname \"$study.getstats\" -o $logdir/$study.getstats.out -e $logdir/$study.getstats.err";
+	$job = "echo \"perl $norm_script_dir/getstats.pl $sample_dir $LOC -mito \\\"$mito\\\"\" | $batchjobs $mem $jobname \"$study.getstats\" -o $logdir/$study.getstats.out -e $logdir/$study.getstats.err";
     
 	&onejob($job, $name_of_job, $job_num);
 	&check_exit_onejob($job, $name_of_job, $job_num);
@@ -671,11 +671,11 @@ if ($run_prepause eq "true"){
 	&clear_log($name_of_alljob, $err_name);
 	
 	if ($other eq "true"){
-	    $c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_3G, $stat\\\"";
+	    $c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_15G, $stat\\\"";
 	    $new_queue = "";
 	}
 	else{
-	    $new_queue = "-mem $queue_3G";
+	    $new_queue = "-mem $queue_15G";
 	}
     
 	while(qx{$stat | wc -l} > $maxjobs){
@@ -1044,7 +1044,7 @@ if ($run_prepause eq "true"){
             while(qx{$stat | wc -l} > $maxjobs){
                 sleep(10);
             }
-            $job = "echo \"perl $norm_script_dir/filter_high_expressers_gnorm.pl $sample_dir $LOC $list_for_genequant $data_stranded\" | $batchjobs $mem $jobname \"$study.filter_high_expressers_gnorm\" -o $logdir/$study.filter_high_expressers_gnorm.out -e $logdir/$study.filter_high_expressers_gnorm.err";
+            $job = "echo \"perl $norm_script_dir/filter_high_expressers_gnorm.pl $sample_dir $LOC $list_for_genequant $data_stranded $se\" | $batchjobs $mem $jobname \"$study.filter_high_expressers_gnorm\" -o $logdir/$study.filter_high_expressers_gnorm.out -e $logdir/$study.filter_high_expressers_gnorm.err";
 
             &onejob($job, $name_of_job, $job_num);
             &check_exit_onejob($job, $name_of_job, $job_num);
@@ -1805,7 +1805,7 @@ if ($run_norm eq "true"){
 		    while(qx{$stat | wc -l} > $maxjobs){
 			sleep(10);
 		    }
-		    $job = "echo \"perl $norm_script_dir/filter_high_expressers_gnorm.pl $sample_dir $LOC $list_for_genequant $data_stranded\" | $batchjobs $mem $jobname \"$study.filter_high_expressers_gnorm_p2\" -o $logdir/$study.filter_high_expressers_gnorm_p2.out -e $logdir/$study.filter_high_expressers_gnorm_p2.err";
+		    $job = "echo \"perl $norm_script_dir/filter_high_expressers_gnorm.pl $sample_dir $LOC $list_for_genequant $data_stranded $se\" | $batchjobs $mem $jobname \"$study.filter_high_expressers_gnorm_p2\" -o $logdir/$study.filter_high_expressers_gnorm_p2.out -e $logdir/$study.filter_high_expressers_gnorm_p2.err";
 
 		    &onejob($job, $name_of_job, $job_num);
 		    &check_exit_onejob($job, $name_of_job, $job_num);
@@ -1878,7 +1878,7 @@ if ($run_norm eq "true"){
 		    while(qx{$stat | wc -l} > $maxjobs){
 			sleep(10);
 		    }
-		    $job = "echo \"perl $norm_script_dir/predict_num_reads_gnorm.pl $sample_dir $LOC $data_stranded\" | $batchjobs $mem $jobname \"$study.predict_num_reads_gnorm_p2\" -o $logdir/$study.predict_num_reads_gnorm_p2.out -e $logdir/$study.predict_num_reads_gnorm_p2.err";
+		    $job = "echo \"perl $norm_script_dir/predict_num_reads_gnorm.pl $sample_dir $LOC $data_stranded $se\" | $batchjobs $mem $jobname \"$study.predict_num_reads_gnorm_p2\" -o $logdir/$study.predict_num_reads_gnorm_p2.out -e $logdir/$study.predict_num_reads_gnorm_p2.err";
 		    
 		    &onejob($job, $name_of_job, $job_num);
 		    &check_exit_onejob($job, $name_of_job, $job_num);
@@ -2716,7 +2716,7 @@ if ($run_norm eq "true"){
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
-        $job = "echo \"perl $norm_script_dir/get_normfactors_table.pl $sample_dir $LOC $data_stranded\" | $batchjobs $mem $jobname \"$study.get_normfactors_table\" -o $logdir/$study.get_normfactors_table.out -e $logdir/$study.get_normfactors_table.err";
+        $job = "echo \"perl $norm_script_dir/get_normfactors_table.pl $sample_dir $LOC $data_stranded -mito \\\"$mito\\\"\" | $batchjobs $mem $jobname \"$study.get_normfactors_table\" -o $logdir/$study.get_normfactors_table.out -e $logdir/$study.get_normfactors_table.err";
 
         &onejob($job, $name_of_job, $job_num);
         &check_exit_onejob($job, $name_of_job, $job_num);

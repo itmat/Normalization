@@ -155,7 +155,7 @@ while(my $dir = <DIRS>) {
     $min_pover =~ s/,//g;
 
     foreach my $key (sort keys %MITO){
-        $x = `grep $key $filename | head -1`;
+        $x = `grep -w $key $filename | head -1`;
         @a1 = split(/\t/,$x);
         $a1[1] =~ s/[^\d]//g;
         $x = $a1[1];
@@ -163,7 +163,8 @@ while(my $dir = <DIRS>) {
 	    $x = '0';
         }
         $y = int($x / $UTOTAL_F_or_R_CONS * 1000) / 10;
-        $min_chrm = $x;
+        $min_chrm{$key} = $x;
+        $max_chrm{$key} = $x;
         $x2 = &format_large_int($x);
         if ($x2 eq ''){
 	    $x2 = '0';
@@ -171,17 +172,24 @@ while(my $dir = <DIRS>) {
         $UchrM{$dir}{$key} = "$x2 ($y%)";
     }
 }
-foreach my $key (keys %UchrM){
-print "$key\n";
-foreach my $key2 $UchrM{$key}
-}
-=comment
-$outfile = "$stats_dir/mappingstats_summary.txt";
+$outfile = "$stats_dir/mappingstats_summary.txt"; 
+$mitofile = "$stats_dir/mitochondrial_percents.txt";
 open(OUT, ">$outfile");
+open(MITO, ">$mitofile");
 #print OUT "id\ttotal\t!<>\t!<|>\t!chrM(%!)\t\%overlap\t~!<>\t~!<|>\t<|>\n";
-print OUT "id\ttotalreads\tUniqueFWDandREV\tUniqueFWDorREV\tUniqueChrM\t%overlap\tNon-UniqueFWDandREV\tNon-UniqueFWDorREV\tFWDorREVmapped\n";
-foreach $dir (keys %UchrM) {
-    print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$UchrM{$dir}\t$Pover{$dir}\%\t$NUandFRconsistently{$dir}\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped{$dir}\n";
+print OUT "id\ttotalreads\tUniqueFWDandREV\tUniqueFWDorREV\t%overlap\tNon-UniqueFWDandREV\tNon-UniqueFWDorREV\tFWDorREVmapped\n";
+print MITO "id\t";
+foreach my $key (sort keys %MITO){
+    print MITO "Unique_$key\t";
+}
+print MITO "\n";
+foreach $dir (sort keys %UchrM) {
+    print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$Pover{$dir}\%\t$NUandFRconsistently{$dir}\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped{$dir}\n";
+    print MITO "$dir\t";
+    foreach my $key (sort keys %{$UchrM{$dir}}){
+        print MITO "$UchrM{$dir}{$key}\t";
+    }
+    print MITO "\n";
     $x = $total{$dir};
     $x =~ s/,//g;
     if($x < $min_total) {
@@ -221,14 +229,16 @@ foreach $dir (keys %UchrM) {
 	$max_utotal_f_or_r_cons = $x;
     }
 
-    $x = $UchrM{$dir};
-    $x =~ s/ \(.*//;
-    $x =~ s/,//g;
-    if($x < $min_chrm) {
-	$min_chrm = $x;
-    }
-    if($x > $max_chrm) {
-	$max_chrm = $x;
+    foreach my $key (sort keys %{$UchrM{$dir}}){
+        $x = $UchrM{$dir}{$key};
+        $x =~ s/ \(.*//;
+        $x =~ s/,//g;
+        if($x < $min_chrm{$key}) {
+            $min_chrm{$key} = $x;
+        }
+        if($x > $max_chrm{$key}) {
+            $max_chrm{$key} = $x;
+        }
     }
 
     $x = $Pover{$dir};
@@ -268,17 +278,28 @@ $min_utotal_f_or_r_cons = &format_large_int($min_utotal_f_or_r_cons);
 $min_nutotal = &format_large_int($min_nutotal);
 $min_total_UorNU = &format_large_int($min_total_UorNU);
 $min_nutotal_f_or_r = &format_large_int($min_nutotal_f_or_r);
-$min_chrm = &format_large_int($min_chrm);
-print OUT "mins\t$min_total\t$min_total_frcons\t$min_utotal_f_or_r_cons\t$min_chrm\t$min_pover\%\t$min_nutotal\t$min_nutotal_f_or_r\t$min_total_UorNU\n";
+print OUT "mins\t$min_total\t$min_total_frcons\t$min_utotal_f_or_r_cons\t$min_pover\%\t$min_nutotal\t$min_nutotal_f_or_r\t$min_total_UorNU\n";
+print MITO "mins\t";
+foreach my $key (sort keys %min_chrm){
+    $min_chrm{$key} = &format_large_int($min_chrm{$key});
+    print MITO "$min_chrm{$key}\t";
+}
+print MITO "\n";
 $max_total = &format_large_int($max_total);
 $max_total_frcons = &format_large_int($max_total_frcons);
 $max_utotal_f_or_r_cons = &format_large_int($max_utotal_f_or_r_cons);
 $max_nutotal = &format_large_int($max_nutotal);
 $max_nutotal_f_or_r = &format_large_int($max_nutotal_f_or_r);
 $max_total_UorNU = &format_large_int($max_total_UorNU);
-$max_chrm = &format_large_int($max_chrm);
-print OUT "maxs\t$max_total\t$max_total_frcons\t$max_utotal_f_or_r_cons\t$max_chrm\t$max_pover\%\t$max_nutotal\t$max_nutotal_f_or_r\t$max_total_UorNU\n";
-=cut
+print OUT "maxs\t$max_total\t$max_total_frcons\t$max_utotal_f_or_r_cons\t$max_pover\%\t$max_nutotal\t$max_nutotal_f_or_r\t$max_total_UorNU\n";
+print MITO "maxs\t";
+foreach my $key (sort keys %max_chrm){
+    $max_chrm{$key} = &format_large_int($max_chrm{$key});
+    print MITO "$max_chrm{$key}\t";
+}
+print MITO "\n";
+close(OUT);
+close(MITO);
 sub format_large_int () {
     ($int) = @_;
     @a = split(//,"$int");

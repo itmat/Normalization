@@ -10,22 +10,44 @@ my $USAGE = "\nUsage: perl get_normfactors_table.pl <sample_dirs> <loc> [options
 option:
  
  -stranded : set this if your data are stranded
+ -mito \"<name>, <name>, ... ,<name>\": name(s) of mitochondrial chromosomes
 
 ";
 
 if (@ARGV < 2){
     die $USAGE;
 }
+my $count = 0;
 my $stranded = "false";
+my %MITO;
 for(my$i=2; $i<@ARGV; $i++) {
     my $option_found = "false";
     if ($ARGV[$i] eq '-stranded'){
 	$option_found = "true";
 	$stranded = "true";
     }
+    if ($ARGV[$i] eq '-mito'){
+        my $argv_all = $ARGV[$i+1];
+        chomp($argv_all);
+        unless ($argv_all =~ /^$/){
+            $count=1;
+        }
+        $option_found = "true";
+        my @a = split(",", $argv_all);
+        for(my $i=0;$i<@a;$i++){
+            my $name = $a[$i];
+            chomp($name);
+            $name =~ s/^\s+|\s+$//g;
+            $MITO{$name}=1;
+        }
+        $i++;
+    }
     if($option_found eq "false") {
 	die "option \"$ARGV[$i]\" was not recognized.\n";
     }
+}
+if($count == 0){
+    die "please provide mitochondrial chromosome name using -mito \"<name>\" option.\n";
 }
 
 my $dirs = $ARGV[0];
@@ -75,17 +97,22 @@ my $geneNU_A = "false";
 my $senseG_U = "false";
 my $senseG_NU = "false";
 
-my ($total_num, $chrM_num, $chrM_num_m, $NU_num, $NU_num_m, $ribo_num, $exonic_u,  $exonic_nu, $one_u, $one_nu, $intergenic_u, $intergenic_nu, $gene_u, $gene_nu, $und_u, $und_nu);
+my ($total_num, @chrM_num, @chrM_num_m, $NU_num, $NU_num_m, $ribo_num, $exonic_u,  $exonic_nu, $one_u, $one_nu, $intergenic_u, $intergenic_nu, $gene_u, $gene_nu, $und_u, $und_nu);
 my ($exonic_u_a, $exonic_nu_a, $one_u_a, $one_nu_a, $sense_ex_u, $sense_int_u, $sense_ex_nu, $sense_int_nu);
 my ($gene_u_a, $gene_nu_a,$sense_g_u, $sense_g_nu);
 if ($gnorm eq "true"){
     open(OUT, ">$out_gnorm");
     print OUT "sample\t";
     if (-e "$study_dir/STATS/mappingstats_summary.txt"){
-        print OUT "totalnumreads\t%chrM\t%NU\t";
+        print OUT "totalnumreads\t%NU\t";
         $total = "true";
-        $chrM = "true";
         $NU = "true";
+    }
+    if (-e "$study_dir/STATS/mitochondrial_percents.txt"){
+	foreach my $key (sort keys %MITO){
+	    print OUT "%mito_$key\t";
+	}
+	$chrM= "true";
     }
     if (-e "$study_dir/STATS/ribo_percents.txt"){
         print OUT "%ribo\t";
@@ -140,31 +167,34 @@ if ($gnorm eq "true"){
 	    $total_num =~ s/^\s*(.*?)\s*$/$1/;
             $total_num =~ s/\,//g;
         }
-	#chrM
-	if ($chrM eq "true"){
-            $chrM_num = `cut -f 1,5 $study_dir/STATS/mappingstats_summary.txt | grep -w $line`;
-            chomp($chrM_num);
-            $chrM_num =~ s/$line//g;
-            $chrM_num =~ s/^\s*(.*?)\s*$/$1/;
-            $chrM_num =~ m/\((.*)\%\)/;
-            $chrM_num_m = $1;
-        }
         #NU
         if ($NU eq "true"){
-            $NU_num = `cut -f 1,8 $study_dir/STATS/mappingstats_summary.txt | grep -w $line`;
+            $NU_num = `cut -f 1,7 $study_dir/STATS/mappingstats_summary.txt | grep -w $line`;
             chomp($NU_num);
             $NU_num =~ s/$line//g;
             $NU_num =~ s/^\s*(.*?)\s*$/$1/;
             $NU_num =~ m/\((.*)\%\)/;
             $NU_num_m = $1;
         }
+	#chrM
+	if ($chrM eq "true"){
+	    my $size = keys %MITO;
+	    for (my $i=2;$i<$size+2;$i++){
+		$chrM_num[$i] = `cut -f 1,$i $study_dir/STATS/mitochondrial_percents.txt | grep -w $line`;
+		chomp($chrM_num[$i]);
+		$chrM_num[$i] =~ s/$line//g;
+		$chrM_num[$i] =~ s/^\s*(.*?)\s*$/$1/;
+		$chrM_num[$i] =~ m/\((.*)\%\)/;
+		$chrM_num_m[$i] = $1;
+	    }
+        }
+
         #ribo
         if ($ribo eq "true"){
 	    $ribo_num = `cut -f 3,4 $study_dir/STATS/ribo_percents.txt | grep -w $line`;
             chomp($ribo_num);
             $ribo_num =~ s/$line//g;
             $ribo_num =~ s/^\s*(.*?)\s*$/$1/;
-            $ribo_num = $ribo_num * 100;
 	}
         #gene u
         if ($geneU eq "true"){
@@ -218,25 +248,37 @@ if ($gnorm eq "true"){
             $sense_g_nu =~ s/$line//g;
             $sense_g_nu =~ s/^\s*(.*?)\s*$/$1/;
 	}
+	print OUT "$line\t$total_num\t$NU_num_m\t";
+	my $size = keys %MITO;
+	for (my$i=2;$i<$size+2;$i++){
+	    print OUT "$chrM_num_m[$i]\t";
+	}
+	print OUT "$ribo_num\t";
 	if ($stranded eq "false"){
-	    print OUT "$line\t$total_num\t$chrM_num_m\t$NU_num_m\t$ribo_num\t$gene_u\t$gene_nu\n";
+	    print OUT "$gene_u\t$gene_nu\n";
 	}
 	if ($stranded eq "true"){
-	    print OUT "$line\t$total_num\t$chrM_num_m\t$NU_num_m\t$ribo_num\t$gene_u\t$gene_u_a\t$gene_nu\t$gene_nu_a\t$sense_g_u\t$sense_g_nu\n";
+	    print OUT "$gene_u\t$gene_u_a\t$gene_nu\t$gene_nu_a\t$sense_g_u\t$sense_g_nu\n";
 	}
     }
     close(OUT);
     close(IN);
 }	
+
 if ($eij eq "true"){
     open(OUT, ">$out_eij");
     print OUT "sample\t";
 
     if (-e "$study_dir/STATS/mappingstats_summary.txt"){
-	print OUT "totalnumreads\t%chrM\t%NU\t";
+	print OUT "totalnumreads\t%NU\t";
 	$total = "true";
-	$chrM = "true";
 	$NU = "true";
+    }
+    if (-e "$study_dir/STATS/mitochondrial_percents.txt"){
+        foreach my $key (sort keys %MITO){
+            print OUT "%mito_$key\t";
+        }
+        $chrM= "true";
     }
     if (-e "$study_dir/STATS/ribo_percents.txt"){
 	print OUT "%ribo\t";
@@ -338,31 +380,33 @@ if ($eij eq "true"){
 	    $total_num =~ s/^\s*(.*?)\s*$/$1/;
 	    $total_num =~ s/\,//g;
 	}
-	#chrM
-	if ($chrM eq "true"){
-	    $chrM_num = `cut -f 1,5 $study_dir/STATS/mappingstats_summary.txt | grep -w $line`;
-	    chomp($chrM_num);
-	    $chrM_num =~ s/$line//g;
-	    $chrM_num =~ s/^\s*(.*?)\s*$/$1/;
-	    $chrM_num =~ m/\((.*)\%\)/;
-	    $chrM_num_m = $1;
-	}
 	#NU
 	if ($NU eq "true"){
-	    $NU_num = `cut -f 1,8 $study_dir/STATS/mappingstats_summary.txt | grep -w $line`;
+	    $NU_num = `cut -f 1,7 $study_dir/STATS/mappingstats_summary.txt | grep -w $line`;
 	    chomp($NU_num);
 	    $NU_num =~ s/$line//g;
 	    $NU_num =~ s/^\s*(.*?)\s*$/$1/;
 	    $NU_num =~ m/\((.*)\%\)/;
 	    $NU_num_m = $1;
 	}
+	#chrM
+        if ($chrM eq "true"){
+            my $size = keys %MITO;
+	    for (my $i=2;$i<$size+2;$i++){
+		$chrM_num[$i] = `cut -f 1,$i $study_dir/STATS/mitochondrial_percents.txt | grep -w $line`;
+		chomp($chrM_num[$i]);
+		$chrM_num[$i] =~ s/$line//g;
+		$chrM_num[$i] =~ s/^\s*(.*?)\s*$/$1/;
+		$chrM_num[$i] =~ m/\((.*)\%\)/;
+		$chrM_num_m[$i] = $1;
+	    }
+        }
 	#ribo
 	if ($ribo eq "true"){
 	    $ribo_num = `cut -f 3,4 $study_dir/STATS/ribo_percents.txt | grep -w $line`; 
 	    chomp($ribo_num);
 	    $ribo_num =~ s/$line//g;
 	    $ribo_num =~ s/^\s*(.*?)\s*$/$1/;
-	    $ribo_num = $ribo_num * 100;
 	}
 
 	#exonic u
@@ -499,12 +543,18 @@ if ($eij eq "true"){
             $und_nu =~ s/$line//g;
             $und_nu =~ s/^\s*(.*?)\s*$/$1/;
         }
+	print OUT "$line\t$total_num\t$NU_num_m\t";
+        my $size = keys %MITO;
+        for (my$i=2;$i<$size+2;$i++){
+            print OUT "$chrM_num_m[$i]\t";
+        }
+        print OUT "$ribo_num\t";
 	if ($stranded eq "false"){
-	    print OUT "$line\t$total_num\t$chrM_num_m\t$NU_num_m\t$ribo_num\t$exonic_u\t$exonic_nu\t$one_u\t$one_nu\t$intergenic_u\t$intergenic_nu\t$und_u\t$und_nu\n";
+	    print OUT "$exonic_u\t$exonic_nu\t$one_u\t$one_nu\t$intergenic_u\t$intergenic_nu\t$und_u\t$und_nu\n";
 	}
 	if ($stranded eq "true"){
 #	    print OUT "\$line\t\$total_num\t\$chrM_num_m\t\$NU_num_m\t\$ribo_num\t\$exonic_u\t\$exonic_u_a\t\$exonic_nu\t\$exonic_nu_a\t\$one_u\t\$one_u_a\t\$one_nu\t\$one_nu_a\t\$sense_ex_u\t\$sense_ex_nu\t\$sense_int_u\t\$sense_int_nu\t\$intergenic_u\t\$intergenic_nu\t\$und_u\t\$und_nu\n";
-	    print OUT "$line\t$total_num\t$chrM_num_m\t$NU_num_m\t$ribo_num\t$exonic_u\t$exonic_u_a\t$exonic_nu\t$exonic_nu_a\t$one_u\t$one_u_a\t$one_nu\t$one_nu_a\t$sense_ex_u\t$sense_ex_nu\t$sense_int_u\t$sense_int_nu\t$intergenic_u\t$intergenic_nu\t$und_u\t$und_nu\n";
+	    print OUT "$exonic_u\t$exonic_u_a\t$exonic_nu\t$exonic_nu_a\t$one_u\t$one_u_a\t$one_nu\t$one_nu_a\t$sense_ex_u\t$sense_ex_nu\t$sense_int_u\t$sense_int_nu\t$intergenic_u\t$intergenic_nu\t$und_u\t$und_nu\n";
 
 	}
     }

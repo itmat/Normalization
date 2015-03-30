@@ -202,7 +202,7 @@ while(my $line = <INFILE>) {
 	}
     }
     if ($type =~ /^gene/){
-	if ($line !~ /^EN/){
+	if ($line =~ /^ensGeneID/){
 	    next;
 	}
     }
@@ -242,7 +242,7 @@ while($file = <FILES>) {
 	    }
 	}
 	if ($type =~ /^gene/){
-	    if ($line !~ /^EN/){
+	    if ($line =~ /^ensGeneID/){
 		next;
 	    }
 	}
@@ -396,9 +396,9 @@ if ($stranded eq "true"){
 	    }
 	}
 	if ($type =~ /^gene/){
-	    if ($line !~ /^EN/){
-		next;
-	    }
+            if ($line =~ /^ensGeneID/){
+                next;
+            }
 	}
 	
 	my @a = split(/\t/,$line);
@@ -434,7 +434,7 @@ if ($stranded eq "true"){
             }
 	    }
 	    if ($type =~ /^gene/){
-		if ($line !~ /^EN/){
+		if ($line =~ /^ensGeneID/){
 		    next;
 		}
 	    }

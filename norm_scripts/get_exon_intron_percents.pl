@@ -301,6 +301,7 @@ if($U eq "true"){
 	foreach my $exon (keys %UNIQUE){
 	    my $quant = $UNIQUE{$exon};
 	    my $percent = int(($quant / $total_u) * 10000)/100;
+	    $percent = sprintf("%.2f", $percent);
 	    print OUT "$exon\t$percent\n";
 	    
 	    if ($percent >= $cutoff){
@@ -317,6 +318,7 @@ if($U eq "true"){
         foreach my $intron (keys %UNIQUE_I){
             my $quant = $UNIQUE_I{$intron};
             my $percent = int(($quant / $total_u_i) * 10000)/100;
+	    $percent = sprintf("%.2f", $percent);
             print OUT_I "$intron\t$percent\n";
 
             if ($percent >= $cutoff){
@@ -335,6 +337,7 @@ if($U eq "true"){
         foreach my $exon (keys %UNIQUE_S){
             my $quant = $UNIQUE_S{$exon};
             my $percent = int(($quant / $total_u_sense) * 10000)/100;
+	    $percent = sprintf("%.2f", $percent);
             print OUT_S "$exon\t$percent\n";
 
             if ($percent >= $cutoff){
@@ -351,6 +354,7 @@ if($U eq "true"){
         foreach my $exon (keys %UNIQUE_A){
             my $quant = $UNIQUE_A{$exon};
             my $percent = int(($quant / $total_u_antisense) * 10000)/100;
+	    $percent = sprintf("%.2f", $percent);
 	    print OUT_A "$exon\t$percent\n";
 
             if ($percent >= $cutoff){
@@ -367,6 +371,7 @@ if($U eq "true"){
         foreach my $intron (keys %UNIQUE_S_I){
             my $quant = $UNIQUE_S_I{$intron};
             my $percent = int(($quant / $total_u_sense_i) * 10000)/100;
+	    $percent = sprintf("%.2f", $percent);
             print OUT_S_I "$intron\t$percent\n";
 
             if ($percent >= $cutoff){
@@ -383,6 +388,7 @@ if($U eq "true"){
         foreach my $intron (keys %UNIQUE_A_I){
             my $quant = $UNIQUE_A_I{$intron};
             my $percent = int(($quant / $total_u_antisense_i) * 10000)/100;
+	    $percent = sprintf("%.2f", $percent);
             print OUT_A_I "$intron\t$percent\n";
 
             if ($percent >= $cutoff){
@@ -403,6 +409,7 @@ if($NU eq "true"){
 	foreach my $exon (keys %NU){
 	    my $quant = $NU{$exon};
 	    my $percent = int(($quant / $total_nu) * 10000)/100;
+	    $percent = sprintf("%.2f",  $percent);
 	    print OUT "$exon\t$percent\n";
 	    
 	    if ($percent >= $cutoff){
@@ -419,6 +426,7 @@ if($NU eq "true"){
         foreach my $intron (keys %NU_I){
             my $quant = $NU_I{$intron};
             my $percent = int(($quant / $total_nu_i) * 10000)/100;
+	    $percent = sprintf("%.2f",  $percent);
             print OUT_I "$intron\t$percent\n";
 
             if ($percent >= $cutoff){
@@ -437,6 +445,7 @@ if($NU eq "true"){
         foreach my $exon (keys %NU_S){
             my $quant = $NU_S{$exon};
             my $percent = int(($quant / $total_nu_sense) * 10000)/100;
+	    $percent = sprintf("%.2f",  $percent);
             print OUT_S "$exon\t$percent\n";
 
             if ($percent >= $cutoff){
@@ -453,6 +462,7 @@ if($NU eq "true"){
         foreach my $exon (keys %NU_A){
             my $quant = $NU_A{$exon};
             my $percent = int(($quant / $total_nu_antisense) * 10000)/100;
+	    $percent = sprintf("%.2f", $percent);
             print OUT_A "$exon\t$percent\n";
 
             if ($percent >= $cutoff){
@@ -467,6 +477,7 @@ if($NU eq "true"){
         foreach my $intron (keys %NU_S_I){
             my $quant = $NU_S_I{$intron};
             my $percent = int(($quant / $total_nu_sense_i) * 10000)/100;
+	    $percent = sprintf("%.2f",  $percent);
             print OUT_S_I "$intron\t$percent\n";
 
             if ($percent >= $cutoff){
@@ -483,6 +494,7 @@ if($NU eq "true"){
         foreach my $intron (keys %NU_A_I){
             my $quant = $NU_A_I{$intron};
             my $percent = int(($quant / $total_nu_antisense_i) * 10000)/100;
+	    $percent = sprintf("%.2f",  $percent);
             print OUT_A_I "$intron\t$percent\n";
 
             if ($percent >= $cutoff){

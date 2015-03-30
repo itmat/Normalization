@@ -108,6 +108,7 @@ if ($gnorm eq "false"){
 	    $antisense_exonU = $1;
 	    $tot_exonU = $sense_exonU + $antisense_exonU;
 	    $ratioU_EX = int($sense_exonU / ($tot_exonU) * 10000) / 100;
+	    $ratioU_EX = sprintf("%.2f",  $ratioU_EX);
 	    print OUTU_EX "$dir\t$ratioU_EX\n";
 	    #sense intron to antisense intron
 	    my ($xUI, $tot_intronU, $sense_intronU, $antisense_intronU, $ratioU_INT);
@@ -119,6 +120,7 @@ if ($gnorm eq "false"){
 	    $antisense_intronU = $1;
 	    $tot_intronU = $sense_intronU + $antisense_intronU;
 	    $ratioU_INT = int($sense_intronU / ($tot_intronU) * 10000) / 100;
+	    $ratioU_INT = sprintf("%.2f", $ratioU_INT);
 	    print OUTU_INT "$dir\t$ratioU_INT\n";
 	}
 	if ($NU eq "true"){
@@ -132,6 +134,7 @@ if ($gnorm eq "false"){
 	    $antisense_exonNU = $1;
 	    $tot_exonNU = $sense_exonNU + $antisense_exonNU;
 	    $ratioNU_EX = int($sense_exonNU / ($tot_exonNU) * 10000) / 100;
+	    $ratioNU_EX = sprintf("%.2f", $ratioNU_EX);
 	    print OUTNU_EX "$dir\t$ratioNU_EX\n";
 	    #sense intron to antisense intron
 	    my ($xNUI, $tot_intronNU, $sense_intronNU, $antisense_intronNU, $ratioNU_INT);
@@ -143,6 +146,7 @@ if ($gnorm eq "false"){
 	    $antisense_intronNU = $1;
 	    $tot_intronNU = $sense_intronNU + $antisense_intronNU;
 	    $ratioNU_INT = int($sense_intronNU / ($tot_intronNU) * 10000) / 100;
+	    $ratioNU_INT = sprintf("%.2f", $ratioNU_INT);
 	    print OUTNU_INT "$dir\t$ratioNU_INT\n";
 	}
     }
@@ -189,6 +193,7 @@ if ($gnorm eq "true"){
 	    $antisense_geneU = $1;
 	    $tot_geneU = $sense_geneU + $antisense_geneU;
             $ratioU_G = int($sense_geneU / ($tot_geneU) * 10000) / 100;
+	    $ratioU_G = sprintf("%.2f",$ratioU_G);
             print OUTU_G "$dir\t$ratioU_G\n";
 	}
 	if ($NU eq "true"){
@@ -202,6 +207,7 @@ if ($gnorm eq "true"){
             $antisense_geneNU = $1;
             $tot_geneNU = $sense_geneNU + $antisense_geneNU;
             $ratioNU_G = int($sense_geneNU / ($tot_geneNU) * 10000) / 100;
+	    $ratioNU_G = sprintf("%.2f", $ratioNU_G);
             print OUTNU_G "$dir\t$ratioNU_G\n";
         }
     }

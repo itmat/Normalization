@@ -1,4 +1,7 @@
 #!/usr/bin/env perl
+use warnings;
+use strict;
+
 $|=1;
 
 if(@ARGV<2) {
@@ -10,13 +13,13 @@ if(@ARGV<2) {
 ";
 }
 
-$LOC = $ARGV[1];
+my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
-@fields = split("/", $LOC);
-$last_dir = $fields[@fields-1];
-$study_dir = $LOC;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
-$stats_dir = $study_dir . "STATS";
+my $stats_dir = $study_dir . "STATS";
 unless (-d $stats_dir){
     `mkdir $stats_dir`;}
 
@@ -25,30 +28,32 @@ if (-e "$LOC/ribosomal_counts.txt"){
 }
 
 open(IN, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
-$i=0;
-while($dir = <IN>){
+my $i=0;
+my @filename;
+while(my $dir = <IN>){
     chomp($dir);
-    `sort -u $LOC/$dir/*ribosomalids.txt | wc -l | grep -vw total >> $LOC/ribosomal_counts.txt`;
-    $X = $dir;
+    my $a = `sort -u $LOC/$dir/*ribosomalids.txt | wc -l | grep -vw total >> $LOC/ribosomal_counts.txt`;
+    my $X = $dir;
     $filename[$i] = $X;
     $i++;
 }
 
-$total_num_file = "$stats_dir/total_num_reads.txt";
+my $total_num_file = "$stats_dir/total_num_reads.txt";
 open(INFILE, "$LOC/ribosomal_counts.txt") or die "file '$LOC/ribosomal_counts.txt' cannot open for reading.\n";
 open(OUTFILE, ">$stats_dir/ribo_percents.txt") or die "file '$stats_dir/ribo_percents.txt' cannot open for writing.\n";
 print OUTFILE "#ribo\t#reads\t\%ribo\tname\n";
 $i=0;
-while($line = <INFILE>) {
+while(my $line = <INFILE>) {
     chomp($line);
-    $cnt = $line;
-    $sample_name = $filename[$i];
+    my $cnt = $line;
+    my $sample_name = $filename[$i];
     $i++;
-    $x = `grep -w $sample_name $total_num_file`;
-    @x_s = split(" ", $x);
-    $total = $x_s[1];
+    my $x = `grep -w $sample_name $total_num_file`;
+    my @x_s = split(" ", $x);
+    my $total = $x_s[1];
     chomp($total);
-    $ratio = int($cnt / $total * 10000) / 10000;
+    my $ratio = int($cnt / $total * 10000) / 10000 * 100;
+    $ratio = sprinf("%.2f", $ratio);
     $x = &format_large_int($total);
     $cnt = &format_large_int($cnt);
     print OUTFILE "$cnt\t$x\t$ratio\t$sample_name\n";
@@ -59,11 +64,11 @@ close(OUTFILE);
 `rm $LOC/ribosomal_counts.txt`;
 
 sub format_large_int () {
-    ($int) = @_;
-    @a = split(//,"$int");
-    $j=0;
-    $newint = "";
-    $n = @a;
+    (my $int) = @_;
+    my @a = split(//,"$int");
+    my $j=0;
+    my $newint = "";
+    my $n = @a;
     for(my $i=$n-1;$i>=0;$i--) {
 	$j++;
 	$newint = $a[$i] . $newint;

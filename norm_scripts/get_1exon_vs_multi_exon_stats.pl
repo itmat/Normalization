@@ -123,6 +123,7 @@ while(my $line = <INFILE>){
 	$xU =~ /(\d+)$/;
 	$one_exonU = $1;
 	$ratioU = int($one_exonU / ($tot_exonU) * 10000) / 100;
+	$ratioU = sprintf("%.2f", $ratioU);
 	print OUTU "$dir\t$ratioU\n";
 	if ($stranded eq "true"){
 	    $xU = `head -1 $fileU_A`;
@@ -132,6 +133,7 @@ while(my $line = <INFILE>){
 	    $xU =~ /(\d+)$/;
 	    $one_exonU = $1;
 	    $ratioU = int($one_exonU / ($tot_exonU) * 10000) / 100;
+	    $ratioU = sprintf("%.2f", $ratioU);
 	    print OUTU_A "$dir\t$ratioU\n";
 	}
     }
@@ -144,6 +146,7 @@ while(my $line = <INFILE>){
 	$xNU =~ /(\d+)$/;
 	$one_exonNU = $1;
 	$ratioNU = int($one_exonNU/ ($tot_exonNU) * 10000) / 100;
+	$ratioNU = sprintf("%.2f", $ratioNU);
 	print OUTNU "$dir\t$ratioNU\n";
 	if ($stranded eq "true"){
 	    $xNU = `head -1 $fileNU_A`;
@@ -153,6 +156,7 @@ while(my $line = <INFILE>){
 	    $xNU =~ /(\d+)$/;
 	    $one_exonNU = $1;
 	    $ratioNU = int($one_exonNU/ ($tot_exonNU) * 10000) / 100;
+	    $ratioNU = sprintf("%.2f", $ratioNU);
 	    print OUTNU_A "$dir\t$ratioNU\n";
 	}
     }

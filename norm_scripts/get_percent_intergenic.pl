@@ -101,6 +101,7 @@ while(my $line = <INFILE>){
 	$xU =~ /(\d+)$/;
 	$tot_exonU = $1;
 	$ratioU = int($tot_interU / ($tot_exonU + $tot_nonexonU) * 10000) / 100;
+	$ratioU = sprintf("%.2f", $ratioU);
 	print OUTU "$dir\t$ratioU\n";
     }
     if ($NU eq "true"){
@@ -115,6 +116,7 @@ while(my $line = <INFILE>){
 	$xNU =~ /(\d+)$/;
         $tot_exonNU = $1;
         $ratioNU = int($tot_interNU / ($tot_exonNU + $tot_nonexonNU) * 10000) / 100;
+	$ratioNU = sprintf("%.2f", $ratioNU);
 	print OUTNU "$dir\t$ratioNU\n";
     }
 }

@@ -90,7 +90,7 @@ if ($U eq "true"){
     open(temp_u, ">$temp_u");
     while(my $line = <INFILE_U>){
 	chomp($line);
-	if ($line !~ /^ENS/){
+	if ($line =~ /^ensGeneID/){
 	    next;
 	}
 	print temp_u "$line\n";
@@ -105,7 +105,7 @@ if ($U eq "true"){
 	open(temp_u_a, ">$temp_u_a");
 	while(my $line = <INFILE_U_A>){
 	    chomp($line);
-	    if ($line !~ /^ENS/){
+	    if ($line =~ /^ensGeneID/){
 		next;
 	    }
 	    print temp_u_a "$line\n";
@@ -122,8 +122,8 @@ if ($NU eq "true"){
     open(temp_nu, ">$temp_nu");
     while(my $line = <INFILE_NU>){
 	chomp($line);
-	if ($line !~ /^ENS/){
-	    next;
+        if ($line =~ /^ensGeneID/){
+            next;
 	}
 	print temp_nu "$line\n";
 	my @a = split(/\t/, $line);
@@ -137,7 +137,7 @@ if ($NU eq "true"){
 	open(temp_nu_a, ">$temp_nu_a");
 	while(my $line = <INFILE_NU_A>){
 	    chomp($line);
-	    if ($line !~ /^ENS/){
+	    if ($line =~ /^ensGeneID/){
 		next;
 	    }
 	    print temp_nu_a "$line\n";
@@ -164,6 +164,7 @@ if($U eq "true"){
 	my $sym = $au[3];
 	my $coord = $au[4];
 	my $percent_u = int(($quantu / $total_u)* 10000 ) / 100;
+	$percent_u = sprintf("%.2f", $percent_u);
 	print OUT "$geneu\t$percent_u\t$sym\t$coord\n";
 	if ($percent_u >= $cutoff){
 	    print OUT2 "$geneu\t$percent_u\t$sym\t$coord\n";
@@ -187,6 +188,7 @@ if($U eq "true"){
 	    my $sym = $au[3];
 	    my $coord = $au[4];
 	    my $percent_u = int(($quantu / $total_u_a)* 10000 ) / 100;
+	    $percent_u = sprintf("%.2f", $percent_u);
 	    print OUT "$geneu\t$percent_u\t$sym\t$coord\n";
 	    if ($percent_u >= $cutoff){
 		print OUT2 "$geneu\t$percent_u\t$sym\t$coord\n";
@@ -213,6 +215,7 @@ if($NU eq "true"){
 	my $sym = $anu[3];
 	my $coord = $anu[4];
 	my $percent_nu = int(($quantnu / $total_nu)* 10000 ) / 100;	
+	$percent_nu = sprintf("%.2f", $percent_nu);
 	print OUT "$genenu\t$percent_nu\t$sym\t$coord\n";
 	if ($percent_nu >= $cutoff){
 	    print OUT2 "$genenu\t$percent_nu\t$sym\t$coord\n";
@@ -236,6 +239,7 @@ if($NU eq "true"){
 	    my $sym = $anu[3];
 	    my $coord = $anu[4];
 	    my $percent_nu = int(($quantnu / $total_nu_a)* 10000 ) / 100;
+	    $percent_nu = sprintf("%.2f", $percent_nu);
 	    print OUT "$genenu\t$percent_nu\t$sym\t$coord\n";
 	    if ($percent_nu >= $cutoff){
 		print OUT2 "$genenu\t$percent_nu\t$sym\t$coord\n";

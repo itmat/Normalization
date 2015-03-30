@@ -259,7 +259,7 @@ my (@id, @sym, @coord);
 while(my $line = <INFILE>) {
     chomp($line);
     if ($type =~ /^gene/i){
-	if ($line !~ /^EN/){
+	if ($line =~ /^ensGeneID/){
 	    next;
 	}
     }
@@ -310,7 +310,7 @@ while($file = <FILES>) {
 	    $DATA[$filecnt][$rowcnt] = $a[1];
 	}
 	if ($type =~ /^gene/i){
-	    if ($line !~ /^EN/){
+	    if ($line =~ /^ensGeneID/){
 		next;
 	    }
 	    $DATA_MIN[$filecnt][$rowcnt] = $a[1];
@@ -458,7 +458,7 @@ if ($stranded eq "true"){
     while(my $line = <INFILE>) {
 	chomp($line);
 	if ($type =~ /^gene/i){
-	    if ($line !~ /^EN/){
+	    if ($line =~ /^ensGeneID/){
 		next;
 	    }
 	}
@@ -506,7 +506,7 @@ if ($stranded eq "true"){
 		$DATA[$filecnt][$rowcnt] = $a[1];
 	    }
 	    if ($type =~ /^gene/i){
-		if ($line !~ /^EN/){
+		if ($line =~ /^ensGeneID/){
 		    next;
 		}
 		$DATA_MIN[$filecnt][$rowcnt] = $a[1];
