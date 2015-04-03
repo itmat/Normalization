@@ -67,11 +67,11 @@ my $outfileNU = "$stats_dir/percent_undetermined_NU.txt";
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; 
 if ($U eq "true"){
     open(OUTU, ">$outfileU") or die "file '$outfileU' cannot open for writing.\n";
-    print OUTU "sample\t%undeterminedU\t(# unique undetermined reads / # total unique mappers)\n";
+    print OUTU "sample\t%undeterminedU\t(%unique undetermined reads out of total unique mappers)\n";
 }
 if ($NU eq "true"){
     open(OUTNU, ">$outfileNU") or die "file '$outfileNU' cannot open for writing.\n";
-    print OUTNU "sample\t%undeterminedNU\t(# non-unique undetermined reads / # total non-unique mappers)\n";
+    print OUTNU "sample\t%undeterminedNU\t(%non-unique undetermined reads out of total non-unique mappers)\n";
 }
 while(my $line = <INFILE>){
     chomp($line);

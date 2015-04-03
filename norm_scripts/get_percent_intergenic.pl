@@ -67,11 +67,11 @@ my $outfileNU = "$stats_dir/percent_intergenic_NU.txt";
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; 
 if ($U eq "true"){
     open(OUTU, ">$outfileU") or die "file '$outfileU' cannot open for writing.\n";
-    print OUTU "sample\t%intergenicU\t(#unique intergenic mappers / #total unique mappers)\n";
+    print OUTU "sample\t%intergenicU\t(%unique intergenic mappers out of total unique mappers)\n";
 }
 if ($NU eq "true"){
     open(OUTNU, ">$outfileNU") or die "file '$outfileNU' cannot open for writing.\n";
-    print OUTNU "sample\t%intergenicNU\t(#non-unique intergenic mappers / #total non-unique mappers)\n";
+    print OUTNU "sample\t%intergenicNU\t(%non-unique intergenic mappers out of total non-unique mappers)\n";
 }
 while(my $line = <INFILE>){
     chomp($line);

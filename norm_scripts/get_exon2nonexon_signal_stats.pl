@@ -74,27 +74,27 @@ open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 if ($U eq "true"){
     open(OUTU, ">$outfileU") or die "file '$outfileU' cannot open for writing.\n";
     if ($stranded eq "false"){
-	print OUTU "sample\t%exonicU\t(# unique exonmapppers / # total unique mappers)\n";
+	print OUTU "sample\t%exonicU\t(%unique exonmapppers out of total unique mappers)\n";
     }
     else{
-	print OUTU "sample\t%exonicU\t(# unique exonmapppers-sense / # total unique mappers)\n";
+	print OUTU "sample\t%exonicU\t(%unique exonmapppers-sense out of total unique mappers)\n";
     }
     if ($stranded eq "true"){
 	open(OUTU_A, ">$outfileU_A") or die "file '$outfileU_A' cannot open for writing.\n";;
-	print OUTU_A "sample\t%exonicU\t(# unique exonmapppers-antisense / # total unique mappers)\n";
+	print OUTU_A "sample\t%exonicU\t(%unique exonmapppers-antisense out of total unique mappers)\n";
     }
 }
 if ($NU eq "true"){
     open(OUTNU, ">$outfileNU") or die "file '$outfileNU' cannot open for writing.\n";
     if ($stranded eq "false"){
-        print OUTNU "sample\t%exonicNU\t(# non-unique exonmapppers / # total non-unique mappers)\n";
+        print OUTNU "sample\t%exonicNU\t(%non-unique exonmapppers out of total non-unique mappers)\n";
     }
     else{
-	print OUTNU "sample\t%exonicNU\t(# non-unique exonmapppers-sense / # total non-unique mappers)\n";
+	print OUTNU "sample\t%exonicNU\t(%non-unique exonmapppers-sense out of total non-unique mappers)\n";
     }
     if ($stranded eq "true"){
 	open(OUTNU_A, ">$outfileNU_A") or die "file '$outfileNU' cannot open for writing.\n";
-        print OUTNU_A "sample\t%exonicNU\t(# non-unique exonmapppers-antisense / # total non-unique mappers)\n";
+        print OUTNU_A "sample\t%exonicNU\t(%non-unique exonmapppers-antisense out of total non-unique mappers)\n";
     }
 }
 

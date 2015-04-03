@@ -4,7 +4,7 @@ my $USAGE =  "\nUsage: run_normalization --sample_dirs <file of sample_dirs> --l
 
 where:
 --sample_dirs <file of sample_dirs> : is a file of sample directories with alignment output without path
---loc <s> : /path/to/directory with the sample directories
+--loc <s> : full path of the directory with the sample directories
 --unaligned <file of fa/fqfiles> : is a file with the full path of all input fa or fq files
 --samfilename <s> : is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam) 
 --cfg <cfg file> : is a cfg file for the study
@@ -317,9 +317,17 @@ if ($EIJ eq "true"){
 	die "ERROR: cannot find file \"$geneinfo\"\nYou need to provide [2] gene information file for Exon-Intron-Junction Normalization (# 2. GENE INFO in your cfg file \"$cfg_file\")\n\n";
     }
 }
+
+my $chrom = $CHRNAMES;
+unless ($chrom =~ /^$/){
+    unless (-e $chrom){
+	die "ERROR: cannot find file \"$chrom\"\nPlease double check [D-i] File of standard chromosome (# 0. NORMALIZTION and DATA TYPE in your cfg file \"$cfg_file\")\n\n";
+    }
+}
+
 my $mito = $CHRM;
 if ($mito =~ /^$/){
-    die "ERROR: You need to provide [4] Name of mitochondrial chromosome (# 2. GENE INFO in your cfg file \"$cfg_file\")\n\n";
+    die "ERROR: You need to provide [D-ii] Name of mitochondrial chromosome (# 0. NORMALIZTION and DATA TYPE in your cfg file \"$cfg_file\")\n\n";
 }
 
 my $genome = $GENOME_FA;
@@ -330,15 +338,15 @@ my $fai = $GENOME_FAI;
 unless (-e $fai){
     die "ERROR: cannot find file \"$fai\"\nYou need to provide [2] index file (# 3. FA and FAI in your cfg file \"$cfg_file\")\n\n";
 }
-my $rRNA = $rRNA_FA;
-unless (-e $rRNA){
-    die "ERROR: cannot find file \"$rRNA\"\nYou need to provide [3] rRNA sequence fasta file (# 3. FA and FAI in your cfg file \"$cfg_file\")\n\n";
+
+my $pref = "false";
+if ($rRNA_PREFILTERED =~ /^true/i){
+    $pref = "true";
 }
-my $annot;
-if ($EIJ eq "true"){
-    $annot = $ANNOTATION_FILE;
-    unless (-e $annot){
-	die "ERROR: cannot find file \"$annot\"\nYou need to provide [3] Annotation file for [Exon-Intron-Junction Normalization] (# 2. GENE INFO in your cfg file \"$cfg_file\")\n\n"; 
+my $rRNA = $rRNA_FA;
+if ($pref eq "false"){
+    unless (-e $rRNA){
+	die "ERROR: cannot find file \"$rRNA\"\nYou need to provide [2] rRNA sequence fasta file (# 4. rRNA in your cfg file \"$cfg_file\")\n\n";
     }
 }
 my $ensGene;
@@ -373,19 +381,19 @@ if ($SAM2COV =~ /^true/i){
     $sam2cov = "true";
     my $num_cov = 0;
     unless (-e $SAM2COV_LOC){
-	die "You need to provide sam2cov location. (# 4. DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
+	die "You need to provide sam2cov location. (# 5. DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
     }
     $sam2cov_loc = $SAM2COV_LOC;
     if ($RUM =~ /^true/i){
 	$aligner = "-rum";
 	$num_cov++;
     }
-    if ($STAR =~ /^true/i){
+    if ($STAR_GSNAP =~ /^true/i){
 	$aligner = "-star";
 	$num_cov++;
     }
     if ($num_cov ne '1'){
-	die "Please specify which aligner was used. (# 4. DATA VISUALIZATION in your cfg file \"$cfg_file\")\n\n";
+	die "Please specify which aligner was used. (# 5. DATA VISUALIZATION in your cfg file \"$cfg_file\")\n\n";
     }
 }
 my $delete_int_sam = "true";
@@ -411,7 +419,7 @@ if ($CONVERT_SAM2BAM ne ""){
 if ($convert_sam2bam eq "true"){
     $samtools = $SAMTOOLS;
     if ($samtools =~ /^$/){
-        die "You need to provide samtools location. (# 5. CLEANUP in your cfg file \"$cfg_file\")\n";
+        die "You need to provide samtools location. (# 6. CLEANUP in your cfg file \"$cfg_file\")\n";
     }
 }
 if ($GZIP_COV ne ""){
@@ -512,6 +520,7 @@ unless (-d $logdir){
 open(IN, $sample_dir) or die "cannot find file \"$sample_dir\"\n";
 while (my $line = <IN>){
     chomp($line);
+    $line =~ s/^\s+|\s+$//g;
     my $file_loc = "$LOC/$line/$samfilename";
     unless (-e $file_loc){
 	die "ERROR: SAM file \"$file_loc\" does not exist. Please double check --sample_dirs, --loc, and --samfilename\n";
@@ -612,6 +621,11 @@ my $stat = $s[0];
 while(qx{$stat | wc -l} > $maxjobs){
     sleep(10);
 }
+my $check_study_port = `$status | grep $study.RUNALL_NORMALIZATION | wc -l`;
+if ($check_study_port == 1){
+    die "ERROR: PORT job with study name \"$study\" is already running.\n\n"
+}
+
 `$batchjobs $request$queue_3G $jobname "$study.RUNALL_NORMALIZATION" -o $logdir/$study.runall_normalization.out -e $logdir/$study.runall_normalization.err < $runall_shfile`;
 
 sub args2shell{

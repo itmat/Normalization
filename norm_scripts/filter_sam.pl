@@ -1,4 +1,6 @@
 #!/usr/bin/env perl
+use strict;
+use warnings;
 $| = 1;
 if(@ARGV<3) {
     die "Usage: perl filter_sam.pl <sam infile> <sam outfile> <more ids> [options]
@@ -9,6 +11,10 @@ where
 <more ids> ribosomalids file
 
 option:
+  -chromnames <file> : a file of chromosome names
+
+  -mito \"<name>, <name>, ... ,<name>\": name(s) of mitochondrial chromosomes
+
   -u  :  set this if you want to return only unique mappers, otherwise by default
          it will return both unique and non-unique mappers.  
 
@@ -16,34 +22,61 @@ option:
          it will return both unique and non-unique mappers.  
 
   -se :  set this if the data are single end, otherwise by default it will assume it's a paired end data.
- 
+
 This will remove all rows from <sam infile> except those that satisfy all of the following:
 1. Unique mapper / Non-Unique mapper
 2. Both forward and reverse map consistently
 3. id not in file <more ids>
-4. chromosome is one of the numbered ones, or X, or Y
+4. a) Default: chromosome is one of the numbered ones, or X, or Y (e.g. chr1, chr2, chrX, chrY OR 1, 2, X, Y)
+   b) with -chromnames and -mito option: chromosome is listed in -chromnames <file>, chromosome not in -mito list.
 5. Is a forward mapper (script outputs forward mappers only)
-
+ 
 ";
 }
 
-$outfile = $ARGV[1];
-@fields = split("/", $outfile);
-$outname = $fields[@fields-1];
-$outfiledir = $outfile;
+my $outfile = $ARGV[1];
+my @fields = split("/", $outfile);
+my $outname = $fields[@fields-1];
+my $outfiledir = $outfile;
 $outfiledir =~ s/\/$outname//;
-$outdir = $outfiledir . "/EIJ/";
-$outfileU = "$outdir/Unique/$outname";
+my $outdir = $outfiledir . "/EIJ/";
+my $outfileU = "$outdir/Unique/$outname";
 $outfileU =~ s/.sam$/_u.sam/;
-$outfileNU = "$outdir/NU/$outname";
+my $outfileNU = "$outdir/NU/$outname";
 $outfileNU =~ s/.sam$/_nu.sam/;
 
-$NU = "true";
-$U = "true";
-$pe = "true";
-$numargs = 0;
-for($i=3; $i<@ARGV; $i++) {
-    $option_found = "false";
+my $NU = "true";
+my $U = "true";
+my $pe = "true";
+my $numargs = 0;
+my $use_chr_names = "false";
+my $chromnames;
+my %MITO;
+my $count = 0;
+for(my $i=3; $i<@ARGV; $i++) {
+    my $option_found = "false";
+    if ($ARGV[$i] eq '-chromnames'){
+        $option_found = "true";
+        $chromnames = $ARGV[$i+1];
+        $use_chr_names = "true";
+        $i++;
+    }
+    if ($ARGV[$i] eq '-mito'){
+        my $argv_all = $ARGV[$i+1];
+        chomp($argv_all);
+        unless ($argv_all =~ /^$/){
+            $count=1;
+        }
+        $option_found = "true";
+        my @a = split(",", $argv_all);
+        for(my $i=0;$i<@a;$i++){
+            my $name = $a[$i];
+            chomp($name);
+            $name =~ s/^\s+|\s+$//g;
+            $MITO{$name}=1;
+        }
+        $i++;
+    }
     if($ARGV[$i] eq '-nu') {
 	$U = "false";
 	$numargs++;
@@ -82,19 +115,34 @@ if ($NU eq "true"){
     open(OUTFILENU, ">$outfileNU") or die "file '$outfileNU' cannot open for writing\n";
 }
 
-$ribofile = $ARGV[2]; # file with id's that have the ribo reads
+my $ribofile = $ARGV[2]; # file with id's that have the ribo reads
+my %RIBO_IDs;
 open(INFILE2, $ribofile) or die "file '$ribofile' cannot open for reading\n";
-while($line = <INFILE2>) {
+while(my $line = <INFILE2>) {
     chomp($line);
     $RIBO_IDs{$line} = 1;
 }
 close(INFILE2);
 
+my %CHR_NAMES;
+if ($use_chr_names eq "true"){
+    if($count == 0){
+        die "please provide mitochondrial chromosome name using -mito \"<name>\" option.\n";
+    }
+    open(CHR, $chromnames) or die "file '$chromnames' cannot open for reading\n";
+    while(my $line = <CHR>){
+        chomp($line);
+        $line =~ s/^\s+|\s+$//g;
+        $CHR_NAMES{$line} = 1;
+    }
+    close(CHR);
+}
+
 open(INFILE, $ARGV[0]) or die "file '$ARGV[0]' cannot open for reading\n";  # the sam file
-$cnt = 0;
-$line = <INFILE>;
-@a = split(/\t/,$line);
-$n = @a;
+my $cnt = 0;
+my $line = <INFILE>;
+my @a = split(/\t/,$line);
+my $n = @a;
 
 until($n > 8) {
     $line = <INFILE>;
@@ -106,43 +154,45 @@ until($n > 8) {
 
 close(INFILE);
 open(INFILE, $ARGV[0]);  # the sam file
-for($i=0; $i<$cnt; $i++) { # skip header
-    $line = <INFILE>;
+for(my $i=0; $i<$cnt; $i++) { # skip header
+    my $line = <INFILE>;
 }
-$cntU = 0;
-$cntNU = 0;
-while($forward = <INFILE>) {
+my $cntU = 0;
+my $cntNU = 0;
+my $id;
+while(my $forward = <INFILE>) {
+    my $len;
     if ($pe eq "true"){
 	chomp($forward);
 	if($forward eq '') {
-	    $forward = <INFILE>;
+	    my $forward = <INFILE>;
 	    chomp($forward);
 	}
-	$reverse = <INFILE>;
+	my $reverse = <INFILE>;
 	chomp($reverse);
 	if($reverse eq '') {
 	    $reverse = <INFILE>;
 	    chomp($reverse);
 	}
-	@F = split(/\t/,$forward);
-	@R = split(/\t/,$reverse);
-	$id2 = $F[0];
+	my @F = split(/\t/,$forward);
+	my @R = split(/\t/,$reverse);
+	my $id2 = $F[0];
 	if($F[0] ne $R[0]) {
 	    $len = -1 * (1 + length($reverse));
 	    seek(INFILE, $len, 1);
 	    next;
 	}
 	if($R[1] & 64) {
-	    $temp = $forward;
+	    my $temp = $forward;
 	    $forward = $reverse;
 	    $reverse = $temp;
 	    @F = split(/\t/,$forward);
 	    @R = split(/\t/,$reverse);
 	    if($R[1] & 64) {
 		print "Warning: I read two reads consecutive but neither were a reverse read...\n\nforward=$forward\n\nreverse=$reverse\n\nPrevious was id='$id'\n\nI am skipping read '$id2'.\n\n";
-		$line = <INFILE>;
+		my $line = <INFILE>;
 		chomp($line);
-		@a = split(/\t/,$line);
+		my @a = split(/\t/,$line);
 		while($a[0] eq $id2) {
 		    $line = <INFILE>;
 		    chomp($line);
@@ -153,16 +203,27 @@ while($forward = <INFILE>) {
 		next;
 	    }
 	}
-	if(!($F[2] =~ /^chr\d+$/ || $F[2] =~ /^chrX$/ || $F[2] =~ /^chrY$/ || $F[2] =~ /^\d+$/ || $F[2] eq 'Y' || $F[2] eq 'X')) {
+	if ($use_chr_names eq "false"){
+	    if(!($F[2] =~ /^chr\d+$/ || $F[2] =~ /^chrX$/ || $F[2] =~ /^chrY$/ || $F[2] =~ /^\d+$/ || $F[2] eq 'Y' || $F[2] eq 'X')) {
+		next;
+	    }
+	}
+	if ($use_chr_names eq "true"){
+            unless (exists $CHR_NAMES{$F[2]}){
+                next;
+            }
+        }
+	if (exists $MITO{$F[2]}){
 	    next;
 	}
+
 	$id = $F[0];
 	
 	if(exists $RIBO_IDs{$id}) {
 	    next;
 	}
-	$Nf = "";
-	$Nr = "";
+	my $Nf = "";
+	my $Nr = "";
 	$forward =~ /(N|I)H:i:(\d+)/;
 	$Nf = $2;
 	$reverse =~ /(N|I)H:i:(\d+)/;
@@ -187,8 +248,18 @@ while($forward = <INFILE>) {
             $forward = <INFILE>;
             chomp($forward);
         }
-	@F = split(/\t/,$forward);
-	if(!($F[2] =~ /^chr\d+$/ || $F[2] =~ /^chrX$/ || $F[2] =~ /^chrY$/ || $F[2] =~ /^\d+$/ || $F[2] eq 'Y' || $F[2] eq 'X')) {
+	my @F = split(/\t/,$forward);
+	if ($use_chr_names eq "false"){
+	    if(!($F[2] =~ /^chr\d+$/ || $F[2] =~ /^chrX$/ || $F[2] =~ /^chrY$/ || $F[2] =~ /^\d+$/ || $F[2] eq 'Y' || $F[2] eq 'X')) {
+		next;
+	    }
+	}
+	if ($use_chr_names eq "true"){
+            unless (exists $CHR_NAMES{$F[2]}){
+                next;
+            }
+        }
+	if (exists $MITO{$F[2]}){
 	    next;
 	}
 	$id = $F[0];
@@ -196,7 +267,7 @@ while($forward = <INFILE>) {
 	if(exists $RIBO_IDs{$id}) {
 	    next;
 	}
-	$Nf = "";
+	my $Nf = "";
 	$forward =~ /(N|I)H:i:(\d+)/;
         $Nf = $2;
 	if($U eq "true") {
@@ -211,11 +282,6 @@ while($forward = <INFILE>) {
                 $cntNU++;
             }
 	}
-    }
-    if($num_unique > 0) {
-	if($cntU == $num_unique) {
-	    last;
-	}	
     }
 }
 close(INFILE);

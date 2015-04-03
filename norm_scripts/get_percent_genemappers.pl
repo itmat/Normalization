@@ -87,14 +87,14 @@ if ($U eq "true"){
 if ($NU eq "true"){
     open(OUTNU, ">$outfileNU") or die "file '$outfileNU' cannot open for writing.\n";
     if ($stranded eq "false"){
-        print OUTNU "sample\t%geneNU\t(#non-unique genemappers / #total non-unique mappers)\n";
+        print OUTNU "sample\t%geneNU\t(%non-unique genemappers out of total non-unique mappers)\n";
     }
     else{
-	print OUTNU "sample\t%geneNU-sense\t(#non-unique genemappers-sense / #total non-unique mappers)\n";
+	print OUTNU "sample\t%geneNU-sense\t(%non-unique genemappers-sense out of total non-unique mappers)\n";
     }
     if ($stranded eq "true"){
 	open(OUTNU_A, ">$outfileNU_A") or die "file '$outfileNU_A' cannot open for writing.\n";
-	print OUTNU_A "sample\t%geneNU-sense\t(#non-unique genemappers-sense / #total non-unique mappers)\n";
+	print OUTNU_A "sample\t%geneNU-antisense\t(%non-unique genemappers-antisense out of total non-unique mappers)\n";
     }
 }
 while(my $line = <INFILE>){

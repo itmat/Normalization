@@ -52,7 +52,7 @@ STUDY
 </pre>
 
 ####C. Configuration File
-Get the `template_version.cfg` file from `/path/to/Normalization/` and follow the instructions in the config file. NORMALIZATION TYPE, DATA TYPE (stranded), CLUSTER INFO, GENE INFO, FA and FAI, DATA VISUALIZATION and CLEANUP options need to be specified. See [here](https://github.com/itmat/Normalization/blob/master/about_cfg.md) for more information.
+Get the `template_version.cfg` file from `/path/to/Normalization/` and follow the instructions in the config file. NORMALIZATION TYPE, DATA TYPE (stranded), CLUSTER INFO, GENE INFO, rRNA, FA and FAI, DATA VISUALIZATION and CLEANUP options need to be specified. See [here](https://github.com/itmat/Normalization/blob/master/about_cfg.md) for more information.
 
 ####D. File of Sample Directories and Unaligned Reads
 ##### i. File of Sample Directories
@@ -76,7 +76,7 @@ Create a text file listing the full paths of the input fasta or fastq files. Whe
             /path/to/Sample_4.rev.fq/fa
 
 ####E. Install [sam2cov](https://github.com/khayer/sam2cov/)
-This is an optional step. You can use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR. sam2cov supports stranded data, but it assumes the reverse read is in the same orientation as the transcripts/genes (sense). __Please make sure you have the latest version of sam2cov__. 
+This is an optional step. You can use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM, STAR or GSNAP. sam2cov supports stranded data, but it assumes the reverse read is in the same orientation as the transcripts/genes (sense). __Please make sure you have the latest version of sam2cov__. 
 
      git clone https://github.com/khayer/sam2cov.git
      cd sam2cov

@@ -72,15 +72,15 @@ if ($gnorm eq "false"){
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     if ($U eq "true"){
 	open(OUTU_EX, ">$outfileU_EX") or die "file '$outfileU_EX' cannot open for writing.\n";
-	print OUTU_EX "sample\t%senseExon\t(#unique sense exonmappers / #unique sense exonmappers + antisense exonmappers)\n";
+	print OUTU_EX "sample\t%senseExon\t(%unique sense exonmappers out of unique sense + antisense exonmappers)\n";
 	open(OUTU_INT, ">$outfileU_INT") or die "file '$outfileU_INT' cannot open for writing.\n";
-	print OUTU_INT "sample\t%senseIntron\t(#unique sense intronmappers / #unique sense intronmappers + antisense intronmappers)\n";
+	print OUTU_INT "sample\t%senseIntron\t(%unique sense intronmappers out of unique sense + antisense intronmappers)\n";
     }
     if ($NU eq "true"){
 	open(OUTNU_EX, ">$outfileNU_EX") or die "file '$outfileNU_EX' cannot open for writing.\n";
-	print OUTNU_EX "sample\t%senseExon\t(#non-unique sense exonmappers / #non-unique sense exonmappers + antisense exonmappers)\n";
+	print OUTNU_EX "sample\t%senseExon\t(%non-unique sense exonmappers out of non-unique sense + antisense exonmappers)\n";
 	open(OUTNU_INT, ">$outfileNU_INT") or die "file '$outfileNU_INT' cannot open for writing.\n";
-	print OUTNU_INT "sample\t%senseIntron\t(#non-unique sense intronmappers / #non-unique sense intronmappers + antisense intronmappers)\n";
+	print OUTNU_INT "sample\t%senseIntron\t(%non-unique sense intronmappers out of non-unique sense + antisense intronmappers)\n";
     }
     
     while(my $line = <INFILE>){
@@ -166,11 +166,11 @@ if ($gnorm eq "true"){
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     if ($U eq "true"){
         open(OUTU_G, ">$outfileU_G") or die "file '$outfileU_G' cannot open for writing.\n";
-        print OUTU_G "sample\t%senseGene\t(#unique sense genemappers / #unique sense genemappers + antisense genemappers)\n";
+        print OUTU_G "sample\t%senseGene\t(%unique sense genemappers out of unique sense + antisense genemappers)\n";
     }
     if ($NU eq "true"){
         open(OUTNU_G, ">$outfileNU_G") or die "file '$outfileNU_G' cannot open for writing.\n";
-        print OUTNU_G "sample\t%senseGene\t(#non-unique sense genemappers / #non-unique sense genemappers + antisense genemappers)\n";
+        print OUTNU_G "sample\t%senseGene\t(%non-unique sense genemappers out of non-unique sense + antisense genemappers)\n";
     }
     while(my $line = <INFILE>){
         chomp($line);

@@ -53,7 +53,7 @@ while(my $line = <INFILE>) {
     my $total = $x_s[1];
     chomp($total);
     my $ratio = int($cnt / $total * 10000) / 10000 * 100;
-    $ratio = sprinf("%.2f", $ratio);
+    $ratio = sprintf("%.2f", $ratio);
     $x = &format_large_int($total);
     $cnt = &format_large_int($cnt);
     print OUTFILE "$cnt\t$x\t$ratio\t$sample_name\n";

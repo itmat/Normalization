@@ -18,6 +18,10 @@ option:
 
   -se :  set this if the data are single end, otherwise by default it will assume it's a paired end data.
 
+  -chromnames <file> : a file of chromosome names
+
+  -mito \"<name>, <name>, ... ,<name>\": name(s) of mitochondrial chromosomes
+
   -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
 
   -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI) cluster.
@@ -43,11 +47,12 @@ option:
 
   -h : print usage
 
-This will remove all rows from input samfile except those that satisfy all of the following:
-1. Unique mapper / NU mapper
+This will remove all rows from <sam infile> except those that satisfy all of the following:
+1. Unique mapper / Non-Unique mapper
 2. Both forward and reverse map consistently
-3. id not in (the appropriate) file specified in <more ids>
-4. Only on a numbered chromosome, X or Y
+3. id not in file <more ids>
+4. a) Default: chromosome is one of the numbered ones, or X, or Y (e.g. chr1, chr2, chrX, chrY OR 1, 2, X, Y)
+   b) with -chromnames and -mito option: chromosome is listed in -chromnames <file>, chromosome not in -mito list.
 
 ";
 if(@ARGV < 3) {
@@ -71,8 +76,35 @@ my $request_memory_option = "";
 my $mem = "";
 my $new_mem = "";
 my $status;
+my $use_chr_names = "";
+my $use_mito_names = "";
+my $chromnames;
 for(my $i=3; $i<@ARGV; $i++) {
     my $option_found = "false";
+    if ($ARGV[$i] eq '-chromnames'){
+        $option_found = "true";
+	$chromnames = $ARGV[$i+1];
+        $use_chr_names = "-chromnames $chromnames";
+        $i++;
+    }
+    if ($ARGV[$i] eq '-mito'){
+        my $argv_all = $ARGV[$i+1];
+        chomp($argv_all);
+	my @a = split(",", $argv_all);
+	my $firstname = $a[0];
+	$firstname =~ s/^\s+|\s+$//g;
+	my $mitonames = "$firstname";
+	if (@a > 1){
+	    for(my $i=1;$i<@a;$i++){
+		my $name = $a[$i];
+		$name =~ s/^\s+|\s+$//g;
+		$mitonames .= ",$name";
+	    }
+	}
+        $option_found = "true";
+	$use_mito_names = "-mito $mitonames";
+        $i++;
+    }
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];
@@ -188,27 +220,27 @@ while(my $line = <INFILE>) {
     open(OUTFILE, ">$shfile");
     if ($numargs_1 eq "0"){
 	if ($pe eq "true"){
-	    print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile\n";
+	    print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile $use_chr_names $use_mito_names\n";
 	}
 	else {
-	    print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile -se \n";
+	    print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile -se $use_chr_names $use_mito_names\n";
 	}
     }
     else {
 	if($U eq "true") {
 	    if ($pe eq "true"){
-		print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile -u\n";
+		print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile -u $use_chr_names $use_mito_names\n";
 	    }
 	    else{
-		print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile -se -u\n";
+		print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile -se -u $use_chr_names $use_mito_names\n";
 	    }
 	}
 	if($NU eq "true") {
 	    if ($pe eq "true"){
-		print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile -nu\n";
+		print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile -nu $use_chr_names $use_mito_names\n";
 	    }
 	    else{
-		print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile -se -nu\n";
+		print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile -se -nu $use_chr_names $use_mito_names\n";
 	    }
 	}
     }

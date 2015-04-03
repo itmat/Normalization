@@ -75,27 +75,27 @@ open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 if ($U eq "true"){
     open(OUTU, ">$outfileU") or die "file '$outfileU' cannot open for writing.\n";
     if ($stranded eq "false"){
-	print OUTU "sample\t%1exonmappersU\t(# of unique 1 exonmapppers / # total unique exonmappers)\n";
+	print OUTU "sample\t%1exonmappersU\t(%unique one-exonmapppers out of total unique exonmappers)\n";
     }
     else{
-	print OUTU "sample\t%1exonmappersU-sense\t(# of unique 1 exonmapppers-sense / # total unique exonmappers-sense)\n";
+	print OUTU "sample\t%1exonmappersU-sense\t(%unique one-exonmapppers-sense out of total unique exonmappers-sense)\n";
     }
     if ($stranded eq "true"){
 	open(OUTU_A, ">$outfileU_A") or die "file '$outfileU_A' cannot open for writing.\n";;
-	print OUTU_A "sample\t%1exonmappersU-antisense\t(# of unique 1 exonmapppers-antisense / # total unique exonmappers-antisense)\n";
+	print OUTU_A "sample\t%1exonmappersU-antisense\t(%unique one-exonmapppers-antisense out of total unique exonmappers-antisense)\n";
     }
 }
 if ($NU eq "true"){
     open(OUTNU, ">$outfileNU") or die "file '$outfileNU' cannot open for writing.\n";
     if ($stranded eq "false"){
-	print OUTNU "sample\t%1exonmappersNU\t(# of non-unique 1 exonmapppers / # total non-unique exonmappers)\n";
+	print OUTNU "sample\t%1exonmappersNU\t(%non-unique one-exonmapppers out of total non-unique exonmappers)\n";
     }
     else{
-	print OUTNU "sample\t%1exonmappersNU-sense\t(# of non-unique 1 exonmapppers-sense / # total non-unique exonmappers-sense)\n";
+	print OUTNU "sample\t%1exonmappersNU-sense\t(%non-unique one-exonmapppers-sense out of total non-unique exonmappers-sense)\n";
     }
     if ($stranded eq "true"){
 	open(OUTNU_A, ">$outfileNU_A") or die "file '$outfileNU_A' cannot open for writing.\n";
-	print OUTNU_A "sample\t%1exonmappersNU-antisense\t(# of non-unique 1 exonmapppers-antisense / # total non-unique exonmappers-antisense)\n";
+	print OUTNU_A "sample\t%1exonmappersNU-antisense\t(%non-unique one-exonmapppers-antisense out of total non-unique exonmappers-antisense)\n";
     }
 }
 

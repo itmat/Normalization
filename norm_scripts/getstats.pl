@@ -151,6 +151,8 @@ while(my $dir = <DIRS>) {
     } else {
 	$Pover{$dir} = 0;
     }
+    $Pover{$dir} = sprintf("%.2f", $Pover{$dir});
+
     $min_pover = $Pover{$dir};
     $min_pover =~ s/,//g;
 
@@ -163,6 +165,7 @@ while(my $dir = <DIRS>) {
 	    $x = '0';
         }
         $y = int($x / $UTOTAL_F_or_R_CONS * 1000) / 10;
+        $y = sprintf("%.2f",$y);
         $min_chrm{$key} = $x;
         $max_chrm{$key} = $x;
         $x2 = &format_large_int($x);

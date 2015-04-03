@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 use strict;
-
+use warnings;
 
 $| = 1;
 if(@ARGV<3) {
@@ -12,6 +12,10 @@ where
 <more ids> ribosomalids file
 
 option:
+  -chromnames <file> : a file of chromosome names
+
+  -mito \"<name>, <name>, ... ,<name>\": name(s) of mitochondrial chromosomes
+
   -u  :  set this if you want to return only unique mappers, otherwise by default
          it will return both unique and non-unique mappers.  
 
@@ -24,7 +28,8 @@ This will remove all rows from <sam infile> except those that satisfy all of the
 1. Unique mapper / Non-Unique mapper
 2. Both forward and reverse map consistently
 3. id not in file <more ids>
-4. chromosome is one of the numbered ones, or X, or Y
+4. a) Default: chromosome is one of the numbered ones, or X, or Y (e.g. chr1, chr2, chrX, chrY OR 1, 2, X, Y) 
+   b) with -chromnames and -mito option: chromosome is listed in -chromnames <file>, chromosome not in -mito list.
 
 ";
 }
@@ -39,12 +44,39 @@ $outfileU =~ s/.sam$/_u.sam/;
 my $outfileNU = "$outfiledir/NU/$outname";
 $outfileNU =~ s/.sam$/_nu.sam/;
 
+
 my $NU = "true";
 my $U = "true";
 my $pe = "true";
 my $numargs = 0;
+my $use_chr_names = "false";
+my $chromnames;
+my %MITO;
+my $count = 0;
 for(my $i=3; $i<@ARGV; $i++) {
     my $option_found = "false";
+    if ($ARGV[$i] eq '-chromnames'){
+	$option_found = "true";
+	$chromnames = $ARGV[$i+1];
+	$use_chr_names = "true";
+	$i++;
+    }
+    if ($ARGV[$i] eq '-mito'){
+        my $argv_all = $ARGV[$i+1];
+        chomp($argv_all);
+        unless ($argv_all =~ /^$/){
+            $count=1;
+        }
+        $option_found = "true";
+        my @a = split(",", $argv_all);
+        for(my $i=0;$i<@a;$i++){
+            my $name = $a[$i];
+            chomp($name);
+            $name =~ s/^\s+|\s+$//g;
+            $MITO{$name}=1;
+        }
+        $i++;
+    }
     if($ARGV[$i] eq '-nu') {
 	$U = "false";
 	$numargs++;
@@ -94,6 +126,20 @@ while(my $line = <INFILE2>) {
     $RIBO_IDs{$line} = 1;
 }
 close(INFILE2);
+
+my %CHR_NAMES;
+if ($use_chr_names eq "true"){
+    if($count == 0){
+	die "please provide mitochondrial chromosome name using -mito \"<name>\" option.\n";
+    }
+    open(CHR, $chromnames) or die "file '$chromnames' cannot open for reading\n";
+    while(my $line = <CHR>){
+	chomp($line);
+	$line =~ s/^\s+|\s+$//g;
+	$CHR_NAMES{$line} = 1;
+    }
+    close(CHR);
+}
 
 open(INFILE, $ARGV[0]) or die "file '$ARGV[0]' cannot open for reading\n";  # the sam file
 my $cnt = 0;
@@ -159,9 +205,20 @@ while(my $forward = <INFILE>) {
 		next;
 	    }
 	}
-	if(!($F[2] =~ /^chr\d+$/ || $F[2] =~ /^chrX$/ || $F[2] =~ /^chrY$/ || $F[2] =~ /^\d+$/ || $F[2] eq 'Y' || $F[2] eq 'X')) {
+	if ($use_chr_names eq "false"){
+	    if(!($F[2] =~ /^chr\d+$/ || $F[2] =~ /^chrX$/ || $F[2] =~ /^chrY$/ || $F[2] =~ /^\d+$/ || $F[2] eq 'Y' || $F[2] eq 'X')) {
+		next;
+	    }
+	}
+	if ($use_chr_names eq "true"){
+	    unless (exists $CHR_NAMES{$F[2]}){
+		next;
+	    }
+	}
+	if (exists $MITO{$F[2]}){
 	    next;
 	}
+
 	$id = $F[0];
 	
 	if(exists $RIBO_IDs{$id}) {
@@ -195,9 +252,20 @@ while(my $forward = <INFILE>) {
             chomp($forward);
         }
 	my @F = split(/\t/,$forward);
-	if(!($F[2] =~ /^chr\d+$/ || $F[2] =~ /^chrX$/ || $F[2] =~ /^chrY$/ || $F[2] =~ /^\d+$/ || $F[2] eq 'Y' || $F[2] eq 'X')) {
+	if ($use_chr_names eq "false"){
+            if(!($F[2] =~ /^chr\d+$/ || $F[2] =~ /^chrX$/ || $F[2] =~ /^chrY$/ || $F[2] =~ /^\d+$/ || $F[2] eq 'Y' || $F[2] eq 'X')) {
+                next;
+            }
+	}
+        if ($use_chr_names eq "true"){
+	    unless (exists $CHR_NAMES{$F[2]}){
+		next;
+            }
+	}
+	if (exists $MITO{$F[2]}){
 	    next;
 	}
+
 	$id = $F[0];
 	
 	if(exists $RIBO_IDs{$id}) {

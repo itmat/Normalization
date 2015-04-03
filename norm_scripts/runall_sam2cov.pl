@@ -8,14 +8,16 @@ my $USAGE = "\nUsage: runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov>
 <fai file> fai file (full path)
 <sam2cov> is full path of sam2cov
 
-***Sam files produced by aligners other than STAR and RUM are currently not supported***
+***Sam files produced by aligners other than STAR, RUM, GSNAP are currently not supported***
 
 option:  
- -str : set this if your library is strand-specific
+ -str_f : if forward read is in the same orientation as the transcripts/genes
+
+ -str_r : if reverse read is in the same orientation as the transcripts/genes
 
  -rum  :  set this if you used RUM to align your reads 
 
- -star  : set this if you used STAR to align your reads 
+ -star  : set this if you used STAR or GSNAP to align your reads 
 
  -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
 
@@ -49,7 +51,10 @@ if (@ARGV<4){
 my $numargs_a = 0;
 my $status;
 my $star = "false";
-my $strand = "false";
+my $FWD = "false";
+my $REV = "false";
+my $stranded = "false";
+my $numargs_s = 0;
 my $rum = "false";
 my $njobs = 200;
 my $replace_mem = "false";
@@ -69,8 +74,16 @@ for (my $i=4; $i<@ARGV; $i++){
         }
         $i++;
     }
-    if($ARGV[$i] eq '-str') {
-        $strand = "true";
+    if($ARGV[$i] eq '-str_f') {
+        $FWD = "true";
+        $stranded = "true";
+        $numargs_s++;
+        $option_found = "true";
+    }
+    if($ARGV[$i] eq '-str_r') {
+	$REV = "true";
+        $stranded = "true";
+        $numargs_s++;
         $option_found = "true";
     }
     if ($ARGV[$i] eq '-star'){
@@ -149,7 +162,11 @@ if($numargs_a ne '1'){
     die "you have to specify which aligner was used to align your reads. sam2cov only works with sam files aligned with STAR or RUM\n
 ";
 }
-
+if($stranded eq "true"){
+    if($numargs_s ne '1') {
+        die "You can only use one of the options \"-str_f\" or \"-str_r\".\n";
+    }
+}
 
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
@@ -180,7 +197,7 @@ while(my $line =  <INFILE>){
     my $prefix_sense = $prefix;
     my $prefix_antisense = $prefix;
     $prefix =~ s/norm.sam//;
-    if ($strand eq "true"){
+    if ($stranded eq "true"){
 	$prefix_sense =~ s/norm.sam/sense./g;
 	$prefix_antisense =~ s/norm.sam/antisense./g;
     }
@@ -188,13 +205,13 @@ while(my $line =  <INFILE>){
     my $jobname = "$study.sam2cov";
     my $logname = "$logdir/sam2cov.$id";
     my ($shfile_sense, $shfile_antisense, $logname_sense, $logname_antisense);
-    if ($strand eq "true"){
+    if ($stranded eq "true"){
 	$shfile_sense = "C.$id.sam2cov.sense.sh";
 	$shfile_antisense = "C.$id.sam2cov.antisense.sh";
 	$logname_sense = "$logdir/sam2cov.sense.$id";
 	$logname_antisense = "$logdir/sam2cov.antisense.$id";
     }
-    if ($strand eq "false"){
+    if ($stranded eq "false"){
 	open(OUTFILE, ">$shdir/$shfile");
 	if ($rum eq 'true'){
 	    print OUTFILE "$sam2cov -r 1 -e 0 -u -p $prefix $fai_file $filename"; 
@@ -208,21 +225,41 @@ while(my $line =  <INFILE>){
 	}
 	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shdir/$shfile`;
     }
-    if ($strand eq "true"){
+    if ($stranded eq "true"){
 	open(OUTFILEF, ">$shdir/$shfile_sense");
-	if ($rum eq 'true'){
-	    print OUTFILEF "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_sense $fai_file $filename"; 
+	if ($REV eq "true"){
+	    if ($rum eq 'true'){
+		print OUTFILEF "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_sense $fai_file $filename"; 
+	    }
+	    if ($star eq 'true'){
+		print OUTFILEF "$sam2cov -u -e 0 -s 1 -p $prefix_sense $fai_file $filename"; 
+	    }
 	}
-	if ($star eq 'true'){
-	    print OUTFILEF "$sam2cov -u -e 0 -s 1 -p $prefix_sense $fai_file $filename"; 
+	if ($FWD eq "true"){
+            if ($rum eq 'true'){
+                print OUTFILEF "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_sense $fai_file $filename";
+            }
+            if ($star eq 'true'){
+                print OUTFILEF "$sam2cov -u -e 0 -s 2 -p $prefix_sense $fai_file $filename";
+            }
 	}
 	close(OUTFILEF);
 	open(OUTFILER, ">$shdir/$shfile_antisense");
-	if ($rum eq 'true'){
-	    print OUTFILER "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_antisense $fai_file $filename"; 
+	if ($REV eq "true"){
+	    if ($rum eq 'true'){
+		print OUTFILER "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_antisense $fai_file $filename"; 
+	    }
+	    if ($star eq 'true'){
+		print OUTFILER "$sam2cov -u -e 0 -s 2 -p $prefix_antisense $fai_file $filename"; 
+	    }
 	}
-	if ($star eq 'true'){
-	    print OUTFILER "$sam2cov -u -e 0 -s 2 -p $prefix_antisense $fai_file $filename"; 
+	if ($FWD eq "true"){
+            if ($rum eq 'true'){
+                print OUTFILER "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_antisense $fai_file $filename";
+            }
+            if ($star eq 'true'){
+                print OUTFILER "$sam2cov -u -e 0 -s 1 -p $prefix_antisense $fai_file $filename";
+            }
 	}
 	close(OUTFILER);
 	while (qx{$status | wc -l} > $njobs){
