@@ -18,12 +18,12 @@ By default, PORT uses numbered, X or Y (e.g. chr1,chr2,...,chrX,chrY OR 1,2,...,
 #####i. File of standard chromosome [optional]
 Provide a full path to file of standard chromosomes (CHRNAMES) if your chromosome names do not follow the chromosome nomenclature described above. The file should look like this (one name per line):
 
-            chr1
-            chr2
-            chr3
-            chr4
-	    chrX
-	    chrY
+    chr1
+    chr2
+    chr3
+    chr4
+    chrX
+    chrY
 
 #####ii. Name of mitochondrial chromosome [required]
 Provide a name of mitochondrial chromosome (e.g. chrM, M). If there are multiple mitochondrial chromosomes, provide a comma separated list of chromosome names.
@@ -78,7 +78,7 @@ You can get the index file (*.fai) using [samtools](http://samtools.sourceforge.
 
 ========================================================================================================
 
-###.4 rRNA
+###4. rRNA
 ####[1] rRNA_PREFILTERED
 Set rRNA_PREFILTERED to TRUE if you prefiltered the ribosomal reads. When rRNA_PREFILTERED is set to TRUE, the BLAST step will be skipped and PORT will not generate percent ribosomal statistics.
 
