@@ -51,28 +51,28 @@ chomp($header);
 my @ENSHEADER = split(/\t/, $header);
 my ($genenamecol, $genesymbolcol, $txchrcol, $txstartcol, $txendcol, $strandcol, $exonStcol, $exonEndcol);
 for(my $i=0; $i<@ENSHEADER; $i++){
-    if ($ENSHEADER[$i] =~ /.name2$/){
+    if ($ENSHEADER[$i] =~ /name2$/){
         $genenamecol = $i;
     }
-    if ($ENSHEADER[$i] =~ /.strand$/){
+    if ($ENSHEADER[$i] =~ /strand$/){
         $strandcol = $i;
     }
-    if ($ENSHEADER[$i] =~ /.ensemblToGeneName.value$/){
+    if ($ENSHEADER[$i] =~ /ensemblToGeneName.value$/){
         $genesymbolcol = $i;
     }
-    if ($ENSHEADER[$i] =~ /.chrom/){
+    if ($ENSHEADER[$i] =~ /chrom/){
         $txchrcol = $i;
     }
-    if ($ENSHEADER[$i] =~ /.txStart/){
+    if ($ENSHEADER[$i] =~ /txStart/){
         $txstartcol = $i;
     }
-    if ($ENSHEADER[$i] =~ /.txEnd/){
+    if ($ENSHEADER[$i] =~ /txEnd/){
         $txendcol = $i;
     }
-    if ($ENSHEADER[$i] =~ /.exonStarts$/){
+    if ($ENSHEADER[$i] =~ /exonStarts$/){
         $exonStcol = $i;
     }
-    if ($ENSHEADER[$i] =~ /.exonEnds$/){
+    if ($ENSHEADER[$i] =~ /exonEnds$/){
         $exonEndcol = $i;
     }
 }

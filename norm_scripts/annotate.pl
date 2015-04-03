@@ -44,19 +44,19 @@ my @ANNOTHEADER = split(/\t/,$line);
 my ($exonstartscol, $exonendscol, $namecol, $descriptioncol, $genesymbolcol, $chromcol);
 
 for(my $i=0; $i<@ANNOTHEADER; $i++) {
-  if($ANNOTHEADER[$i] =~ /.exonStarts$/) {
+  if($ANNOTHEADER[$i] =~ /exonStarts$/) {
     $exonstartscol = $i;
   }
-  if($ANNOTHEADER[$i] =~ /.exonEnds$/) {
+  if($ANNOTHEADER[$i] =~ /exonEnds$/) {
     $exonendscol = $i;
   }
   if($ANNOTHEADER[$i] =~ /description$/) {
     $descriptioncol = $i;
   }
-  if($ANNOTHEADER[$i] =~ /.name$/) {
+  if($ANNOTHEADER[$i] =~ /name$/) {
     $namecol = $i;
   }
-  if($ANNOTHEADER[$i] =~ /.chrom$/) {
+  if($ANNOTHEADER[$i] =~ /chrom$/) {
     $chromcol = $i;
   }
   if($ANNOTHEADER[$i] =~ /geneSymbol$/) {

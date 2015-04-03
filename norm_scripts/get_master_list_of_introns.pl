@@ -39,16 +39,16 @@ chomp($header);
 my @GHEADER = split(/\t/, $header);
 my ($chrcol, $exonstartcol, $exonendcol, $strandcol);
 for(my $i=0; $i<@GHEADER; $i++){
-    if ($GHEADER[$i] =~ /.strand$/){
+    if ($GHEADER[$i] =~ /strand$/){
         $strandcol = $i;
     }
-    if ($GHEADER[$i] =~ /.chrom$/){
+    if ($GHEADER[$i] =~ /chrom$/){
         $chrcol = $i;
     }
-    if ($GHEADER[$i] =~ /.exonStarts$/){
+    if ($GHEADER[$i] =~ /exonStarts$/){
         $exonstartcol = $i;
     }
-    if ($GHEADER[$i] =~ /.exonEnds$/){
+    if ($GHEADER[$i] =~ /exonEnds$/){
         $exonendcol = $i;
     }
 }

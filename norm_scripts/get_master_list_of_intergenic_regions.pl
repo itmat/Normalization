@@ -56,16 +56,16 @@ chomp($header);
 my @GHEADER = split(/\t/, $header);
 my ($chrcol, $txstartcol, $txendcol, $strandcol);
 for(my $i=0; $i<@GHEADER; $i++){
-    if ($GHEADER[$i] =~ /.chrom$/){
+    if ($GHEADER[$i] =~ /chrom$/){
         $chrcol = $i;
     }
-    if ($GHEADER[$i] =~ /.strand$/){
+    if ($GHEADER[$i] =~ /strand$/){
         $strandcol = $i;
     }
-    if ($GHEADER[$i] =~ /.txStart$/){
+    if ($GHEADER[$i] =~ /txStart$/){
         $txstartcol = $i;
     }
-    if ($GHEADER[$i] =~ /.txEnd$/){
+    if ($GHEADER[$i] =~ /txEnd$/){
         $txendcol = $i;
     }
 }
