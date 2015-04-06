@@ -69,7 +69,7 @@ ucsc genome fa files for mm9, hg19, dm3, and danRer7 are available for download 
       mm9: wget http://itmat.indexes.s3.amazonaws.com/mm9_genome_one-line-seqs.fa.gz
       hg19: wget http://itmat.indexes.s3.amazonaws.com/hg19_genome_one-line-seqs.fa.gz
       dm3: wget http://itmat.indexes.s3.amazonaws.com/dm3_genome_one-line-seqs.fa.gz
-      danRer: wget http://itmat.indexes.s3.amazonaws.com/danRer7_genome_one-line-seqs.fa.gz
+      danRer7: wget http://itmat.indexes.s3.amazonaws.com/danRer7_genome_one-line-seqs.fa.gz
 
 For other organisms, follow the instructions [here](https://github.com/itmat/rum/wiki/Creating-indexes) to create indexes.
 

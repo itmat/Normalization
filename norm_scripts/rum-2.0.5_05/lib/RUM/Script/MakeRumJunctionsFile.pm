@@ -272,8 +272,14 @@ sub main {
                 $sizeflag = 1;
             } else {
                 chomp($line);
-                $line =~ />(.*)/;
-                $chr = $1;
+		if ($line =~ /\ /){
+		    $line =~ />(.*)\ /;
+		    $chr = $1;
+		}
+		else{
+		    $line =~ />(.*)/;
+		    $chr = $1;
+		}
                 $chr =~ s/:[^:]*$//;
                 $ref_seq = <GENOMESEQ>;
                 chomp($ref_seq);

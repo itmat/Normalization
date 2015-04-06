@@ -262,7 +262,9 @@ if ($gnorm eq "true"){
 	for (my$i=2;$i<$size+2;$i++){
 	    print OUT "$chrM_num_m[$i]\t";
 	}
-	print OUT "$ribo_num\t";
+	if ($ribo eq "true"){
+	    print OUT "$ribo_num\t";
+	}
 	if ($stranded eq "false"){
 	    print OUT "$gene_u\t$gene_nu\n";
 	}
@@ -579,7 +581,9 @@ if ($eij eq "true"){
         for (my$i=2;$i<$size+2;$i++){
             print OUT "$chrM_num_m[$i]\t";
         }
-        print OUT "$ribo_num\t";
+	if ($ribo eq "true"){
+	    print OUT "$ribo_num\t";
+	}
 	if ($stranded eq "false"){
 	    print OUT "$exonic_u\t$exonic_nu\t$one_u\t$one_nu\t$intergenic_u\t$intergenic_nu\t$und_u\t$und_nu\n";
 	}
