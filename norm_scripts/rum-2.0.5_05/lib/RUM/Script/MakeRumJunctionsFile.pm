@@ -199,16 +199,16 @@ sub main {
 	my @GHEADER = split(/\t/, $header_gene);
 	my ($chrcol, $strandcol, $exonStcol, $exonEndcol);
 	for(my $i=0; $i<@GHEADER; $i++){
-	    if ($GHEADER[$i] =~ /.chrom$/){
+	    if ($GHEADER[$i] =~ /chrom$/){
 		$chrcol = $i;
 	    }
-	    if ($GHEADER[$i] =~ /.strand$/){
+	    if ($GHEADER[$i] =~ /strand$/){
 		$strandcol = $i;
 	    }
-	    if ($GHEADER[$i] =~ /.exonStarts$/){
+	    if ($GHEADER[$i] =~ /exonStarts$/){
 		$exonStcol = $i;
 	    }
-	    if ($GHEADER[$i] =~ /.exonEnds$/){
+	    if ($GHEADER[$i] =~ /exonEnds$/){
 		$exonEndcol = $i;
 	    }
 	}
