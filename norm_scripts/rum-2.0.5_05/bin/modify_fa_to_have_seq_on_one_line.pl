@@ -53,3 +53,4 @@ use RUM::Script qw(:scripts get_options);
 
 get_options();
 modify_fa_to_have_seq_on_one_line();
+

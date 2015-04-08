@@ -85,6 +85,7 @@ my $cutoff_he = 100;
 my $flanking = 5000;
 my $filter_high_expressers = "false";
 my $filter_gene = "false";
+my $filter_gene2 = "false";
 my $filter_eij = "false";
 my $i_exon = 20;
 my $i_intron = 10;
@@ -747,7 +748,7 @@ if ($run_prepause eq "true"){
 	    &check_err ($name_of_alljob, $err_name, $job_num);
 	    $job_num++;
 	}
-	
+
 	#ribopercents
 	$name_of_alljob = "$study.runall_getribopercents";
 	if (($resume eq "true")&&($run_job eq "false")){
@@ -777,6 +778,37 @@ if ($run_prepause eq "true"){
 	    &check_err ($name_of_alljob, $err_name, $job_num);
 	    $job_num++;
 	}
+    }
+
+    #check_fasta
+    my $seqnum = `grep "^>" $genome | wc -l`;
+    my $falinecnt = `wc -l $genome`;
+    my @lcfa =split(" ", $falinecnt);
+    my $linenum_fa = $lcfa[0];
+    #modify_to_onelinefa
+    if (($seqnum * 2) ne $linenum_fa){
+	$name_of_job = "$study.modify_to_onelinefa";
+	if (($resume eq "true")&&($run_job eq "false")){
+	    if ($name_of_job =~ /.$name_to_check$/){
+		$run_job = "true";
+		$job_num = $res_num;
+	    }
+	}
+	if ($run_job eq "true"){
+            $err_name = "$name_of_job.err";
+            &clear_log($name_of_job, $err_name);
+
+            while(qx{$stat | wc -l} > $maxjobs){
+                sleep(10);
+            }
+	    my $temp_genome = "$LOC/one-line.fa";
+            $job = "echo \"perl $norm_script_dir/rum-2.0.5_05/bin/modify_fa_to_have_seq_on_one_line.pl $genome > $temp_genome\"| $batchjobs $mem $jobname \"$name_of_job\" -o $logdir/$name_of_job.out -e $logdir/$name_of_job.err";
+
+            &onejob($job, $name_of_job, $job_num);
+	    &only_err ($name_of_job, $err_name, $job_num);
+            $job_num++;
+	    $genome = $temp_genome;
+        }
     }
     if ($run_job eq "true"){
 	print LOG "\nNormalization\n-------------\n";
@@ -1336,7 +1368,7 @@ if ($run_prepause eq "true"){
 	&check_err ($name_of_job, $err_name, $job_num);
 	$job_num++;
     }
-    
+
     if (($novel eq "true") && ($EIJ eq "true")){
         #junctions
 	$name_of_alljob = "$study.runall_sam2junctions_samfilename";
@@ -1367,7 +1399,7 @@ if ($run_prepause eq "true"){
 	    &check_err ($name_of_alljob, $err_name, $job_num);
 	    $job_num++;
 	}
-    
+
 	#runall_get_inferred_exons 
 	$name_of_alljob = "$study.runall_get_inferred_exons";
 	if (($resume eq "true")&&($run_job eq "false")){
@@ -1744,7 +1776,6 @@ if ($run_prepause eq "true"){
 	&check_err ($name_of_job, $err_name, $job_num);
 	$job_num++;
     }
-
     
     if ($run_job eq "true"){
 	if (($run_prepause eq "true")&&($run_norm eq "false")){
@@ -1801,12 +1832,46 @@ if ($run_norm eq "true"){
             print LOG "\n[Exon-Intron-Junction Normalization - PART2]\n\n";
         }
     }
+    #check_fasta
+    my $seqnum = `grep "^>" $genome | wc -l`;
+    my $falinecnt = `wc -l $genome`;
+    my @lcfa =split(" ", $falinecnt);
+    my $linenum_fa = $lcfa[0];
+    my $temp_genome = "$LOC/one-line.fa";
+    if (($seqnum * 2) ne $linenum_fa){
+	unless (-e $temp_genome){
+	    #modify_to_onelinefa2
+	    $name_of_job = "$study.modify_to_onelinefa2";
+	    if (($resume eq "true")&&($run_job eq "false")){
+		if ($name_of_job =~ /.$name_to_check$/){
+		    $run_job = "true";
+		    $job_num = $res_num;
+		}
+	    }
+	    if ($run_job eq "true"){
+		$err_name = "$name_of_job.err";
+		&clear_log($name_of_job, $err_name);
+		
+		while(qx{$stat | wc -l} > $maxjobs){
+		    sleep(10);
+		}
+		$job = "echo \"perl $norm_script_dir/rum-2.0.5_05/bin/modify_fa_to_have_seq_on_one_line.pl $genome > $temp_genome\"| $batchjobs $mem $jobname \"$name_of_job\" -o $logdir/$name_of_job.out -e $logdir/$name_of_job.err";
+		
+		&onejob($job, $name_of_job, $job_num);
+		&only_err ($name_of_job, $err_name, $job_num);
+		$job_num++;
+		$genome = $temp_genome;
+	    }
+	}
+	$genome = $temp_genome;
+    }
     if ($run_prepause eq "false"){
         # when -cutoff_highexp is used along with -part2, compare the cutoff value against old cutoff
         # to determine if filter_high_expresser needs to be repeated
         if ($GNORM eq "true"){
             if ($filter_high_expressers eq 'true'){
 		$filter_gene = "true";
+		$filter_gene2 = "true";
                 if (-e "$shdir/runall_normalization.sh"){
                     $command = `cat $shdir/runall_normalization.sh`;
                     if ($command =~ /highexp/){
@@ -2259,7 +2324,7 @@ if ($run_norm eq "true"){
             $job_num = $res_num;
         }
     }
-    if (($filter_gene eq "true") && ($run_job eq "true") && ($GNORM eq "true")){
+    if (($filter_gene2 eq "true") && ($run_job eq "true") && ($GNORM eq "true")){
         $err_name = "$name_of_job.err";
         &clear_log($name_of_job, $err_name);
         while(qx{$stat | wc -l} > $maxjobs){
