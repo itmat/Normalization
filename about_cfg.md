@@ -68,7 +68,7 @@ The description line (the header line that begins with ">") **MUST** begin with 
 
 Please check and modify the file appropriately before starting PORT. 
 
-Genome FASTA files for mm9, hg19, dm3, and danRer7 are available for download (gunzip after download):
+ucsc genome FASTA files for mm9, hg19, dm3, and danRer7 are available for download (gunzip after download):
 
       mm9: wget http://itmat.indexes.s3.amazonaws.com/mm9_genome_one-line-seqs.fa.gz
       hg19: wget http://itmat.indexes.s3.amazonaws.com/hg19_genome_one-line-seqs.fa.gz

@@ -22,8 +22,8 @@ Make sure you have the latest version of PORT:
 - Aligned reads (SAM) 
  - SAM files need to have unique read ids. 
  - __Paired End data: mated alignments need to be in adjacent lines.__
-- Gene info files
-- Genome fa/fai
+- [Gene info files](https://github.com/itmat/Normalization/blob/master/about_cfg.md#2-gene-info)
+- [Genome fa/fai](https://github.com/itmat/Normalization/blob/master/about_cfg.md#3-fa-and-fai)
  
 ##### ii. Input Directory Structure
 The input files need to be organized into a specific directory structure for PORT to run properly.
@@ -52,7 +52,7 @@ STUDY
 </pre>
 
 ####C. Configuration File
-Get the `template_version.cfg` file from `/path/to/Normalization/` and follow the instructions in the config file. NORMALIZATION TYPE, DATA TYPE (stranded), CLUSTER INFO, GENE INFO, rRNA, FA and FAI, DATA VISUALIZATION and CLEANUP options need to be specified. See **[here]**(https://github.com/itmat/Normalization/blob/master/about_cfg.md) for more information.
+Get the `template_version.cfg` file from `/path/to/Normalization/` and follow the instructions in the config file. NORMALIZATION TYPE, DATA TYPE (stranded), CLUSTER INFO, GENE INFO, rRNA, FA and FAI, DATA VISUALIZATION and CLEANUP options need to be specified. See **[here](https://github.com/itmat/Normalization/blob/master/about_cfg.md)** for more information.
 
 ####D. File of Sample Directories and Unaligned Reads
 ##### i. File of Sample Directories
