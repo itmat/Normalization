@@ -517,7 +517,7 @@ unless (-d $logdir){
     `mkdir $logdir`;}
 
 #check if the sam files exist
-open(IN, $sample_dir) or die "cannot find file \"$sample_dir\"\n";
+open(IN, $sample_dir) or die "cannot find file \"$sample_dir\".\nPlease provide a file of sample directories.\n";
 while (my $line = <IN>){
     chomp($line);
     $line =~ s/^\s+|\s+$//g;
@@ -528,7 +528,7 @@ while (my $line = <IN>){
 }
 close(IN);
 #check if the fq/fa files exist
-open(IN, $unaligned_file) or die "cannot find file \"$unaligned_file\"\n";
+open(IN, $unaligned_file) or die "cannot find file \"$unaligned_file\".\nPlease provide a file of unaligned reads.\n";
 while (my $line = <IN>){
     chomp($line);
     unless (-e $line){
@@ -536,6 +536,116 @@ while (my $line = <IN>){
     }
 }
 close(IN);
+
+#check input fa, gene info, ensgenes
+my %CHR;
+if ($EIJ eq "true"){
+    open(EIJ, $geneinfo) or die "cannot find file \"$geneinfo\"\n";
+    my $header = <EIJ>;
+    chomp($header);
+    my @EIJHEADER = split(/\t/, $header);
+    my ($chrcol, $exonstartcol, $exonendcol, $strandcol, $txSt, $txEnd);
+    for(my $i=0; $i<@EIJHEADER; $i++){
+        if ($EIJHEADER[$i] =~ /strand$/){
+            $strandcol = $i;
+        }
+        if ($EIJHEADER[$i] =~ /chrom$/){
+            $chrcol = $i;
+        }
+        if ($EIJHEADER[$i] =~ /exonStarts$/){
+            $exonstartcol = $i;
+        }
+        if ($EIJHEADER[$i] =~ /exonEnds$/){
+            $exonendcol = $i;
+        }
+        if ($EIJHEADER[$i] =~ /txStart$/){
+            $txSt = $i;
+        }
+        if ($EIJHEADER[$i] =~ /txEnd$/){
+            $txEnd = $i;
+        }
+    }
+
+    if (!defined($chrcol) || !defined($exonstartcol) || !defined($exonendcol) || !defined($strandcol) || !defined($txSt) || !defined($txEnd)){
+        die "\nERROR: Input GENE_INFO_FILE \"$file_eij\"\nmust contain column headers with the following suffixes: chrom, strand, txStart, txEnd, exonStarts, and exonEnds.\n\n";
+    }
+    while(my $line = <EIJ>){
+        chomp($line);
+        my @a = split(/\t/, $line);
+        my $chr = $a[$chrcol];
+        $CHR{$chr} = 1;
+    }
+    close(EIJ);
+}
+if ($GNORM eq "true"){
+    open(ENS, $ensGene) or die "cannot find file \"$ensGene\"\n";
+    my $header = <ENS>;
+    chomp($header);
+    my @ENSHEADER = split(/\t/, $header);
+    my ($genenamecol, $genesymbolcol, $txchrcol, $txstartcol, $txendcol, $strandcol, $exonStcol, $exonEndcol);
+    for(my $i=0; $i<@ENSHEADER; $i++){
+        if ($ENSHEADER[$i] =~ /name2$/){
+            $genenamecol = $i;
+        }
+        if ($ENSHEADER[$i] =~ /strand$/){
+            $strandcol = $i;
+        }
+        if ($ENSHEADER[$i] =~ /ensemblToGeneName.value$/){
+            $genesymbolcol = $i;
+        }
+        if ($ENSHEADER[$i] =~ /chrom/){
+            $txchrcol = $i;
+        }
+        if ($ENSHEADER[$i] =~ /txStart/){
+            $txstartcol = $i;
+        }
+        if ($ENSHEADER[$i] =~ /txEnd/){
+            $txendcol = $i;
+        }
+        if ($ENSHEADER[$i] =~ /exonStarts$/){
+            $exonStcol = $i;
+        }
+        if ($ENSHEADER[$i] =~ /exonEnds$/){
+            $exonEndcol = $i;
+        }
+    }
+
+    if (!defined($genenamecol) || !defined($genesymbolcol) || !defined($txchrcol) || !defined($txstartcol)|| !defined($txendcol) || !defined($strandcol) || !defined($exonStcol) || !defined($exonEndcol)){
+        die "\nERROR: Input ENSGENES_FILE \"$file_gnorm\"\nmust contain column headers with the following suffixes: name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value\n\n";
+    }
+    while(my $line = <ENS>){
+        chomp($line);
+        my @a = split(/\t/, $line);
+        my $chr = $a[$txchrcol];
+        $CHR{$chr} = 1;
+    }
+    close(ENS);
+}
+open(FA, $genome) or die "cannot open \"$genome\"\n\n";
+while(my $line = <FA>){
+    chomp($line);
+    if ($line =~ /^>/){
+        my $chr;
+        if ($line =~ /\ /){
+            $line =~ />(.*)/;
+            my $temp = $1;
+            $temp =~ s/^\s+|\s+$//g;
+            my @t = split(" ", $temp);
+            $chr = $t[0];
+	}
+        else{
+            $line =~ />(.*)/;
+            $chr = $1;
+        }
+        $chr =~ s/:[^:]*$//;
+        unless (exists $CHR{$chr}){
+            die "\nERROR: Please check the input GENOME_FA \"$genome\".\nDescription line (\">\") must begin with a chromosome name that matches the chromosome names in GENE INFO (# 2. GENE INFO in your cfg file \"$cfg_file\").\nPlease check and modify the file(s) appropriately.\n\n";
+        }
+    }
+    else{
+        next;
+    }
+}
 #if resume option used, check if the log file exists
 if (($resume eq "true") && ($resume_at eq "false")){
     unless (-e $logfile){
@@ -610,7 +720,7 @@ if ($part2 eq "true"){
     if ($EIJ eq "true"){
 	if ($novel eq "true") {
 	    unless (-e "$LOC/master_list_of_exons.$study.txt"){
-		die "ERROR: cannot find file \"$LOC/master_list_of_exons.$study.txt\".\nCreate a study-specific master list of exons by running step 3)-B. Get Novel Exons.\n";
+		die "ERROR: cannot find file \"$LOC/master_list_of_exons.$study.txt\"\nMake sure PART1 completed successfully\n";
 	    }
 	}
     }

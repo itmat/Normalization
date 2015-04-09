@@ -553,6 +553,7 @@ if (-e "$logdir/$study.runall_normalization.err"){
     `rm $logdir/$study.runall_normalization.err`;
 }
 my $run_job = "true";
+my $mem = "$request$queue_3G";
 if ($resume eq "true"){
     my ($name, $length, $get_name);
     if ($resume_at eq "false"){
@@ -592,7 +593,6 @@ if ($resume eq "true"){
     print LOG "\n";
     $run_job = "false";
 }
-my $mem = "$request$queue_3G";
 if ($run_prepause eq "true"){
     $job_num = 1;
     if ($run_job eq "true"){

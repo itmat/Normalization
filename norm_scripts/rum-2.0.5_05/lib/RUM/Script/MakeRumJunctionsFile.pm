@@ -273,8 +273,11 @@ sub main {
             } else {
                 chomp($line);
 		if ($line =~ /\ /){
-		    $line =~ />(.*)\ /;
-		    $chr = $1;
+		    $line =~ />(.*)/;
+		    my $temp = $1;
+		    $temp =~ s/^\s+|\s+$//g;
+		    my @t = split(" ", $temp);
+		    $chr = $t[0];
 		}
 		else{
 		    $line =~ />(.*)/;

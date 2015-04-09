@@ -399,6 +399,10 @@ close(INFILE);
 if ($stranded eq "false"){
     if (-e $outfileE){
 	print OUTE "$lastrow\n";
+	print OUTE "----------\n% unique reads mapping to high expresser out of total unique exonmappers\n";
+    }
+    if (-e $outfileI){
+	print OUTI "----------\n% unique reads mapping to high expresser out of total unique intronmappers\n";
     }
     close(OUTE);
     close(OUTI);
@@ -406,6 +410,16 @@ if ($stranded eq "false"){
 if ($stranded eq "true"){
     if (-e $outfileE_S){
 	print OUTE_S "$lastrow_s\n";
+	print OUTE_S "----------\n% unique reads-sense mapping to high expresser out of total unique exonmappers-sense\n";
+    }
+    if (-e $outfileE_A){
+	print OUTE_A "----------\n% unique reads-antisense mapping to high expresser out of total unique exonmappers-antisense\n";
+    }
+    if (-e $outfileI_S){
+	print OUTI_S "----------\n% unique reads-sense mapping to high expresser out of total unique intronmappers-sense\n";
+    }
+    if (-e $outfileI_A){
+	print OUTI_A "----------\n% unique reads-antisense mapping to high expresser out of total unique intronmappers-antisense\n";
     }
     close(OUTE_S);
     close(OUTE_A);

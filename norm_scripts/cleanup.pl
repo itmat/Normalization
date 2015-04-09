@@ -27,6 +27,10 @@ my $gene_dir = $gnorm_dir . "/FINAL_SAM/";
 my $gspread_dir = $gnorm_dir . "/SPREADSHEETS";
 my @g;
 
+if (-e "$LOC/one-line.fa"){
+    `rm $LOC/one-line.fa`;
+}
+
 if (-d $gene_dir){
     @g = glob("$gene_dir/*gene.norm.txt");
     if (@g > 0){

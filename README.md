@@ -52,7 +52,7 @@ STUDY
 </pre>
 
 ####C. Configuration File
-Get the `template_version.cfg` file from `/path/to/Normalization/` and follow the instructions in the config file. NORMALIZATION TYPE, DATA TYPE (stranded), CLUSTER INFO, GENE INFO, rRNA, FA and FAI, DATA VISUALIZATION and CLEANUP options need to be specified. See [here](https://github.com/itmat/Normalization/blob/master/about_cfg.md) for more information.
+Get the `template_version.cfg` file from `/path/to/Normalization/` and follow the instructions in the config file. NORMALIZATION TYPE, DATA TYPE (stranded), CLUSTER INFO, GENE INFO, rRNA, FA and FAI, DATA VISUALIZATION and CLEANUP options need to be specified. See **[here]**(https://github.com/itmat/Normalization/blob/master/about_cfg.md) for more information.
 
 ####D. File of Sample Directories and Unaligned Reads
 ##### i. File of Sample Directories
@@ -150,7 +150,7 @@ This creates the `runall_normalization.sh` file in the `STUDY/shell_scripts` dir
 
 ####C. Stop/Kill PORT
 
-All PORT job names begin with the unique `STUDY` name (e.g. "STUDY.get_total_num_reads). You can stop/kill a PORT run by killing jobs with the names that begin with `STUDY` (e.g. `bkill -J "STUDY*`).
+All PORT job names begin with the unique `STUDY` name (e.g. "STUDY.get_total_num_reads). You can stop/kill a PORT run by killing jobs with the names that begin with `STUDY` (e.g. `bkill -J "STUDY*"`).
 
 ========================================================================================================
 

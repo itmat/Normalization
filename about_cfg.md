@@ -64,7 +64,11 @@ ucsc gene info files for mm9, hg19, and refseq gene info file for dm3 and danRer
 ###3. FA and FAI
 ####[1] genome sequence one-line fasta file
 
-ucsc genome fa files for mm9, hg19, dm3, and danRer7 are available for download (gunzip after download):
+The description line (the header line that begins with ">") **MUST** begin with chromosome names that match the chromosome names in [GENE INFO](https://github.com/itmat/Normalization/blob/master/about_cfg.md#2-gene-info) file(s).
+
+Please check and modify the file appropriately before starting PORT. 
+
+Genome FASTA files for mm9, hg19, dm3, and danRer7 are available for download (gunzip after download):
 
       mm9: wget http://itmat.indexes.s3.amazonaws.com/mm9_genome_one-line-seqs.fa.gz
       hg19: wget http://itmat.indexes.s3.amazonaws.com/hg19_genome_one-line-seqs.fa.gz
@@ -83,11 +87,14 @@ You can get the index file (*.fai) using [samtools](http://samtools.sourceforge.
 Set rRNA_PREFILTERED to TRUE if you prefiltered the ribosomal reads. When rRNA_PREFILTERED is set to TRUE, the BLAST step will be skipped and PORT will not generate percent ribosomal statistics.
 
 ####[2] rRNA sequence fasta file
-rRNA sequence file for mm9 (can be used for all mammal) is available in Normalization/norm_scripts directory:
+rRNA sequence file for Mammal (mm9 - **can be used for all mammal**), Drosophila melanogaster (dm), Zebrafish (danRer) and C.elegans is available in Normalization/norm_scripts directory:
 
-      mm9: /path/to/Normalization/norm_scripts/rRNA_mm9.fa
+      Mammal: /path/to/Normalization/norm_scripts/rRNA_mm9.fa
+      Drosophila melanogaster: /path/to/Normalization/norm_scripts/rRNA_dm.fa
+      Zebrafish: /path/to/Normalization/norm_scripts/rRNA_danRer.fa
+      C.elegans: /path/to/Normalization/norm_scripts/rRNA_c.elegans.fa
 
-For other organisms, extract rRNA sequences and create a fasta file.
+For other organisms, get rRNA sequences and create a fasta file.
 
 ========================================================================================================
 
