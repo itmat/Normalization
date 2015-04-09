@@ -198,7 +198,7 @@ PORT outputs normalized genemappers to `STUDY/NORMALIZED_DATA/GENE/FINAL_SAM` di
 ######-Exon-Intron-Junction Normalization:<br>
 PORT outputs feature (exon, intron, junctions) counts spreadsheets to `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/SPREADSHEETS`. FINAL MIN spreadsheet has counts from Unique reads and FINAL MAX spreadsheet has counts from Unique+Non-Unique reads. If the data are stranded, you will find sense and antisense spreadsheets for exon and intron counts.<br>
 ######-Gene Normalization:<br>
-PORT outputs gene counts spreadsheets to `STUDY/NORMALIZED_DATA/GENE/SPREADSHEETS`. FINAL MIN spreadsheet has counts from Unique reads that only map to one gene and FINAL MAX spreadsheet has counts from Unique+Non-Unique reads/multiple gene mappers. If the data are stranded, you will find sense and antisense spreadsheets.<br>If you use -cutoff_highexp option, PORT will estimate and put the counts of the filtered highly expressed genes back into the FINAL MIN spreadsheet and output an extra spreadsheet (`FINAL_master_list_of_genes_counts_MIN.STUDY.highExp.txt`) <br>
+PORT outputs gene counts spreadsheets to `STUDY/NORMALIZED_DATA/GENE/SPREADSHEETS`. FINAL MIN spreadsheet has counts from Unique reads that only map to one gene and FINAL MAX spreadsheet has counts from Unique+Non-Unique reads/multiple gene mappers. If the data are stranded, you will find sense and antisense spreadsheets.<br><br>If you use -cutoff_highexp option, PORT will estimate and put the counts of the filtered highly expressed genes back into the FINAL MIN spreadsheet and output an extra spreadsheet (`FINAL_master_list_of_genes_counts_MIN.STUDY.highExp.txt`) <br>
 
 #####iii. Normalization Factors Statistics
 ######-Exon-Intron-Junction Normalization:<br>

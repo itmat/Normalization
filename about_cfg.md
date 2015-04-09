@@ -39,7 +39,7 @@ If not, use OTHER_CLUSTER option and specify the required parameters.
 ###2. GENE INFO
 Gene information file with required suffixes need to be provided. You may use the same file for [1] and [2].
 ####[1] Gene information file for [Gene Normalization]
-Gene normalization requires an ensembl gene info file. The gene info file must contain column names with these suffixes: name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value. 
+Gene normalization requires an ensembl gene info file. The gene info file must contain column names with these suffixes: __name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value.__ 
 
 ensembl gene info files for mm9, hg19, dm3 and danRer7 are available in Normalization/norm_scripts directory:
 
@@ -49,7 +49,7 @@ ensembl gene info files for mm9, hg19, dm3 and danRer7 are available in Normaliz
       danRer7: /path/to/Normalization/norm_scripts/danRer7_ensGenes.txt
 
 ####[2] Gene information file for [Exon-Intron-Junction Normalization]
-Gene info file must contain column names with these suffixes: chrom, strand, txStart, txEnd, exonStarts, and exonEnds. 
+Gene info file must contain column names with these suffixes: __chrom, strand, txStart, txEnd, exonStarts, and exonEnds.__
 (optional suffixes for annotation: geneSymbol and description)
 
 ucsc gene info files for mm9, hg19, and refseq gene info file for dm3 and danRer7 are available in Normalization/norm_scripts directory:
