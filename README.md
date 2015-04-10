@@ -51,7 +51,7 @@ STUDY
 
 </pre>
 
-####C. Configuration File
+####C. [Configuration File](https://github.com/itmat/Normalization/blob/master/about_cfg.md)
 Get the `template_version.cfg` file from `/path/to/Normalization/` and follow the instructions in the config file. NORMALIZATION TYPE, DATA TYPE (stranded), CLUSTER INFO, GENE INFO, rRNA, FA and FAI, DATA VISUALIZATION and CLEANUP options need to be specified. See **[here](https://github.com/itmat/Normalization/blob/master/about_cfg.md)** for more information.
 
 ####D. File of Sample Directories and Unaligned Reads
