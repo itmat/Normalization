@@ -72,15 +72,15 @@ if ($gnorm eq "false"){
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     if ($U eq "true"){
 	open(OUTU_EX, ">$outfileU_EX") or die "file '$outfileU_EX' cannot open for writing.\n";
-	print OUTU_EX "sample\t%senseExon\t(#unique sense exonmappers / #unique sense exonmappers + antisense exonmappers)\n";
+	print OUTU_EX "sample\t%senseExon\t(%unique sense exonmappers out of unique sense + antisense exonmappers)\n";
 	open(OUTU_INT, ">$outfileU_INT") or die "file '$outfileU_INT' cannot open for writing.\n";
-	print OUTU_INT "sample\t%senseIntron\t(#unique sense intronmappers / #unique sense intronmappers + antisense intronmappers)\n";
+	print OUTU_INT "sample\t%senseIntron\t(%unique sense intronmappers out of unique sense + antisense intronmappers)\n";
     }
     if ($NU eq "true"){
 	open(OUTNU_EX, ">$outfileNU_EX") or die "file '$outfileNU_EX' cannot open for writing.\n";
-	print OUTNU_EX "sample\t%senseExon\t(#non-unique sense exonmappers / #non-unique sense exonmappers + antisense exonmappers)\n";
+	print OUTNU_EX "sample\t%senseExon\t(%non-unique sense exonmappers out of non-unique sense + antisense exonmappers)\n";
 	open(OUTNU_INT, ">$outfileNU_INT") or die "file '$outfileNU_INT' cannot open for writing.\n";
-	print OUTNU_INT "sample\t%senseIntron\t(#non-unique sense intronmappers / #non-unique sense intronmappers + antisense intronmappers)\n";
+	print OUTNU_INT "sample\t%senseIntron\t(%non-unique sense intronmappers out of non-unique sense + antisense intronmappers)\n";
     }
     
     while(my $line = <INFILE>){
@@ -108,6 +108,7 @@ if ($gnorm eq "false"){
 	    $antisense_exonU = $1;
 	    $tot_exonU = $sense_exonU + $antisense_exonU;
 	    $ratioU_EX = int($sense_exonU / ($tot_exonU) * 10000) / 100;
+	    $ratioU_EX = sprintf("%.2f",  $ratioU_EX);
 	    print OUTU_EX "$dir\t$ratioU_EX\n";
 	    #sense intron to antisense intron
 	    my ($xUI, $tot_intronU, $sense_intronU, $antisense_intronU, $ratioU_INT);
@@ -119,6 +120,7 @@ if ($gnorm eq "false"){
 	    $antisense_intronU = $1;
 	    $tot_intronU = $sense_intronU + $antisense_intronU;
 	    $ratioU_INT = int($sense_intronU / ($tot_intronU) * 10000) / 100;
+	    $ratioU_INT = sprintf("%.2f", $ratioU_INT);
 	    print OUTU_INT "$dir\t$ratioU_INT\n";
 	}
 	if ($NU eq "true"){
@@ -132,6 +134,7 @@ if ($gnorm eq "false"){
 	    $antisense_exonNU = $1;
 	    $tot_exonNU = $sense_exonNU + $antisense_exonNU;
 	    $ratioNU_EX = int($sense_exonNU / ($tot_exonNU) * 10000) / 100;
+	    $ratioNU_EX = sprintf("%.2f", $ratioNU_EX);
 	    print OUTNU_EX "$dir\t$ratioNU_EX\n";
 	    #sense intron to antisense intron
 	    my ($xNUI, $tot_intronNU, $sense_intronNU, $antisense_intronNU, $ratioNU_INT);
@@ -143,6 +146,7 @@ if ($gnorm eq "false"){
 	    $antisense_intronNU = $1;
 	    $tot_intronNU = $sense_intronNU + $antisense_intronNU;
 	    $ratioNU_INT = int($sense_intronNU / ($tot_intronNU) * 10000) / 100;
+	    $ratioNU_INT = sprintf("%.2f", $ratioNU_INT);
 	    print OUTNU_INT "$dir\t$ratioNU_INT\n";
 	}
     }
@@ -162,11 +166,11 @@ if ($gnorm eq "true"){
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     if ($U eq "true"){
         open(OUTU_G, ">$outfileU_G") or die "file '$outfileU_G' cannot open for writing.\n";
-        print OUTU_G "sample\t%senseGene\t(#unique sense genemappers / #unique sense genemappers + antisense genemappers)\n";
+        print OUTU_G "sample\t%senseGene\t(%unique sense genemappers out of unique sense + antisense genemappers)\n";
     }
     if ($NU eq "true"){
         open(OUTNU_G, ">$outfileNU_G") or die "file '$outfileNU_G' cannot open for writing.\n";
-        print OUTNU_G "sample\t%senseGene\t(#non-unique sense genemappers / #non-unique sense genemappers + antisense genemappers)\n";
+        print OUTNU_G "sample\t%senseGene\t(%non-unique sense genemappers out of non-unique sense + antisense genemappers)\n";
     }
     while(my $line = <INFILE>){
         chomp($line);
@@ -189,6 +193,7 @@ if ($gnorm eq "true"){
 	    $antisense_geneU = $1;
 	    $tot_geneU = $sense_geneU + $antisense_geneU;
             $ratioU_G = int($sense_geneU / ($tot_geneU) * 10000) / 100;
+	    $ratioU_G = sprintf("%.2f",$ratioU_G);
             print OUTU_G "$dir\t$ratioU_G\n";
 	}
 	if ($NU eq "true"){
@@ -202,6 +207,7 @@ if ($gnorm eq "true"){
             $antisense_geneNU = $1;
             $tot_geneNU = $sense_geneNU + $antisense_geneNU;
             $ratioNU_G = int($sense_geneNU / ($tot_geneNU) * 10000) / 100;
+	    $ratioNU_G = sprintf("%.2f", $ratioNU_G);
             print OUTNU_G "$dir\t$ratioNU_G\n";
         }
     }

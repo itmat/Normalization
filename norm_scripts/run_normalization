@@ -4,7 +4,7 @@ my $USAGE =  "\nUsage: run_normalization --sample_dirs <file of sample_dirs> --l
 
 where:
 --sample_dirs <file of sample_dirs> : is a file of sample directories with alignment output without path
---loc <s> : /path/to/directory with the sample directories
+--loc <s> : full path of the directory with the sample directories
 --unaligned <file of fa/fqfiles> : is a file with the full path of all input fa or fq files
 --samfilename <s> : is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam) 
 --cfg <cfg file> : is a cfg file for the study
@@ -49,6 +49,10 @@ OPTIONS:
                           and remove them from all samples for the final spreadsheets.
                           (Default = 0; this will remove features with sum of counts = 0)
 
+     -flanking_region <n> : is used for generating list of flanking regions.
+                            by default, 5000 bp up/downstream of each gene will be considered a flanking region.
+                            use this option to change the size <n>.
+
      [exon-intron-junction normalization only]
      -novel_off : set this if you DO NOT want to generate/use a study-specific master list of exons/introns 
                   (By default, the pipeline will add inferred exons/introns to the list of exons/introns)
@@ -58,9 +62,6 @@ OPTIONS:
                    (Default = 20)
      -depthIntron <n> : the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.
                    (Default = 10)
-     -flanking_region <n> : is used for generating list of flanking regions.
-                            by default, 5000 bp up/downstream of each gene will be considered a flanking region.
-                            use this option to change the size <n>.
      -h : print usage 
 
 ";
@@ -316,6 +317,19 @@ if ($EIJ eq "true"){
 	die "ERROR: cannot find file \"$geneinfo\"\nYou need to provide [2] gene information file for Exon-Intron-Junction Normalization (# 2. GENE INFO in your cfg file \"$cfg_file\")\n\n";
     }
 }
+
+my $chrom = $CHRNAMES;
+unless ($chrom =~ /^$/){
+    unless (-e $chrom){
+	die "ERROR: cannot find file \"$chrom\"\nPlease double check [D-i] File of standard chromosome (# 0. NORMALIZTION and DATA TYPE in your cfg file \"$cfg_file\")\n\n";
+    }
+}
+
+my $mito = $CHRM;
+if ($mito =~ /^$/){
+    die "ERROR: You need to provide [D-ii] Name of mitochondrial chromosome (# 0. NORMALIZTION and DATA TYPE in your cfg file \"$cfg_file\")\n\n";
+}
+
 my $genome = $GENOME_FA;
 unless (-e $genome){
     die "ERROR: cannot find file \"$genome\"\nYou need to provide [1] genome sequence one-line fasta file (# 3. FA and FAI in your cfg file \"$cfg_file\")\n\n";
@@ -324,11 +338,15 @@ my $fai = $GENOME_FAI;
 unless (-e $fai){
     die "ERROR: cannot find file \"$fai\"\nYou need to provide [2] index file (# 3. FA and FAI in your cfg file \"$cfg_file\")\n\n";
 }
-my $annot;
-if ($EIJ eq "true"){
-    $annot = $ANNOTATION_FILE;
-    unless (-e $annot){
-	die "ERROR: cannot find file \"$annot\"\nYou need to provide [3] Annotation file for [Exon-Intron-Junction Normalization] (# 2. GENE INFO in your cfg file \"$cfg_file\")\n\n"; 
+
+my $pref = "false";
+if ($rRNA_PREFILTERED =~ /^true/i){
+    $pref = "true";
+}
+my $rRNA = $rRNA_FA;
+if ($pref eq "false"){
+    unless (-e $rRNA){
+	die "ERROR: cannot find file \"$rRNA\"\nYou need to provide [2] rRNA sequence fasta file (# 4. rRNA in your cfg file \"$cfg_file\")\n\n";
     }
 }
 my $ensGene;
@@ -363,19 +381,19 @@ if ($SAM2COV =~ /^true/i){
     $sam2cov = "true";
     my $num_cov = 0;
     unless (-e $SAM2COV_LOC){
-	die "You need to provide sam2cov location. (# 4. DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
+	die "You need to provide sam2cov location. (# 5. DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
     }
     $sam2cov_loc = $SAM2COV_LOC;
     if ($RUM =~ /^true/i){
 	$aligner = "-rum";
 	$num_cov++;
     }
-    if ($STAR =~ /^true/i){
+    if ($STAR_GSNAP =~ /^true/i){
 	$aligner = "-star";
 	$num_cov++;
     }
     if ($num_cov ne '1'){
-	die "Please specify which aligner was used. (# 4. DATA VISUALIZATION in your cfg file \"$cfg_file\")\n\n";
+	die "Please specify which aligner was used. (# 5. DATA VISUALIZATION in your cfg file \"$cfg_file\")\n\n";
     }
 }
 my $delete_int_sam = "true";
@@ -401,7 +419,7 @@ if ($CONVERT_SAM2BAM ne ""){
 if ($convert_sam2bam eq "true"){
     $samtools = $SAMTOOLS;
     if ($samtools =~ /^$/){
-        die "You need to provide samtools location. (# 5. CLEANUP in your cfg file \"$cfg_file\")\n";
+        die "You need to provide samtools location. (# 6. CLEANUP in your cfg file \"$cfg_file\")\n";
     }
 }
 if ($GZIP_COV ne ""){
@@ -499,9 +517,10 @@ unless (-d $logdir){
     `mkdir $logdir`;}
 
 #check if the sam files exist
-open(IN, $sample_dir) or die "cannot find file \"$sample_dir\"\n";
+open(IN, $sample_dir) or die "cannot find file \"$sample_dir\".\nPlease provide a file of sample directories.\n";
 while (my $line = <IN>){
     chomp($line);
+    $line =~ s/^\s+|\s+$//g;
     my $file_loc = "$LOC/$line/$samfilename";
     unless (-e $file_loc){
 	die "ERROR: SAM file \"$file_loc\" does not exist. Please double check --sample_dirs, --loc, and --samfilename\n";
@@ -509,7 +528,7 @@ while (my $line = <IN>){
 }
 close(IN);
 #check if the fq/fa files exist
-open(IN, $unaligned_file) or die "cannot find file \"$unaligned_file\"\n";
+open(IN, $unaligned_file) or die "cannot find file \"$unaligned_file\".\nPlease provide a file of unaligned reads.\n";
 while (my $line = <IN>){
     chomp($line);
     unless (-e $line){
@@ -517,6 +536,116 @@ while (my $line = <IN>){
     }
 }
 close(IN);
+
+#check input fa, gene info, ensgenes
+my %CHR;
+if ($EIJ eq "true"){
+    open(EIJ, $geneinfo) or die "cannot find file \"$geneinfo\"\n";
+    my $header = <EIJ>;
+    chomp($header);
+    my @EIJHEADER = split(/\t/, $header);
+    my ($chrcol, $exonstartcol, $exonendcol, $strandcol, $txSt, $txEnd);
+    for(my $i=0; $i<@EIJHEADER; $i++){
+        if ($EIJHEADER[$i] =~ /strand$/){
+            $strandcol = $i;
+        }
+        if ($EIJHEADER[$i] =~ /chrom$/){
+            $chrcol = $i;
+        }
+        if ($EIJHEADER[$i] =~ /exonStarts$/){
+            $exonstartcol = $i;
+        }
+        if ($EIJHEADER[$i] =~ /exonEnds$/){
+            $exonendcol = $i;
+        }
+        if ($EIJHEADER[$i] =~ /txStart$/){
+            $txSt = $i;
+        }
+        if ($EIJHEADER[$i] =~ /txEnd$/){
+            $txEnd = $i;
+        }
+    }
+
+    if (!defined($chrcol) || !defined($exonstartcol) || !defined($exonendcol) || !defined($strandcol) || !defined($txSt) || !defined($txEnd)){
+        die "\nERROR: Input GENE_INFO_FILE \"$file_eij\"\nmust contain column headers with the following suffixes: chrom, strand, txStart, txEnd, exonStarts, and exonEnds.\n\n";
+    }
+    while(my $line = <EIJ>){
+        chomp($line);
+        my @a = split(/\t/, $line);
+        my $chr = $a[$chrcol];
+        $CHR{$chr} = 1;
+    }
+    close(EIJ);
+}
+if ($GNORM eq "true"){
+    open(ENS, $ensGene) or die "cannot find file \"$ensGene\"\n";
+    my $header = <ENS>;
+    chomp($header);
+    my @ENSHEADER = split(/\t/, $header);
+    my ($genenamecol, $genesymbolcol, $txchrcol, $txstartcol, $txendcol, $strandcol, $exonStcol, $exonEndcol);
+    for(my $i=0; $i<@ENSHEADER; $i++){
+        if ($ENSHEADER[$i] =~ /name2$/){
+            $genenamecol = $i;
+        }
+        if ($ENSHEADER[$i] =~ /strand$/){
+            $strandcol = $i;
+        }
+        if ($ENSHEADER[$i] =~ /ensemblToGeneName.value$/){
+            $genesymbolcol = $i;
+        }
+        if ($ENSHEADER[$i] =~ /chrom/){
+            $txchrcol = $i;
+        }
+        if ($ENSHEADER[$i] =~ /txStart/){
+            $txstartcol = $i;
+        }
+        if ($ENSHEADER[$i] =~ /txEnd/){
+            $txendcol = $i;
+        }
+        if ($ENSHEADER[$i] =~ /exonStarts$/){
+            $exonStcol = $i;
+        }
+        if ($ENSHEADER[$i] =~ /exonEnds$/){
+            $exonEndcol = $i;
+        }
+    }
+
+    if (!defined($genenamecol) || !defined($genesymbolcol) || !defined($txchrcol) || !defined($txstartcol)|| !defined($txendcol) || !defined($strandcol) || !defined($exonStcol) || !defined($exonEndcol)){
+        die "\nERROR: Input ENSGENES_FILE \"$file_gnorm\"\nmust contain column headers with the following suffixes: name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value\n\n";
+    }
+    while(my $line = <ENS>){
+        chomp($line);
+        my @a = split(/\t/, $line);
+        my $chr = $a[$txchrcol];
+        $CHR{$chr} = 1;
+    }
+    close(ENS);
+}
+open(FA, $genome) or die "cannot open \"$genome\"\n\n";
+while(my $line = <FA>){
+    chomp($line);
+    if ($line =~ /^>/){
+        my $chr;
+        if ($line =~ /\ /){
+            $line =~ />(.*)/;
+            my $temp = $1;
+            $temp =~ s/^\s+|\s+$//g;
+            my @t = split(" ", $temp);
+            $chr = $t[0];
+	}
+        else{
+            $line =~ />(.*)/;
+            $chr = $1;
+        }
+        $chr =~ s/:[^:]*$//;
+        unless (exists $CHR{$chr}){
+            die "\nERROR: Please check the input GENOME_FA \"$genome\".\nDescription line (\">\") must begin with a chromosome name that matches the chromosome names in GENE INFO (# 2. GENE INFO in your cfg file \"$cfg_file\").\nPlease check and modify the file(s) appropriately.\n\n";
+        }
+    }
+    else{
+        next;
+    }
+}
 #if resume option used, check if the log file exists
 if (($resume eq "true") && ($resume_at eq "false")){
     unless (-e $logfile){
@@ -591,7 +720,7 @@ if ($part2 eq "true"){
     if ($EIJ eq "true"){
 	if ($novel eq "true") {
 	    unless (-e "$LOC/master_list_of_exons.$study.txt"){
-		die "ERROR: cannot find file \"$LOC/master_list_of_exons.$study.txt\".\nCreate a study-specific master list of exons by running step 3)-B. Get Novel Exons.\n";
+		die "ERROR: cannot find file \"$LOC/master_list_of_exons.$study.txt\"\nMake sure PART1 completed successfully\n";
 	    }
 	}
     }
@@ -602,6 +731,11 @@ my $stat = $s[0];
 while(qx{$stat | wc -l} > $maxjobs){
     sleep(10);
 }
+my $check_study_port = `$status | grep $study.RUNALL_NORMALIZATION | wc -l`;
+if ($check_study_port == 1){
+    die "ERROR: PORT job with study name \"$study\" is already running.\n\n"
+}
+
 `$batchjobs $request$queue_3G $jobname "$study.RUNALL_NORMALIZATION" -o $logdir/$study.runall_normalization.out -e $logdir/$study.runall_normalization.err < $runall_shfile`;
 
 sub args2shell{

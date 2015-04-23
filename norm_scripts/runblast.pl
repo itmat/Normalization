@@ -90,6 +90,7 @@ if (-e $idsfile){
 }
 my $file1 = $fwd;
 my $file2 = $rev;
+
 #convert fastq to fasta
 if ($type eq "-fq"){
     $file1 .= ".fa";
@@ -121,6 +122,7 @@ if ($type eq "-fq"){
 #makeblastdb
 my $database1 = "db1.$dir";
 my $database2 = "db2.$dir";
+
 if ($se eq "true"){
     if ($gz eq "false"){
 	my $x = `$blastdir/bin/makeblastdb -dbtype nucl -in $file1 -out $LOC/$dir/$database1`;
@@ -141,13 +143,56 @@ if ($pe eq "true"){
 }
 
 #blastn
+if (-e "$file1.blastout"){
+    `rm $file1.blastout`;
+}
+if (-e "$file2.blastout"){
+    `rm $file2.blastout`;
+}
+open(QU, $query) or die "cannot find file '$query'\n";
+my $tempq = "$LOC/$dir/query.temp";
+my $seq = "";
+my $name = "";
+while(my $line = <QU>){
+    chomp($line);
+    if ($line =~ /^\>/){
+	unless ($seq =~ /^$/){
+	    open(TQ, ">$tempq");
+	    print TQ "$name\n$seq\n";
+	    close(TQ);
+	    if ($se eq "true"){
+		my $x = `$blastdir/bin/blastn -task blastn -db $LOC/$dir/$database1 -query $tempq -num_alignments 1000000000 >> $file1.blastout`;
+	    }
+	    if ($pe eq "true"){
+		my $x = `$blastdir/bin/blastn -task blastn -db $LOC/$dir/$database1 -query $tempq -num_alignments 1000000000 >> $file1.blastout`;
+		my $y = `$blastdir/bin/blastn -task blastn -db $LOC/$dir/$database2 -query $tempq -num_alignments 1000000000 >> $file2.blastout`;
+	    }
+	}
+	$name = $line;
+	$seq = "";
+    }
+    else{
+	$seq .= $line;
+    }
+}
+#last query 
+open(TQ, ">$tempq");
+print TQ "$name\n$seq\n";
+close(TQ);
+
 if ($se eq "true"){
-    my $x = `$blastdir/bin/blastn -task blastn -db $LOC/$dir/$database1 -query $query -num_alignments 1000000000 > $file1.blastout`;
-    my $p = `perl $path/parseblastout.pl $file1.blastout > $idsfile`;
+    my $x = `$blastdir/bin/blastn -task blastn -db $LOC/$dir/$database1 -query $tempq -num_alignments 1000000000 >> $file1.blastout`;
 }
 if ($pe eq "true"){
-    my $x = `$blastdir/bin/blastn -task blastn -db $LOC/$dir/$database1 -query $query -num_alignments 1000000000 > $file1.blastout`;
-    my $y = `$blastdir/bin/blastn -task blastn -db $LOC/$dir/$database2 -query $query -num_alignments 1000000000 > $file2.blastout`;
+    my $x = `$blastdir/bin/blastn -task blastn -db $LOC/$dir/$database1 -query $tempq -num_alignments 1000000000 >> $file1.blastout`;
+    my $y = `$blastdir/bin/blastn -task blastn -db $LOC/$dir/$database2 -query $tempq -num_alignments 1000000000 >> $file2.blastout`;
+}
+#parse blast
+if ($se eq "true"){
+    my $p = `perl $path/parseblastout.pl $file1.blastout > $idsfile`;
+}
+
+if ($pe eq "true"){
     my $p = `perl $path/parseblastout.pl $file1.blastout > $idsfile.tmp1`;
     my $q = `perl $path/parseblastout.pl $file2.blastout > $idsfile.tmp2`;
     my $z = `cat $idsfile.tmp1 $idsfile.tmp2 | sort -u > $idsfile`;
@@ -157,6 +202,10 @@ if (-e "$idsfile.tmp1"){
 }
 if (-e "$idsfile.tmp2"){ 
     `rm $idsfile.tmp2`;
+}
+
+if (-e "$tempq"){
+    `rm $tempq`;
 }
 
 print "got here\n";

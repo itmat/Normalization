@@ -67,11 +67,11 @@ my $outfileNU = "$stats_dir/percent_undetermined_NU.txt";
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; 
 if ($U eq "true"){
     open(OUTU, ">$outfileU") or die "file '$outfileU' cannot open for writing.\n";
-    print OUTU "sample\t%undeterminedU\t(# unique undetermined reads / # total unique mappers)\n";
+    print OUTU "sample\t%undeterminedU\t(%unique undetermined reads out of total unique mappers)\n";
 }
 if ($NU eq "true"){
     open(OUTNU, ">$outfileNU") or die "file '$outfileNU' cannot open for writing.\n";
-    print OUTNU "sample\t%undeterminedNU\t(# non-unique undetermined reads / # total non-unique mappers)\n";
+    print OUTNU "sample\t%undeterminedNU\t(%non-unique undetermined reads out of total non-unique mappers)\n";
 }
 while(my $line = <INFILE>){
     chomp($line);
@@ -101,6 +101,7 @@ while(my $line = <INFILE>){
 	$xU =~ /(\d+)$/;
 	$tot_exonU = $1;
 	$ratioU = int($tot_undU / ($tot_exonU + $tot_nonexonU) * 10000) / 100;
+	$ratioU = sprintf("%.2f", $ratioU);
 	print OUTU "$dir\t$ratioU\n";
     }
     if ($NU eq "true"){
@@ -115,6 +116,7 @@ while(my $line = <INFILE>){
 	$xNU =~ /(\d+)$/;
         $tot_exonNU = $1;
         $ratioNU = int($tot_undNU / ($tot_exonNU + $tot_nonexonNU) * 10000) / 100;
+	$ratioNU = sprintf("%.2f", $ratioNU);
 	print OUTNU "$dir\t$ratioNU\n";
     }
 }

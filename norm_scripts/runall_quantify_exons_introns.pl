@@ -235,7 +235,7 @@ if($numargs_u_nu > 1) {
 }
 if ($stranded eq "true"){
     if ($str_args ne '1'){
-        die "please specify read orientation of stranded data: -str_f or -str-r\n";
+        die "please specify read orientation of stranded data: -str_f or -str_r\n";
     }
 }
 
@@ -310,7 +310,7 @@ while(my $line = <IN>){
 	    #exonquants
 	    $qinfo = "-exon_only";
 	    open(OUT, ">$shfile_exon");
-	    print OUT "perl $path/quantify_exons_introns.pl $filename_exon $exons $introns $igs $LOC -depthE $i_exon -depthI $i_intron $orientation $qinfo $filter\n";
+	    print OUT "perl $path/quantify_exons_introns.pl $filename_exon $exons $introns $igs $LOC $orientation $qinfo $filter\n";
 	    close(OUT);
 	    while(qx{$status | wc -l}>$njobs){
 		sleep(10);
@@ -319,7 +319,7 @@ while(my $line = <IN>){
 	    #intronquants
 	    $qinfo = "-intron_only";
 	    open(OUT, ">$shfile_intron");
-	    print OUT "perl $path/quantify_exons_introns.pl $filename_intron $exons $introns $igs $LOC -depthE $i_exon -depthI $i_intron $orientation $qinfo $filter\n";
+	    print OUT "perl $path/quantify_exons_introns.pl $filename_intron $exons $introns $igs $LOC $orientation $qinfo $filter\n";
 	    close(OUT);
 	    while(qx{$status | wc -l}>$njobs){
 		sleep(10);
@@ -343,7 +343,7 @@ while(my $line = <IN>){
             $qinfo = "-exon_only";
 	    #sense
             open(OUT, ">$shfile_exon_s");
-            print OUT "perl $path/quantify_exons_introns.pl $filename_exon_s $exons $introns $igs $LOC -depthE $i_exon -depthI $i_intron $orientation $qinfo $filter\n";
+            print OUT "perl $path/quantify_exons_introns.pl $filename_exon_s $exons $introns $igs $LOC $orientation $qinfo $filter\n";
             close(OUT);
             while(qx{$status | wc -l}>$njobs){
                 sleep(10);
@@ -351,7 +351,7 @@ while(my $line = <IN>){
             `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_exon_s.out -e $logname_exon_s.err < $shfile_exon_s`;
 	    #antisense
 	    open(OUT, ">$shfile_exon_a");
-            print OUT "perl $path/quantify_exons_introns.pl $filename_exon_a $exons $introns $igs $LOC -depthE $i_exon -depthI $i_intron $orientation $qinfo $filter\n";
+            print OUT "perl $path/quantify_exons_introns.pl $filename_exon_a $exons $introns $igs $LOC $orientation $qinfo $filter\n";
             close(OUT);
             while(qx{$status | wc -l}>$njobs){
 		sleep(10);
@@ -361,7 +361,7 @@ while(my $line = <IN>){
             $qinfo = "-intron_only";
 	    #sense
             open(OUT, ">$shfile_intron_s");
-            print OUT "perl $path/quantify_exons_introns.pl $filename_intron_s $exons $introns $igs $LOC -depthE $i_exon -depthI $i_intron $orientation $qinfo $filter\n";
+            print OUT "perl $path/quantify_exons_introns.pl $filename_intron_s $exons $introns $igs $LOC $orientation $qinfo $filter\n";
             close(OUT);
             while(qx{$status | wc -l}>$njobs){
                 sleep(10);
@@ -369,7 +369,7 @@ while(my $line = <IN>){
             `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_intron_s.out -e $logname_intron_s.err < $shfile_intron_s`;
             #antisense
             open(OUT, ">$shfile_intron_a");
-            print OUT "perl $path/quantify_exons_introns.pl $filename_intron_a $exons $introns $igs $LOC -depthE $i_exon -depthI $i_intron $orientation $qinfo $filter\n";
+            print OUT "perl $path/quantify_exons_introns.pl $filename_intron_a $exons $introns $igs $LOC $orientation $qinfo $filter\n";
             close(OUT);
             while(qx{$status | wc -l}>$njobs){
 		sleep(10);

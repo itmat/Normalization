@@ -199,16 +199,16 @@ sub main {
 	my @GHEADER = split(/\t/, $header_gene);
 	my ($chrcol, $strandcol, $exonStcol, $exonEndcol);
 	for(my $i=0; $i<@GHEADER; $i++){
-	    if ($GHEADER[$i] =~ /.chrom$/){
+	    if ($GHEADER[$i] =~ /chrom$/){
 		$chrcol = $i;
 	    }
-	    if ($GHEADER[$i] =~ /.strand$/){
+	    if ($GHEADER[$i] =~ /strand$/){
 		$strandcol = $i;
 	    }
-	    if ($GHEADER[$i] =~ /.exonStarts$/){
+	    if ($GHEADER[$i] =~ /exonStarts$/){
 		$exonStcol = $i;
 	    }
-	    if ($GHEADER[$i] =~ /.exonEnds$/){
+	    if ($GHEADER[$i] =~ /exonEnds$/){
 		$exonEndcol = $i;
 	    }
 	}
@@ -272,8 +272,17 @@ sub main {
                 $sizeflag = 1;
             } else {
                 chomp($line);
-                $line =~ />(.*)/;
-                $chr = $1;
+		if ($line =~ /\ /){
+		    $line =~ />(.*)/;
+		    my $temp = $1;
+		    $temp =~ s/^\s+|\s+$//g;
+		    my @t = split(" ", $temp);
+		    $chr = $t[0];
+		}
+		else{
+		    $line =~ />(.*)/;
+		    $chr = $1;
+		}
                 $chr =~ s/:[^:]*$//;
                 $ref_seq = <GENOMESEQ>;
                 chomp($ref_seq);
@@ -394,6 +403,9 @@ sub main {
         while ($line = <INFILE>) {
 	    $NU = "false";
             chomp($line);
+	    if ($line =~ /^@/){
+		next;
+	    }
             @a = split(/\t/,$line);
             $chr = $a[2];
             if (!($a[5] =~ /N/)) {

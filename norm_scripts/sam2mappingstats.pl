@@ -275,41 +275,53 @@ if($num_ids == 0) {
 
 $num_ids_formatted = format_large_int($num_ids);
 $bothmappedU_formatted = format_large_int($bothmappedU);
-$bothmappedU_percent = int($bothmappedU / $num_ids * 1000) / 10;
+$bothmappedU_percent = int($bothmappedU / $num_ids * 10000) / 100;
+$bothmappedU_percent = sprintf("%.2f", $bothmappedU_percent);
 $forwardonlyU_formatted = format_large_int($forwardonlyU);
 $reverseonlyU_formatted = format_large_int($reverseonlyU);
 $forwardU_total = $bothmappedU + $forwardonlyU;
 $reverseU_total = $bothmappedU + $reverseonlyU;
 $forwardU_total_formatted = format_large_int($forwardU_total);
 $reverseU_total_formatted = format_large_int($reverseU_total);
-$forwardU_total_percent = int($forwardU_total / $num_ids * 1000) / 10;
-$reverseU_total_percent = int($reverseU_total / $num_ids * 1000) / 10;
+$forwardU_total_percent = int($forwardU_total / $num_ids * 10000) / 100;
+$forwardU_total_percent = sprintf("%.2f", $forwardU_total_percent);
+$reverseU_total_percent = int($reverseU_total / $num_ids * 10000) / 100;
+$reverseU_total_percent = sprintf("%.2f", $reverseU_total_percent);
 $atleastoneforwardorreverse = $bothmappedU + $forwardonlyU + $reverseonlyU;
 $atleastoneforwardorreverse_formatted = format_large_int($atleastoneforwardorreverse);
-$atleastoneforwardorreverse_percent = int($atleastoneforwardorreverse / $num_ids * 1000) / 10;
+$atleastoneforwardorreverse_percent = int($atleastoneforwardorreverse / $num_ids * 10000) / 100;
+$atleastoneforwardorreverse_percent = sprintf("%.2f", $atleastoneforwardorreverse_percent);
 
 $forwardonlyNU_formatted = format_large_int($forwardonlyNU);
 $reverseonlyNU_formatted = format_large_int($reverseonlyNU);
-$forwardonlyNU_percent = int($forwardonlyNU / $num_ids * 1000) / 10;
-$reverseonlyNU_percent = int($reverseonlyNU / $num_ids * 1000) / 10;
+$forwardonlyNU_percent = int($forwardonlyNU / $num_ids * 10000) / 100;
+$forwardonlyNU_percent = sprintf("%.2f", $forwardonlyNU_percent);
+$reverseonlyNU_percent = int($reverseonlyNU / $num_ids * 10000) / 100;
+$reverseonlyNU_percent = sprintf("%.2f", $reverseonlyNU_percent);
 $bothmappedNU_formatted = format_large_int($bothmappedNU);
-$bothmappedNU_percent = int($bothmappedNU / $num_ids * 1000) / 10;
+$bothmappedNU_percent = int($bothmappedNU / $num_ids * 10000) / 100;
+$bothmappedNU_percent = sprintf("%.2f",$bothmappedNU_percent);
 $atleastoneforwardorreverseNU = $bothmappedNU + $forwardonlyNU + $reverseonlyNU;
 $atleastoneforwardorreverseNU_formatted = format_large_int($atleastoneforwardorreverseNU);
-$atleastoneforwardorreverseNU_percent = int($atleastoneforwardorreverseNU / $num_ids * 1000) / 10;
+$atleastoneforwardorreverseNU_percent = int($atleastoneforwardorreverseNU / $num_ids * 10000) / 100;
+$atleastoneforwardorreverseNU_percent = sprintf("%.2f", $atleastoneforwardorreverseNU_percent);
 
 $total_forward = $bothmappedU + $forwardonlyU + $bothmappedNU + $forwardonlyNU;
 $total_forward_formatted = format_large_int($total_forward);
-$total_forward_percent = int($total_forward / $num_ids * 1000) / 10;
+$total_forward_percent = int($total_forward / $num_ids * 10000) / 100;
+$total_forward_percent = sprintf("%.2f", $total_forward_percent);
 $total_reverse = $bothmappedU + $reverseonlyU + $bothmappedNU + $reverseonlyNU;
 $total_reverse_formatted = format_large_int($total_reverse);
-$total_reverse_percent = int($total_reverse / $num_ids * 1000) / 10;
+$total_reverse_percent = int($total_reverse / $num_ids * 10000) / 100;
+$total_reverse_percent = sprintf("%.2f", $total_reverse_percent);
 $total_consistent = $bothmappedU + $bothmappedNU;
 $total_consistent_formatted = format_large_int($total_consistent);
-$total_consistent_percent = int($total_consistent / $num_ids * 1000) / 10;
+$total_consistent_percent = int($total_consistent / $num_ids * 10000) / 100;
+$total_consistent_percent = sprintf("%.2f", $total_consistent_percent);
 $total = $bothmappedU + $forwardonlyU + $reverseonlyU + $bothmappedNU + $forwardonlyNU + $reverseonlyNU;
 $total_formatted = format_large_int($total);
-$total_percent = int($total / $num_ids * 1000) / 10;
+$total_percent = int($total / $num_ids * 10000) / 100;
+$total_percent = sprintf("%.2f", $total_percent);
 
 $num_OL_formatted = format_large_int($num_OL);
 $num_NOL_formatted = format_large_int($num_NOL);
@@ -354,12 +366,14 @@ if($covU =~ /\S/ || $covNU =~ /\S/) {
 }
 if($covU =~ /\S/) {
     $coverageU_formatted = format_large_int($bases_covered_U);
-    $coverageU_percent = int($bases_covered_U / $genome_size * 1000) / 10;
+    $coverageU_percent = int($bases_covered_U / $genome_size * 10000) / 100;
+    $coverageU_percent = sprintf("%.2f", $coverageU_percent);
     print OUT "number of bases covered by unique mappers: $coverageU_formatted ($coverageU_percent%)\n";
 }
 if($covNU =~ /\S/) {
     $coverageNU_formatted = format_large_int($bases_covered_NU);
-    $coverageNU_percent = int($bases_covered_NU / $genome_size * 1000) / 10;
+    $coverageNU_percent = int($bases_covered_NU / $genome_size * 10000) / 100;
+    $coverageNU_percent = sprintf("%.2f", $coverageNU_percent);
     print OUT "number of bases covered by non-unique mappers: $coverageNU_formatted ($coverageNU_percent%)\n\n";
 }
 
@@ -369,18 +383,24 @@ chr\tnum\t%ofU\t%allMapped\t%ofAll
 ";
 
 foreach $chr (sort {&cmpChrs($a,$b)} keys %CHR_U) {
-    $pall = int($CHR_U{$chr} / $num_ids * 1000) / 10;
-    $pU = int($CHR_U{$chr} / $atleastoneforwardorreverse * 1000) / 10;
-    $ptm = int($CHR_U{$chr} / $total * 1000) / 10;
+    $pall = int($CHR_U{$chr} / $num_ids * 10000) / 100;
+    $pall = sprintf("%.2f",$pall);
+    $pU = int($CHR_U{$chr} / $atleastoneforwardorreverse * 10000) / 100;
+    $pU = sprintf("%.2f", $pU);
+    $ptm = int($CHR_U{$chr} / $total * 10000) / 100;
+    $ptm = sprintf("%.2f", $ptm);
     print OUT "$chr\t$CHR_U{$chr}\t$pU\t$ptm\t$pall\n";
 }
 print OUT "\nNon-Uniquely mapping reads per chromosome\n-----------------------------------------\n";
 print OUT "chr\tnum\t%ofNU\t%allMapped\t%ofAll\n";
 foreach $chr (sort {&cmpChrs($a,$b)} keys %CHR_NU) {
     $totalNU = $bothmappedNU + $forwardonlyNU + $reverseonlyNU;
-    $pall = int($CHR_NU{$chr} / $num_ids * 1000) / 10;
-    $pNU = int($CHR_NU{$chr} / $totalNU * 1000) / 10;
-    $ptm = int($CHR_U{$chr} / $total * 1000) / 10;
+    $pall = int($CHR_NU{$chr} / $num_ids * 10000) / 100;
+    $pall = sprintf("%.2f", $pall);
+    $pNU = int($CHR_NU{$chr} / $totalNU * 10000) / 100;
+    $pNU = sprintf("%.2f", $pNU);
+    $ptm = int($CHR_U{$chr} / $total * 10000) / 100;
+    $ptm = sprintf("%.2f", $ptm);
     print OUT "$chr\t$CHR_NU{$chr}\t$pNU\t$ptm\t$pall\n";
 }
 print OUT "

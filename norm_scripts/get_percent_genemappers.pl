@@ -74,27 +74,27 @@ open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 if ($U eq "true"){
     open(OUTU, ">$outfileU") or die "file '$outfileU' cannot open for writing.\n";
     if ($stranded eq "false"){
-	print OUTU "sample\t%geneU\t(#unique genemappers / #total unique mappers)\n";
+	print OUTU "sample\t%geneU\t(%unique genemappers out of total unique mappers)\n";
     }
     else{
-	print OUTU "sample\t%geneU-sense\t(#unique genemappers-sense / #total unique mappers)\n";
+	print OUTU "sample\t%geneU-sense\t(%unique genemappers-sense out of total unique mappers)\n";
     }
     if ($stranded eq "true"){
 	open(OUTU_A, ">$outfileU_A") or die "file '$outfileU_A' cannot open for writing.\n";
-	print OUTU_A "sample\t%geneU-antisense\t(#unique genemappers-antisense / #total unique mappers)\n";
+	print OUTU_A "sample\t%geneU-antisense\t(%unique genemappers-antisense out of total unique mappers)\n";
     }
 }
 if ($NU eq "true"){
     open(OUTNU, ">$outfileNU") or die "file '$outfileNU' cannot open for writing.\n";
     if ($stranded eq "false"){
-        print OUTNU "sample\t%geneNU\t(#non-unique genemappers / #total non-unique mappers)\n";
+        print OUTNU "sample\t%geneNU\t(%non-unique genemappers out of total non-unique mappers)\n";
     }
     else{
-	print OUTNU "sample\t%geneNU-sense\t(#non-unique genemappers-sense / #total non-unique mappers)\n";
+	print OUTNU "sample\t%geneNU-sense\t(%non-unique genemappers-sense out of total non-unique mappers)\n";
     }
     if ($stranded eq "true"){
 	open(OUTNU_A, ">$outfileNU_A") or die "file '$outfileNU_A' cannot open for writing.\n";
-	print OUTNU_A "sample\t%geneNU-sense\t(#non-unique genemappers-sense / #total non-unique mappers)\n";
+	print OUTNU_A "sample\t%geneNU-antisense\t(%non-unique genemappers-antisense out of total non-unique mappers)\n";
     }
 }
 while(my $line = <INFILE>){
@@ -123,12 +123,14 @@ while(my $line = <INFILE>){
 	@x = split(" ", $xU2);
 	my $filteredU = $x[1];
 	my $ratioU = int($filteredU / $totalU * 10000) / 100;
+	$ratioU = sprintf("%.2f", $ratioU);
 	print OUTU "$dir\t$ratioU\n";
 	if ($stranded eq "true"){
 	    my $xU2 = `cat $fileU2_A`;
 	    @x = split(" ", $xU2);
 	    my $filteredU_A = $x[1];
 	    my $ratioU_A = int($filteredU_A / $totalU * 10000) / 100;
+	    $ratioU_A = sprintf("%.2f", $ratioU_A);
 	    print OUTU_A "$dir\t$ratioU_A\n";
 	}
     }
@@ -141,12 +143,14 @@ while(my $line = <INFILE>){
 	@x = split(" ", $xNU2);
 	my $filteredNU = $x[1];
 	my $ratioNU = int($filteredNU / $totalNU * 10000) / 100;
+	$ratioNU = sprintf("%.2f", $ratioNU);
 	print OUTNU "$dir\t$ratioNU\n";
 	if ($stranded eq "true"){
             my $xNU2 = `cat $fileNU2_A`;
             @x = split(" ", $xNU2);
             my $filteredNU_A = $x[1];
             my $ratioNU_A = int($filteredNU_A / $totalNU * 10000) / 100;
+	    $ratioNU_A = sprintf("%.2f", $ratioNU_A);
             print OUTNU_A "$dir\t$ratioNU_A\n";
 	}
     }

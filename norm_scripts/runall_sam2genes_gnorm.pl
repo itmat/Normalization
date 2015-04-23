@@ -186,7 +186,7 @@ if($numargs_u_nu > 1) {
 }
 if ($stranded eq "true"){
     if ($str_args ne '1'){
-	die "please specify read orientation of stranded data: -str_f or -str-r\n";
+	die "please specify read orientation of stranded data: -str_f or -str_r\n";
     }
 }
 if ($replace_mem eq "true"){

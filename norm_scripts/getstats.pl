@@ -1,17 +1,47 @@
 #!/usr/bin/env perl
-my $USAGE = "\nUsage: perl getstats.pl <dirs> <loc> 
-
+my $USAGE = "\nUsage: perl getstats.pl <dirs> <loc> [option]
 where 
 <dirs> is a file of directory names (without path)
 <loc> is where the sample directories are
 
+[option]
+  -mito \"<name>, <name>, ... ,<name>\": name(s) of mitochondrial chromosomes
+
 This will parse the mapping_stats.txt files for all dirs
 and output a table with summary info across all samples.
+
 ";
+
 if(@ARGV<2) {
     die $USAGE;
 }
-
+my %MITO;
+my $count = 0;
+for(my $i=2;$i<@ARGV;$i++){
+    my $option_found = "false";
+    if ($ARGV[$i] eq '-mito'){
+        my $argv_all = $ARGV[$i+1];
+        chomp($argv_all);
+        unless ($argv_all =~ /^$/){
+            $count=1;
+        }
+        $option_found = "true";
+        my @a = split(",", $argv_all);
+        for(my $i=0;$i<@a;$i++){
+            my $name = $a[$i];
+            chomp($name);
+            $name =~ s/^\s+|\s+$//g;
+            $MITO{$name}=1;
+        }
+        $i++;
+    }
+    if($option_found eq "false") {
+        die "option \"$ARGV[$i]\" was not recognized.\n";
+    }
+}
+if($count == 0){
+   die "please provide mitochondrial chromosome name using -mito \"<name>\" option.\n";
+}
 my $dirs = $ARGV[0];
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
@@ -121,44 +151,48 @@ while(my $dir = <DIRS>) {
     } else {
 	$Pover{$dir} = 0;
     }
+    $Pover{$dir} = sprintf("%.2f", $Pover{$dir});
+
     $min_pover = $Pover{$dir};
     $min_pover =~ s/,//g;
 
-
-    $x = `grep chrM $filename | head -1`;
-    chomp($x);
-    if($x eq '') {
-	$x = `grep MT $filename | head -1`;
-	chomp($x);
+    foreach my $key (sort keys %MITO){
+        $x = `grep -w $key $filename | head -1`;
+        @a1 = split(/\t/,$x);
+        $a1[1] =~ s/[^\d]//g;
+        $x = $a1[1];
+        if ($x eq ''){
+	    $x = '0';
+        }
+        $y = int($x / $UTOTAL_F_or_R_CONS * 1000) / 10;
+        $y = sprintf("%.2f",$y);
+        $min_chrm{$key} = $x;
+        $max_chrm{$key} = $x;
+        $x2 = &format_large_int($x);
+        if ($x2 eq ''){
+	    $x2 = '0';
+        }
+        $UchrM{$dir}{$key} = "$x2 ($y%)";
     }
-    @a1 = split(/\t/,$x);
-    $a1[1] =~ s/[^\d]//g;
-    $x = $a1[1];
-    if ($x eq ''){
-	$x = '0';
-    }
-    $y = int($x / $UTOTAL_F_or_R_CONS * 1000) / 10;
-    $min_chrm = $x;
-    $x2 = &format_large_int($x);
-    if ($x2 eq ''){
-	$x2 = '0';
-    }
-    $UchrM{$dir} = "$x2 ($y%)";
 }
-
-$max1 = 0;
-$max2 = 0;
-$max3 = 0;
-$max4 = 0;
-$max5 = 0;
-$max6 = 0;
-
-$outfile = "$stats_dir/mappingstats_summary.txt";
+$outfile = "$stats_dir/mappingstats_summary.txt"; 
+$mitofile = "$stats_dir/mitochondrial_percents.txt";
 open(OUT, ">$outfile");
+open(MITO, ">$mitofile");
 #print OUT "id\ttotal\t!<>\t!<|>\t!chrM(%!)\t\%overlap\t~!<>\t~!<|>\t<|>\n";
-print OUT "id\ttotalreads\tUniqueFWDandREV\tUniqueFWDorREV\tUniqueChrM\t%overlap\tNon-UniqueFWDandREV\tNon-UniqueFWDorREV\tFWDorREVmapped\n";
-foreach $dir (keys %UchrM) {
-    print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$UchrM{$dir}\t$Pover{$dir}\%\t$NUandFRconsistently{$dir}\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped{$dir}\n";
+print OUT "id\ttotalreads\tUniqueFWDandREV\tUniqueFWDorREV\t%overlap\tNon-UniqueFWDandREV\tNon-UniqueFWDorREV\tFWDorREVmapped\n";
+print MITO "id\t";
+foreach my $key (sort keys %MITO){
+    print MITO "Unique_$key\t";
+}
+print MITO "\n";
+foreach $dir (sort keys %UchrM) {
+    print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$Pover{$dir}\%\t$NUandFRconsistently{$dir}\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped{$dir}\n";
+    print MITO "$dir\t";
+    foreach my $key (sort keys %{$UchrM{$dir}}){
+        print MITO "$UchrM{$dir}{$key}\t";
+    }
+    print MITO "\n";
     $x = $total{$dir};
     $x =~ s/,//g;
     if($x < $min_total) {
@@ -198,14 +232,16 @@ foreach $dir (keys %UchrM) {
 	$max_utotal_f_or_r_cons = $x;
     }
 
-    $x = $UchrM{$dir};
-    $x =~ s/ \(.*//;
-    $x =~ s/,//g;
-    if($x < $min_chrm) {
-	$min_chrm = $x;
-    }
-    if($x > $max_chrm) {
-	$max_chrm = $x;
+    foreach my $key (sort keys %{$UchrM{$dir}}){
+        $x = $UchrM{$dir}{$key};
+        $x =~ s/ \(.*//;
+        $x =~ s/,//g;
+        if($x < $min_chrm{$key}) {
+            $min_chrm{$key} = $x;
+        }
+        if($x > $max_chrm{$key}) {
+            $max_chrm{$key} = $x;
+        }
     }
 
     $x = $Pover{$dir};
@@ -245,17 +281,28 @@ $min_utotal_f_or_r_cons = &format_large_int($min_utotal_f_or_r_cons);
 $min_nutotal = &format_large_int($min_nutotal);
 $min_total_UorNU = &format_large_int($min_total_UorNU);
 $min_nutotal_f_or_r = &format_large_int($min_nutotal_f_or_r);
-$min_chrm = &format_large_int($min_chrm);
-print OUT "mins\t$min_total\t$min_total_frcons\t$min_utotal_f_or_r_cons\t$min_chrm\t$min_pover\%\t$min_nutotal\t$min_nutotal_f_or_r\t$min_total_UorNU\n";
+print OUT "mins\t$min_total\t$min_total_frcons\t$min_utotal_f_or_r_cons\t$min_pover\%\t$min_nutotal\t$min_nutotal_f_or_r\t$min_total_UorNU\n";
+print MITO "mins\t";
+foreach my $key (sort keys %min_chrm){
+    $min_chrm{$key} = &format_large_int($min_chrm{$key});
+    print MITO "$min_chrm{$key}\t";
+}
+print MITO "\n";
 $max_total = &format_large_int($max_total);
 $max_total_frcons = &format_large_int($max_total_frcons);
 $max_utotal_f_or_r_cons = &format_large_int($max_utotal_f_or_r_cons);
 $max_nutotal = &format_large_int($max_nutotal);
 $max_nutotal_f_or_r = &format_large_int($max_nutotal_f_or_r);
 $max_total_UorNU = &format_large_int($max_total_UorNU);
-$max_chrm = &format_large_int($max_chrm);
-print OUT "maxs\t$max_total\t$max_total_frcons\t$max_utotal_f_or_r_cons\t$max_chrm\t$max_pover\%\t$max_nutotal\t$max_nutotal_f_or_r\t$max_total_UorNU\n";
-
+print OUT "maxs\t$max_total\t$max_total_frcons\t$max_utotal_f_or_r_cons\t$max_pover\%\t$max_nutotal\t$max_nutotal_f_or_r\t$max_total_UorNU\n";
+print MITO "maxs\t";
+foreach my $key (sort keys %max_chrm){
+    $max_chrm{$key} = &format_large_int($max_chrm{$key});
+    print MITO "$max_chrm{$key}\t";
+}
+print MITO "\n";
+close(OUT);
+close(MITO);
 sub format_large_int () {
     ($int) = @_;
     @a = split(//,"$int");

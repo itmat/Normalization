@@ -80,13 +80,13 @@ chomp($header);
 my @GHEADER = split(/\t/, $header);
 my ($txchrcol, $exonStcol, $exonEndcol);
 for(my $i=0; $i<@GHEADER; $i++){
-    if ($GHEADER[$i] =~ /.chrom/){
+    if ($GHEADER[$i] =~ /chrom/){
         $txchrcol = $i;
     }
-    if ($GHEADER[$i] =~ /.exonStarts$/){
+    if ($GHEADER[$i] =~ /exonStarts$/){
         $exonStcol = $i;
     }
-    if ($GHEADER[$i] =~ /.exonEnds$/){
+    if ($GHEADER[$i] =~ /exonEnds$/){
         $exonEndcol = $i;
     }
 }

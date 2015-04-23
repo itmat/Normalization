@@ -176,6 +176,7 @@ while(my $forward = <INFILE2>){
 	my @a = split(/\t/, $forward);
 	my $read_id = $a[0];
 	my $gene_ids = $a[2];
+	$gene_ids =~ s/ANTI://g;
 	my $gene_syms = $a[3];
 	my $ih_hi = $a[4];
         $ih_hi =~ /(\d*)\:/;

@@ -162,9 +162,16 @@ while(my $line = <INFILE>){
     }
 }
 print OUTU "$lastrow\n";
+if ($stranded eq "false"){
+    print OUTU "----------\n% unique reads mapping to high expresser out of total unique genemappers\n";
+}
+else{
+    print OUTU "----------\n% unique reads-sense mapping to high expresser out of total unique genemappers-sense\n";
+}
 close(OUTU);
 if ($stranded eq "true"){
     print OUTU_A "$lastrow_a\n";
+    print OUTU_A "----------\n% unique reads-antisense mapping to high expresser out of total unique genemappers-antisense\n";
     close(OUTU_A);
 }
 close(INFILE);

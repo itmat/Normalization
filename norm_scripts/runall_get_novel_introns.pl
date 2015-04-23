@@ -37,13 +37,13 @@ chomp($header);
 my @HEADER = split(/\t/, $header);
 my ($txchrcol, $txstartcol, $txendcol);
 for(my $i=0; $i<@HEADER; $i++){
-    if ($HEADER[$i] =~ /.chrom/){
+    if ($HEADER[$i] =~ /chrom/){
         $txchrcol = $i;
     }
-    if ($HEADER[$i] =~ /.txStart/){
+    if ($HEADER[$i] =~ /txStart/){
         $txstartcol = $i;
     }
-    if ($HEADER[$i] =~ /.txEnd/){
+    if ($HEADER[$i] =~ /txEnd/){
         $txendcol = $i;
     }
 }

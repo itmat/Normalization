@@ -21,16 +21,16 @@ Make sure you have the latest version of PORT:
 - Unaligned reads (fasta/fastq)
 - Aligned reads (SAM) 
  - SAM files need to have unique read ids. 
- - Paired End data: mated alignments need to be in adjacent lines.
-- Gene info files
-- Genome fa/fai
+ - __Paired End data: mated alignments need to be in adjacent lines.__
+- [Gene info files](https://github.com/itmat/Normalization/blob/master/about_cfg.md#2-gene-info)
+- [Genome fa/fai](https://github.com/itmat/Normalization/blob/master/about_cfg.md#3-fa-and-fai)
  
 ##### ii. Input Directory Structure
 The input files need to be organized into a specific directory structure for PORT to run properly.
 
-- Give `STUDY` directory a unique name. 
+- __Give `STUDY` directory a unique name.__
 - Sample directories (Sample_1, Sample_2, etc) can have any name.
-- Make sure the unaligned reads and alignment outputs (SAM files) are in each sample directory inside the `READS` folder.
+- Make sure the **unaligned reads** and **alignment outputs** (SAM files) are in each sample directory inside the `READS` folder.
 - All alignment files (SAM files) **MUST have the same name** across samples.
 
 <pre>
@@ -51,8 +51,8 @@ STUDY
 
 </pre>
 
-####C. Configuration File
-Get the `template_version.cfg` file from `/path/to/Normalization/` and follow the instructions in the config file. NORMALIZATION TYPE, DATA TYPE (stranded), CLUSTER INFO, GENE INFO, FA and FAI, DATA VISUALIZATION and CLEANUP options need to be specified. See [here](https://github.com/itmat/Normalization/blob/master/about_cfg.md) for more information.
+####C. [Configuration File](https://github.com/itmat/Normalization/blob/master/about_cfg.md)
+Get the `template_version.cfg` file from `/path/to/Normalization/` and follow the instructions in the config file. NORMALIZATION TYPE, DATA TYPE (stranded), CLUSTER INFO, GENE INFO, rRNA, FA and FAI, DATA VISUALIZATION and CLEANUP options need to be specified. See **[here](https://github.com/itmat/Normalization/blob/master/about_cfg.md)** for more information.
 
 ####D. File of Sample Directories and Unaligned Reads
 ##### i. File of Sample Directories
@@ -76,7 +76,7 @@ Create a text file listing the full paths of the input fasta or fastq files. Whe
             /path/to/Sample_4.rev.fq/fa
 
 ####E. Install [sam2cov](https://github.com/khayer/sam2cov/)
-This is an optional step. You can use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM or STAR. sam2cov supports stranded data, but it assumes the reverse read is in the same orientation as the transcripts/genes (sense). __Please make sure you have the latest version of sam2cov__. 
+This is an optional step. You can use sam2cov to create coverage files and upload them to a Genome Browser. Currently, sam2cov only supports reads aligned with RUM, STAR or GSNAP. sam2cov supports stranded data, but it assumes the reverse read is in the same orientation as the transcripts/genes (sense). __Please make sure you have the latest version of sam2cov__. 
 
      git clone https://github.com/khayer/sam2cov.git
      cd sam2cov
@@ -84,7 +84,7 @@ This is an optional step. You can use sam2cov to create coverage files and uploa
 
 ========================================================================================================
 
-### 1. Run PORT
+### 1. How to run PORT
 
 ####A. Recommended Workflow
 PORT has two parts: PART1 and PART2.<br>
@@ -99,7 +99,7 @@ You will have a chance to check the expected number of reads after normalization
 #####iii. Run run_normalization with -part2 option.<br>
 Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<br>
 
-####B. Run Normalization Script
+####B. Run PORT
 
     run_normalization --sample_dirs <file of sample_dirs> --loc <s> \
     --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
@@ -132,6 +132,8 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
      **-cutoff_lowexp &lt;n>** : <br>is cutoff counts to identify low expressers in the final spreadsheets (exon, intron, junction and gene).<br>
                           The script will remove features with sum of counts less than the set value from all samples.<br>
                           (Default = 0; with the default cutoff, features with sum of counts = 0 will be removed from all samples)<br>
+     **-flanking_region &lt;n>** : <br>is used for generating list of flanking regions.<br>
+                            by default, 5000 bp up/downstream of each gene will be considered a flanking region.<br>
 
      **[exon-intron-junction normalization only]**<br>
      **-novel_off** : set this if you DO NOT want to use the inferred exons/introns for quantification<br> (By default, the pipeline will use inferred exons/introns) <br>
@@ -141,12 +143,14 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
                    (Default = 20)<br>
      **-depthIntron &lt;n>** : the pipeline splits filtered sam files into reads mapping to 1,2,3,...,n introns and downsamples each separately.<br>
                    (Default = 10)<br>
-     **-flanking_region &lt;n>** : <br>is used for generating list of flanking regions.<br>
-                            by default, 5000 bp up/downstream of each gene will be considered a flanking region.<br>
      **-h** : print this usage
 
 
 This creates the `runall_normalization.sh` file in the `STUDY/shell_scripts` directory and runs the entire PORT pipeline. In addition to the STDOUT and STDERR files in `STUDY/logs`, this will create a log file called **`STUDY/logs/STUDY.run_normalization.log`**, which you can use to check the status.
+
+####C. Stop/Kill PORT
+
+All PORT job names begin with the unique `STUDY` name (e.g. "STUDY.get_total_num_reads). You can stop/kill a PORT run by killing jobs with the names that begin with `STUDY` (e.g. `bkill -J "STUDY*"`).
 
 ========================================================================================================
 
@@ -192,9 +196,9 @@ PORT outputs normalized genemappers to `STUDY/NORMALIZED_DATA/GENE/FINAL_SAM` di
 
 #####ii. Feature Count Spreadsheets
 ######-Exon-Intron-Junction Normalization:<br>
-PORT outputs feature (exon, intron, junctions) counts spreadsheets to `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/SPREADSHEETS`. MIN spreadsheet has counts from Unique reads and MAX spreadsheet has counts from Unique+Non-Unique reads. If the data are stranded, you will find sense and antisense spreadsheets for exon and intron counts.<br>
+PORT outputs feature (exon, intron, junctions) counts spreadsheets to `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/SPREADSHEETS`. FINAL MIN spreadsheet has counts from Unique reads and FINAL MAX spreadsheet has counts from Unique+Non-Unique reads. If the data are stranded, you will find sense and antisense spreadsheets for exon and intron counts.<br>
 ######-Gene Normalization:<br>
-PORT outputs gene counts spreadsheets to `STUDY/NORMALIZED_DATA/GENE/SPREADSHEETS`. MIN spreadsheet has counts from Unique reads that only map to one gene and MAX spreadsheet has counts from Unique+Non-Unique reads/multiple gene mappers. If the data are stranded, you will find sense and antisense spreadsheets.<br>
+PORT outputs gene counts spreadsheets to `STUDY/NORMALIZED_DATA/GENE/SPREADSHEETS`. FINAL MIN spreadsheet has counts from Unique reads that only map to one gene and FINAL MAX spreadsheet has counts from Unique+Non-Unique reads/multiple gene mappers. If the data are stranded, you will find sense and antisense spreadsheets.<br><br>If you use -cutoff_highexp option, PORT will estimate and put the counts of the filtered highly expressed genes back into the FINAL MIN spreadsheet and output an extra spreadsheet (`FINAL_master_list_of_genes_counts_MIN.STUDY.highExp.txt`) <br>
 
 #####iii. Normalization Factors Statistics
 ######-Exon-Intron-Junction Normalization:<br>
