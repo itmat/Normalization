@@ -120,7 +120,7 @@ close(MAS);
 my $master_list_of_genes = "$LOC/master_list_of_genes.txt";
 open(MAS, ">$master_list_of_genes");
 
-foreach my $key (sort {cmpChrs($GENESORT{$a},$GENESORT{$b})} keys %GENESORT){
+foreach my $key (sort {&cmpChrs($GENESORT{$a},$GENESORT{$b})} keys %GENESORT){
     my $coord = $GENESORT{$key};
     my $strand = $STR{$key};
     print MAS "$key\t$ID{$key}\t$coord\t";
@@ -205,7 +205,7 @@ sub cmpChrs ($$) {
             my %temphash;
             $temphash{$tempa}=1;
             $temphash{$tempb}=1;
-            foreach my $tempkey (sort {cmpChrs($a,$b)} keys %temphash) {
+            foreach my $tempkey (sort {&cmpChrs($a,$b)} keys %temphash) {
                 if ($tempkey eq $tempa) {
                     return 1;
                 } else {
@@ -259,7 +259,7 @@ sub cmpChrs ($$) {
                 my %temphash;
                 $temphash{$tempa}=1;
                 $temphash{$tempb}=1;
-                foreach my $tempkey (sort {cmpChrs($a,$b)} keys %temphash) {
+                foreach my $tempkey (sort {&cmpChrs($a,$b)} keys %temphash) {
                     if ($tempkey eq $tempa) {
                         return 1;
                     } else {
