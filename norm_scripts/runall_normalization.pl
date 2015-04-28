@@ -382,7 +382,7 @@ if ($SAM2COV =~ /^true/i){
     $sam2cov = "true";
     my $num_cov = 0;
     unless (-e $SAM2COV_LOC){
-	die "You need to provide sam2cov location. (# 4. DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
+	die "You need to provide sam2cov location. (# 5. DATA VISUALIZATION in your cfg file \"$cfg_file\")\n";
     }
     $sam2cov_loc = $SAM2COV_LOC;
     if ($RUM =~ /^true/i){
@@ -394,7 +394,7 @@ if ($SAM2COV =~ /^true/i){
 	$num_cov++;
     }
     if ($num_cov ne '1'){
-	die "Please specify which aligner was used. (# 4. DATA VISUALIZATION in your cfg file \"$cfg_file\")\n\n";
+	die "Please specify which aligner was used. (# 5. DATA VISUALIZATION in your cfg file \"$cfg_file\")\n\n";
     }
 }
 my $delete_int_sam = "true";
