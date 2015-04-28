@@ -129,7 +129,7 @@ while(my $line = <ENS>){
 }
 close(ENS);
 
-open(SAM, $samfile) or die "cannot fine file \"$samfile\"\n";
+open(SAM, $samfile) or die "cannot find file \"$samfile\"\n";
 open(OUT, ">$outfile");
 print OUT "readID\ttranscriptIDs\tgeneIDs\tgeneSymbols\t(N|I)H-HI\n";
 while(my $line = <SAM>){

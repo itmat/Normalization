@@ -99,7 +99,7 @@ close(GENE);
 
 my $master_list_of_introns = "$LOC/master_list_of_introns.txt";
 open(MAS, ">$master_list_of_introns");
-foreach my $intron (sort {cmpChrs($a,$b)} keys %INTRONS) {
+foreach my $intron (sort {&cmpChrs($a,$b)} keys %INTRONS) {
     if ($stranded eq "false"){
 	print MAS "$intron\n";
     }
@@ -170,7 +170,7 @@ sub cmpChrs ($$) {
             my %temphash;
             $temphash{$tempa}=1;
             $temphash{$tempb}=1;
-            foreach my $tempkey (sort {cmpChrs($a,$b)} keys %temphash) {
+            foreach my $tempkey (sort {&cmpChrs($a,$b)} keys %temphash) {
                 if ($tempkey eq $tempa) {
                     return 1;
                 } else {
@@ -224,7 +224,7 @@ sub cmpChrs ($$) {
                 my %temphash;
                 $temphash{$tempa}=1;
                 $temphash{$tempb}=1;
-                foreach my $tempkey (sort {cmpChrs($a,$b)} keys %temphash) {
+                foreach my $tempkey (sort {&cmpChrs($a,$b)} keys %temphash) {
                     if ($tempkey eq $tempa) {
                         return 1;
                     } else {

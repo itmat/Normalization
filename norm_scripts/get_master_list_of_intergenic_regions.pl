@@ -93,7 +93,7 @@ my %BOTH;
 my $tempfile = "$LOC/temp_tx.txt";
 my $readlength_2 = int($readlength/2);
 open(TEMP, ">$tempfile");
-foreach my $tx (sort {cmpChrs($a,$b)} keys %TX_tmp) {
+foreach my $tx (sort {&cmpChrs($a,$b)} keys %TX_tmp) {
     my @unique = &uniq(@{$TX_tmp{$tx}});
     my $size = @unique;
     if ($size == 1){
@@ -362,14 +362,14 @@ if ($stranded eq "true"){
 
 my $master_list_of_interg = "$LOC/master_list_of_intergenic_regions.txt";
 open(MAS, ">$master_list_of_interg");
-foreach my $interg (sort {cmpChrs($a,$b)} keys %IG) {
+foreach my $interg (sort {&cmpChrs($a,$b)} keys %IG) {
     print MAS "$interg\n";
 }
 close(MAS);
 
 my $flanking_regions = "$LOC/list_of_flanking_regions.txt";
 open(FR, ">$flanking_regions");
-foreach my $int (sort {cmpChrs($a,$b)} keys %INF_INTRON){
+foreach my $int (sort {&cmpChrs($a,$b)} keys %INF_INTRON){
     print FR "$int\t";
     if ($stranded eq "true"){
 	print FR "$INF_INTRON{$int}";
@@ -454,7 +454,7 @@ sub cmpChrs ($$) {
             my %temphash;
             $temphash{$tempa}=1;
             $temphash{$tempb}=1;
-            foreach my $tempkey (sort {cmpChrs($a,$b)} keys %temphash) {
+            foreach my $tempkey (sort {&cmpChrs($a,$b)} keys %temphash) {
                 if ($tempkey eq $tempa) {
                     return 1;
                 } else {
@@ -508,7 +508,7 @@ sub cmpChrs ($$) {
                 my %temphash;
                 $temphash{$tempa}=1;
                 $temphash{$tempb}=1;
-                foreach my $tempkey (sort {cmpChrs($a,$b)} keys %temphash) {
+                foreach my $tempkey (sort {&cmpChrs($a,$b)} keys %temphash) {
                     if ($tempkey eq $tempa) {
                         return 1;
                     } else {

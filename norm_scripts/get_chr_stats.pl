@@ -93,7 +93,7 @@ close(IN);
 
 open(OUT, ">$outfile");
 print OUT "sample\t";
-foreach my $key (sort {cmpChrs($a,$b)} keys %CHR){
+foreach my $key (sort {&cmpChrs($a,$b)} keys %CHR){
     print OUT "%".$key."\t";
 }
 print OUT "\n";
@@ -109,7 +109,7 @@ while(my $line = <INFILE>){
     if ($eij eq "true"){
         $file = "$LOC/$line/EIJ/Unique/$line.filtered_u.numchr_count.txt";
     }
-    foreach my $key (sort {cmpChrs($a,$b)} keys %CHR){
+    foreach my $key (sort {&cmpChrs($a,$b)} keys %CHR){
 	my $find = `grep -w $key $file`;
 	my $count = "0.00";
 	if ($find !~ /^$/){
@@ -185,7 +185,7 @@ sub cmpChrs ($$) {
             my %temphash;
 	    $temphash{$tempa}=1;
 	    $temphash{$tempb}=1;
-	    foreach my $tempkey (sort {cmpChrs($a,$b)} keys %temphash) {
+	    foreach my $tempkey (sort {&cmpChrs($a,$b)} keys %temphash) {
 		if ($tempkey eq $tempa) {
 		    return 1;
 		} else {
@@ -239,7 +239,7 @@ sub cmpChrs ($$) {
 		my %temphash;
 		$temphash{$tempa}=1;
 		$temphash{$tempb}=1;
-		foreach my $tempkey (sort {cmpChrs($a,$b)} keys %temphash) {
+		foreach my $tempkey (sort {&cmpChrs($a,$b)} keys %temphash) {
 		    if ($tempkey eq $tempa) {
 			return 1;
 		    } else {
