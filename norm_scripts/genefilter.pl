@@ -108,11 +108,18 @@ if ($filter eq "false"){
 		    }
 		}
 		if ($mapped eq "true"){
-		    my $new_fwd = $forward;
-		    $new_fwd =~ s/$geneid_f/$new_geneid_ns/;
-		    my $new_rev = $reverse;
-		    $new_rev =~ s/$geneid_r/$new_geneid_ns/;
-		    print OUT_NS "$new_fwd\n$new_rev\n";
+                    my @f = split(/\t/, $forward);
+                    print OUT_NS "$f[0]\t$f[1]\t$new_geneid_ns\t";
+                    for(my $i=3;$i<@f;$i++){
+                        print OUT_NS "$f[$i]\t";
+                    }
+                    print OUT_NS "\n";
+                    my @r = split(/\t/, $reverse);
+                    print OUT_NS "$r[0]\t$r[1]\t$new_geneid_ns\t";
+                    for(my $i=3;$i<@r;$i++){
+                        print OUT_NS "$r[$i]\t";
+                    }
+                    print OUT_NS "\n";
 		    push (@{$ID{$id_f}}, $ih_hi_f);
 		}
 	    }
@@ -160,19 +167,33 @@ if ($filter eq "false"){
 		    }
 		}
 		if ($sense eq "true"){
-		    my $new_fwd = $forward;
-		    $new_fwd =~ s/$geneid_f/$new_geneid_s/;
-		    my $new_rev = $reverse;
-		    $new_rev =~ s/$geneid_r/$new_geneid_s/;
-		    print OUT_S "$new_fwd\n$new_rev\n";
+		    my @f = split(/\t/, $forward);
+		    print OUT_S "$f[0]\t$f[1]\t$new_geneid_s\t";
+		    for(my $i=3;$i<@f;$i++){
+			print OUT_S "$f[$i]\t";
+		    }
+		    print OUT_S "\n";
+		    my @r = split(/\t/, $reverse);
+                    print OUT_S "$r[0]\t$r[1]\t$new_geneid_s\t";
+		    for(my $i=3;$i<@r;$i++){
+			print OUT_S "$r[$i]\t";
+                    }
+                    print OUT_S "\n";
 		    push (@{$ID{$id_f}}, $ih_hi_f);
 		}
 		elsif ($anti eq "true"){
-		    my $new_fwd = $forward;
-		    $new_fwd =~ s/$geneid_f/$new_geneid_a/;
-		    my $new_rev = $reverse;
-		    $new_rev =~ s/$geneid_r/$new_geneid_a/;
-		    print OUT_A "$new_fwd\n$new_rev\n";
+                    my @f = split(/\t/, $forward);
+                    print OUT_A "$f[0]\t$f[1]\t$new_geneid_a\t";
+                    for(my $i=3;$i<@f;$i++){
+                        print OUT_A "$f[$i]\t";
+                    }
+                    print OUT_A "\n";
+                    my @r = split(/\t/, $reverse);
+                    print OUT_A "$r[0]\t$r[1]\t$new_geneid_a\t";
+                    for(my $i=3;$i<@r;$i++){
+                        print OUT_A "$r[$i]\t";
+                    }
+                    print OUT_A "\n";
 		    push (@{$ID_A{$id_f}}, $ih_hi_f);
 		}
 
@@ -221,15 +242,21 @@ if ($filter eq "false"){
 		    }
 		}
 		if ($sense eq "true"){
-		    my $new_fwd = $forward;
-		    $new_fwd =~ s/$geneid_f/$new_geneid_s/;
-		    print OUT_S "$new_fwd\n";
+                    my @f = split(/\t/, $forward);
+                    print OUT_S "$f[0]\t$f[1]\t$new_geneid_s\t";
+                    for(my $i=3;$i<@f;$i++){
+                        print OUT_S "$f[$i]\t";
+                    }
+                    print OUT_S "\n";
 		    push (@{$ID{$id_f}}, $ih_hi_f);
 		}
 		elsif ($anti eq "true"){
-		    my $new_fwd = $forward;
-		    $new_fwd =~ s/$geneid_f/$new_geneid_a/;
-		    print OUT_A "$new_fwd\n";
+                    my @f = split(/\t/, $forward);
+                    print OUT_A "$f[0]\t$f[1]\t$new_geneid_a\t";
+                    for(my $i=3;$i<@f;$i++){
+			print OUT_A "$f[$i]\t";
+                    }
+                    print OUT_A "\n";
 		    push (@{$ID_A{$id_f}}, $ih_hi_f);
 		}
 	    }
@@ -302,7 +329,7 @@ if ($filter eq "true"){
                 my $geneid_f = $f[2];
                 my $geneid_r = $r[2];
                 if (($id_f ne $id_r) || ($ih_hi_f ne $ih_hi_r) || ($geneid_f ne $geneid_r)){
-                    die "\"$genesfile_s\" is not in the right format.\n\n";
+		    die "\"$genesfile_s\" is not in the right format.\n\n";
                 }
                 if (($geneid_f =~ /^$/) | ($geneid_r =~ /^$/)){
                     next;
@@ -338,7 +365,7 @@ if ($filter eq "true"){
                 my $geneid_f = $f[2];
                 my $geneid_r = $r[2];
                 if (($id_f ne $id_r) || ($ih_hi_f ne $ih_hi_r) || ($geneid_f ne $geneid_r)){
-                    die "\"$genesfile_a\" is not in the right format.\n\n";
+		    die "\"$genesfile_a\" is not in the right format.\n\n";
                 }
                 if (($geneid_f =~ /^$/) | ($geneid_r =~ /^$/)){
                     next;

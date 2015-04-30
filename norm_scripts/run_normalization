@@ -317,12 +317,20 @@ if ($EIJ eq "true"){
 	die "ERROR: cannot find file \"$geneinfo\"\nYou need to provide [2] gene information file for Exon-Intron-Junction Normalization (# 2. GENE INFO in your cfg file \"$cfg_file\")\n\n";
     }
 }
-
+my $chromname = "false";
 my $chrom = $CHRNAMES;
+my %CNAMES;
 unless ($chrom =~ /^$/){
+    $chromname = "true";
     unless (-e $chrom){
 	die "ERROR: cannot find file \"$chrom\"\nPlease double check [D-i] File of standard chromosome (# 0. NORMALIZTION and DATA TYPE in your cfg file \"$cfg_file\")\n\n";
     }
+    open(NAMES, $chrom);
+    while(my $line = <NAMES>){
+	chomp($line);
+	$CNAMES{$line}=1;
+    }
+    close(NAMES);
 }
 
 my $mito = $CHRM;
@@ -621,6 +629,7 @@ if ($GNORM eq "true"){
     }
     close(ENS);
 }
+
 open(FA, $genome) or die "cannot open \"$genome\"\n\n";
 while(my $line = <FA>){
     chomp($line);
@@ -638,12 +647,28 @@ while(my $line = <FA>){
             $chr = $1;
         }
         $chr =~ s/:[^:]*$//;
-        unless (exists $CHR{$chr}){
-            die "\nERROR: Please check the input GENOME_FA \"$genome\".\nDescription line (\">\") must begin with a chromosome name that matches the chromosome names in GENE INFO (# 2. GENE INFO in your cfg file \"$cfg_file\").\nPlease check and modify the file(s) appropriately.\n\n";
-        }
+	if (exists $CHR{$chr}){
+	    delete $CHR{$chr};
+	}
+	if ($chromname eq "true"){
+	    if (exists $CNAMES{$chr}){
+		delete $CNAMES{$chr};
+	    }
+	}
     }
     else{
         next;
+    }
+}
+close(FA);
+my $hashsize = keys(%CHR);
+if ($hashsize > 0){
+    die "\nERROR: Please check the input GENOME_FA \"$genome\".\nDescription line (\">\") must begin with a chromosome name that matches the chromosome names in GENE INFO (# 2. GENE INFO in your cfg file \"$cfg_file\").\nPlease check and modify the file(s) appropriately.\n\n";
+}
+if ($chromname eq "true"){
+    my $hashsize2 = keys(%CNAMES);
+    if ($hashsize2 > 0){
+	die "\nERROR: Please check the input \"$chrom\".\nDescription line (\">\") must begin with a chromosome name that matches the chromosome names in [D-i] File of standard chromosome (# 0. NORMALIZATION AND DATA TYPE in your cfg file \"$cfg_file\").\nPlease check and modify the file(s) appropriately.\n\n";
     }
 }
 #if resume option used, check if the log file exists

@@ -132,8 +132,6 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
      **-cutoff_lowexp &lt;n>** : <br>is cutoff counts to identify low expressers in the final spreadsheets (exon, intron, junction and gene).<br>
                           The script will remove features with sum of counts less than the set value from all samples.<br>
                           (Default = 0; with the default cutoff, features with sum of counts = 0 will be removed from all samples)<br>
-     **-flanking_region &lt;n>** : <br>is used for generating list of flanking regions.<br>
-                            by default, 5000 bp up/downstream of each gene will be considered a flanking region.<br>
 
      **[exon-intron-junction normalization only]**<br>
      **-novel_off** : set this if you DO NOT want to use the inferred exons/introns for quantification<br> (By default, the pipeline will use inferred exons/introns) <br>
@@ -143,6 +141,8 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
                    (Default = 20)<br>
      **-depthIntron &lt;n>** : the pipeline splits filtered sam files into reads mapping to 1,2,3,...,n introns and downsamples each separately.<br>
                    (Default = 10)<br>
+     **-flanking_region &lt;n>** : <br>is used for generating list of flanking regions.<br>
+                            by default, 5000 bp up/downstream of each gene will be considered a flanking region.<br>
      **-h** : print this usage
 
 
