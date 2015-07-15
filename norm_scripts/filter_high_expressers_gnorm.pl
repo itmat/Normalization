@@ -1,12 +1,13 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
-my $USAGE = "\nUsage: perl filter_high_expressers_gnorm.pl <sample dirs> <loc> <genes> [options]
+my $USAGE = "\nUsage: perl filter_high_expressers_gnorm.pl <sample dirs> <loc> <genes> <dir> [options]
 
 where:
 <sample dirs> is the name of a file with the names of sample directories (no paths)
 <loc> is the path to the dir with the sample directories
 <genes> master list of genes file
+<dir> name of the sample directory
 
 [option]
  -stranded : set this if the data are strand-specific.
@@ -19,7 +20,7 @@ where:
 
 ";
 
-if(@ARGV < 3) {
+if(@ARGV < 4) {
     die $USAGE;
 }
 my $stranded = "false";
@@ -28,7 +29,7 @@ my $genes = $ARGV[2];
 my $se = "false";
 my $U = "true";
 my $NU = "true";
-for(my $i=3; $i<@ARGV; $i++){
+for(my $i=4; $i<@ARGV; $i++){
     my $option_found = "false";
     if($ARGV[$i] eq '-stranded'){
         $stranded = "true";
@@ -86,164 +87,160 @@ while (my $line = <INFILE>){
 }
 close(INFILE);
 
-open(INFILE, $ARGV[0]) or die "cannot find \"$ARGV[0]\"\n";
-while (my $line = <INFILE>){
-    chomp($line);
-    if ($U eq "true"){
-        my $geneu = "$LOC/$line/GNORM/Unique/$line.filtered_u.genefilter.txt";
-        if ($stranded eq "true"){
-            $geneu = "$LOC/$line/GNORM/Unique/$line.filtered_u.genefilter.sense.txt";
-        }
-        my $filteredu = $geneu;
-        $filteredu =~ s/.txt$/.filter_highexp.txt/;
-        open(IN, $geneu);
-        my $header = <IN>;
-        open(OUT, ">$filteredu");
-        print OUT $header;
-        while(my $forward = <IN>){
-            my $flag = 0;
-            chomp($forward);
-            if ($se eq "false"){
-                my $reverse = <IN>;
-                chomp($reverse);
-                foreach my $key (keys %HIGH_GENE){
-                    if (($forward =~ /$key/) || ($reverse =~ /$key/)){
-                        $flag = 1;
-                    }
-                }
-                if ($flag eq '0'){
-                    print OUT "$forward\n$reverse\n";
-                }
-            }
-            if ($se eq "true"){
-                foreach my $key (keys %HIGH_GENE){
-                    if ($forward =~ /$key/){
-                        $flag = 1;
-                    }
-                } 
-                if ($flag eq '0'){
-                    print OUT "$forward\n";
-                }
-            }
-        }
-        close(OUT);
-        close(IN);
-        if ($stranded eq "true"){
-            my $geneu_a = "$LOC/$line/GNORM/Unique/$line.filtered_u.genefilter.antisense.txt";
-            my $filteredu_a = $geneu_a;
-            $filteredu_a =~ s/.txt$/.filter_highexp.txt/;
-            open(IN, $geneu_a);
-            my $header = <IN>;
-            open(OUT, ">$filteredu_a");
-            print OUT $header;
-            while(my $forward = <IN>){
-                my $flag = 0;
-                chomp($forward);
-                if ($se eq "false"){
-                    my $reverse = <IN>;
-                    chomp($reverse);
-                    foreach my $key (keys %HIGH_GENE_A){
-                        if (($forward =~ /$key/) || ($reverse =~ /$key/)){
-                            $flag = 1;
-                        }
-                    }
-                    if ($flag eq '0'){
-                        print OUT "$forward\n$reverse\n";
-                    }
-                }
-                if ($se eq "true"){
-                    foreach my $key (keys %HIGH_GENE_A){
-                        if ($forward =~ /$key/){
-                            $flag = 1;
-                        }
-                    }
-                    if ($flag eq '0'){
-                        print OUT "$forward\n";
-                    }
-                }
-            }
-            close(OUT);
-            close(IN);
-        }
-    }
-    if ($NU eq "true"){
-        my $genenu = "$LOC/$line/GNORM/NU/$line.filtered_nu.genefilter.txt";
-        if ($stranded eq "true"){
-            $genenu = "$LOC/$line/GNORM/NU/$line.filtered_nu.genefilter.sense.txt";
-        }
-        my $filterednu = $genenu;
-        $filterednu =~ s/.txt$/.filter_highexp.txt/;
-        open(IN, $genenu);
-        my $header = <IN>;
-        open(OUT, ">$filterednu");
-        print OUT $header;
-        while(my $forward = <IN>){
-            my $flag = 0;
-            chomp($forward);
-            if ($se eq "false"){
-                my $reverse = <IN>;
-                chomp($reverse);
-                foreach my $key (keys %HIGH_GENE){
-                    if (($forward =~ /$key/) || ($reverse =~ /$key/)){
-                        $flag = 1;
-                    }
-                }
-                if ($flag eq '0'){
-                    print OUT "$forward\n$reverse\n";
-                }
-            }
-            if ($se eq "true"){
-                foreach my $key (keys %HIGH_GENE){
-                    if ($forward =~ /$key/){
-                        $flag = 1;
-                    }
-                }
-                if ($flag eq '0'){
-                    print OUT "$forward\n";
-                }
-            }
-        }
-        close(IN);
-        close(OUT);
-        if ($stranded eq "true"){
-            my $genenu_a = "$LOC/$line/GNORM/NU/$line.filtered_nu.genefilter.antisense.txt";
-            my $filterednu_a = $genenu_a;
-            $filterednu_a =~ s/.txt$/.filter_highexp.txt/;
-            open(IN, $genenu_a);
-            my $header = <IN>;
-            open(OUT, ">$filterednu_a");
-            print OUT $header;
-            while(my $forward = <IN>){
-                my $flag = 0;
-                chomp($forward);
-                if ($se eq "false"){
-                    my $reverse = <IN>;
-                    chomp($reverse);
-                    foreach my $key (keys %HIGH_GENE_A){
-                        if (($forward =~ /$key/) || ($reverse =~ /$key/)){
-                            $flag = 1;
-                        }
-                    }
-                    if ($flag eq '0'){
-                        print OUT "$forward\n$reverse\n";
-                    }
-                }
-                if ($se eq "true"){
-                    foreach my $key (keys %HIGH_GENE_A){
-                        if ($forward =~ /$key/){
-                            $flag = 1;
-                        }
-                    }
-                    if ($flag eq '0'){
-                        print OUT "$forward\n";
-                    }
-                }
-            }
-            close(OUT);
-            close(IN);
-        }
-    }
 
+my $sampleid = $ARGV[3];
+if ($U eq "true"){
+    my $geneu = "$LOC/$sampleid/GNORM/Unique/$sampleid.filtered_u.genefilter.txt";
+    if ($stranded eq "true"){
+        $geneu = "$LOC/$sampleid/GNORM/Unique/$sampleid.filtered_u.genefilter.sense.txt";
+    }
+    my $filteredu = $geneu;
+    $filteredu =~ s/.txt$/.filter_highexp.txt/;
+    open(IN, $geneu);
+    my $header = <IN>;
+    open(OUT, ">$filteredu");
+    print OUT $header;
+    while(my $forward = <IN>){
+        my $flag = 0;
+        chomp($forward);
+        if ($se eq "false"){
+            my $reverse = <IN>;
+            chomp($reverse);
+            foreach my $key (keys %HIGH_GENE){
+                if (($forward =~ /$key/) || ($reverse =~ /$key/)){
+                    $flag = 1;
+                }
+            }
+            if ($flag eq '0'){
+                print OUT "$forward\n$reverse\n";
+            }
+        }
+        if ($se eq "true"){
+            foreach my $key (keys %HIGH_GENE){
+                if ($forward =~ /$key/){
+                    $flag = 1;
+                }
+            } 
+            if ($flag eq '0'){
+                print OUT "$forward\n";
+            }
+        }
+    }
+    close(OUT);
+    close(IN);
+    if ($stranded eq "true"){
+        my $geneu_a = "$LOC/$sampleid/GNORM/Unique/$sampleid.filtered_u.genefilter.antisense.txt";
+        my $filteredu_a = $geneu_a;
+        $filteredu_a =~ s/.txt$/.filter_highexp.txt/;
+        open(IN, $geneu_a);
+        my $header = <IN>;
+        open(OUT, ">$filteredu_a");
+        print OUT $header;
+        while(my $forward = <IN>){
+            my $flag = 0;
+            chomp($forward);
+            if ($se eq "false"){
+                my $reverse = <IN>;
+                chomp($reverse);
+                foreach my $key (keys %HIGH_GENE_A){
+                    if (($forward =~ /$key/) || ($reverse =~ /$key/)){
+                        $flag = 1;
+                    }
+                }
+                if ($flag eq '0'){
+                    print OUT "$forward\n$reverse\n";
+                }
+            }
+            if ($se eq "true"){
+                foreach my $key (keys %HIGH_GENE_A){
+                    if ($forward =~ /$key/){
+                        $flag = 1;
+                    }
+                }
+                if ($flag eq '0'){
+                    print OUT "$forward\n";
+                }
+            }
+        }
+        close(OUT);
+        close(IN);
+    } 
 }
-
+if ($NU eq "true"){
+    my $genenu = "$LOC/$sampleid/GNORM/NU/$sampleid.filtered_nu.genefilter.txt";
+    if ($stranded eq "true"){
+        $genenu = "$LOC/$sampleid/GNORM/NU/$sampleid.filtered_nu.genefilter.sense.txt";
+    }
+    my $filterednu = $genenu;
+    $filterednu =~ s/.txt$/.filter_highexp.txt/;
+    open(IN, $genenu);
+    my $header = <IN>;
+    open(OUT, ">$filterednu");
+    print OUT $header;
+    while(my $forward = <IN>){
+        my $flag = 0;
+        chomp($forward);
+        if ($se eq "false"){
+            my $reverse = <IN>;
+            chomp($reverse);
+            foreach my $key (keys %HIGH_GENE){
+                if (($forward =~ /$key/) || ($reverse =~ /$key/)){
+                    $flag = 1;
+                }
+            }
+            if ($flag eq '0'){
+                print OUT "$forward\n$reverse\n";
+            }
+        }
+        if ($se eq "true"){
+            foreach my $key (keys %HIGH_GENE){
+                if ($forward =~ /$key/){
+                    $flag = 1;
+                }
+            }
+            if ($flag eq '0'){
+                print OUT "$forward\n";
+            }
+        }
+    }
+    close(IN);
+    close(OUT);
+    if ($stranded eq "true"){
+        my $genenu_a = "$LOC/$sampleid/GNORM/NU/$sampleid.filtered_nu.genefilter.antisense.txt";
+        my $filterednu_a = $genenu_a;
+        $filterednu_a =~ s/.txt$/.filter_highexp.txt/;
+        open(IN, $genenu_a);
+        my $header = <IN>;
+        open(OUT, ">$filterednu_a");
+        print OUT $header;
+        while(my $forward = <IN>){
+            my $flag = 0;
+            chomp($forward);
+            if ($se eq "false"){
+                my $reverse = <IN>;
+                chomp($reverse);
+                foreach my $key (keys %HIGH_GENE_A){
+                    if (($forward =~ /$key/) || ($reverse =~ /$key/)){
+                        $flag = 1;
+                    }
+                }
+                if ($flag eq '0'){
+                    print OUT "$forward\n$reverse\n";
+                }
+            }
+            if ($se eq "true"){
+                foreach my $key (keys %HIGH_GENE_A){
+                    if ($forward =~ /$key/){
+                        $flag = 1;
+                    }
+                }
+                if ($flag eq '0'){
+                    print OUT "$forward\n";
+                }
+            }
+        }
+        close(OUT);
+        close(IN);
+    }
+}
 print "got here\n";

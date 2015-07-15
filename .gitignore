@@ -14,3 +14,9 @@ norm_scripts/run_normalization_0
 norm_scripts/runall_filter_gnorm_0.pl
 norm_scripts/runall_normalization_0.pl
 norm_scripts/runall_sam2genes_gnorm_0.pl
+norm_scripts/quantify_exons_introns.pl.0
+norm_scripts/cat_gnorm_Unique_NU_0.pl
+norm_scripts/cat_shuffiles_0.pl
+norm_scripts/unique_merge_gnorm_0.pl
+norm_scripts/unique_merge_samfiles_0.pl
+norm_scripts/filter_high_expressers_gnorm.0.pl

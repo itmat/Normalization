@@ -40,8 +40,8 @@ option:
 
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
-        <request_memory_option> : is option for requesting resources for batch job submission command  (e.g. -q, -l h_vmem=)
-        <queue_name_for_6G> : is queue name for 6G (e.g. plus, 6G)
+        <request_memory_option> : is option for requesting resources for batch job submission command  (e.g. -M, -l h_vmem=)
+        <queue_name_for_6G> : is queue name for 6G (e.g. 6144, 6G)
         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
  -mem <s> : set this if your job requires more memory.
@@ -121,8 +121,8 @@ for ($i=2; $i<@ARGV; $i++){
         $submit = "bsub";
         $jobname_option = "-J";
 	$status = "bjobs";
-	$request_memory_option = "-q";
-	$mem = "plus";
+	$request_memory_option = "-M";
+	$mem = "6144";
     }
     if ($ARGV[$i] eq '-sge'){
         $numargs++;
@@ -346,20 +346,20 @@ if ($U eq 'true'){
 	    }
 	}
 	close(INFILE);
-	#UNDETERMINED
+	#EXON_INCONSISTENT
 	open(INFILE, $ARGV[0]);
 	$minUND_U = 1000000000000;
 	while($dirname = <INFILE>) {
             chomp($dirname);
             $id = $dirname;
-            if(-e "$LOC/$dirname/EIJ/Unique/$id.filtered_u_undetermined_reads.sam"){
-		$N = `tail -1 $LOC/$dirname/EIJ/Unique/$id.filtered_u_undetermined_reads.sam`;
+            if(-e "$LOC/$dirname/EIJ/Unique/$id.filtered_u_exon_inconsistent_reads.sam"){
+		$N = `tail -1 $LOC/$dirname/EIJ/Unique/$id.filtered_u_exon_inconsistent_reads.sam`;
 	    }
 	    else {
-                die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_undetermined_reads.sam' does not seem to exist...\n";
+                die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_exon_inconsistent_reads.sam' does not seem to exist...\n";
 	    }
 	    if($N !~ /line count/) {
-                die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_undetermined_reads.sam' does not seem to have the proper last line...\n";
+                die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_exon_inconsistent_reads.sam' does not seem to have the proper last line...\n";
             }
             $N =~ s/[^\d]//g;
             $LINECOUNTS{"UND_U.$id"} = $N;
@@ -521,20 +521,20 @@ if ($NU eq 'true'){
 	close(INFILE);
 #print "minIGU = $minIGU\n";
 #print "minIGNU = $minIGNU\n";
-        #UNDETERMINED
+        #EXON_INCONSISTENT
         open(INFILE, $ARGV[0]);
         $minUND_NU = 1000000000000;
 	while($dirname = <INFILE>) {
             chomp($dirname);
             $id = $dirname;
-            if(-e "$LOC/$dirname/EIJ/NU/$id.filtered_nu_undetermined_reads.sam"){
-		$N = `tail -1 $LOC/$dirname/EIJ/NU/$id.filtered_nu_undetermined_reads.sam`;
+            if(-e "$LOC/$dirname/EIJ/NU/$id.filtered_nu_exon_inconsistent_reads.sam"){
+		$N = `tail -1 $LOC/$dirname/EIJ/NU/$id.filtered_nu_exon_inconsistent_reads.sam`;
             }
             else {
-                die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_undetermined_reads.sam' does not seem to exist...\n";
+                die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_exon_inconsistent_reads.sam' does not seem to exist...\n";
             }
             if($N !~ /line count/) {
-                die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_undetermined_reads.sam' does not seem to have the proper last line...\n";
+                die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_exon_inconsistent_reads.sam' does not seem to have the proper last line...\n";
             }
             $N =~ s/[^\d]//g;
             $LINECOUNTS{"UND_NU.$id"} = $N;
@@ -608,10 +608,10 @@ for($i=1; $i<=$i_exon; $i++) {
             $shfileU_A[$i] = "$shdir/a" . $id . "exonmappers.u_runshuf.$i.antisense.sh";
             $shfileNU_S[$i] = "$shdir/a" . $id . "exonmappers.nu_runshuf.$i.sense.sh";
             $shfileNU_A[$i] = "$shdir/a" . $id . "exonmappers.nu_runshuf.$i.antisense.sh";
-            $lognameU_S[$i] = "$logdir/exonmappers.$id.u_shuf.$i.sense";
-            $lognameU_A[$i] = "$logdir/exonmappers.$id.u_shuf.$i.antisense";
-            $lognameNU_S[$i] = "$logdir/exonmappers.$id.nu_shuf.$i.sense";
-            $lognameNU_A[$i] = "$logdir/exonmappers.$id.nu_shuf.$i.antisense";
+            $lognameU_S[$i] = "$logdir/shuf.$id.exonmappers.u.$i.sense";
+            $lognameU_A[$i] = "$logdir/shuf.$id.exonmappers.u.$i.antisense";
+            $lognameNU_S[$i] = "$logdir/shuf.$id.exonmappers.nu.$i.sense";
+            $lognameNU_A[$i] = "$logdir/shuf.$id.exonmappers.nu.$i.antisense";
 
 	    if($U eq 'true') {
                 if (($total_lc_s ne '0') && ($numU_S ne '0')){
@@ -680,8 +680,8 @@ for($i=1; $i<=$i_exon; $i++) {
 	    }
 	    $shfileU[$i] = "$shdir/a" . $id . "exonmappers.u_runshuf.$i.sh";
 	    $shfileNU[$i] = "$shdir/a" . $id . "exonmappers.nu_runshuf.$i.sh";
-	    $lognameU[$i] = "$logdir/exonmappers.$id.u_shuf.$i";
-	    $lognameNU[$i] = "$logdir/exonmappers.$id.nu_shuf.$i";
+	    $lognameU[$i] = "$logdir/shuf.$id.exonmappers.u.$i";
+	    $lognameNU[$i] = "$logdir/shuf.$id.exonmappers.nu.$i";
 	    if($U eq 'true') {
 		if (($total_lc ne '0') && ($numU ne '0')){
 		    open(OUTFILEU, ">$shfileU[$i]");
@@ -769,13 +769,13 @@ for($i=1; $i<=$i_intron; $i++) {
 
 	    $shfileU_S[$i] = "$shdir/a" . $id . "intronmappers.u_runshuf.$i.sense.sh";
             $shfileNU_S[$i] = "$shdir/a" . $id . "intronmappers.nu_runshuf.$i.sense.sh";
-            $lognameU_S[$i] = "$logdir/intronmappers.$id.u_shuf.$i.sense";
-            $lognameNU_S[$i] = "$logdir/intronmappers.$id.nu_shuf.$i.sense";
+            $lognameU_S[$i] = "$logdir/shuf.$id.intronmappers.u.$i.sense";
+            $lognameNU_S[$i] = "$logdir/shuf.$id.intronmappers.nu.$i.sense";
 
 	    $shfileU_A[$i] = "$shdir/a" . $id . "intronmappers.u_runshuf.$i.antisense.sh";
             $shfileNU_A[$i] = "$shdir/a" . $id . "intronmappers.nu_runshuf.$i.antisense.sh";
-            $lognameU_A[$i] = "$logdir/intronmappers.$id.u_shuf.$i.antisense";
-            $lognameNU_A[$i] = "$logdir/intronmappers.$id.nu_shuf.$i.antisense";
+            $lognameU_A[$i] = "$logdir/shuf.$id.intronmappers.u.$i.antisense";
+            $lognameNU_A[$i] = "$logdir/shuf.$id.intronmappers.nu.$i.antisense";
 	    
 	    if($U eq 'true') {
                 if (($total_lc_s ne '0') && ($numU_S ne '0')){
@@ -847,8 +847,8 @@ for($i=1; $i<=$i_intron; $i++) {
 
 	    $shfileU[$i] = "$shdir/a" . $id . "intronmappers.u_runshuf.$i.sh";
 	    $shfileNU[$i] = "$shdir/a" . $id . "intronmappers.nu_runshuf.$i.sh";
-	    $lognameU[$i] = "$logdir/intronmappers.$id.u_shuf.$i";
-	    $lognameNU[$i] = "$logdir/intronmappers.$id.nu_shuf.$i";
+	    $lognameU[$i] = "$logdir/shuf.$id.intronmappers.u.$i";
+	    $lognameNU[$i] = "$logdir/shuf.$id.intronmappers.nu.$i";
 	    if($U eq 'true') {
 		if (($total_lc ne '0') && ($numU ne '0')){
 		    open(OUTFILEU, ">$shfileU[$i]");
@@ -903,8 +903,8 @@ while($dirname = <INFILE>) {
     }
     $shfileU = "$shdir/a" . $id . "intergenic.u_runshuf.sh";
     $shfileNU = "$shdir/a" . $id . "intergenic.nu_runshuf.sh";
-    $lognameU = "$logdir/intergenic.$id.u_shuf";
-    $lognameNU = "$logdir/intergenic.$id.nu_shuf";
+    $lognameU = "$logdir/shuf.$id.intergenic.u";
+    $lognameNU = "$logdir/shuf.$id.intergenic.nu";
     if($U eq 'true') {
 	if (($total_lc ne '0') && ($numU ne '0')){
 	    open(OUTFILEU, ">$shfileU");
@@ -934,7 +934,7 @@ while($dirname = <INFILE>) {
 }
 close(INFILE);
 
-#undetermined reads
+#exon_inconsistent reads
 open(INFILE, $ARGV[0]);
 while($dirname = <INFILE>) {
     chomp($dirname);
@@ -943,10 +943,10 @@ while($dirname = <INFILE>) {
     $total_lc = $LINECOUNTS{$for_lc};
     $numU = $minUND_U;
     $numNU = $minUND_NU;
-    $filenameU = "$id.filtered_u_undetermined_reads.sam";
-    $outfileU = "$id.undetermined_reads.norm_u.sam";
-    $filenameNU = "$id.filtered_nu_undetermined_reads.sam";
-    $outfileNU = "$id.undetermined_reads.norm_nu.sam";
+    $filenameU = "$id.filtered_u_exon_inconsistent_reads.sam";
+    $outfileU = "$id.exon_inconsistent_reads.norm_u.sam";
+    $filenameNU = "$id.filtered_nu_exon_inconsistent_reads.sam";
+    $outfileNU = "$id.exon_inconsistent_reads.norm_nu.sam";
     $dirU = $dirname . "/EIJ/Unique";
     $dirNU = $dirname . "/EIJ/NU";
     if (-e "$LOC/$dirU/$outfileU"){
@@ -955,10 +955,10 @@ while($dirname = <INFILE>) {
     if (-e "$LOC/$dirNU/$outfileNU"){
         `rm $LOC/$dirNU/$outfileNU`;
     }
-    $shfileU = "$shdir/a" . $id . "undetermined_reads.u_runshuf.sh";
-    $shfileNU = "$shdir/a" . $id . "undetermined_reads.nu_runshuf.sh";
-    $lognameU = "$logdir/undetermined_reads.$id.u_shuf";
-    $lognameNU = "$logdir/undetermined_reads.$id.nu_shuf";
+    $shfileU = "$shdir/a" . $id . "exon_inconsistent_reads.u_runshuf.sh";
+    $shfileNU = "$shdir/a" . $id . "exon_inconsistent_reads.nu_runshuf.sh";
+    $lognameU = "$logdir/shuf.$id.exon_inconsistent_reads.u";
+    $lognameNU = "$logdir/shuf.$id.exon_inconsistent_reads.nu";
     if($U eq 'true') {
         if (($total_lc ne '0') && ($numU ne '0')){
             open(OUTFILEU, ">$shfileU");

@@ -27,8 +27,8 @@ option:
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
         <request_memory_option> : is option for requesting resources for batch job submission command
-                                  (e.g. -q, -l h_vmem=)
-        <queue_name_for_6G> : is queue name for 6G (e.g. plus, 6G)
+                                  (e.g. -M, -l h_vmem=)
+        <queue_name_for_6G> : is queue name for 6G (e.g. 6144, 6G)
         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
  -mem <s> : set this if your job requires more memory.
@@ -87,8 +87,8 @@ for (my $i=4; $i<@ARGV; $i++){
         $option_found = "true";
         $submit = "bsub";
         $jobname_option = "-J";
-        $request_memory_option = "-q";
-        $mem = "plus";
+        $request_memory_option = "-M";
+        $mem = "6144";
 	$status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
@@ -151,7 +151,7 @@ my $norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION";
 my $exon_dir = $norm_dir . "/FINAL_SAM/exonmappers";
 my $intron_dir = $norm_dir . "/FINAL_SAM/intronmappers";
 my $ig_dir = $norm_dir . "/FINAL_SAM/intergenicmappers";
-my $und_dir = $norm_dir . "/FINAL_SAM/undetermined";
+my $und_dir = $norm_dir . "/FINAL_SAM/exon_inconsistent";
 my $merged_dir = $norm_dir . "/FINAL_SAM/merged";
 my $cov_dir = "$norm_dir/COV/";
 
@@ -175,7 +175,7 @@ if ($sam2bam eq 'true'){
 	my $id = $line;
 	#originalsam
 	my $shfile = "$shdir/$id.sam2bam.sh";
-	my $jobname = "$study.sam2bam";
+	my $jobname = "$study.compress";
 	my $logname = "$logdir/sam2bam.$id";
 	my $samname = "$LOC/$dir/$sam_name";
 	my $bamname = "$LOC/$dir/$bam_name";
@@ -229,10 +229,10 @@ if ($sam2bam eq 'true'){
 	my $samname_ig = "$ig_dir/$id.intergenicmappers.norm.sam";
         my $bamname_ig = $samname_ig;
 	$bamname_ig =~ s/.sam$/.bam/;
-	#undetermined
-	my $shfile_und = "$shdir/$id.sam2bam.norm.undetermined.sh";
-	my $logname_und = "$logdir/sam2bam.norm.undetermined.$id";
-	my $samname_und = "$und_dir/$id.undetermined_reads.norm.sam";
+	#exon_inconsistent
+	my $shfile_und = "$shdir/$id.sam2bam.norm.exon_inconsistent.sh";
+	my $logname_und = "$logdir/sam2bam.norm.exon_inconsistent.$id";
+	my $samname_und = "$und_dir/$id.exon_inconsistent_reads.norm.sam";
         my $bamname_und = $samname_und;
 	$bamname_und =~ s/.sam$/.bam/;
 	#gene

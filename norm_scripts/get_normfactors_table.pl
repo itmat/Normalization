@@ -391,14 +391,14 @@ if ($eij eq "true"){
 	$footer .= "# %intergenicNU : %non-unique intergenic mappers out of total non-unique mappers\n";
 	$intergenicNU = "true";
     }
-    if (-e "$study_dir/STATS/EXON_INTRON_JUNCTION/percent_undetermined_Unique.txt"){
-        print OUT "%undeterminedU\t";
-	$footer .= "# %undeterminedU : %unique undetermined reads out of total unique mappers\n";
+    if (-e "$study_dir/STATS/EXON_INTRON_JUNCTION/percent_exon_inconsistent_Unique.txt"){
+        print OUT "%exon_inconsistentU\t";
+	$footer .= "# %exon_inconsistentU : %unique exon_inconsistent reads out of total unique mappers\n";
         $undU = "true";
     }
-    if (-e "$study_dir/STATS/EXON_INTRON_JUNCTION/percent_undetermined_NU.txt"){
-        print OUT "%undeterminedNU\t";
-	$footer .= "# %undeterminedNU : %non-unique undetermined reads out of total non-unique mappers\n";
+    if (-e "$study_dir/STATS/EXON_INTRON_JUNCTION/percent_exon_inconsistent_NU.txt"){
+        print OUT "%exon_inconsistentNU\t";
+	$footer .= "# %exon_inconsistentNU : %non-unique exon_inconsistent reads out of total non-unique mappers\n";
         $undNU = "true";
     }
     print OUT "\n";
@@ -562,16 +562,16 @@ if ($eij eq "true"){
 	    $intergenic_nu =~ s/$line//g;
 	    $intergenic_nu =~ s/^\s*(.*?)\s*$/$1/;
 	}
-        #undetermined u
+        #exon_inconsistent u
         if ($undU eq "true"){
-            $und_u = `grep -w $line $study_dir/STATS/EXON_INTRON_JUNCTION/percent_undetermined_Unique.txt`;
+            $und_u = `grep -w $line $study_dir/STATS/EXON_INTRON_JUNCTION/percent_exon_inconsistent_Unique.txt`;
             chomp($und_u);
             $und_u =~ s/$line//g;
             $und_u =~ s/^\s*(.*?)\s*$/$1/;
         }
-        #undetermined nu
+        #exon_inconsistent nu
         if ($undNU eq "true"){
-            $und_nu = `grep -w $line $study_dir/STATS/EXON_INTRON_JUNCTION/percent_undetermined_NU.txt`;
+            $und_nu = `grep -w $line $study_dir/STATS/EXON_INTRON_JUNCTION/percent_exon_inconsistent_NU.txt`;
             chomp($und_nu);
             $und_nu =~ s/$line//g;
             $und_nu =~ s/^\s*(.*?)\s*$/$1/;

@@ -1,26 +1,23 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
-
-my $USAGE = "\nUsage: runall_filter_gnorm.pl <file of sample dirs> <loc> <sam file name> [options]
+my $USAGE = "\nUsage: runall_filter_high_expressers_gnorm.pl <file of sample dirs> <loc> <genes> [options]
 
 where:
 <sample dirs> is a file with the names of the sample directories
 <loc> is the directory with the sample directories
-<sam file name> is the name of sam file
+<genes> master list of genes file
 
 option:
-  -u  :  set this if you want to return only unique mappers, otherwise by default
-         it will return both unique and non-unique mappers.  
+  -i <n> : index for logname (default: 0)
 
-  -nu :  set this if you want to return only non-unique mappers, otherwise by default
-         it will return both unique and non-unique mappers.  
+  -stranded : set this if the data are strand-specific.
 
-  -se :  set this if the data are single end, otherwise by default it will assume it's a paired end data.
+  -u : set this if you want to filter the high expressers from the unique reads, otherwise by default if will filter from both unique and non-unique.
 
-  -chromnames <file> : a file of chromosome names
+  -nu : set this if you want to filter the high expressers from the non-unique reads, otherwise by default if will filter from both unique and non-unique.
 
-  -mito \"<name>, <name>, ... ,<name>\": name(s) of mitochondrial chromosomes
+  -se : set this if your data are single end.
 
   -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
 
@@ -35,24 +32,17 @@ option:
          <request_memory_option> : is option for requesting resources for batch job submission command
                                   (e.g. -M, -l h_vmem=)
          <queue_name_for_3G> : is queue name for 3G (e.g. 3072, 3G)
+         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
   -mem <s> : set this if your job requires more memory.
             <s> is the queue name for required mem.
             Default: 3G
-
-        <status> : command for checking batch job status (e.g. bjobs, qstat)
 
   -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                    by default, <n> = 200.
 
   -h : print usage
 
-This will remove all rows from <sam infile> except those that satisfy all of the following:
-1. Unique mapper / Non-Unique mapper
-2. Both forward and reverse map consistently
-3. id not in file <more ids>
-4. a) Default: chromosome is one of the numbered ones, or X, or Y (e.g. chr1, chr2, chrX, chrY OR 1, 2, X, Y)
-   b) with -chromnames and -mito option: chromosome is listed in -chromnames <file>, chromosome not in -mito list.
 
 ";
 if(@ARGV < 3) {
@@ -60,51 +50,24 @@ if(@ARGV < 3) {
 }
 use Cwd 'abs_path';
 my $path = abs_path($0);
-$path =~ s/\/runall_filter_gnorm.pl//;
-my $sam_name = $ARGV[2];
+$path =~ s/runall_filter_high_expressers_gnorm.pl//;
+my $genes = $ARGV[2];
 my $njobs = 200;
-my $U = "true";
-my $NU = "true";
+my $U_NU = "";
 my $numargs_1 = 0;
-my $pe = "true";
-
-my $replace_mem = "false";
 my $numargs = 0;
+my $pe = "";
+my $replace_mem = "false";
 my $submit = "";
 my $jobname_option = "";
 my $request_memory_option = "";
 my $mem = "";
 my $new_mem = "";
 my $status;
-my $use_chr_names = "";
-my $use_mito_names = "";
-my $chromnames;
+my $strand_info = "";
+my $index = 0;
 for(my $i=3; $i<@ARGV; $i++) {
     my $option_found = "false";
-    if ($ARGV[$i] eq '-chromnames'){
-        $option_found = "true";
-	$chromnames = $ARGV[$i+1];
-        $use_chr_names = "-chromnames $chromnames";
-        $i++;
-    }
-    if ($ARGV[$i] eq '-mito'){
-        my $argv_all = $ARGV[$i+1];
-        chomp($argv_all);
-	my @a = split(",", $argv_all);
-	my $firstname = $a[0];
-	$firstname =~ s/^\s+|\s+$//g;
-	my $mitonames = "$firstname";
-	if (@a > 1){
-	    for(my $i=1;$i<@a;$i++){
-		my $name = $a[$i];
-		$name =~ s/^\s+|\s+$//g;
-		$mitonames .= ",$name";
-	    }
-	}
-        $option_found = "true";
-	$use_mito_names = "-mito $mitonames";
-        $i++;
-    }
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];
@@ -113,18 +76,30 @@ for(my $i=3; $i<@ARGV; $i++) {
         }
         $i++;
     }
+    if ($ARGV[$i] eq '-stranded'){
+        $option_found = "true";
+        $strand_info = "-stranded";
+    }
+    if ($ARGV[$i] eq '-i'){
+        $option_found = "true";
+        $index = $ARGV[$i+1];
+        if ($index !~ /(\d+$)/ ){
+            die "-i <n> : <n> needs to be a number\n";
+        }
+	$i++;
+    }
     if($ARGV[$i] eq '-nu') {
-	$U = "false";
+	$U_NU = "-nu";
 	$option_found = "true";
 	$numargs_1++;
     }
     if($ARGV[$i] eq '-u') {
-	$NU = "false";
+	$U_NU = "-u";
 	$numargs_1++;
 	$option_found = "true";
     }
     if ($ARGV[$i] eq '-se'){
-        $pe = "false";
+        $pe = "-se";
         $option_found = "true";
     }
     if ($ARGV[$i] eq '-h'){
@@ -193,7 +168,7 @@ if ($replace_mem eq "true"){
     $mem = $new_mem;
 }
 
-open(INFILE, $ARGV[0]);  # file of sample dirs (without path)
+
 my $LOC = $ARGV[1];  # the location where the sample dirs are
 $LOC =~ s/\/$//;
 my @fields = split("/", $LOC);
@@ -207,43 +182,16 @@ unless (-d $shdir){
     `mkdir $shdir`;}
 unless (-d $logdir){
     `mkdir $logdir`;}
-
+open(INFILE, $ARGV[0]);  # file of sample dirs (without path)
 while(my $line = <INFILE>) {
     chomp($line);
-    my $dir = $line;
     my $id = $line;
     $id =~ s/\//_/g;
-    my $idsfile = "$LOC/$dir/$id.ribosomalids.txt";
-    my $shfile = "$shdir/a" . $id . "filter.gnorm.sh";
-    my $jobname = "$study.filtersam_gnorm";
-    my $logname = "$logdir/filtersam_gnorm.$id";
+    my $jobname = "$study.filter_high_expressers_gnorm";
+    my $shfile = "$shdir/filter_high_expressers_gnorm.$index.$id.sh";
+    my $logname = "$logdir/filter_high_expressers_gnorm.$index.$id";
     open(OUTFILE, ">$shfile");
-    if ($numargs_1 eq "0"){
-	if ($pe eq "true"){
-	    print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile $use_chr_names $use_mito_names\n";
-	}
-	else {
-	    print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile -se $use_chr_names $use_mito_names\n";
-	}
-    }
-    else {
-	if($U eq "true") {
-	    if ($pe eq "true"){
-		print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile -u $use_chr_names $use_mito_names\n";
-	    }
-	    else{
-		print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile -se -u $use_chr_names $use_mito_names\n";
-	    }
-	}
-	if($NU eq "true") {
-	    if ($pe eq "true"){
-		print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile -nu $use_chr_names $use_mito_names\n";
-	    }
-	    else{
-		print OUTFILE "perl $path/filter_sam_gnorm.pl $LOC/$dir/$sam_name $LOC/$dir/GNORM/$id.filtered.sam $idsfile -se -nu $use_chr_names $use_mito_names\n";
-	    }
-	}
-    }
+    print OUTFILE "perl $path/filter_high_expressers_gnorm.pl $ARGV[0] $LOC $genes $id $strand_info $U_NU $pe\n";
     close(OUTFILE);
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);

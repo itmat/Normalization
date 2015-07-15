@@ -126,8 +126,8 @@ my $intron_sam_out = $samfile;
 $intron_sam_out =~ s/.sam$/_intronmappers.sam/g;
 my $intergenic_sam_out = $samfile;
 $intergenic_sam_out =~ s/.sam$/_intergenicmappers.sam/;
-my $undetermined_sam_out = $samfile;
-$undetermined_sam_out =~ s/.sam$/_undetermined_reads.sam/;
+my $exon_inconsistent_sam_out = $samfile;
+$exon_inconsistent_sam_out =~ s/.sam$/_exon_inconsistent_reads.sam/;
 my ($exon_sam_out_anti, $intron_sam_out_anti, $linecountfile_anti);
 if ($stranded eq "true"){
     if ($print eq "false"){
@@ -195,7 +195,7 @@ if ($print eq "true"){
     open(LC, ">$linecountfile");
     open(INTRONSAMOUT, ">$intron_sam_out");
     open(INTERGENIC, ">$intergenic_sam_out");
-    open(UNDETERMINED, ">$undetermined_sam_out");
+    open(EXON_INCONSISTENT, ">$exon_inconsistent_sam_out");
     for (my $i=1; $i<=$i_exon;$i++){
         $exon_sam_outfile[$i] = $exon_sam_out;
         $exon_sam_outfile[$i] =~ s/.sam$/.$i.sam/;
@@ -452,7 +452,7 @@ my $CNT_OF_FRAGS_WHICH_HIT_INTRONS_ANTI = 0;
 my (@EXON_FLAG_DIST, @EXON_FLAG_DIST_ANTI, @INTRON_FLAG_DIST, @INTRON_FLAG_DIST_ANTI);
 my (@exon_outfile_cnt, @A_exon_outfile_cnt, @intron_outfile_cnt, @A_intron_outfile_cnt);
 my $ig_outfile_cnt = 0;
-my $undetermined_outfile_cnt = 0;
+my $exon_inconsistent_outfile_cnt = 0;
 my $max_exon = 20;
 my $max_intron = 10;
 for (my $i=0;$i<=$max_exon;$i++){
@@ -939,11 +939,11 @@ while(my $line = <SAM>){
             }
         }
     }
-    #undetermined reads
+    #exon_inconsistent reads
     if (($print eq "true") && ($print_exon eq "true") && ($print_intron eq "true")&& ($print_exon_A eq "true")&& ($print_intron_A eq "true")){
 	if (($intronFlag eq '0') && ($exonFlag eq '0') && ($igFlag eq '0') && ($AexonFlag eq '0') && ($AintronFlag eq "0")){
-	    print UNDETERMINED "$line\n";
-	    $undetermined_outfile_cnt++;
+	    print EXON_INCONSISTENT "$line\n";
+	    $exon_inconsistent_outfile_cnt++;
 	}
     }
     $EXON_FLAG_DIST[$exonFlag]++;
@@ -997,8 +997,8 @@ if ($print eq "true"){
     print LC "$intergenic_sam_out\t$ig_outfile_cnt\n";
     print INTERGENIC "line count = $ig_outfile_cnt\n";
 
-    print LC "$undetermined_sam_out\t$undetermined_outfile_cnt\n";
-    print UNDETERMINED "line count = $undetermined_outfile_cnt\n";
+    print LC "$exon_inconsistent_sam_out\t$exon_inconsistent_outfile_cnt\n";
+    print EXON_INCONSISTENT "line count = $exon_inconsistent_outfile_cnt\n";
 }
 
 if ($i_exon > $max_exon){

@@ -30,8 +30,8 @@ option:
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
         <request_memory_option> : is option for requesting resources for batch job submission command
-                                  (e.g. -q, -l h_vmem=)
-        <queue_name_for_6G> : is queue name for 6G (e.g. plus, 6G)
+                                  (e.g. -M, -l h_vmem=)
+        <queue_name_for_6G> : is queue name for 6G (e.g. 6144, 6G)
 
         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
@@ -98,8 +98,8 @@ for(my $i=4; $i<@ARGV; $i++) {
 	$option_found = "true";
         $submit = "bsub";
         $jobname_option = "-J";
-        $request_memory_option = "-q";
-        $mem = "plus";
+        $request_memory_option = "-M";
+        $mem = "6144";
 	$status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
@@ -203,7 +203,10 @@ while(my $line = <INFILE>) {
     }
     my $shfile = "$shdir/J" . $id . $filename . ".sh";
     my $jobname = "$study.sam2junctions";
-    my $logname = "$logdir/sam2junctions.$id";
+    my $logname = "$logdir/sam2junctions.0.$id";
+    if ($samfilename eq "true"){
+	$logname = "$logdir/sam2junctions.1.$id";
+    }
     if ($gnorm eq "true"){
 	$jobname = "$study.sam2junctions_gnorm";
 	$logname = "$logdir/sam2junctions_gnorm.$id";

@@ -2,13 +2,50 @@
 use strict;
 use warnings;
 
-if(@ARGV<2) {
-    die "Usage: perl cleanup.pl <sample dirs> <loc> 
+
+my $USAGE= "Usage: perl cleanup.pl <sample dirs> <loc> [options]
 
 <sample dirs> is the file with the names of the sample directories
 <loc> is the location where the sample directories are
 
+option:
+ -fa : set this if the unaligned files are in fasta format
+
+ -fq : set this if the unaligned files are in fastq format
+
+ -gz : set this if the unaligned files are compressed
+
+
 ";
+if(@ARGV<2) {
+    die $USAGE;
+}
+
+my $cnt = 0;
+my $gz = "false";
+my $delete_temp_fa = "false";
+
+for(my $i=2;$i<@ARGV;$i++){
+    my $option_found = "false";
+    if ($ARGV[$i] eq '-gz'){
+	$option_found = "true";
+	$gz = "true";
+    }
+    if ($ARGV[$i] eq '-fa'){
+	$option_found = "true";
+	$cnt++;
+    }
+    if ($ARGV[$i] eq '-fq'){
+	$option_found = "true";
+	$delete_temp_fa = "true";
+	$cnt++;
+    }
+    if ($option_found eq "false"){
+	die "option \"$ARGV[$i]\" was not recognized.\n";
+    }
+}
+if ($cnt ne '1'){
+    die "please specify the type of the unaligned files : '-fa' or '-fq'\n";
 }
 
 my $LOC = $ARGV[1];
@@ -29,6 +66,21 @@ my @g;
 
 if (-e "$LOC/one-line.fa"){
     `rm $LOC/one-line.fa`;
+}
+
+if ($delete_temp_fa eq "true"){
+    if ($gz eq "true"){
+	@g = glob("$LOC/*/*fa.gz");
+	if (@g > 0){
+	    `rm $LOC/*/*.fa.gz`;
+	}
+    }
+    else{
+	@g = glob("$LOC/*/*.fa");
+	if (@g > 0){
+	    `rm $LOC/*/*.fa`;
+	}
+    }
 }
 
 if (-d $gene_dir){
@@ -139,6 +191,26 @@ while(my $line = <INFILE>){
     if (-e "$LOC/$line/blast.out.1"){
 	`rm $LOC/$line/blast.out.*`;
 	`rm $LOC/$line/temp.1`;
+    }
+    @g = glob("$LOC/$line/*.blastout");
+    if (@g > 0){
+	`rm $LOC/$line/*.blastout`;
+    }
+    @g = glob("$LOC/$line/db*$line*.nhr");
+    if (@g>0){
+	`rm $LOC/$line/db*$line*.nhr`;
+    }
+    @g = glob("$LOC/$line/db*$line*.nin");
+    if (@g>0){
+	`rm $LOC/$line/db*$line*.nin`;
+    }
+    @g = glob("$LOC/$line/db*$line*.nsq");
+    if (@g>0){
+	`rm $LOC/$line/db*$line*.nsq`;
+    }
+    @g = glob("$LOC/$line/db*$line.nal");
+    if (@g>0){
+	`rm $LOC/$line/db*$line.nal`;
     }
     @g = glob("$LOC/$line/*_junctions_all.sorted.rum");
     if (@g>0){

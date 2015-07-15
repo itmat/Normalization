@@ -29,8 +29,8 @@ option:
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
         <request_memory_option> : is option for requesting resources for batch job submission command
-                                  (e.g. -q, -l h_vmem=)
-        <queue_name_for_15G> : is queue name for 15G (e.g. max_mem30, 15G)
+                                  (e.g. -M, -l h_vmem=)
+        <queue_name_for_15G> : is queue name for 15G (e.g. 15360, 15G)
 
         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
@@ -39,6 +39,8 @@ option:
             Default: 15G
 
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time. (Default <n> = 200)
+
+ -i <n> : index for logname (default: 0)
 
  -h : print usage
 
@@ -61,6 +63,7 @@ my $jobname_option = "";
 my $request_memory_option = "";
 my $mem = "";
 my $numargs = 0;
+my $index = 0;
 for(my $i=5; $i<@ARGV; $i++) {
     my $option_found = 'false';
     if ($ARGV[$i] eq '-max_jobs'){
@@ -68,6 +71,14 @@ for(my $i=5; $i<@ARGV; $i++) {
         $njobs = $ARGV[$i+1];
         if ($njobs !~ /(\d+$)/ ){
             die "-max_jobs <n> : <n> needs to be a number\n";
+        }
+        $i++;
+    }
+    if ($ARGV[$i] eq '-i'){
+        $option_found = "true";
+        $index = $ARGV[$i+1];
+        if ($index !~ /(\d+$)/ ){
+            die "-i <n> : <n> needs to be a number\n";
         }
         $i++;
     }
@@ -89,8 +100,8 @@ for(my $i=5; $i<@ARGV; $i++) {
         $option_found = "true";
         $submit = "bsub";
         $jobname_option = "-J";
-        $request_memory_option = "-q";
-        $mem = "max_mem30";
+        $request_memory_option = "-M";
+        $mem = "15360";
 	$status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
@@ -179,7 +190,7 @@ my $annotated_exons = $exons;
 $annotated_exons =~ s/master_list/annotated_master_list/;
 my $master_sh = "$shdir/annotate_master_list_of_exons.sh";
 my $master_jobname = "$study.get_high_expresser";
-my $master_logname = "$logdir/master_exon.annotate";
+my $master_logname = "$logdir/annotate.$index.master_exon";
 open(OUTFILE, ">$master_sh");
 print OUTFILE "perl $path/annotate.pl $annot_file $exons $annotated_exons\n";
 close(OUTFILE);
@@ -203,7 +214,7 @@ while(my $line = <INFILE>){
     my $annotated_i = "$LOC/$line/$id.high_expressers_intron_annot.txt";
     my $shfile = "$shdir/$id.highexpresser.annotate.sh";
     my $jobname = "$study.get_high_expresser";
-    my $logname = "$logdir/$id.highexpresser.annotate";
+    my $logname = "$logdir/annotate.$index.highexpresser.$id";
     open(OUT, ">$shfile");
     if ($NU eq "false"){
 	print OUT "perl $path/get_exon_intron_percents.pl $sampledir $cutoff $outfile $outfile_i $strand_info\n";

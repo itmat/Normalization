@@ -50,8 +50,8 @@ options:
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
         <request_memory_option> : is option for requesting resources for batch job submission command
-                                  (e.g. -q, -l h_vmem=)
-        <queue_name_for_6G> : is queue name for 6G (e.g. plus, 6G)
+                                  (e.g. -M, -l h_vmem=)
+        <queue_name_for_6G> : is queue name for 6G (e.g. 6144, 6G)
         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted.
@@ -60,6 +60,8 @@ options:
  -mem <s> : set this if your job requires more memory.
             <s> is the queue name for required mem.
             Default: 6G
+
+ -i <n> : index for logname (default: 0)
 
  -h : print usage
 
@@ -97,8 +99,17 @@ my $outputsam = "false";
 my $filter = "";
 my $qinfo = "";
 my $qcnt = 0;
+my $index = 0;
 for (my $i=5; $i<@ARGV; $i++){
     my $option_found = "false";
+    if ($ARGV[$i] eq '-i'){
+        $option_found = "true";
+        $index = $ARGV[$i+1];
+        if ($index !~ /(\d+$)/ ){
+            die "-i <n> : <n> needs to be a number\n";
+        }
+        $i++;
+    }
     if ($ARGV[$i] eq '-depthE'){
 	$i_exon = $ARGV[$i+1];
 	if ($i_exon !~ /(\d+$)/ ){
@@ -177,8 +188,8 @@ for (my $i=5; $i<@ARGV; $i++){
         $option_found = "true";
         $submit = "bsub";
         $jobname_option = "-J";
-	$request_memory_option = "-q";
-	$mem="plus";
+	$request_memory_option = "-M";
+	$mem="6144";
         $status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
@@ -269,16 +280,18 @@ while(my $line = <IN>){
 	$filename_u = "$eij_dir/Unique/$id.filtered_u.sam";
 	$filename_nu = "$eij_dir/NU/$id.filtered_nu.sam";
 	$shfile_u = "$shdir/Q.$id.quantify_exons_introns_u.sh";
-	$logname_u = "$logdir/quantify_exons_introns_u.$id";
+	$logname_u = "$logdir/quantify_exons_introns_u";
 	$shfile_nu = "$shdir/Q.$id.quantify_exons_introns_nu.sh";
-	$logname_nu = "$logdir/quantify_exons_introns_nu.$id";
+	$logname_nu = "$logdir/quantify_exons_introns_nu";
 	if ($outputsam eq "true"){
 	    $qinfo = "";
 	    $shfile_u =~ s/.sh$/.outputsam.sh/g;
 	    $shfile_nu =~ s/.sh$/.outputsam.sh/g;
-	    $logname_u = $logname_u . ".outputsam";
-	    $logname_nu = $logname_nu . ".outputsam";
+	    $logname_u = "$logdir/quantify_exons_introns.outputsam.$index.u";
+	    $logname_nu = "$logdir/quantify_exons_introns.outputsam.$index.nu";
 	}
+	$logname_u = $logname_u . ".$id";
+	$logname_nu = $logname_nu . ".$id";
 	if ($U eq "true"){
 	    open(OUT, ">$shfile_u");
 	    print OUT "perl $path/quantify_exons_introns.pl $filename_u $exons $introns $igs $LOC $filter $print -depthE $i_exon -depthI $i_intron $orientation $qinfo\n";

@@ -32,8 +32,8 @@ option:
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
         <request_memory_option> : is option for requesting resources for batch job submission command
-                                  (e.g. -q, -l h_vmem=)
-        <queue_name_for_10G> : is queue name for 10G (e.g. max_mem30, 10G)
+                                  (e.g. -M, -l h_vmem=)
+        <queue_name_for_10G> : is queue name for 10G (e.g. 10240, 10G)
         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted.
@@ -109,8 +109,8 @@ for (my $i=3; $i<@ARGV; $i++){
         $option_found = "true";
         $submit = "bsub";
         $jobname_option = "-J";
-	$request_memory_option = "-q";
-        $mem = "max_mem30";
+	$request_memory_option = "-M";
+        $mem = "10240";
         $status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){

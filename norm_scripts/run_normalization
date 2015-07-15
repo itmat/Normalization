@@ -49,10 +49,6 @@ OPTIONS:
                           and remove them from all samples for the final spreadsheets.
                           (Default = 0; this will remove features with sum of counts = 0)
 
-     -flanking_region <n> : is used for generating list of flanking regions.
-                            by default, 5000 bp up/downstream of each gene will be considered a flanking region.
-                            use this option to change the size <n>.
-
      [exon-intron-junction normalization only]
      -novel_off : set this if you DO NOT want to generate/use a study-specific master list of exons/introns 
                   (By default, the pipeline will add inferred exons/introns to the list of exons/introns)
@@ -62,6 +58,9 @@ OPTIONS:
                    (Default = 20)
      -depthIntron <n> : the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.
                    (Default = 10)
+     -flanking_region <n> : is used for generating list of flanking regions.
+                            by default, 5000 bp up/downstream of each gene will be considered a flanking region.
+                            use this option to change the size <n>.
      -h : print usage 
 
 ";
@@ -446,14 +445,14 @@ my $num_cluster = 0;
 my ($batchjobs,  $jobname, $status, $request, $queue_3G,  $queue_6G, $queue_10G, $queue_15G, $queue_30G, $queue_45G, $queue_60G, $submit, $c_option, $maxjobs);
 if ($SGE_CLUSTER =~ /^true/i){
     $num_cluster++;
-    if ($QUEUE_NAME_3G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $QUEUE_NAME_45G_sge eq "" | $QUEUE_NAME_60G_sge eq "" | $MAX_JOBS_sge eq ""){
+    if ($QUEUE_NAME_3G_sge eq "" | $QUEUE_NAME_6G_sge eq "" | $QUEUE_NAME_10G_sge eq "" |  $QUEUE_NAME_15G_sge eq "" | $QUEUE_NAME_30G_sge eq "" | $QUEUE_NAME_45G_sge eq "" | $QUEUE_NAME_60G_sge eq "" | $MAX_JOBS_sge eq "" | $REQUEST_RESOURCE_OPTION_sge eq ""){
         die "ERROR: please provide all required CLUSTER INFO for SGE_CLUSTER in the config file \"$cfg_file\"\n";
     }
     else{
 	$batchjobs = "qsub -cwd";
 	$jobname = "-N";
 	$status = "qstat -r";
-	$request = "-l h_vmem=";
+	$request = $REQUEST_RESOURCE_OPTION_sge;
 	$queue_3G = $QUEUE_NAME_3G_sge;
 	$queue_6G = $QUEUE_NAME_6G_sge;
 	$queue_10G = $QUEUE_NAME_10G_sge;
@@ -469,14 +468,14 @@ if ($SGE_CLUSTER =~ /^true/i){
 }
 if ($LSF_CLUSTER =~ /^true/i){
     $num_cluster++;
-    if ($QUEUE_NAME_3G_lsf eq "" | $QUEUE_NAME_6G_lsf eq "" | $QUEUE_NAME_10G_lsf eq "" |  $QUEUE_NAME_15G_lsf eq "" | $QUEUE_NAME_30G_lsf eq "" | $QUEUE_NAME_45G_lsf eq "" | $QUEUE_NAME_60G_lsf eq "" | $MAX_JOBS_lsf eq ""){
+    if ($QUEUE_NAME_3G_lsf eq "" | $QUEUE_NAME_6G_lsf eq "" | $QUEUE_NAME_10G_lsf eq "" |  $QUEUE_NAME_15G_lsf eq "" | $QUEUE_NAME_30G_lsf eq "" | $QUEUE_NAME_45G_lsf eq "" | $QUEUE_NAME_60G_lsf eq "" | $MAX_JOBS_lsf eq "" | $REQUEST_RESOURCE_OPTION_lsf eq ""){
         die "ERROR: please provide all required CLUSTER INFO for LSF_CLUSTER in the config file \"$cfg_file\"\n";
     }
     else{
 	$batchjobs = "bsub";
 	$jobname = "-J";
 	$status = "bjobs -w";
-	$request = "-q";
+	$request = $REQUEST_RESOURCE_OPTION_lsf;
 	$queue_3G = $QUEUE_NAME_3G_lsf;
 	$queue_6G = $QUEUE_NAME_6G_lsf;
 	$queue_10G = $QUEUE_NAME_10G_lsf;
@@ -535,6 +534,7 @@ while (my $line = <IN>){
     }
 }
 close(IN);
+
 #check if the fq/fa files exist
 open(IN, $unaligned_file) or die "cannot find file \"$unaligned_file\".\nPlease provide a file of unaligned reads.\n";
 while (my $line = <IN>){

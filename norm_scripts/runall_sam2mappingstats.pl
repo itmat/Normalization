@@ -25,8 +25,8 @@ option:
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
         <request_memory_option> : is option for requesting resources for batch job submission command
-                                  (e.g. -q, -l h_vmem=)
-        <queue_name_for_30G> : is queue name for 30G (e.g. max_mem30, 30G)
+                                  (e.g. -M, -l h_vmem=)
+        <queue_name_for_30G> : is queue name for 30G (e.g. 30720, 30G)
 
         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
@@ -95,8 +95,8 @@ for ($i=4; $i<@ARGV; $i++){
         $option_found = "true";
         $submit = "bsub";
         $jobname_option = "-J";
-        $request_memory_option = "-q";
-        $mem = "max_mem30";
+        $request_memory_option = "-M";
+        $mem = "30720";
 	$status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
@@ -170,6 +170,14 @@ unless (-d $logdir){
     `mkdir $logdir`;}
 $sam_name = $ARGV[2];
 
+my %DIRS;
+open(D, $sampledirs) or die "cannot find file '$sampledirs'\n";
+while(my $dir = <D>){
+    chomp($dir);
+    $DIRS{$dir} = 1;
+}
+close(D);
+
 if ($total_reads_file eq "true"){
     $dirs_reads = "$stats_dir/total_num_reads.txt";
     open(INFILE, $dirs_reads) or die "cannot find file '$dirs_reads'\n";
@@ -180,16 +188,19 @@ if ($total_reads_file eq "true"){
 	$dir = $fields[0];
 	$num_id = $fields[1];
 	$id = $dir;
-	$shfile = "$shdir/m." . $id . "runsam2mappingstats.sh";
-	$jobname = "$study.sam2mappingstats";
-	$logname = "$logdir/sam2mappingstats.$id";
-	open(OUTFILE, ">$shfile");
-	print OUTFILE "perl $path $LOC/$dir/$sam_name $LOC/$dir/$id.mappingstats.txt -numreads $num_id\n";
-    	close(OUTFILE);
-	while (qx{$status | wc -l} > $njobs){
-	    sleep(10);
+	if (exists $DIRS{$id}){
+	    $shfile = "$shdir/m." . $id . "runsam2mappingstats.sh";
+	    $jobname = "$study.sam2mappingstats";
+	    $logname = "$logdir/sam2mappingstats.$id";
+	    open(OUTFILE, ">$shfile");
+	    print OUTFILE "perl $path $LOC/$dir/$sam_name $LOC/$dir/$id.mappingstats.txt -numreads $num_id\n";
+	    close(OUTFILE);
+	    while (qx{$status | wc -l} > $njobs){
+		sleep(10);
+	    }
+	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
+	    sleep(2);
 	}
-	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
     }
 }
 close(INFILE);
@@ -240,6 +251,7 @@ if ($total_reads_file eq "false"){
 	    sleep(10);
 	}
 	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
+	sleep(2);
     }
 }
 close(INFILE);

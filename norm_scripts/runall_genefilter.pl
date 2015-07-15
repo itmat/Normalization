@@ -32,18 +32,20 @@ option:
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
         <request_memory_option> : is option for requesting resources for batch job submission command
-                                  (e.g. -q, -l h_vmem=)
-        <queue_name_for_10G> : is queue name for 10G (e.g. max_mem30, 10G)
+                                  (e.g. -M, -l h_vmem=)
+        <queue_name_for_10G> : is queue name for 10G (e.g. 10240, 10G)
         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
   -mem <s> : set this if your job requires more memory.
             <s> is the queue name for required mem.
             Default: 10G
 
- -max_jobs <n>  :  set this if you want to control the number of jobs submitted. 
+  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. 
                    by default it will submit 200 jobs at a time.
 
- -h : print usage
+  -h : print usage
+
+  -i <n> : index for logname (default: 0)
 
 \n";
 if (@ARGV<2){
@@ -71,6 +73,7 @@ my $filter_highexp = "";
 my $stranded = "";
 my $str = "false";
 my $norm = "false";
+my $index = 0;
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -78,6 +81,14 @@ for (my $i=2; $i<@ARGV; $i++){
         $njobs = $ARGV[$i+1];
         if ($njobs !~ /(\d+$)/ ){
             die "-max_jobs <n> : <n> needs to be a number\n";
+        }
+        $i++;
+    }
+    if ($ARGV[$i] eq '-i'){
+        $option_found = "true";
+        $index = $ARGV[$i+1];
+        if ($index !~ /(\d+$)/ ){
+            die "-i <n> : <n> needs to be a number\n";
         }
         $i++;
     }
@@ -128,8 +139,8 @@ for (my $i=2; $i<@ARGV; $i++){
         $submit = "bsub";
         $jobname_option = "-J";
 	$status = "bjobs";
-        $request_memory_option = "-q";
-        $mem = "max_mem30";
+        $request_memory_option = "-M";
+        $mem = "10240";
     }
     if ($ARGV[$i] eq '-sge'){
         $numargs++;
@@ -202,17 +213,17 @@ while(my $line = <IN>){
 	my ($shfile_u, $jobname, $logname_u, $shfile_nu, $logname_nu);
 	$genefile_u =~ s/.sam$/.txt/;
 	$genefile_nu =~ s/.sam$/.txt/;
-	$shfile_u = "$shdir/F.$id.genefilter_u.sh";
+	$shfile_u = "$shdir/F.$id.genefilter_u.$index.sh";
 	$jobname = "$study.genefilter_gnorm";
-	$logname_u = "$logdir/genefilter_u.$id";
-	$shfile_nu = "$shdir/F.$id.genefilter_nu.sh";
-	$logname_nu = "$logdir/genefilter_nu.$id";
+	$logname_u = "$logdir/genefilter.$index.u.$id";
+	$shfile_nu = "$shdir/F.$id.genefilter_nu.$index.sh";
+	$logname_nu = "$logdir/genefilter.$index.nu.$id";
 	if ($filter eq "true"){
-	    $shfile_u = "$shdir/F.$id.genefilter2_u.sh";
+	    $shfile_u = "$shdir/F.$id.genefilter2_u.$index.sh";
 	    $jobname = "$study.genefilter_gnorm2";
-	    $logname_u = "$logdir/genefilter2_u.$id";
-	    $shfile_nu = "$shdir/F.$id.genefilter2_nu.sh";
-	    $logname_nu = "$logdir/genefilter2_nu.$id";
+	    $logname_u = "$logdir/genefilter2.$index.u.$id";
+	    $shfile_nu = "$shdir/F.$id.genefilter2_nu.$index.sh";
+	    $logname_nu = "$logdir/genefilter2.$index.nu.$id";
 	}
 	if ($U eq "true"){
 	    open(OUT, ">$shfile_u");
@@ -227,6 +238,7 @@ while(my $line = <IN>){
 		sleep(10);
 	    }
 	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_u.out -e $logname_u.err < $shfile_u`;
+	    sleep(2);
 	}
 	if ($NU eq "true"){
 	    open(OUT, ">$shfile_nu");
@@ -241,6 +253,7 @@ while(my $line = <IN>){
 		sleep(10);
 	    }
 	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_nu.out -e $logname_nu.err < $shfile_nu`;
+	    sleep(2);
 	}
     }
     if ($norm eq "true"){
@@ -289,6 +302,7 @@ while(my $line = <IN>){
 	    sleep(10);
 	}
 	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
+	sleep(2);
 	if ($str eq "true"){
 	    $genefile_a = $samname_a;
 	    $genefile_a =~ s/.sam$/.txt/;
@@ -306,6 +320,7 @@ while(my $line = <IN>){
 		sleep(10);
 	    }
 	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_a.out -e $logname_a.err < $shfile_a`;
+	    sleep(2);
 	}
     }
 

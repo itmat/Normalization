@@ -36,8 +36,8 @@ option:
 
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
-        <request_memory_option> : is option for requesting resources for batch job submission command  (e.g. -q, -l h_vmem=)
-        <queue_name_for_6G> : is queue name for 6G (e.g. plus, 6G)
+        <request_memory_option> : is option for requesting resources for batch job submission command  (e.g. -M, -l h_vmem=)
+        <queue_name_for_6G> : is queue name for 6G (e.g. 6144, 6G)
         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
  -mem <s> : set this if your job requires more memory.
@@ -105,8 +105,8 @@ for (my $i=2; $i<@ARGV; $i++){
         $submit = "bsub";
         $jobname_option = "-J";
 	$status = "bjobs";
-	$request_memory_option = "-q";
-	$mem = "plus";
+	$request_memory_option = "-M";
+	$mem = "6144";
     }
     if ($ARGV[$i] eq '-sge'){
         $numargs++;
@@ -325,6 +325,7 @@ while(my $id = <INFILE>) {
 		    sleep(10);
 		}
 		`$submit $request_memory_option$mem $jobname_option $jobname -o $logname.out -e $logname.err < $shfile`;
+		sleep(2);
 	    }
 	}
 	if ($stranded eq "true"){
@@ -351,6 +352,7 @@ while(my $id = <INFILE>) {
                     sleep(10);
 		}
                 `$submit $request_memory_option$mem $jobname_option $jobname -o $logname.out -e $logname.err < $shfile`;
+		sleep(2);
             }
 	    #antisense
 	    my $total_lc_a = $LINECOUNTS_U_A{$id};
@@ -376,6 +378,7 @@ while(my $id = <INFILE>) {
                     sleep(10);
                 }
                 `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_a.out -e $logname_a.err < $shfile_a`;
+		sleep(2);
 	    }
 	}
     }
@@ -404,6 +407,7 @@ while(my $id = <INFILE>) {
 		    sleep(10);
 		}
 		`$submit $request_memory_option$mem $jobname_option $jobname -o $logname.out -e $logname.err < $shfile`;
+		sleep(2);
 	    }
 	}
 	if ($stranded eq "true"){
@@ -430,6 +434,7 @@ while(my $id = <INFILE>) {
                     sleep(10);
 		}
                 `$submit $request_memory_option$mem $jobname_option $jobname -o $logname.out -e $logname.err < $shfile`;
+		sleep(2);
             }
 	    #antisense
 	    my $total_lc_a = $LINECOUNTS_NU_A{$id};
@@ -455,6 +460,7 @@ while(my $id = <INFILE>) {
                     sleep(10);
 		}
                 `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_a.out -e $logname_a.err < $shfile_a`;
+		sleep(2);
 	    }
         }
     }

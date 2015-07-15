@@ -22,6 +22,7 @@ Make sure you have the latest version of PORT:
 - Aligned reads (SAM) 
  - SAM files need to have unique read ids. 
  - __Paired End data: mated alignments need to be in adjacent lines.__
+ - Required tags: **IH (or NH) and HI**.
 - [Gene info files](https://github.com/itmat/Normalization/blob/master/about_cfg.md#2-gene-info)
 - [Genome fa/fai](https://github.com/itmat/Normalization/blob/master/about_cfg.md#3-fa-and-fai)
  
@@ -128,12 +129,10 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
      **[normalization parameters]**<br>
      **-cutoff_highexp &lt;n>** : <br>is cutoff % value to identify highly expressed genes/exons/introns.<br>
                            The script will consider individual features (genes/exons/introns) accounting for greater than n(%) of the total reads as high expressers. The pipeline will remove the reads mapping to those features.<br>
-                           (Default = 100; with the default cutoff, exons expressed >5% will be reported, but will not remove any reads)<br>
+                           (Default = 100; with the default cutoff, features (genes/exons/introns) expressed >5% will be reported, but will not remove any reads)<br>
      **-cutoff_lowexp &lt;n>** : <br>is cutoff counts to identify low expressers in the final spreadsheets (exon, intron, junction and gene).<br>
                           The script will remove features with sum of counts less than the set value from all samples.<br>
                           (Default = 0; with the default cutoff, features with sum of counts = 0 will be removed from all samples)<br>
-     **-flanking_region &lt;n>** : <br>is used for generating list of flanking regions.<br>
-                            by default, 5000 bp up/downstream of each gene will be considered a flanking region.<br>
 
      **[exon-intron-junction normalization only]**<br>
      **-novel_off** : set this if you DO NOT want to use the inferred exons/introns for quantification<br> (By default, the pipeline will use inferred exons/introns) <br>
@@ -143,6 +142,8 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
                    (Default = 20)<br>
      **-depthIntron &lt;n>** : the pipeline splits filtered sam files into reads mapping to 1,2,3,...,n introns and downsamples each separately.<br>
                    (Default = 10)<br>
+     **-flanking_region &lt;n>** : <br>is used for generating list of flanking regions.<br>
+                            by default, 5000 bp up/downstream of each gene will be considered a flanking region.<br>
      **-h** : print this usage
 
 
@@ -174,7 +175,7 @@ STUDY
 │   │   │   ├── exonmappers
 │   │   │   ├── intergenicmappers
 │   │   │   ├── intronmappers
-│   │   │   └── undetermined
+│   │   │   └── exon_inconsistent
 │   │   ├── JUNCTIONS
 │   │   └── SPREADSHEETS
 │   └── GENE

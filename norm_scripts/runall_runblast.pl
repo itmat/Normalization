@@ -28,8 +28,8 @@ option:
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
         <request_memory_option> : is option for requesting resources for batch job submission command
-                                  (e.g. -q, -l h_vmem=)
-        <queue_name_for_15G> : is queue name for 15G (e.g. max_mem30, 15G)
+                                  (e.g. -M, -l h_vmem=)
+        <queue_name_for_15G> : is queue name for 15G (e.g. 15360, 15G)
 
         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
@@ -71,8 +71,8 @@ for (my $i=5; $i<@ARGV; $i++){
         $option_found = "true";
         $submit = "bsub";
         $jobname_option = "-J";
-        $request_memory_option = "-q";
-        $mem = "max_mem30";
+        $request_memory_option = "-M";
+        $mem = "15360";
 	$status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
@@ -202,6 +202,7 @@ while(my $line = <INFILE>) {
 	sleep(10);
     }
     `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
+    sleep(2);
 }
 close(INFILE);
 print "got here\n";

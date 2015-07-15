@@ -33,8 +33,8 @@ option:
          <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
          <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
          <request_memory_option> : is option for requesting resources for batch job submission command
-                                  (e.g. -q, -l h_vmem=)
-         <queue_name_for_3G> : is queue name for 3G (e.g. normal, 3G)
+                                  (e.g. -M, -l h_vmem=)
+         <queue_name_for_3G> : is queue name for 3G (e.g. 3072, 3G)
          <status> : command for checking batch job status (e.g. bjobs, qstat)
 
  -mem <s> : set this if your job requires more memory.
@@ -122,8 +122,8 @@ for (my $i=3; $i<@ARGV; $i++){
         $option_found = "true";
         $submit = "bsub";
         $jobname_option = "-J";
-	$request_memory_option = "-q";
-	$mem = "normal";
+	$request_memory_option = "-M";
+	$mem = "3072";
 	$status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
@@ -245,6 +245,7 @@ while(my $line = <IN>){
 		sleep(10);
 	    }
 	    `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_u.$i.out -e $logname_u.$i.err < $sh`;
+	    sleep(2);
 	}
 	my $infile = $temp_prefix . "5";
 	if (-e "$infile"){
@@ -258,6 +259,7 @@ while(my $line = <IN>){
                 sleep(10);
             }
             `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_u.5.out -e $logname_u.5.err < $sh`;
+	    sleep(2);
 	}
     }
     if ($NU eq "true"){
@@ -281,6 +283,7 @@ while(my $line = <IN>){
                 sleep(10);
             }
             `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_nu.$i.out -e $logname_nu.$i.err < $sh`;
+	    sleep(2);
         }
 	my $infile = $temp_prefix . "5";
 	if (-e "$infile"){
@@ -294,6 +297,7 @@ while(my $line = <IN>){
                 sleep(10);
             }
             `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_nu.5.out -e $logname_nu.5.err < $sh`;
+	    sleep(2);
 	}
     }
     if ($norm eq "true"){
@@ -317,6 +321,7 @@ while(my $line = <IN>){
                 sleep(10);
             }
             `$submit $request_memory_option$mem $jobname_option $jobname -o $logname.$i.out -e $logname.$i.err < $sh`;
+	    sleep(2);
         }
 	my $infile = $temp_prefix . "5";
 	if (-e "$infile"){
@@ -330,6 +335,7 @@ while(my $line = <IN>){
                 sleep(10);
             }
             `$submit $request_memory_option$mem $jobname_option $jobname -o $logname.5.out -e $logname.5.err < $sh`;
+	    sleep(2);
 	}
 	if ($stranded eq "true"){
 	    unless (-e $filename_a){
@@ -352,6 +358,7 @@ while(my $line = <IN>){
 		    sleep(10);
 		}
 		`$submit $request_memory_option$mem $jobname_option $jobname -o $logname_a.$i.out -e $logname_a.$i.err < $sh`;
+		sleep(2);
 	    }
 	    my $infile = $temp_prefix . "5";
 	    if (-e "$infile"){
@@ -365,6 +372,7 @@ while(my $line = <IN>){
 		    sleep(10);
 		}
 		`$submit $request_memory_option$mem $jobname_option $jobname -o $logname_a.5.out -e $logname_a.5.err < $sh`;
+		sleep(2);
 	    }
 	}
     }

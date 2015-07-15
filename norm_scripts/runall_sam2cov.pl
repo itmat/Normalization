@@ -30,8 +30,8 @@ option:
         <submit> : is command for submitting batch jobs from current working directory (e.g. bsub, qsub -cwd)
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
         <request_memory_option> : is option for requesting resources for batch job submission command
-                                  (e.g. -q, -l h_vmem=)
-        <queue_name_for_15G> : is queue name for 15G (e.g. max_mem30, 15G)
+                                  (e.g. -M, -l h_vmem=)
+        <queue_name_for_15G> : is queue name for 15G (e.g. 15360, 15G)
         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
  -mem <s> : set this if your job requires more memory.
@@ -105,8 +105,8 @@ for (my $i=4; $i<@ARGV; $i++){
         $option_found = "true";
         $submit = "bsub";
         $jobname_option = "-J";
-	$request_memory_option = "-q";
-        $mem = "max_mem30";
+	$request_memory_option = "-M";
+        $mem = "15360";
 	$status = "bjobs";
     }
     if ($ARGV[$i] eq '-sge'){
@@ -193,6 +193,9 @@ while(my $line =  <INFILE>){
     my $dir = $line;
     my $id = $dir;
     my $filename = "$final_M_dir/$id.merged.sam";
+    unless (-e $filename){
+	die "ERROR: SAM file $filename does not exist.\n";
+    }
     my $prefix = "$cov_dir/$id.norm.sam";
     my $prefix_sense = $prefix;
     my $prefix_antisense = $prefix;
@@ -214,51 +217,62 @@ while(my $line =  <INFILE>){
     if ($stranded eq "false"){
 	open(OUTFILE, ">$shdir/$shfile");
 	if ($rum eq 'true'){
-	    print OUTFILE "$sam2cov -r 1 -e 0 -u -p $prefix $fai_file $filename"; 
+	    print OUTFILE "$sam2cov -r 1 -e 0 -u -p $prefix $fai_file $filename\n"; 
+	    print OUTFILE "echo \"got here\"\n";
 	}
 	if ($star eq 'true'){
-	    print OUTFILE "$sam2cov -u -e 0 -p $prefix $fai_file $filename"; 
+	    print OUTFILE "$sam2cov -u -e 0 -p $prefix $fai_file $filename\n"; 
+	    print OUTFILE "echo \"got here\"\n";
 	}
 	close(OUTFILE);
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
 	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shdir/$shfile`;
+	sleep(2);
     }
     if ($stranded eq "true"){
 	open(OUTFILEF, ">$shdir/$shfile_sense");
 	if ($REV eq "true"){
 	    if ($rum eq 'true'){
-		print OUTFILEF "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_sense $fai_file $filename"; 
+		print OUTFILEF "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_sense $fai_file $filename\n"; 
+		print OUTFILEF "echo \"got here\"\n";
 	    }
 	    if ($star eq 'true'){
-		print OUTFILEF "$sam2cov -u -e 0 -s 1 -p $prefix_sense $fai_file $filename"; 
+		print OUTFILEF "$sam2cov -u -e 0 -s 1 -p $prefix_sense $fai_file $filename\n"; 
+		print OUTFILEF "echo \"got here\"\n";
 	    }
 	}
 	if ($FWD eq "true"){
             if ($rum eq 'true'){
-                print OUTFILEF "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_sense $fai_file $filename";
+                print OUTFILEF "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_sense $fai_file $filename\n";
+		print OUTFILEF "echo \"got here\"\n";
             }
             if ($star eq 'true'){
-                print OUTFILEF "$sam2cov -u -e 0 -s 2 -p $prefix_sense $fai_file $filename";
+                print OUTFILEF "$sam2cov -u -e 0 -s 2 -p $prefix_sense $fai_file $filename\n";
+		print OUTFILEF "echo \"got here\"\n";
             }
 	}
 	close(OUTFILEF);
 	open(OUTFILER, ">$shdir/$shfile_antisense");
 	if ($REV eq "true"){
 	    if ($rum eq 'true'){
-		print OUTFILER "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_antisense $fai_file $filename"; 
+		print OUTFILER "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_antisense $fai_file $filename\n"; 
+		print OUTFILER "echo \"got here\"\n";
 	    }
 	    if ($star eq 'true'){
-		print OUTFILER "$sam2cov -u -e 0 -s 2 -p $prefix_antisense $fai_file $filename"; 
+		print OUTFILER "$sam2cov -u -e 0 -s 2 -p $prefix_antisense $fai_file $filename\n"; 
+		print OUTFILER "echo \"got here\"\n";
 	    }
 	}
 	if ($FWD eq "true"){
             if ($rum eq 'true'){
-                print OUTFILER "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_antisense $fai_file $filename";
+                print OUTFILER "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_antisense $fai_file $filename\n";
+		print OUTFILER "echo \"got here\"\n";
             }
             if ($star eq 'true'){
-                print OUTFILER "$sam2cov -u -e 0 -s 1 -p $prefix_antisense $fai_file $filename";
+                print OUTFILER "$sam2cov -u -e 0 -s 1 -p $prefix_antisense $fai_file $filename\n";
+		print OUTFILER "echo \"got here\"\n";
             }
 	}
 	close(OUTFILER);
@@ -270,6 +284,7 @@ while(my $line =  <INFILE>){
 	    sleep(10);
 	}
 	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_antisense.out -e $logname_antisense.err < $shdir/$shfile_antisense`;
+	sleep(2);
     }
 }
 close(INFILE);
