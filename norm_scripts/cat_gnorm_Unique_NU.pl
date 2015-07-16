@@ -133,7 +133,7 @@ if ($stranded eq "true"){
 	}
     }
     open (OUT, ">$outfile");
-    pxrint OUT $header;
+    print OUT $header;
     close(OUT);
     open (OUT_A, ">$outfile_a");
     print OUT_A $header;

@@ -68,6 +68,10 @@ if (-e "$LOC/one-line.fa"){
     `rm $LOC/one-line.fa`;
 }
 
+if (-e "$ARGV[0].resume"){
+    `rm $ARGV[0].resume`;
+}
+
 if ($delete_temp_fa eq "true"){
     if ($gz eq "true"){
 	@g = glob("$LOC/*/*fa.gz");

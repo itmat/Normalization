@@ -202,11 +202,17 @@ if ($stranded eq "false"){
     }
 }
 if ($stranded eq "true"){
-    unless (-d "$current_LOC/EIJ/*/sense/"){
-	die "Input directory $current_LOC/EIJ/*/sense/ doesn't exist\n";
+    unless (-d "$current_LOC/EIJ/Unique/sense/"){
+	die "Input directory $current_LOC/EIJ/Unique/sense/ doesn't exist\n";
     }
-    unless (-d "$current_LOC/EIJ/*/antisense/"){
-	die "Input directory $current_LOC/EIJ/*/antisense/ doesn't exist\n";
+    unless (-d "$current_LOC/EIJ/NU/sense/"){
+	die "Input directory $current_LOC/EIJ/NU/sense/ doesn't exist\n";
+    }
+    unless (-d "$current_LOC/EIJ/Unique/antisense/"){
+	die "Input directory $current_LOC/EIJ/Unique/antisense/ doesn't exist\n";
+    }
+    unless (-d "$current_LOC/EIJ/NU/antisense/"){
+	die "Input directory $current_LOC/EIJ/NU/antisense/ doesn't exist\n";
     }
     unless (-d "$norm_exon_dir/sense"){
 	`mkdir $norm_exon_dir/sense`;
