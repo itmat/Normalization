@@ -779,9 +779,6 @@ else{
 print SH "perl $norm_script_dir/runall_normalization.pl $argv $se_option $bam_option $gz_option $ua_option\n";
 close(SH);
 
-my $db = `cat $runall_shfile`;
-print "\n\n$db\n\n";
-
 my ($p2_I, $p2_E);
 if ($part2 eq "true"){
 #if -part2 is set, check to make sure runall_normalization.sh file exists.
@@ -855,7 +852,7 @@ if ($check_study_port == 1){
     die "ERROR: PORT job with study name \"$study\" is already running.\n\n"
 }
 
-#`$batchjobs $request$queue_3G $jobname "$study.RUNALL_NORMALIZATION" -o $logdir/$study.runall_normalization.out -e $logdir/$study.runall_normalization.err < $runall_shfile`;
+`$batchjobs $request$queue_3G $jobname "$study.RUNALL_NORMALIZATION" -o $logdir/$study.runall_normalization.out -e $logdir/$study.runall_normalization.err < $runall_shfile`;
 
 sub args2shell{
     local (@argv) = @_;
