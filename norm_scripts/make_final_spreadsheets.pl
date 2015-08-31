@@ -61,6 +61,11 @@ my $request_memory_option = "";
 my $mem6 = "";
 my $mem10 = "";
 my ($status, $argv_all, $new_mem);
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for(my $i=2; $i<@ARGV; $i++) {
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -108,10 +113,6 @@ for(my $i=2; $i<@ARGV; $i++) {
         $mem6 = "6G";
 	$mem10 = "10G";
 	$status = "qstat";
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-	die $USAGE;
     }
     if ($ARGV[$i] eq '-other'){
         $numargs_c++;

@@ -393,8 +393,8 @@ my $lc = 0;
 my ($output_a, $linecount_a, $lc_a);
 if ($stranded eq "true"){
     $output_a = $output;
-    $output_a =~ s/.sam$/.antisense.sam/;
-    $output =~ s/.sam$/.sense.sam/;
+    $output_a =~ s/.sam$/.antisense.sam/i;
+    $output =~ s/.sam$/.sense.sam/i;
     $linecount = $output;
     $linecount_a = $output_a;
     $lc_a = 0;

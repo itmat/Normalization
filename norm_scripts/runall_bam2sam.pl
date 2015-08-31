@@ -1,21 +1,9 @@
-#!/usr/bin/env perl
-use strict;
 use warnings;
+use strict;
 
-my $USAGE = "perl runall_cat_gnorm_Unique_NU.pl <sample dirs> <loc> <samfilename> [options]
+my $USAGE = "\nperl runall_bam2sam.pl <sample_dirs> <loc> <bamfilename>
 
-<sample dirs> is  a file of sample directories with alignment output without path
-<loc> is where the sample directories are
-<samfilename>
-
-options:
- -stranded : set this if the data are strand-specific.
-
- -u  :  set this if you are using unique mappers only.
-        otherwise by default it will use both unique and non-unique mappers.
-
- -nu  :  set this if you are using non-unique mappers only.
-        otherwise by default it will use both unique and non-unique mappers.
+ -samtools <s> : provide location of samtools <s>
 
  -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
 
@@ -46,13 +34,12 @@ options:
 if (@ARGV<3){
     die $USAGE;
 }
-
-use Cwd 'abs_path';
-my $path = abs_path($0);
-$path =~ s/\/runall_cat_gnorm_Unique_NU.pl//;
-my $numargs = 0;
-my $type = "";
-my $stranded = "";
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
+my $samtools = "";
 my $njobs = 200;
 my $replace_mem = "false";
 my $submit = "";
@@ -62,22 +49,14 @@ my $mem = "";
 my $new_mem = "";
 my $status;
 my $numargs_c = 0;
-for (my $i=0;$i<@ARGV;$i++){
-    if ($ARGV[$i] eq '-h'){
-        die $USAGE;
-    }
-}
-for (my $i=3; $i<@ARGV; $i++){
+my $cnt_st = 0;
+for (my $i=3;$i<@ARGV;$i++){
     my $option_found = "false";
-    if($ARGV[$i] eq '-nu') {
-	$type = "-nu";
-	$numargs++;
-        $option_found = "true";
-    }
-    if($ARGV[$i] eq '-u') {
-	$type = "-u";
-        $numargs++;
-        $option_found = "true";
+    if ($ARGV[$i] eq '-samtools'){
+        $option_found = 'true';
+        $samtools = $ARGV[$i+1];
+	$i++;
+	$cnt_st++;
     }
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
@@ -86,10 +65,6 @@ for (my $i=3; $i<@ARGV; $i++){
             die "-max_jobs <n> : <n> needs to be a number\n";
         }
         $i++;
-    }
-    if ($ARGV[$i] eq "-stranded"){
-	$stranded = "-stranded";
-	$option_found = "true";
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs_c++;
@@ -137,13 +112,9 @@ for (my $i=3; $i<@ARGV; $i++){
             die "please provide a queue name.\n";
         }
     }
-    if($option_found eq 'false') {
-	die "option \"$ARGV[$i]\" not recognized.\n";
+    if ($option_found eq "false"){
+	die "option \"$ARGV[$i]\" was not recognized.\n";
     }
-}
-if($numargs > 1) {
-    die "you cannot use both -u and -nu\n.
-";
 }
 if($numargs_c ne '1'){
     die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit> ,<jobname_option>, <request_memory_option>, <queue_name_for_3G>, <status>\".\n";
@@ -151,9 +122,10 @@ if($numargs_c ne '1'){
 if ($replace_mem eq "true"){
     $mem = $new_mem;
 }
+if ($cnt_st ne 1){
+    die "you have to provide the location of samtools (use -samtools <s>).\n";
+}
 my $LOC = $ARGV[1];
-$LOC =~ s/\/$//;
-my $samfilename = $ARGV[2];
 my @fields = split("/", $LOC);
 my $last_dir = $fields[@fields-1];
 my $study = $fields[@fields-2];
@@ -161,15 +133,27 @@ my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
-open(IN, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; # dirnames;
+unless (-d $shdir){
+    `mkdir $shdir`;
+}
+unless (-d $logdir){
+    `mkdir $logdir`;
+}
+my $filename = $ARGV[2];
+#convert bam to sam
+open(IN, $ARGV[0]) or die "cannot find file '$ARGV[0]'";
 while(my $line = <IN>){
     chomp($line);
-    my $id = $line;
-    my $shfile = "$shdir/a" . $id . "cat_gnorm_Unique_NU.$id.sh";
-    my $jobname = "$study.cat_gnorm_Unique_NU";
-    my $logname = "$logdir/cat_gnorm_Unique_NU.$id";
+    my ($bam, $sam);
+    $bam = "$LOC/$line/$filename";
+    $sam = $bam;
+    $sam =~ s/.bam$/.sam/i;
+    my $shfile = "$shdir/bam2sam.$line.sh";
+    my $jobname = "$study.bam2sam";
+    my $logname = "$logdir/bam2sam.$line";
     open(OUTFILE, ">$shfile");
-    print OUTFILE "perl $path/cat_gnorm_Unique_NU.pl $id $LOC $samfilename $type $stranded\n";
+    print OUTFILE "$samtools view -h $bam > $sam\n";
+    print OUTFILE "echo \"got here\"\n";
     close(OUTFILE);
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);
@@ -178,7 +162,4 @@ while(my $line = <IN>){
     sleep(2);
 }
 close(IN);
-
-
 print "got here\n";
-

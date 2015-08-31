@@ -53,6 +53,11 @@ my $status;
 my $njobs = 200;
 my $new_mem;
 my $replace_mem = "false";
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for(my $i=2;$i<@ARGV;$i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -72,10 +77,6 @@ for(my $i=2;$i<@ARGV;$i++){
 	$eij = "true";
 	$numargs++;
         $option_found = "true";
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-	die $USAGE;
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs_c++;

@@ -71,7 +71,9 @@ if (-d "$study_dir/STATS/GENE"){
 }
 my $total = "false"; 
 my $chrM = "false";
+my $U = "false";
 my $NU = "false";
+my $non_map = "false";
 my $ribo = "false";
 my $exonicU = "false";
 my $exonicNU = "false"; 
@@ -97,7 +99,7 @@ my $geneNU_A = "false";
 my $senseG_U = "false";
 my $senseG_NU = "false";
 my $footer = "";
-my ($total_num, @chrM_num, @chrM_num_m, $NU_num, $NU_num_m, $ribo_num, $exonic_u,  $exonic_nu, $one_u, $one_nu, $intergenic_u, $intergenic_nu, $gene_u, $gene_nu, $und_u, $und_nu);
+my ($total_num, @chrM_num, @chrM_num_m, $U_num, $U_num_m, $NU_num, $NU_num_m, $non_num, $ribo_num, $exonic_u,  $exonic_nu, $one_u, $one_nu, $intergenic_u, $intergenic_nu, $gene_u, $gene_nu, $und_u, $und_nu);
 my ($exonic_u_a, $exonic_nu_a, $one_u_a, $one_nu_a, $sense_ex_u, $sense_int_u, $sense_ex_nu, $sense_int_nu);
 my ($gene_u_a, $gene_nu_a,$sense_g_u, $sense_g_nu);
 if ($gnorm eq "true"){
@@ -105,19 +107,27 @@ if ($gnorm eq "true"){
     open(OUT, ">$out_gnorm");
     print OUT "sample\t";
     if (-e "$study_dir/STATS/mappingstats_summary.txt"){
-        print OUT "totalnumreads\t%NU\t";
+        print OUT "totalnumreads\t%U\t%NU\t%non-map\t";
         $total = "true";
         $NU = "true";
+	$U = "true";
+	$non_map = "true";
+	$footer .= "# totalnumreads : total number of reads\n";
+	$footer .= "# %U : %unique mappers (FWDorREV) out of total number of reads\n";
+	$footer .= "# %NU : %non-unique mappers (FWDorREV) out of total number of reads\n";
+	$footer .= "# %non-map : %non-mappers out of total number of reads\n";
     }
     if (-e "$study_dir/STATS/mitochondrial_percents.txt"){
 	foreach my $key (sort keys %MITO){
 	    print OUT "%$key\t";
+	    $footer .= "# %$key : %reads uniquely mapping to $key out of all mapped reads\n";
 	}
 	$chrM= "true";
     }
     if (-e "$study_dir/STATS/ribo_percents.txt"){
         print OUT "%ribo\t";
         $ribo = "true";
+	$footer .= "# %ribo : %ribosomal out of all mapped reads\n";
     }
     if ($stranded eq "false"){
 	if (-e "$study_dir/STATS/GENE/percent_genemappers_Unique.txt"){
@@ -154,12 +164,12 @@ if ($gnorm eq "true"){
         }
 	if (-e "$study_dir/STATS/GENE/sense_vs_antisense_genemappers_Unique.txt"){
 	    print OUT "%senseGeneU\t";
-	    $footer .= "# %senseGeneU : %unique sense genemappers out of unique sense + antisense genemappers\n";
+	    $footer .= "# %senseGeneU : %unique sense genemappers out of total unique genemappers\n";
 	    $senseG_U = "true";
 	}
 	if (-e "$study_dir/STATS/GENE/sense_vs_antisense_genemappers_NU.txt"){
             print OUT "%senseGeneNU\t";
-	    $footer .= "# %senseGeneNU : %non-unique sense genemappers out of non-unique sense + antisense genemappers\n";
+	    $footer .= "# %senseGeneNU : %non-unique sense genemappers out of total non-unique genemappers\n";
             $senseG_NU ="true";
 	}
     }
@@ -176,7 +186,16 @@ if ($gnorm eq "true"){
 	    $total_num =~ s/^\s*(.*?)\s*$/$1/;
             $total_num =~ s/\,//g;
         }
-        #NU
+        #U (FWDorREV)
+        if ($U eq "true"){
+            $U_num = `cut -f 1,4 $study_dir/STATS/mappingstats_summary.txt | grep -w $line`;
+            chomp($U_num);
+            $U_num =~ s/$line//g;
+            $U_num =~ s/^\s*(.*?)\s*$/$1/;
+            $U_num =~ m/\((.*)\%\)/;
+            $U_num_m = $1;
+        }
+        #NU (FWDorREV)
         if ($NU eq "true"){
             $NU_num = `cut -f 1,7 $study_dir/STATS/mappingstats_summary.txt | grep -w $line`;
             chomp($NU_num);
@@ -185,6 +204,17 @@ if ($gnorm eq "true"){
             $NU_num =~ m/\((.*)\%\)/;
             $NU_num_m = $1;
         }
+	#non-map (total - FWDorREVmapped)
+	if ($non_map eq "true"){
+	    my $mapped = `cut -f 1,9 $study_dir/STATS/mappingstats_summary.txt | grep -w $line`;
+	    chomp($mapped);
+            $mapped =~ s/$line//g;
+            $mapped =~ s/^\s*(.*?)\s*$/$1/;
+            $mapped =~ m/\((.*)\%\)/;
+	    my $mapped_m = $1;
+	    $non_num = 100 - $mapped_m;
+	    $non_num = sprintf("%.2f",$non_num);
+	}
 	#chrM
 	if ($chrM eq "true"){
 	    my $size = keys %MITO;
@@ -257,7 +287,7 @@ if ($gnorm eq "true"){
             $sense_g_nu =~ s/$line//g;
             $sense_g_nu =~ s/^\s*(.*?)\s*$/$1/;
 	}
-	print OUT "$line\t$total_num\t$NU_num_m\t";
+	print OUT "$line\t$total_num\t$U_num_m\t$NU_num_m\t$non_num\t";
 	my $size = keys %MITO;
 	for (my$i=2;$i<$size+2;$i++){
 	    print OUT "$chrM_num_m[$i]\t";
@@ -281,21 +311,28 @@ if ($eij eq "true"){
     $footer = "----------\n";
     open(OUT, ">$out_eij");
     print OUT "sample\t";
-
     if (-e "$study_dir/STATS/mappingstats_summary.txt"){
-	print OUT "totalnumreads\t%NU\t";
-	$total = "true";
-	$NU = "true";
+	print OUT "totalnumreads\t%U\t%NU\t%non-map\t";
+        $total = "true";
+        $NU = "true";
+        $U = "true";
+        $non_map = "true";
+        $footer .= "# totalnumreads : total number of reads\n";
+        $footer .= "# %U : %unique mappers (FWDorREV) out of total number of reads\n";
+        $footer .= "# %NU : %non-unique mappers (FWDorREV) out of total number of reads\n";
+        $footer .= "# %non-map : %non-mappers out of total number of reads\n";
     }
     if (-e "$study_dir/STATS/mitochondrial_percents.txt"){
         foreach my $key (sort keys %MITO){
             print OUT "%$key\t";
+	    $footer .= "# %$key : %reads uniquely mapping to $key out of all mapped reads\n";
         }
         $chrM= "true";
     }
     if (-e "$study_dir/STATS/ribo_percents.txt"){
 	print OUT "%ribo\t";
 	$ribo = "true";
+	$footer .= "# %ribo : %ribosomal out of all mapped reads\n";
     }
     if ($stranded eq "false"){
 	if (-e "$study_dir/STATS/EXON_INTRON_JUNCTION/exon2nonexon_signal_stats_Unique.txt"){
@@ -362,22 +399,22 @@ if ($eij eq "true"){
 	}
 	if (-e "$study_dir/STATS/EXON_INTRON_JUNCTION/sense_vs_antisense_exonmappers_Unique.txt"){
 	    print OUT "%senseExonU\t";
-	    $footer .= "# %senseExonU : %unique sense exonmappers out of unique sense + antisense exonmappers\n";
+	    $footer .= "# %senseExonU : %unique sense exonmappers out of total unique exonmappers\n";
 	    $senseE_U = "true";
 	}
 	if (-e "$study_dir/STATS/EXON_INTRON_JUNCTION/sense_vs_antisense_exonmappers_NU.txt"){
 	    print OUT "%senseExonNU\t";
-	    $footer .= "# %senseExonNU : %non-unique sense exonmappers out of non-unique sense + antisense exonmappers\n";
+	    $footer .= "# %senseExonNU : %non-unique sense exonmappers out of total non-unique exonmappers\n";
 	    $senseE_NU = "true";
 	}
 	if (-e "$study_dir/STATS/EXON_INTRON_JUNCTION/sense_vs_antisense_intronmappers_Unique.txt"){
 	    print OUT "%senseIntronU\t";
-	    $footer .= "# %senseIntronU : %unique sense intronmappers out of unique sense + antisense intronmappers\n";
+	    $footer .= "# %senseIntronU : %unique sense intronmappers out of total unique intronmappers\n";
 	    $senseI_U = "true";
 	}
 	if (-e "$study_dir/STATS/EXON_INTRON_JUNCTION/sense_vs_antisense_intronmappers_NU.txt"){
 	    print OUT "%senseIntronNU\t";
-	    $footer .= "# %senseIntronNU : %non-unique sense intronmappers out of non-unique sense + antisense intronmappers\n";
+	    $footer .= "# %senseIntronNU : %non-unique sense intronmappers out of total non-unique intronmappers\n";
 	    $senseI_NU = "true";
 	}
     }
@@ -413,7 +450,16 @@ if ($eij eq "true"){
 	    $total_num =~ s/^\s*(.*?)\s*$/$1/;
 	    $total_num =~ s/\,//g;
 	}
-	#NU
+	#U (FWDorREV)
+        if ($U eq "true"){
+            $U_num = `cut -f 1,4 $study_dir/STATS/mappingstats_summary.txt | grep -w $line`;
+            chomp($U_num);
+            $U_num =~ s/$line//g;
+            $U_num =~ s/^\s*(.*?)\s*$/$1/;
+            $U_num =~ m/\((.*)\%\)/;
+            $U_num_m = $1;
+        }
+	#NU (FWDorREV)
 	if ($NU eq "true"){
 	    $NU_num = `cut -f 1,7 $study_dir/STATS/mappingstats_summary.txt | grep -w $line`;
 	    chomp($NU_num);
@@ -421,6 +467,17 @@ if ($eij eq "true"){
 	    $NU_num =~ s/^\s*(.*?)\s*$/$1/;
 	    $NU_num =~ m/\((.*)\%\)/;
 	    $NU_num_m = $1;
+	}
+	#non-map (total - FWDorREVmapped)
+	if ($non_map eq "true"){
+	    my $mapped = `cut -f 1,9 $study_dir/STATS/mappingstats_summary.txt | grep -w $line`;
+	    chomp($mapped);
+	    $mapped =~ s/$line//g;
+            $mapped =~ s/^\s*(.*?)\s*$/$1/;
+            $mapped =~ m/\((.*)\%\)/;
+	    my $mapped_m = $1;
+	    $non_num = 100 - $mapped_m;
+	    $non_num = sprintf("%.2f",$non_num);
 	}
 	#chrM
         if ($chrM eq "true"){
@@ -576,7 +633,7 @@ if ($eij eq "true"){
             $und_nu =~ s/$line//g;
             $und_nu =~ s/^\s*(.*?)\s*$/$1/;
         }
-	print OUT "$line\t$total_num\t$NU_num_m\t";
+	print OUT "$line\t$total_num\t$U_num_m\t$NU_num_m\t$non_num\t";
         my $size = keys %MITO;
         for (my$i=2;$i<$size+2;$i++){
             print OUT "$chrM_num_m[$i]\t";
@@ -590,7 +647,7 @@ if ($eij eq "true"){
 	if ($stranded eq "true"){
 #	    print OUT "\$line\t\$total_num\t\$chrM_num_m\t\$NU_num_m\t\$ribo_num\t\$exonic_u\t\$exonic_u_a\t\$exonic_nu\t\$exonic_nu_a\t\$one_u\t\$one_u_a\t\$one_nu\t\$one_nu_a\t\$sense_ex_u\t\$sense_ex_nu\t\$sense_int_u\t\$sense_int_nu\t\$intergenic_u\t\$intergenic_nu\t\$und_u\t\$und_nu\n";
 	    print OUT "$exonic_u\t$exonic_u_a\t$exonic_nu\t$exonic_nu_a\t$one_u\t$one_u_a\t$one_nu\t$one_nu_a\t$sense_ex_u\t$sense_ex_nu\t$sense_int_u\t$sense_int_nu\t$intergenic_u\t$intergenic_nu\t$und_u\t$und_nu\n";
-
+	    
 	}
     }
     print OUT $footer;

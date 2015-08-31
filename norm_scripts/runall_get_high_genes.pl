@@ -61,6 +61,11 @@ my $numargs = 0;
 my $status;
 my $new_mem;
 my $index = 0;
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for(my $i=3; $i<@ARGV; $i++) {
     my $option_found = 'false';
     if ($ARGV[$i] eq '-max_jobs'){
@@ -87,10 +92,6 @@ for(my $i=3; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq '-stranded'){
         $option_found = "true";
 	$stranded = "-stranded";
-    }
-    if ($ARGV[$i] eq '-h'){
-	$option_found = "true";
-	die $USAGE;
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs++;
@@ -136,10 +137,6 @@ for(my $i=3; $i<@ARGV; $i++) {
         if ($new_mem eq ""){
             die "please provide a queue name.\n";
         }
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-        die $USAGE;
     }
     if($option_found eq 'false') {
         die "arg \"$ARGV[$i]\" not recognized.\n";

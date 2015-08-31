@@ -40,9 +40,9 @@ my $outname = $fields[@fields-1];
 my $outfiledir = $outfile;
 $outfiledir =~ s/\/$outname//;
 my $outfileU = "$outfiledir/Unique/$outname";
-$outfileU =~ s/.sam$/_u.sam/;
+$outfileU =~ s/.sam$/_u.sam/i;
 my $outfileNU = "$outfiledir/NU/$outname";
-$outfileNU =~ s/.sam$/_nu.sam/;
+$outfileNU =~ s/.sam$/_nu.sam/i;
 
 
 my $NU = "true";

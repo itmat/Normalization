@@ -66,6 +66,11 @@ my $new_mem = "";
 my $status;
 my $strand_info = "";
 my $index = 0;
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for(my $i=3; $i<@ARGV; $i++) {
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -101,10 +106,6 @@ for(my $i=3; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq '-se'){
         $pe = "-se";
         $option_found = "true";
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-	die $USAGE;
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs++;

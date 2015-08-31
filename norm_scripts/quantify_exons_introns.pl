@@ -187,9 +187,14 @@ if ($stranded eq "true"){
 	$intron_sam_out_anti =~ s/.sam$/_intronmappers.sam/g;
     }
 }
-
 my (@exon_sam_outfile, @anti_exon_sam_outfile,  @OUTFILE_EXON, @OUTFILE_EXON_A);
 my (@intron_sam_outfile, @anti_intron_sam_outfile,  @OUTFILE_INTRON, @OUTFILE_INTRON_A);
+my $statsfile = "$directory/stats.txt";
+my $total_lc = 0;
+my $total_lc_a = 0;
+my ($ex_only, $int_only, $ig_only, $ex_int, $int_ig, $ex_ig, $ex_int_ig, $ex_inc_only) = (0,0,0,0,0,0,0,0);
+my ($ex_only_a, $int_only_a, $ex_int_a, $int_ig_a, $ex_ig_a, $ex_int_ig_a) = (0,0,0,0,0,0);
+
 if ($print eq "true"){
     open(EXONSAMOUT, ">$exon_sam_out");
     open(LC, ">$linecountfile");
@@ -475,6 +480,7 @@ for (my $i=0;$i<=$max_intron;$i++){
 open(SAM, $samfile) or die "cannot find file \"$samfile\"\n";
 while(my $line = <SAM>){
     chomp($line);
+    $total_lc++;
     if ($line =~ /^@/){
 	next;
     }
@@ -884,6 +890,20 @@ while(my $line = <SAM>){
 		$exon_outfile_cnt[$i_exon]++;
 		print {$OUTFILE_EXON[$i_exon]} "$line\n";
 	    }
+	    if ($intronFlag >= 1){
+		if ($igFlag >= 1){ #exon-intron-intergenic
+		    $ex_int_ig++;
+		}
+		else{ #exon-intron
+		    $ex_int++;
+		}
+	    }
+	    elsif ($igFlag >= 1){ #exon-intergenic
+		$ex_ig++;
+	    }
+	    else{ #exon-only
+		$ex_only++;
+	    }
 	}
     }
     if (($print eq "true") && ($print_exon_A eq "true")){
@@ -899,6 +919,21 @@ while(my $line = <SAM>){
 		$A_exon_outfile_cnt[$i_exon]++;
 		print {$OUTFILE_EXON_A[$i_exon]} "$line\n";
             }
+	    if ($AintronFlag >= 1){
+		if ($igFlag >= 1){ #exon-intron-intergenic
+		    $ex_int_ig_a++;
+		}
+		else{ #exon-intron
+		    $ex_int_a++;
+		}
+	    }
+	    elsif ($igFlag >= 1){ #exon-intergenic
+		$ex_ig_a++;
+	    }
+	    else{ #exon-only
+		$ex_only_a++;
+	    }
+
 	}
     }
     #intergenic region
@@ -906,6 +941,9 @@ while(my $line = <SAM>){
 	if ($igFlag >=1){
 	    $ig_outfile_cnt++;
 	    print INTERGENIC "$line\n";
+	    if (($exonFlag == 0) && ($intronFlag == 0) && ($AexonFlag == 0) && ($AintronFlag == 0)){
+		$ig_only++;
+	    }
 	}
     }
     #intron
@@ -922,6 +960,12 @@ while(my $line = <SAM>){
                 $intron_outfile_cnt[$i_intron]++;
                 print {$OUTFILE_INTRON[$i_intron]} "$line\n";
             }
+	    if (($exonFlag == 0) && ($igFlag == 0)){
+		$int_only++;
+	    }
+	    if (($igFlag >= 1) && ($exonFlag == 0)){
+		$int_ig++;
+	    }
         }
     }
     if (($print eq "true") && ($print_intron_A eq "true")){
@@ -937,13 +981,22 @@ while(my $line = <SAM>){
                 $A_intron_outfile_cnt[$i_intron]++;
                 print {$OUTFILE_INTRON_A[$i_intron]} "$line\n";
             }
+	    if (($AexonFlag == 0) && ($igFlag == 0)){
+		$int_only_a++;
+	    }
+	    if (($igFlag >= 1) && ($AexonFlag == 0)){
+		$int_ig_a++;
+	    }
         }
     }
     #exon_inconsistent reads
-    if (($print eq "true") && ($print_exon eq "true") && ($print_intron eq "true")&& ($print_exon_A eq "true")&& ($print_intron_A eq "true")){
-	if (($intronFlag eq '0') && ($exonFlag eq '0') && ($igFlag eq '0') && ($AexonFlag eq '0') && ($AintronFlag eq "0")){
-	    print EXON_INCONSISTENT "$line\n";
-	    $exon_inconsistent_outfile_cnt++;
+    if ($print eq "true"){
+	if (($print_exon eq "true") && ($print_intron eq "true")&& ($print_exon_A eq "true")&& ($print_intron_A eq "true")){ # read doesn't map to high expressers
+	    if (($intronFlag eq '0') && ($exonFlag eq '0') && ($igFlag eq '0') && ($AexonFlag eq '0') && ($AintronFlag eq "0")){
+		print EXON_INCONSISTENT "$line\n";
+		$exon_inconsistent_outfile_cnt++;
+		$ex_inc_only++; #exon-inconsistent-only
+	    }
 	}
     }
     $EXON_FLAG_DIST[$exonFlag]++;
@@ -968,7 +1021,7 @@ while(my $line = <SAM>){
     foreach my $ig (sort keys %IGS){
 	print "IG:$ig; ";
     }
-    print "\n";
+    die"\n";
 =cut
 }
 close(SAM);
@@ -999,6 +1052,17 @@ if ($print eq "true"){
 
     print LC "$exon_inconsistent_sam_out\t$exon_inconsistent_outfile_cnt\n";
     print EXON_INCONSISTENT "line count = $exon_inconsistent_outfile_cnt\n";
+    
+    #stats
+    open(STATS, ">$statsfile");
+    if ($stranded eq "false"){ #not stranded
+	print STATS "total-linecount-standard-chr\t$total_lc\nexon-only\t$ex_only\nintron-only\t$int_only\nintergenic-only\t$ig_only\nexon-intron\t$ex_int\nexon-intergenic\t$ex_ig\nintron-intergenic\t$int_ig\nexon-intron-intergenic\t$ex_int_ig\nexon-inconsistent-only\t$ex_inc_only\n";
+    }
+    else{ #stranded
+	print STATS "total-linecount-standard-chr\t$total_lc\nsense-exon-only\t$ex_only\nantisense-exon-only\t$ex_only_a\nsense-intron-only\t$int_only\nantisense-intron-only\t$int_only_a\nintergenic-only\t$ig_only\nsense-exon-intron\t$ex_int\nantisense-exon-intron\t$ex_int_a\nsense-exon-intergenic\t$ex_ig\nantisense-exon-intergenic\t$ex_ig_a\nsense-intron-intergenic\t$int_ig\nantisense-intron-intergenic\t$int_ig_a\nsense-exon-intron-intergenic\t$ex_int_ig\nantisense-exon-intron-intergenic\t$ex_int_ig_a\nexon-inconsistent-only\t$ex_inc_only\n";
+    }
+    close(STATS);
+
 }
 
 if ($i_exon > $max_exon){

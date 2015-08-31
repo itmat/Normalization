@@ -79,6 +79,11 @@ my $status;
 my $use_chr_names = "";
 my $use_mito_names = "";
 my $chromnames;
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for(my $i=3; $i<@ARGV; $i++) {
     my $option_found = "false";
     if ($ARGV[$i] eq '-chromnames'){
@@ -126,10 +131,6 @@ for(my $i=3; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq '-se'){
         $pe = "false";
         $option_found = "true";
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-	die $USAGE;
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs++;

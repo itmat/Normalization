@@ -38,19 +38,21 @@ while(my $dir = <IN>){
     $i++;
 }
 
-my $total_num_file = "$stats_dir/total_num_reads.txt";
 open(INFILE, "$LOC/ribosomal_counts.txt") or die "file '$LOC/ribosomal_counts.txt' cannot open for reading.\n";
 open(OUTFILE, ">$stats_dir/ribo_percents.txt") or die "file '$stats_dir/ribo_percents.txt' cannot open for writing.\n";
-print OUTFILE "#ribo\t#reads\t\%ribo\tname\n";
+print OUTFILE "#ribo\t#all_mapped\t\%ribo\tname\n";
 $i=0;
 while(my $line = <INFILE>) {
     chomp($line);
     my $cnt = $line;
     my $sample_name = $filename[$i];
     $i++;
-    my $x = `grep -w $sample_name $total_num_file`;
-    my @x_s = split(" ", $x);
-    my $total = $x_s[1];
+    my $mappingstats_file = "$LOC/$sample_name/$sample_name.mappingstats.txt";
+    my $x = `grep "At least one of forward or reverse mapped" $mappingstats_file | tail -1`;
+    chomp($x);
+    $x =~ /([\d,]+)/;
+    my $total = $1;
+    $total =~ s/,//g;
     chomp($total);
     my $ratio = int($cnt / $total * 10000) / 10000 * 100;
     $ratio = sprintf("%.2f", $ratio);

@@ -1,8 +1,7 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
-if(@ARGV<2) {
-    die "Usage: perl predict_num_reads.pl <sample dirs> <loc> [options]
+my $USAGE = "Usage: perl predict_num_reads.pl <sample dirs> <loc> [options]
 
 This will provide a rough estimate of number of reads you'll have after normalization.
 You can remove unwanted samples from your <sample dirs> file.
@@ -23,7 +22,12 @@ options:
  -depthI <n> : This is the number of intronmappers file used for normalization.
                By default, <n> = 10.
 
+ -h : print usage
+
 ";
+
+if(@ARGV<2) {
+    die $USAGE;
 }
 my $U = 'true';
 my $NU = 'true';
@@ -31,6 +35,11 @@ my $numargs_u_nu = 0;
 my $i_exon = 20;
 my $i_intron = 10;
 my $stranded = "false";
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+	die $USAGE;
+    }
+}
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-depthE'){
@@ -76,6 +85,9 @@ and non-unique by default so if that's what you want don't use either arg
 
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
+unless (-d $LOC){
+    die "directory $LOC does not exist. please check your input <loc>. \n";
+}
 my @fields = split("/", $LOC);
 my $last_dir = $fields[@fields-1];
 my $study_dir = $LOC;
@@ -161,6 +173,9 @@ while(my $line = <IN>){
 	for (my $i=1; $i<=$i_exon; $i++){
 	    my $str_e = `grep exonmappers.$i.sam $linecountfile_u`;
 	    chomp($str_e);
+	    if ($str_e =~ /^$/){
+		die "exonmappers.$i.sam file doesn't exist. check the -depthE option\n";
+	    }
 	    my @a = split (/\t/, $str_e);
 	    my $N = $a[1];
 	    print TEMP "$N\t";
@@ -170,6 +185,9 @@ while(my $line = <IN>){
 	for (my $i=1; $i<=$i_intron; $i++){
 	    my $str_i = `grep intronmappers.$i.sam $linecountfile_u`;
 	    chomp($str_i);
+	    if ($str_i =~ /^$/){
+		die "intronmappers.$i.sam file doesn't exist. check the -depthI option\n";
+	    }
 	    my @a = split (/\t/, $str_i);
 	    my $N = $a[1];
 	    print TEMP "$N\t";
@@ -187,6 +205,9 @@ while(my $line = <IN>){
 	for (my $i=1; $i<=$i_exon; $i++){
 	    my $str_e = `grep exonmappers.$i.sam $linecountfile_nu`;
 	    chomp($str_e);
+	    if ($str_e =~ /^$/){
+		die "exonmappers.$i.sam file doesn't exist. check the -depthE option\n";
+	    }
 	    my @a = split (/\t/, $str_e);
 	    my $N = $a[1];
 	    print TEMP "$N\t";
@@ -196,6 +217,9 @@ while(my $line = <IN>){
 	for (my $i=1; $i<=$i_intron; $i++){
 	    my $str_i = `grep intronmappers.$i.sam $linecountfile_nu`;
 	    chomp($str_i);
+	    if ($str_i =~ /^$/){
+		die "ERROR: intronmappers.$i.sam file doesn't exist. check the -depthI option\n";
+	    }
 	    my @a = split (/\t/, $str_i);
 	    my $N = $a[1];
 	    print TEMP "$N\t";
@@ -508,20 +532,20 @@ if ($stranded eq "true"){
 print OUT "\n[1] You may remove sample ids from <sample_dirs> file to get more reads:\n\n<Expected number of reads after removing samples>\n";
 my $num_to_remove;
 if ($numargs_u_nu eq '0'){
-    print OUT "#ids-to-rm\tu-EX\tu-INT\tu-IG\tnu-EX\tnu-INT\tnu-IG\tSampleID\n";
+    print OUT "#ids-to-rm\tu-EX\tu-INT\tu-IG\tnu-EX\tnu-INT\tnu-IG\tSampleIDs-to-rm\n";
     $num_to_remove = @P_SUM_U_EX;
 }
 else{
     if ($U eq "true"){
-	print OUT "#ids-to-rm\tu-EX\tu-INT\tu-IG\tSampleID\n";
+	print OUT "#ids-to-rm\tu-EX\tu-INT\tu-IG\tSampleIDs-to-rm\n";
 	$num_to_remove = @P_SUM_U_EX;
     }
     else{ 
-	print OUT "#ids-to-rm\tnu-EX\tnu-INT\tnu-IG\ttSampleID\n";
+	print OUT "#ids-to-rm\tnu-EX\tnu-INT\tnu-IG\ttSampleIDs-to-rm\n";
 	$num_to_remove = @P_SUM_NU_EX;
     }
 }
-
+my $ids = "";
 for(my $i=0; $i<$num_to_remove;$i++){
     if ($numargs_u_nu eq '0'){
 	my $P_U_EX = &format_large_int($P_SUM_U_EX[$i]);
@@ -530,20 +554,32 @@ for(my $i=0; $i<$num_to_remove;$i++){
 	my $P_NU_EX = &format_large_int($P_SUM_NU_EX[$i]);
 	my $P_NU_INT = &format_large_int($P_SUM_NU_INT[$i]);
 	my $P_NU_IG = &format_large_int($P_IG_NU[$i]);
-	print OUT "$i\t$P_U_EX\t$P_U_INT\t$P_U_IG\t$P_NU_EX\t$P_NU_INT\t$P_NU_IG\t$ID[$i]\n";
+	print OUT "$i\t$P_U_EX\t$P_U_INT\t$P_U_IG\t$P_NU_EX\t$P_NU_INT\t$P_NU_IG\t";
+	$ids .= ",$ID[$i],";
+	$ids =~ s/,$//;
+	$ids =~ s/^,//;
+	print OUT "$ids\n";
     }
     else{
 	if ($U eq "true"){
 	    my $P_U_EX = &format_large_int($P_SUM_U_EX[$i]);
 	    my $P_U_INT = &format_large_int($P_SUM_U_INT[$i]);
 	    my $P_U_IG = &format_large_int($P_IG_U[$i]);
-	    print OUT "$i\t$P_U_EX\t$P_U_INT\t$P_U_IG\t$ID[$i]\n";
+	    print OUT "$i\t$P_U_EX\t$P_U_INT\t$P_U_IG\t";
+	    $ids .= ",$ID[$i],";
+	    $ids =~ s/,$//;
+	    $ids =~ s/^,//;
+	    print OUT "$ids\n";
 	}
 	if ($NU eq "true"){
 	    my $P_NU_EX = &format_large_int($P_SUM_NU_EX[$i]);
 	    my $P_NU_INT = &format_large_int($P_SUM_NU_INT[$i]);
 	    my $P_NU_IG = &format_large_int($P_IG_NU[$i]);
-	    print OUT "$i\t$P_NU_EX\t$P_NU_INT\t$P_NU_IG\t$ID[$i]\n";
+	    print OUT "$i\t$P_NU_EX\t$P_NU_INT\t$P_NU_IG\t";
+	    $ids .= ",$ID[$i],";
+	    $ids =~ s/,$//;
+	    $ids =~ s/^,//;
+	    print OUT "$ids\n";
 	}
     }
 }

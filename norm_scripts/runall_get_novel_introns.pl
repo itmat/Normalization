@@ -26,7 +26,7 @@ my $study = $fields[@fields-2];
 
 my $sam_name = $ARGV[2];
 my $junc_name = $sam_name;
-$junc_name =~ s/.sam$/_junctions_all.rum/;
+$junc_name =~ s/.sam$/_junctions_all.rum/i;
 my $master_list = "$LOC/master_list_of_introns.txt";
 my $final_list = "$LOC/master_list_of_introns.$study.txt";
 my $genes_file = $ARGV[3];

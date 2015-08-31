@@ -1,12 +1,17 @@
 #!/usr/bin/env perl
 #use warnings;
-my $USAGE =  "\nUsage: run_normalization --sample_dirs <file of sample_dirs> --loc <s> --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
+#use strict;
+use FindBin qw($Bin);
+use lib ("$Bin/lib", "$Bin/lib/perl5");
+use File::Type;
+
+my $USAGE =  "\nUsage: run_normalization --sample_dirs <file of sample_dirs> --loc <s> --unaligned <file of fa/fqfiles> --alignedfilename <s> --cfg <cfg file> [options]
 
 where:
 --sample_dirs <file of sample_dirs> : is a file of sample directories with alignment output without path
 --loc <s> : full path of the directory with the sample directories
 --unaligned <file of fa/fqfiles> : is a file with the full path of all input fa or fq files
---samfilename <s> : is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam) 
+--alignedfilename <s> : is the name of aligned file; All alignment files MUST have the same name across sample (e.g. RUM.sam, RUM.bam, Aligned.out.sam, Aligned.out.bam) 
 --cfg <cfg file> : is a cfg file for the study
 
 OPTIONS:
@@ -31,13 +36,6 @@ OPTIONS:
                              This resumes at \"<step>\".
                              **make sure full step name (found in log file) is given in quotes**
                              (e.g. \"1    \"allsteps.get_total_num_reads\"\")
-
-     [data type]
-     -se : set this if the data are single end, 
-           otherwise by default it will assume it's a paired end data
-     -fa : set this if the unaligned files are in fasta format 
-     -fq : set this if the unaligned files are in fastq format 
-     -gz : set this if the unaligned files are compressed
 
      [normalization parameters]
      -cutoff_highexp <n> : is cutoff % value to identify highly expressed genes/exons/introns.
@@ -71,11 +69,8 @@ if(@ARGV < 10) {
 }
 
 my $required = 0;
-my $unaligned = 0;
 my $count_b = 0;
 my $count_r = 0;
-my $se = "";
-my $unaligned_z = "";
 my $min = 10;
 my $max = 2000;
 my $cutoff_he = 100;
@@ -88,10 +83,11 @@ my $novel = "true";
 my $shfile_name = "runall_normalization.sh";
 my $resume = "false";
 my $resume_at = "false";
-my ($sample_dir, $LOC, $unaligned_file, $samfilename, $unaligned_type, $cfg_file, $cutoff_temp, $last_step);
+
+my ($sample_dir, $LOC, $unaligned_file, $alignedfilename, $cfg_file, $cutoff_temp, $last_step);
 my $part2 = "false";
 for(my $i=0; $i<@ARGV; $i++) {
-    $option_found = "false";
+    my $option_found = "false";
     if ($ARGV[$i] eq '-h'){
 	$option_found = "true";
 	die $USAGE;
@@ -154,11 +150,11 @@ for(my $i=0; $i<@ARGV; $i++) {
         $i++;
 	$required++;
     }
-    if ($ARGV[$i] eq '--samfilename'){
+    if ($ARGV[$i] eq '--alignedfilename'){
 	$option_found = "true";
-	$samfilename = $ARGV[$i+1];
-	if ($samfilename =~ /^-/ | $samfilename eq ""){
-	    die "\nplease provide the 'name of aligned samfile' for --samfilename\n";
+	$alignedfilename = $ARGV[$i+1];
+	if ($alignedfilename =~ /^-/ | $alignedfilename eq ""){
+	    die "\nplease provide the 'name of aligned file' for --alignedfilename\n";
 	}
 	$i++;
 	$required++;
@@ -171,24 +167,6 @@ for(my $i=0; $i<@ARGV; $i++) {
 	}
 	$i++;
 	$required++;
-    }
-    if ($ARGV[$i] eq '-se'){
-        $option_found = "true";
-	$se = "-se";
-    }
-    if ($ARGV[$i] eq '-fa'){
-        $option_found = "true";
-	$unaligned++;
-	$unaligned_type = "-fa";
-    }
-    if ($ARGV[$i] eq '-fq'){
-        $option_found = "true";
-	$unaligned++;
-	$unaligned_type = "-fq";
-    }
-    if ($ARGV[$i] eq '-gz'){
-        $option_found = "true";
-        $unaligned_z = "-gz";
     }
     if($ARGV[$i] eq '-min') {
 	$min = $ARGV[$i+1];
@@ -253,10 +231,7 @@ for(my $i=0; $i<@ARGV; $i++) {
     }
 }
 if ($required ne '5'){
-    die "please specify the required parameters: --sample_dirs, --loc, --unaligned, --samfilename and --cfg\n";
-}
-if ($unaligned ne '1'){
-    die "you have to specify the type of your unaligned files: '-fa' or '-fq'\n"
+    die "please specify the required parameters: --sample_dirs, --loc, --unaligned, --alignedfilename and --cfg\n";
 }
 if ($count_b > 1){
     die "you can only set one of the following options: -part1_part2, -part2\n";
@@ -284,7 +259,7 @@ my $EIJ = "false";
 unless (-e $cfg_file){
     die "ERROR: cannot find file \"$cfg_file\". please provide a cfg file for the study\n";
 }
-
+my %Config;
 &parse_config_file ($cfg_file, \%Config);
 
 use Cwd 'abs_path';
@@ -364,7 +339,6 @@ if ($GNORM eq "true"){
     }
 }
 
-
 my $strand_info = "";
 my $strand_info_sam2cov = "";
 if ($STRANDED =~ /^true/i){
@@ -406,7 +380,6 @@ if ($SAM2COV =~ /^true/i){
 my $delete_int_sam = "true";
 my $convert_sam2bam = "false";
 my $gzip_cov = "false";
-my $samtools = "";
 if ($DELETE_INT_SAM ne ""){
     if ($DELETE_INT_SAM =~ /^true/i){
 	$delete_int_sam = "true";
@@ -423,11 +396,9 @@ if ($CONVERT_SAM2BAM ne ""){
 	$convert_sam2bam= "false";
     }
 }
-if ($convert_sam2bam eq "true"){
-    $samtools = $SAMTOOLS;
-    if ($samtools =~ /^$/){
-        die "You need to provide samtools location. (# 6. CLEANUP in your cfg file \"$cfg_file\")\n";
-    }
+my $samtools = $SAMTOOLS;
+if ($samtools =~ /^$/){
+    die "You need to provide samtools location. (# 3. FA and FAI - [3] samtools in your cfg file \"$cfg_file\")\n";
 }
 if ($GZIP_COV ne ""){
     if ($GZIP_COV =~ /^true/i){
@@ -523,32 +494,153 @@ unless (-d $shdir){
 unless (-d $logdir){
     `mkdir $logdir`;}
 
-#check if the sam files exist
-open(IN, $sample_dir) or die "cannot find file \"$sample_dir\".\nPlease provide a file of sample directories.\n";
+my %SAMFLAGS;
+my $bam = "false";
+my $bam_cnt = 0;
+my $bam_option = "";
+#check sam/bam
+open(IN, $sample_dir) or die "ERROR: cannot find file \"$sample_dir\".\nPlease provide a file of sample directories.\n";
 while (my $line = <IN>){
     chomp($line);
     $line =~ s/^\s+|\s+$//g;
-    my $file_loc = "$LOC/$line/$samfilename";
+    my $file_loc = "$LOC/$line/$alignedfilename";
+    #check if the aligned files exist
     unless (-e $file_loc){
-	die "ERROR: SAM file \"$file_loc\" does not exist. Please double check --sample_dirs, --loc, and --samfilename\n";
+        die "ERROR: Aligned file \"$file_loc\" does not exist. Please double check --sample_dirs, --loc, and --alignedfilename\n";
+    }
+    my $ft = File::Type->new();
+    my $type_from_file = $ft->checktype_filename($file_loc);
+    if ($type_from_file =~ /zip/){
+	$bam = "true";
+	$bam_cnt++;
+	$bam_option = "-bam";
+    }
+}
+close(IN);
+unless (($bam_cnt == 0) || ($bam_cnt == $num_samples)){
+    die "\nERROR: All input aligned files need to be in the same format (sam/bam).\n\n";
+}
+my $se = "false";
+my $pe = "false";
+my $se_option = "";
+my $se_cnt = 0;
+
+#check single/paired
+open(IN, $sample_dir) or die "ERROR: cannot find file \"$sample_dir\".\nPlease provide a file of sample directories.\n";
+while (my $line = <IN>){
+    chomp($line);
+    $line =~ s/^\s+|\s+$//g;
+    my $file_loc = "$LOC/$line/$alignedfilename";
+    if ($bam eq "false"){#samfile
+	my $count = 0;
+	open(SAM, $file_loc);
+	while(!eof(SAM)){
+	    my $line = <SAM>;
+	    if ($count > 10000){
+		last;
+	    }
+	    chomp($line);
+	    if ($line =~ /^@/){
+		next;
+	    }
+	    my @a = split(/\t/,$line);
+	    my $bit = $a[1];
+	    if ($bit & 1){
+		$pe = "true";
+	    }
+	    else{
+		$se = "true";
+	    }
+	    $count++;
+	}
+	close(SAM);
+    }
+    if ($bam eq "true"){#bamfile
+	unless ($file_loc =~ /.bam$/i){
+	    die "\nERROR: Input BAM file name must end with \".bam\"\n\n";
+	}
+	my $x = `$samtools view -h $file_loc | head -10000 | grep -v ^@ | cut -f 2 | sort -u >> $LOC/bitflags.tmp`;
     }
 }
 close(IN);
 
-#check if the fq/fa files exist
-open(IN, $unaligned_file) or die "cannot find file \"$unaligned_file\".\nPlease provide a file of unaligned reads.\n";
+if ($bam eq "true"){
+    open(BIT, "$LOC/bitflags.tmp") or die "ERROR: cannot find $LOC/bitflags.tmp\n";
+    while(my $bit = <BIT>){
+	chomp($bit);
+	if ($bit & 1){
+	    $pe = "true";
+	}
+	else{
+	    $se = "true";
+	}
+    }
+    close(BIT);
+}
+
+if ((($pe eq "true") && ($se eq "true")) || (($pe eq "false") && ($se eq "false"))){
+    die "ERROR: All input aligned files need to be in the same format (single/paired end).\n\n";
+}
+
+if (-e "$LOC/bitflags.tmp"){
+    my $r = `rm $LOC/bitflags.tmp`;
+}
+if ($se eq "true"){
+    $se_option = "-se";
+}
+my $gz = "false";
+my $gz_option = "";
+my $gz_cnt=0;
+my $ua_option = "";
+my $fa = "false";
+my $fq = "false";
+#check fq/fa format
+open(IN, $unaligned_file) or die "ERROR: cannot find file \"$unaligned_file\".\nPlease provide a file of unaligned reads.\n";
 while (my $line = <IN>){
     chomp($line);
     unless (-e $line){
 	die "ERROR: Unaligned file \"$line\" does not exist.\n";
     }
+    my $ft = File::Type->new();
+    my $type_from_file = $ft->checktype_filename($line);
+    if ($type_from_file =~ /zip/){
+	$gz_option = "-gz";
+	$gz_cnt++;
+	$gz = "true";
+    }
+    my $firstline;
+    if ($gz eq "true"){
+	$firstline = `zcat $line | head -1`;
+    }
+    else{
+	$firstline = `head -1 $line`;
+    }
+    if ($firstline =~ /^@/){
+	$ua_option = "-fq";
+	$fq = "true";
+    }
+    else{
+	if ($firstline =~ /^>/){
+	    $ua_option = "-fa";
+	    $fa = "true";
+	}
+	else{
+	    die "\nERROR: cannot determine unaligned file type. Unaligned files need to be in fastq or fasta format.\n\n";
+	}
+    }
 }
 close(IN);
+unless (($gz_cnt == 0) || ($gz_cnt == $num_samples * 2) || ($gz_cnt == $num_samples)){
+    die "\nERROR: All input unaligned files need to be in the same format.\n\n";
+}
+if ((($fa eq "true") && ($fq eq "true")) || (($fa eq "false") && ($fq eq "false"))){
+    die "ERROR: All input unaligned files need to be in the same format (fastq/fasta).\n\n";
+}
 
 #check input fa, gene info, ensgenes
 my %CHR;
 if ($EIJ eq "true"){
-    open(EIJ, $geneinfo) or die "cannot find file \"$geneinfo\"\n";
+    open(EIJ, $geneinfo) or die "ERROR: cannot find file \"$geneinfo\"\n";
     my $header = <EIJ>;
     chomp($header);
     my @EIJHEADER = split(/\t/, $header);
@@ -575,7 +667,7 @@ if ($EIJ eq "true"){
     }
 
     if (!defined($chrcol) || !defined($exonstartcol) || !defined($exonendcol) || !defined($strandcol) || !defined($txSt) || !defined($txEnd)){
-        die "\nERROR: Input GENE_INFO_FILE \"$file_eij\"\nmust contain column headers with the following suffixes: chrom, strand, txStart, txEnd, exonStarts, and exonEnds.\n\n";
+        die "\nERROR: Input GENE_INFO_FILE \"$geneinfo\"\nmust contain column headers with the following suffixes: chrom, strand, txStart, txEnd, exonStarts, and exonEnds.\n\n";
     }
     while(my $line = <EIJ>){
         chomp($line);
@@ -586,7 +678,7 @@ if ($EIJ eq "true"){
     close(EIJ);
 }
 if ($GNORM eq "true"){
-    open(ENS, $ensGene) or die "cannot find file \"$ensGene\"\n";
+    open(ENS, $ensGene) or die "ERROR: cannot find file \"$ensGene\"\n";
     my $header = <ENS>;
     chomp($header);
     my @ENSHEADER = split(/\t/, $header);
@@ -617,9 +709,8 @@ if ($GNORM eq "true"){
             $exonEndcol = $i;
         }
     }
-
     if (!defined($genenamecol) || !defined($genesymbolcol) || !defined($txchrcol) || !defined($txstartcol)|| !defined($txendcol) || !defined($strandcol) || !defined($exonStcol) || !defined($exonEndcol)){
-        die "\nERROR: Input ENSGENES_FILE \"$file_gnorm\"\nmust contain column headers with the following suffixes: name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value\n\n";
+        die "\nERROR: Input ENSGENES_FILE \"$ensGene\"\nmust contain column headers with the following suffixes: name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value\n\n";
     }
     while(my $line = <ENS>){
         chomp($line);
@@ -685,8 +776,11 @@ if ($resume_at eq "true"){
 else{
     $argv = join(" ", @ARGV);
 }
-print SH "perl $norm_script_dir/runall_normalization.pl $argv";
+print SH "perl $norm_script_dir/runall_normalization.pl $argv $se_option $bam_option $gz_option $ua_option\n";
 close(SH);
+
+my $db = `cat $runall_shfile`;
+print "\n\n$db\n\n";
 
 my ($p2_I, $p2_E);
 if ($part2 eq "true"){
@@ -761,7 +855,7 @@ if ($check_study_port == 1){
     die "ERROR: PORT job with study name \"$study\" is already running.\n\n"
 }
 
-`$batchjobs $request$queue_3G $jobname "$study.RUNALL_NORMALIZATION" -o $logdir/$study.runall_normalization.out -e $logdir/$study.runall_normalization.err < $runall_shfile`;
+#`$batchjobs $request$queue_3G $jobname "$study.RUNALL_NORMALIZATION" -o $logdir/$study.runall_normalization.out -e $logdir/$study.runall_normalization.err < $runall_shfile`;
 
 sub args2shell{
     local (@argv) = @_;

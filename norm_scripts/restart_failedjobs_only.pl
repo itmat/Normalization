@@ -55,7 +55,7 @@ while(my $line = <IN>){
 	my $y = `rm $efile`;
     }
     else{ 
-	my $grep = `grep "got here" $ofile | grep -v echo | wc -l`;
+	my $grep = `grep "got here" $ofile | grep -vc echo`;
 	my $cnt = @og;
 	if ($cnt == $grep){ # check "got here" - in all .out file
 	    my $w = `wc -l $efile`;

@@ -74,6 +74,11 @@ my $stranded = "";
 my $str = "false";
 my $norm = "false";
 my $index = 0;
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -128,10 +133,6 @@ for (my $i=2; $i<@ARGV; $i++){
         $filter_highexp = "-filter_highexp";
 	$filter = "true";
         $option_found = "true";
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-	die $USAGE;
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs++;

@@ -100,6 +100,11 @@ my $filter = "";
 my $qinfo = "";
 my $qcnt = 0;
 my $index = 0;
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for (my $i=5; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-i'){
@@ -178,10 +183,6 @@ for (my $i=5; $i<@ARGV; $i++){
         $NU = "false";
         $numargs_u_nu++;
         $option_found = "true";
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-        die $USAGE;
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs++;

@@ -12,6 +12,7 @@ where:
 options:
  -novel: set this to label the novel exons/introns
  -stranded : set this if your data are strand-specific
+ -h : print usage
 
 ";
 if(@ARGV<3) {
@@ -19,6 +20,11 @@ if(@ARGV<3) {
 }
 my $novel = "false";
 my $stranded = "false";
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for(my $i=3;$i<@ARGV;$i++){
     my $option_found = "false";
     if ($ARGV[$i] eq "-novel"){
@@ -28,10 +34,6 @@ for(my $i=3;$i<@ARGV;$i++){
     if ($ARGV[$i] eq "-stranded"){
 	$stranded = "true";
         $option_found = "true";
-    }
-    if ($ARGV[$i] eq "-h"){
-	$option_found = "true";
-	die $USAGE;
     }
     if ($option_found eq "false"){
 	die "option \"$ARGV[$i]\" was not recognized.\n";

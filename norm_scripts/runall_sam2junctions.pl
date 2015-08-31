@@ -65,6 +65,11 @@ my $request_memory_option = "";
 my $mem = "";
 my $gnorm = "false";
 my $stranded = "false";
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for(my $i=4; $i<@ARGV; $i++) {
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -88,10 +93,6 @@ for(my $i=4; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq '-stranded'){
         $option_found = "true";
         $stranded = "true";
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-	die $USAGE;
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs_c++;

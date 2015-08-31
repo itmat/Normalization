@@ -20,3 +20,4 @@ norm_scripts/cat_shuffiles_0.pl
 norm_scripts/unique_merge_gnorm_0.pl
 norm_scripts/unique_merge_samfiles_0.pl
 norm_scripts/filter_high_expressers_gnorm.0.pl
+norm_scripts/testfiletype.pl

@@ -71,6 +71,11 @@ my $orientation = "";
 my $str_args = 0;
 my $replace_mem = "false";
 my $new_mem = "";
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for (my $i=3; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -112,10 +117,6 @@ for (my $i=3; $i<@ARGV; $i++){
         $NU = "false";
         $numargs_u_nu++;
         $option_found = "true";
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-	die $USAGE;
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs++;

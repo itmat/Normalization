@@ -1,4 +1,7 @@
 #!/usr/bin/env perl
+use warnings;
+use strict;
+
 my $USAGE = "\nUsage: perl getstats.pl <dirs> <loc> [option]
 where 
 <dirs> is a file of directory names (without path)
@@ -52,6 +55,9 @@ $study_dir =~ s/$last_dir//;
 my $stats_dir = $study_dir . "STATS";
 unless (-d $stats_dir){
     `mkdir $stats_dir`;}
+my (%total, %uniqueandFRconsistently, %uniqueandAtLeastOneMapped, %NUandAtLeastOneMapped, %TotalMapped, %TotalMapped_cons, %NUandFRconsistently, %Overlap, %NOverlap, %Pover, %min_chrm, %max_chrm, %UchrM);
+my ($min_total, $min_total_frcons, $min_utotal_f_or_r_cons, $min_nutotal_f_or_r, $min_total_UorNU, $min_total_UandNU, $min_nutotal, $min_pover);
+my ($max_total,$max_total_frcons,$max_total_UorNU,$max_utotal_f_or_r_cons,$max_pover,$max_nutotal,$max_nutotal_f_or_r,$max_total_UandNU) = (0,0,0,0,0,0,0,0);
 
 open(DIRS, $dirs) or die "cannot find file '$dirs'\n";
 while(my $dir = <DIRS>) {
@@ -65,17 +71,17 @@ while(my $dir = <DIRS>) {
     chomp($x);
     $x =~ s/[^\d,]//g;
     $total{$dir} = $x;
-    $TOTAL = $x;
+    my $TOTAL = $x;
     $TOTAL =~ s/,//g;
     $min_total = $TOTAL;
 
     $x = `grep "Both forward and reverse mapped consistently" $filename`;
     chomp($x);
     $x =~ /([\d,]+)/;
-    $y = $1;
+    my $y = $1;
     $x =~ s/[^\d.%)(]//g;
     $x =~ s/^(\d+)//;
-    $TOTAL_FRCONS = $1;
+    my $TOTAL_FRCONS = $1;
     $x =~ s/\(//;
     $x =~ s/\)//;
     $uniqueandFRconsistently{$dir} = "$y ($x)";
@@ -87,7 +93,7 @@ while(my $dir = <DIRS>) {
     $y = $1;
     $x =~ s/[^\d.%)(]//g;
     $x =~ s/^(\d+)//;
-    $UTOTAL_F_or_R_CONS = $1;
+    my $UTOTAL_F_or_R_CONS = $1;
     $UTOTAL_F_or_R_CONS =~ s/,//g;
     $x =~ s/\(//;
     $x =~ s/\)//;
@@ -101,7 +107,7 @@ while(my $dir = <DIRS>) {
     $y = $1;
     $x =~ s/[^\d.%)(]//g;
     $x =~ s/^(\d+)//;
-    $NUTOTAL_F_or_R = $1;
+    my $NUTOTAL_F_or_R = $1;
     $NUTOTAL_F_or_R =~ s/,//g;
     $x =~ s/\(//;
     $x =~ s/\)//;
@@ -115,18 +121,31 @@ while(my $dir = <DIRS>) {
     $y = $1;
     $x =~ s/[^\d.%)(]//g;
     $x =~ s/^(\d+)//;
-    $TOTALMAPPED = $1;
+    my $TOTALMAPPED = $1;
     $x =~ s/\(//;
     $x =~ s/\)//;
     $TotalMapped{$dir} = "$y ($x)";
     $min_total_UorNU = $TOTALMAPPED;
     $min_total_UorNU =~ s/,//g;
 
+    $x = `grep "Total number consistent:" $filename | tail -1`;
+    chomp($x);
+    $x =~ /([\d,]+)/;
+    $y = $1;
+    $x =~ s/[^\d.%)(]//g;
+    $x =~ s/^(\d+)//;
+    my $TOTALMAPPED_CONS = $1;
+    $x =~ s/\(//;
+    $x =~ s/\)//;
+    $TotalMapped_cons{$dir} = "$y ($x)";
+    $min_total_UandNU = $TOTALMAPPED_CONS;
+    $min_total_UandNU =~ s/,//g;
+
     $x = `grep "Total number consistent ambiguous" $filename`;
     chomp($x);
     $x =~ s/^.*: //;
     $x =~ /^(.*) /;
-    $NUTOTAL_F_and_R = $1;
+    my $NUTOTAL_F_and_R = $1;
     $NUTOTAL_F_and_R =~ s/,//g;
     $NUandFRconsistently{$dir} = $x;
     $min_nutotal = $NUTOTAL_F_and_R;
@@ -135,65 +154,72 @@ while(my $dir = <DIRS>) {
     $x = `grep "do overlap" $filename | head -1`;
     chomp($x);
     $x =~ s/[^\d,]//g;
-    $overlap = $x;
+    my $overlap = $x;
     $overlap =~ s/,//;
     $Overlap{$dir} = "$x";
 
     $x = `grep "don.t overlap" $filename | head -1`;
     chomp($x);
     $x =~ s/[^\d,]//g;
-    $noverlap = $x;
+    my $noverlap = $x;
     $noverlap =~ s/,//;
     $NOverlap{$dir} = "$x";
 
+    if($overlap =~ /^$/){
+        $overlap = 0;
+    }
+    if ($noverlap =~ /^$/){
+        $noverlap = 0;
+    }
     if($overlap + $noverlap > 0) {
-	$Pover{$dir} = int($overlap / ($overlap+$noverlap) * 1000) / 10;
-    } else {
-	$Pover{$dir} = 0;
+        $Pover{$dir} = int($overlap / ($overlap+$noverlap) * 1000) / 10;
+    }
+    else{
+        $Pover{$dir} = 0;
     }
     $Pover{$dir} = sprintf("%.2f", $Pover{$dir});
-
     $min_pover = $Pover{$dir};
     $min_pover =~ s/,//g;
-
     foreach my $key (sort keys %MITO){
         $x = `grep -w $key $filename | head -1`;
-        @a1 = split(/\t/,$x);
+        my @a1 = split(/\t/,$x);
         $a1[1] =~ s/[^\d]//g;
         $x = $a1[1];
         if ($x eq ''){
 	    $x = '0';
         }
-        $y = int($x / $UTOTAL_F_or_R_CONS * 1000) / 10;
+        $y = int($x / $TOTALMAPPED * 1000) / 10;
         $y = sprintf("%.2f",$y);
         $min_chrm{$key} = $x;
         $max_chrm{$key} = $x;
-        $x2 = &format_large_int($x);
+        my $x2 = &format_large_int($x);
         if ($x2 eq ''){
 	    $x2 = '0';
         }
         $UchrM{$dir}{$key} = "$x2 ($y%)";
     }
 }
-$outfile = "$stats_dir/mappingstats_summary.txt"; 
-$mitofile = "$stats_dir/mitochondrial_percents.txt";
+close(DIRS);
+
+my $outfile = "$stats_dir/mappingstats_summary.txt"; 
+my $mitofile = "$stats_dir/mitochondrial_percents.txt";
 open(OUT, ">$outfile");
 open(MITO, ">$mitofile");
 #print OUT "id\ttotal\t!<>\t!<|>\t!chrM(%!)\t\%overlap\t~!<>\t~!<|>\t<|>\n";
-print OUT "id\ttotalreads\tUniqueFWDandREV\tUniqueFWDorREV\t%overlap\tNon-UniqueFWDandREV\tNon-UniqueFWDorREV\tFWDorREVmapped\n";
+print OUT "id\ttotalreads\tUniqueFWDandREV\tUniqueFWDorREV\t%overlap\tNon-UniqueFWDandREV\tNon-UniqueFWDorREV\tFWDandREVmapped\tFWDorREVmapped\n";
 print MITO "id\t";
 foreach my $key (sort keys %MITO){
     print MITO "Unique_$key\t";
 }
 print MITO "\n";
-foreach $dir (sort keys %UchrM) {
-    print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$Pover{$dir}\%\t$NUandFRconsistently{$dir}\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped{$dir}\n";
+foreach my $dir (sort keys %UchrM) {
+    print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$Pover{$dir}\%\t$NUandFRconsistently{$dir}\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped_cons{$dir}\t$TotalMapped{$dir}\n";
     print MITO "$dir\t";
     foreach my $key (sort keys %{$UchrM{$dir}}){
         print MITO "$UchrM{$dir}{$key}\t";
     }
     print MITO "\n";
-    $x = $total{$dir};
+    my $x = $total{$dir};
     $x =~ s/,//g;
     if($x < $min_total) {
 	$min_total = $x;
@@ -231,6 +257,27 @@ foreach $dir (sort keys %UchrM) {
     if($x > $max_utotal_f_or_r_cons) {
 	$max_utotal_f_or_r_cons = $x;
     }
+
+    $x = $TotalMapped_cons{$dir};
+    $x =~ s/ \(.*//;
+    $x =~ s/,//g;
+    if($x < $min_total_UandNU) {
+        $min_total_UandNU = $x;
+    }
+    if($x > $max_total_UandNU) {
+        $max_total_UandNU = $x;
+    }
+
+    $x = $uniqueandAtLeastOneMapped{$dir};
+    $x =~ s/ \(.*//;
+    $x =~ s/,//g;
+    if($x < $min_utotal_f_or_r_cons) {
+        $min_utotal_f_or_r_cons = $x;
+    }
+    if($x > $max_utotal_f_or_r_cons) {
+        $max_utotal_f_or_r_cons = $x;
+    }
+
 
     foreach my $key (sort keys %{$UchrM{$dir}}){
         $x = $UchrM{$dir}{$key};
@@ -280,8 +327,9 @@ $min_total_frcons = &format_large_int($min_total_frcons);
 $min_utotal_f_or_r_cons = &format_large_int($min_utotal_f_or_r_cons);
 $min_nutotal = &format_large_int($min_nutotal);
 $min_total_UorNU = &format_large_int($min_total_UorNU);
+$min_total_UandNU = &format_large_int($min_total_UandNU);
 $min_nutotal_f_or_r = &format_large_int($min_nutotal_f_or_r);
-print OUT "mins\t$min_total\t$min_total_frcons\t$min_utotal_f_or_r_cons\t$min_pover\%\t$min_nutotal\t$min_nutotal_f_or_r\t$min_total_UorNU\n";
+print OUT "mins\t$min_total\t$min_total_frcons\t$min_utotal_f_or_r_cons\t$min_pover\%\t$min_nutotal\t$min_nutotal_f_or_r\t$min_total_UandNU\t$min_total_UorNU\n";
 print MITO "mins\t";
 foreach my $key (sort keys %min_chrm){
     $min_chrm{$key} = &format_large_int($min_chrm{$key});
@@ -293,22 +341,24 @@ $max_total_frcons = &format_large_int($max_total_frcons);
 $max_utotal_f_or_r_cons = &format_large_int($max_utotal_f_or_r_cons);
 $max_nutotal = &format_large_int($max_nutotal);
 $max_nutotal_f_or_r = &format_large_int($max_nutotal_f_or_r);
+$max_total_UandNU = &format_large_int($max_total_UandNU);
 $max_total_UorNU = &format_large_int($max_total_UorNU);
-print OUT "maxs\t$max_total\t$max_total_frcons\t$max_utotal_f_or_r_cons\t$max_pover\%\t$max_nutotal\t$max_nutotal_f_or_r\t$max_total_UorNU\n";
+print OUT "maxs\t$max_total\t$max_total_frcons\t$max_utotal_f_or_r_cons\t$max_pover\%\t$max_nutotal\t$max_nutotal_f_or_r\t$max_total_UandNU\t$max_total_UorNU\n";
 print MITO "maxs\t";
 foreach my $key (sort keys %max_chrm){
     $max_chrm{$key} = &format_large_int($max_chrm{$key});
     print MITO "$max_chrm{$key}\t";
 }
 print MITO "\n";
+print MITO "----------\n# (%) : %reads uniquely mapping to mitochondrial chromosome out of all mapped reads\n";
 close(OUT);
 close(MITO);
 sub format_large_int () {
-    ($int) = @_;
-    @a = split(//,"$int");
-    $j=0;
-    $newint = "";
-    $n = @a;
+    my ($int) = @_;
+    my @a = split(//,"$int");
+    my $j=0;
+    my $newint = "";
+    my $n = @a;
     for(my $i=$n-1;$i>=0;$i--) {
 	$j++;
 	$newint = $a[$i] . $newint;

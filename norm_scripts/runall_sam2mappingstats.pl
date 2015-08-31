@@ -61,6 +61,11 @@ $norm = "false";
 $norm_u = "false";
 $norm_nu = "false";
 $total_reads_file = $ARGV[3];
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for ($i=4; $i<@ARGV; $i++){
     $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -70,10 +75,6 @@ for ($i=4; $i<@ARGV; $i++){
             die "-max_jobs <n> : <n> needs to be a number\n";
         }
         $i++;
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-	die $USAGE;
     }
     if ($ARGV[$i] eq '-norm'){
 	$option_found = "true";

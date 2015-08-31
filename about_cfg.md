@@ -80,6 +80,9 @@ For other organisms, follow the instructions [here](https://github.com/itmat/rum
 ####[2] index file
 You can get the index file (*.fai) using [samtools](http://samtools.sourceforge.net/) (samtools faidx &lt;ref.fa>)
 
+####[3] samtools
+Provide the location of your copy of samtools
+
 ========================================================================================================
 
 ###4. rRNA
@@ -104,6 +107,6 @@ Set SAM2COV to TRUE if you want to use sam2cov to generate coverage files. sam2c
 ========================================================================================================
 
 ###6. CLEANUP
-By default, CLEANUP step only deletes the intermediate SAM files. Set DELETE_INT_SAM to FALSE if you wish to keep the intermediate SAM files. You can also convert sam files to bam files by setting CONVERT_SAM2BAM to TRUE (and provide the location of your copy of samtools) and coverage files can be compressed by setting GZIP_COV to TRUE. 
+By default, CLEANUP step only deletes the intermediate SAM files. Set DELETE_INT_SAM to FALSE if you wish to keep the intermediate SAM files. You can also convert sam files to bam files by setting CONVERT_SAM2BAM to TRUE. Coverage files can be compressed by setting GZIP_COV to TRUE. 
 
 ========================================================================================================

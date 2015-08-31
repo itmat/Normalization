@@ -15,6 +15,8 @@ option:
  -novel : set this to label the novel exons/introns
 
  -stranded : set this if your data are strand-specific.
+ 
+ -h : print usage
 
 ";
 if(@ARGV<3) {
@@ -23,6 +25,11 @@ if(@ARGV<3) {
 my $stranded = "false";
 my $nuonly = 'false';
 my $novel = "false";
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for(my $i=3; $i<@ARGV; $i++) {
     my $arg_recognized = 'false';
     if($ARGV[$i] eq '-NU') {
@@ -36,10 +43,6 @@ for(my $i=3; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq "-novel"){
         $arg_recognized = "true";
         $novel = "true";
-    }
-    if ($ARGV[$i] eq "-h"){
-        $arg_recognized = "true";
-        die $USAGE;
     }
     if($arg_recognized eq 'false') {
 	die "arg \"$ARGV[$i]\" not recognized.\n";

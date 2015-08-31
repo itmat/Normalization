@@ -50,12 +50,13 @@ $request_memory_option = "";
 $mem = "";
 $outputdesc = "";
 $njobs = 200;
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for($i=3; $i<@ARGV; $i++) {
     $option_found = 'false';
-    if ($ARGV[$i] eq '-h'){
-	$option_found = "true";
-	die $USAGE;
-    }
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];

@@ -60,12 +60,13 @@ my $fafq = "";
 my $req_unaligned=0;
 my $status = "";
 my $sepe = "";
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for (my $i=5; $i<@ARGV; $i++){
     my $option_found = "false";
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-	die $USAGE;
-    }
     if ($ARGV[$i] eq '-lsf'){
         $numargs++;
         $option_found = "true";

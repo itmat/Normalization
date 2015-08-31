@@ -15,6 +15,7 @@ option:
 
  -gz : set this if the unaligned files are compressed
 
+ -bam <samfilename> : set this if the aligned files are in bam format
 
 ";
 if(@ARGV<2) {
@@ -24,12 +25,22 @@ if(@ARGV<2) {
 my $cnt = 0;
 my $gz = "false";
 my $delete_temp_fa = "false";
-
+my $bam = "false";
+my $samname;
 for(my $i=2;$i<@ARGV;$i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-gz'){
 	$option_found = "true";
 	$gz = "true";
+    }
+    if ($ARGV[$i] eq '-bam'){
+	$option_found = "true";
+	$bam = "true";
+	$samname = $ARGV[$i+1];
+	if ($samname =~ /^$/){
+	    die "please provide the sam name\n";
+	}
+	$i++;
     }
     if ($ARGV[$i] eq '-fa'){
 	$option_found = "true";
@@ -219,6 +230,11 @@ while(my $line = <INFILE>){
     @g = glob("$LOC/$line/*_junctions_all.sorted.rum");
     if (@g>0){
 	`rm $LOC/$line/*junctions_*`;
+    }
+    if ($bam eq "true"){
+	if (-e "$LOC/$line/$samname"){
+	    `rm $LOC/$line/$samname`;
+	}
     }
 }
 print "got here\n";

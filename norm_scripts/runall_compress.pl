@@ -10,6 +10,8 @@ where:
 <fai file> fai file (full path)
 
 option:
+ -bam : set this if the input aligned files are in bam format
+
  -samtools <s> : provide location of samtools <s>
 
  -dont_cov : set this if you DO NOT want to gzip the coverage files (By default, it will gzip the coverage files).
@@ -55,6 +57,12 @@ my $sam2bam = 'true';
 my $njobs = 200;
 my ($status, $new_mem) ;
 my $samtools = "";
+my $bam = "false";
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for (my $i=4; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -70,9 +78,9 @@ for (my $i=4; $i<@ARGV; $i++){
         $samtools = $ARGV[$i+1];
 	$i++;
     }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-	die $USAGE;
+    if ($ARGV[$i] eq '-bam'){
+	$bam = "true";
+	$option_found = "true";
     }
     if ($ARGV[$i] eq '-dont_bam'){
 	$option_found = 'true';
@@ -162,7 +170,7 @@ my $gcov_dir = "$gnorm_dir/COV/";
 
 my $sam_name = $ARGV[2];
 my $bam_name = $sam_name;
-$bam_name =~ s/.sam$/.bam/;
+$bam_name =~ s/.sam$/.bam/i;
 my $fai_file = $ARGV[3];
 if ($sam2bam eq 'true'){
     unless (-e $samtools){
@@ -261,26 +269,33 @@ if ($sam2bam eq 'true'){
 	my $bamname_g_m = $samname_g_m;
 	$bamname_g_m =~ s/.sam$/.bam/;
 	#original
-	if (-e "$samname"){
-	    my $sam = $samname;
-	    my $bam = $bamname;
-	    my $sh = $shfile;
-	    my $log = $logname;
-	    open(OUT, ">$sh");
-	    print OUT "$samtools view -bt $fai_file $sam > $bam\n";
-	    print OUT "lc=`cat $bam | wc -l`\n";
-	    print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-	    print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
-	    print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
-	    print OUT "echo \"got here \"\n";
-	    close(OUT);
-	    while (qx{$status | wc -l} > $njobs){
-		sleep(10);
+	if ($bam eq "false"){
+	    if (-e "$samname"){
+		my $sam = $samname;
+		my $bam = $bamname;
+		my $sh = $shfile;
+		my $log = $logname;
+		open(OUT, ">$sh");
+		print OUT "$samtools view -bt $fai_file $sam > $bam\n";
+		print OUT "lc=`cat $bam | wc -l`\n";
+		print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
+		print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
+		print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
+		print OUT "echo \"got here \"\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
 	    }
-	    `$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+	    else{
+		print STDOUT "WARNING: file \"$LOC/$line/$sam_name\" doesn't exist. please check the input samfile name/path\n\n";
+	    }
 	}
-	else{
-	    print STDOUT "WARNING: file \"$LOC/$line/$sam_name\" doesn't exist. please check the input samfile name/path\n\n";
+	else{ #input bam
+	    if (-e $samname){
+		my $x = `rm $samname`;
+	    }
 	}
 	#merged
 	if (-e "$samname_m"){

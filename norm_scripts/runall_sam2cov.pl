@@ -64,6 +64,11 @@ my $jobname_option = "";
 my $request_memory_option = "";
 my $mem = "";
 my $new_mem;
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for (my $i=4; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
@@ -95,10 +100,6 @@ for (my $i=4; $i<@ARGV; $i++){
         $rum = "true";
         $numargs_a++;
         $option_found = "true";
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-	die $USAGE;
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs++;
@@ -197,22 +198,22 @@ while(my $line =  <INFILE>){
 	die "ERROR: SAM file $filename does not exist.\n";
     }
     my $prefix = "$cov_dir/$id.norm.sam";
-    my $prefix_sense = $prefix;
-    my $prefix_antisense = $prefix;
-    $prefix =~ s/norm.sam//;
+    my $prefix_forward = $prefix;
+    my $prefix_reverse = $prefix;
+    $prefix =~ s/norm.sam$//;
     if ($stranded eq "true"){
-	$prefix_sense =~ s/norm.sam/sense./g;
-	$prefix_antisense =~ s/norm.sam/antisense./g;
+	$prefix_forward =~ s/norm.sam$/forward./;
+	$prefix_reverse =~ s/norm.sam$/reverse./;
     }
     my $shfile = "C.$id.sam2cov.sh";
     my $jobname = "$study.sam2cov";
     my $logname = "$logdir/sam2cov.$id";
-    my ($shfile_sense, $shfile_antisense, $logname_sense, $logname_antisense);
+    my ($shfile_forward, $shfile_reverse, $logname_forward, $logname_reverse);
     if ($stranded eq "true"){
-	$shfile_sense = "C.$id.sam2cov.sense.sh";
-	$shfile_antisense = "C.$id.sam2cov.antisense.sh";
-	$logname_sense = "$logdir/sam2cov.sense.$id";
-	$logname_antisense = "$logdir/sam2cov.antisense.$id";
+	$shfile_forward = "C.$id.sam2cov.forward.sh";
+	$shfile_reverse = "C.$id.sam2cov.reverse.sh";
+	$logname_forward = "$logdir/sam2cov.forward.$id";
+	$logname_reverse = "$logdir/sam2cov.reverse.$id";
     }
     if ($stranded eq "false"){
 	open(OUTFILE, ">$shdir/$shfile");
@@ -232,46 +233,46 @@ while(my $line =  <INFILE>){
 	sleep(2);
     }
     if ($stranded eq "true"){
-	open(OUTFILEF, ">$shdir/$shfile_sense");
+	open(OUTFILEF, ">$shdir/$shfile_forward");
 	if ($REV eq "true"){
 	    if ($rum eq 'true'){
-		print OUTFILEF "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_sense $fai_file $filename\n"; 
+		print OUTFILEF "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_forward $fai_file $filename\n"; 
 		print OUTFILEF "echo \"got here\"\n";
 	    }
 	    if ($star eq 'true'){
-		print OUTFILEF "$sam2cov -u -e 0 -s 1 -p $prefix_sense $fai_file $filename\n"; 
+		print OUTFILEF "$sam2cov -u -e 0 -s 1 -p $prefix_forward $fai_file $filename\n"; 
 		print OUTFILEF "echo \"got here\"\n";
 	    }
 	}
 	if ($FWD eq "true"){
             if ($rum eq 'true'){
-                print OUTFILEF "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_sense $fai_file $filename\n";
+                print OUTFILEF "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_forward $fai_file $filename\n";
 		print OUTFILEF "echo \"got here\"\n";
             }
             if ($star eq 'true'){
-                print OUTFILEF "$sam2cov -u -e 0 -s 2 -p $prefix_sense $fai_file $filename\n";
+                print OUTFILEF "$sam2cov -u -e 0 -s 2 -p $prefix_forward $fai_file $filename\n";
 		print OUTFILEF "echo \"got here\"\n";
             }
 	}
 	close(OUTFILEF);
-	open(OUTFILER, ">$shdir/$shfile_antisense");
+	open(OUTFILER, ">$shdir/$shfile_reverse");
 	if ($REV eq "true"){
 	    if ($rum eq 'true'){
-		print OUTFILER "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_antisense $fai_file $filename\n"; 
+		print OUTFILER "$sam2cov -r 1 -e 0 -s 2 -u -p $prefix_reverse $fai_file $filename\n"; 
 		print OUTFILER "echo \"got here\"\n";
 	    }
 	    if ($star eq 'true'){
-		print OUTFILER "$sam2cov -u -e 0 -s 2 -p $prefix_antisense $fai_file $filename\n"; 
+		print OUTFILER "$sam2cov -u -e 0 -s 2 -p $prefix_reverse $fai_file $filename\n"; 
 		print OUTFILER "echo \"got here\"\n";
 	    }
 	}
 	if ($FWD eq "true"){
             if ($rum eq 'true'){
-                print OUTFILER "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_antisense $fai_file $filename\n";
+                print OUTFILER "$sam2cov -r 1 -e 0 -s 1 -u -p $prefix_reverse $fai_file $filename\n";
 		print OUTFILER "echo \"got here\"\n";
             }
             if ($star eq 'true'){
-                print OUTFILER "$sam2cov -u -e 0 -s 1 -p $prefix_antisense $fai_file $filename\n";
+                print OUTFILER "$sam2cov -u -e 0 -s 1 -p $prefix_reverse $fai_file $filename\n";
 		print OUTFILER "echo \"got here\"\n";
             }
 	}
@@ -279,11 +280,11 @@ while(my $line =  <INFILE>){
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
-	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_sense.out -e $logname_sense.err < $shdir/$shfile_sense`;
+	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_forward.out -e $logname_forward.err < $shdir/$shfile_forward`;
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
-	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_antisense.out -e $logname_antisense.err < $shdir/$shfile_antisense`;
+	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_reverse.out -e $logname_reverse.err < $shdir/$shfile_reverse`;
 	sleep(2);
     }
 }

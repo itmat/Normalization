@@ -84,10 +84,10 @@ if ($stranded eq "false"){
     my $outfile = "$gnorm_dir/$id.gene.norm.sam";
     if ($numargs ne 0){
 	if ($U eq "true"){
-	    $outfile =~ s/.sam$/_u.sam/;
+	    $outfile =~ s/.sam$/_u.sam/i;
 	}
 	if ($NU eq "true"){
-	    $outfile =~ s/.sam$/_nu.sam/;
+	    $outfile =~ s/.sam$/_nu.sam/i;
 	}
     }
     open (OUT, ">$outfile");
@@ -124,12 +124,12 @@ if ($stranded eq "true"){
     my $outfile_a = "$antisense_dir/$id.gene.norm.sam";
     if ($numargs ne 0){
 	if ($U eq "true"){
-	    $outfile =~ s/.sam$/_u.sam/;
-	    $outfile_a =~ s/.sam$/_u.sam/;
+	    $outfile =~ s/.sam$/_u.sam/i;
+	    $outfile_a =~ s/.sam$/_u.sam/i;
 	}
 	if ($NU eq "true"){
-	    $outfile =~ s/.sam$/_nu.sam/;
-	    $outfile_a =~ s/.sam$/_nu.sam/;
+	    $outfile =~ s/.sam$/_nu.sam/i;
+	    $outfile_a =~ s/.sam$/_nu.sam/i;
 	}
     }
     open (OUT, ">$outfile");

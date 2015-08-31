@@ -53,6 +53,11 @@ my $mem = "";
 my $new_mem = "";
 my $replace_mem = "false";
 my ($submit, $request_memory_option, $status);
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for (my $i=3; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-fa'){
@@ -76,10 +81,6 @@ for (my $i=3; $i<@ARGV; $i++){
             die "-max_jobs <n> : <n> needs to be a number\n";
         }
         $i++;
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-	die $USAGE;
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs_2++;
@@ -191,7 +192,7 @@ while(my $line = <INFILE>){
 close(INFILE);
 
 my $outfile_final = "$stats_dir/total_num_reads.txt";
-while (qx{$status | grep $jobname | wc -l} > 0){
+while (qx{$status | grep -c $jobname} > 0){
     sleep(10);
 }
 if (qx{cat $logname.*.err | wc -l} > 0){

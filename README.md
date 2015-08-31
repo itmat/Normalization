@@ -19,8 +19,9 @@ Make sure you have the latest version of PORT:
 ##### i. Input Files
 
 - Unaligned reads (fasta/fastq)
-- Aligned reads (SAM) 
- - SAM files need to have unique read ids. 
+ - Unaligned files can be gzipped.
+- Aligned reads (SAM/BAM) 
+ - SAM/BAM files need to have unique read ids. 
  - __Paired End data: mated alignments need to be in adjacent lines.__
  - Required tags: **IH (or NH) and HI**.
 - [Gene info files](https://github.com/itmat/Normalization/blob/master/about_cfg.md#2-gene-info)
@@ -31,24 +32,25 @@ The input files need to be organized into a specific directory structure for POR
 
 - __Give `STUDY` directory a unique name.__
 - Sample directories (Sample_1, Sample_2, etc) can have any name.
-- Make sure the **unaligned reads** and **alignment outputs** (SAM files) are in each sample directory inside the `READS` folder.
-- All alignment files (SAM files) **MUST have the same name** across samples.
+- Make sure the **unaligned reads** and **alignment outputs** (SAM/BAM files) are in each sample directory inside the `READS` folder.
+- All alignment files (SAM/BAM files) **MUST have the same name** across samples. 
+- BAM file name must end with **.bam**.
 
 <pre>
 STUDY
 └── READS
     ├── Sample_1
     │   ├── Unaligned reads
-    │   └── Aligned.sam
+    │   └── Aligned.sam/bam
     ├── Sample_2
     │   ├── Unaligned reads
-    │   └── Aligned.sam
+    │   └── Aligned.sam/bam
     ├── Sample_3
     │   ├── Unaligned reads
-    │   └── Aligned.sam
+    │   └── Aligned.sam/bam
     └── Sample_4
         ├── Unaligned reads
-        └── Aligned.sam
+        └── Aligned.sam/bam
 
 </pre>
 
@@ -103,12 +105,12 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
 ####B. Run PORT
 
     run_normalization --sample_dirs <file of sample_dirs> --loc <s> \
-    --unaligned <file of fa/fqfiles> --samfilename <s> --cfg <cfg file> [options]
+    --unaligned <file of fa/fqfiles> --alignedfilename <s> --cfg <cfg file> [options]
 
 * --sample_dirs [&lt;file of sample dirs>](https://github.com/itmat/Normalization/tree/master/#i-file-of-sample-directories) : a file with the names of the sample directories
 * --loc &lt;s> : full path of the directory with the sample directories (`READS`)
 * --unaligned [&lt;file of fa/fqfiles>](https://github.com/itmat/Normalization/tree/master/#ii-file-of-unaligned-reads-both-forward-and-reverse-reads-for-paired-end-data) : file of **all** fa/fqfiles
-* --samfilename &lt;s> : the name of sam file (e.g. RUM.sam, Aligned.out.sam)
+* --alignedfilename &lt;s> : the name of aligned file (e.g. RUM.sam, RUM.bam, Aligned.out.sam, Aligned.out.bam)
 * --cfg [<cfg file>](https://github.com/itmat/Normalization/tree/master/#c-configuration-file) : configuration file for the study
 * option : <br>
      **[pipeline options]**<br>
@@ -119,12 +121,6 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
       You may not change the normalization parameters with resume option.<br>
       **-resume** : Use this if you have a job that crashed or stopped. This runs a job that has already been initialized or partially run after the last completed step. It may repeat the last completed step if necessary.<br>
       **-resume_at "&lt;step>"** : Use this if you have a job that crashed or stopped. This resumes a job at "&lt;step>". **make sure full step name (found in log file) is given in quotes.**<br>(e.g. -resume_at "1   "STUDY.get_total_num_reads"")<br>
-
-     **[data type]**<br>
-     **-se** : set this if the data are single end, otherwise by default it will assume it's a paired end data<br>
-     **-fa** : set this if the unaligned files are in fasta format<br>
-     **-fq** : set this if the unaligned files are in fastq format<br>
-     **-gz** : set this if the unaligned files are compressed<br>
 
      **[normalization parameters]**<br>
      **-cutoff_highexp &lt;n>** : <br>is cutoff % value to identify highly expressed genes/exons/introns.<br>

@@ -64,6 +64,11 @@ my $new_mem = "";
 my $jobname_option = "";
 my $numargs = 0;
 my $se = "false";
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
     my $option_u_nu = "false";
@@ -94,10 +99,6 @@ for (my $i=2; $i<@ARGV; $i++){
 	$option_found = "true";
 	$option_u_nu = "true";
 	$numargs_u_nu++;
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-	die $USAGE;
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs++;
@@ -305,7 +306,7 @@ while(my $id = <INFILE>) {
 	    my $total_lc = $LINECOUNTS_U{$id};
 	    my $filename_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.sam";
 	    my $outfile_U = $filename_U;
-	    $outfile_U =~ s/.sam$/.norm.sam/;
+	    $outfile_U =~ s/.sam$/.norm.sam/i;
 	    if (-e "$outfile_U"){
 		`rm $outfile_U`;
 	    }
@@ -332,7 +333,7 @@ while(my $id = <INFILE>) {
 	    my $total_lc = $LINECOUNTS_U{$id};
             my $filename_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.sense.sam";
             my $outfile_U = $filename_U;
-	    $outfile_U =~ s/.sam$/.norm.sam/;
+	    $outfile_U =~ s/.sam$/.norm.sam/i;
             if (-e "$outfile_U"){
                 `rm $outfile_U`;
             }
@@ -358,7 +359,7 @@ while(my $id = <INFILE>) {
 	    my $total_lc_a = $LINECOUNTS_U_A{$id};
             my $filename_U_A = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.antisense.sam";
             my $outfile_U_A = $filename_U_A;
-	    $outfile_U_A =~ s/.sam$/.norm.sam/;
+	    $outfile_U_A =~ s/.sam$/.norm.sam/i;
             if (-e "$outfile_U_A"){
                 `rm $outfile_U_A`;
             }
@@ -387,7 +388,7 @@ while(my $id = <INFILE>) {
 	    my $total_lc = $LINECOUNTS_NU{$id};
 	    my $filename_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.sam";
 	    my $outfile_NU = $filename_NU;
-	    $outfile_NU =~ s/.sam$/.norm.sam/;
+	    $outfile_NU =~ s/.sam$/.norm.sam/i;
 	    if (-e "$outfile_NU"){
 		`rm $outfile_NU`;
 	    }
@@ -414,7 +415,7 @@ while(my $id = <INFILE>) {
             my $total_lc = $LINECOUNTS_NU{$id};
             my $filename_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.sense.sam";
             my $outfile_NU = $filename_NU;
-	    $outfile_NU =~ s/.sam$/.norm.sam/;
+	    $outfile_NU =~ s/.sam$/.norm.sam/i;
 	    if (-e "$outfile_NU"){
 		`rm $outfile_NU`;
             }
@@ -440,7 +441,7 @@ while(my $id = <INFILE>) {
 	    my $total_lc_a = $LINECOUNTS_NU_A{$id};
             my $filename_NU_A = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.antisense.sam";
             my $outfile_NU_A = $filename_NU_A;
-	    $outfile_NU_A =~ s/.sam$/.norm.sam/;
+	    $outfile_NU_A =~ s/.sam$/.norm.sam/i;
             if (-e "$outfile_NU_A"){
                 `rm $outfile_NU_A`;
             }

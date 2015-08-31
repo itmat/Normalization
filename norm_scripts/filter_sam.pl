@@ -41,9 +41,9 @@ my $outfiledir = $outfile;
 $outfiledir =~ s/\/$outname//;
 my $outdir = $outfiledir . "/EIJ/";
 my $outfileU = "$outdir/Unique/$outname";
-$outfileU =~ s/.sam$/_u.sam/;
+$outfileU =~ s/.sam$/_u.sam/i;
 my $outfileNU = "$outdir/NU/$outname";
-$outfileNU =~ s/.sam$/_nu.sam/;
+$outfileNU =~ s/.sam$/_nu.sam/i;
 
 my $NU = "true";
 my $U = "true";

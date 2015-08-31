@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
-if(@ARGV<2) {
-    die "Usage: perl predict_num_reads.pl <sample dirs> <loc> [options]
+
+my $USAGE = "Usage: perl predict_num_reads.pl <sample dirs> <loc> [options]
 
 This will provide a rough estimate of number of reads you'll have after normalization.
 You can remove unwanted samples from your <sample dirs> file.
@@ -19,14 +19,22 @@ options:
 
  -nu  :  set this if you want to return number of non-unique reads only, otherwise by default it will return number of unique and non-unique reads
 
+ -h : print usage
 
 ";
+if(@ARGV<2) {
+    die $USAGE;
 }
 my $U = 'true';
 my $NU = 'true';
 my $numargs_u_nu = 0;
 my $se = "false";
 my $stranded = "false";
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-u'){
@@ -360,26 +368,26 @@ print OUT "\n[1] You may remove sample ids from <sample_dirs> file to get more r
 my $num_to_remove;
 if ($numargs_u_nu eq '0'){
     if ($stranded eq "true"){
-	print OUT "#ids-to-rm\tsenseUnique\tsenseNU\tsenseTOTAL\tantisenseUnique\tantisenseNU\tantisenseTOTAL\tSampleID\n";
+	print OUT "#ids-to-rm\tsenseUnique\tsenseNU\tsenseTOTAL\tantisenseUnique\tantisenseNU\tantisenseTOTAL\tSampleIDs-to-rm\n";
     }
     if ($stranded eq "false"){
-	print OUT "#ids-to-rm\tUnique\tNU\tTOTAL\tSampleID\n";
+	print OUT "#ids-to-rm\tUnique\tNU\tTOTAL\tSampleIDs-to-rm\n";
     }
     $num_to_remove = @P_U;
 }
 else{
     if ($U eq "true"){
 	if ($stranded eq "true"){
-            print OUT "#ids-to-rm\tsenseUnique\tantisenseUnique\tSampleID\n";
+            print OUT "#ids-to-rm\tsenseUnique\tantisenseUnique\tSampleIDs-to-rm\n";
 	}
 	if ($stranded eq "false"){
-	    print OUT "#ids-to-rm\tUnique\tSampleID\n";
+	    print OUT "#ids-to-rm\tUnique\tSampleIDs-to-rm\n";
 	}
 	$num_to_remove = @P_U;
     }
     else{
 	if ($stranded eq "true"){
-            print OUT "#ids-to-rm\tsenseNU\tantisenseNU\tSampleID\n";
+            print OUT "#ids-to-rm\tsenseNU\tantisenseNU\tSampleIDs-to-rm\n";
 	}
 	if ($stranded eq "false"){
 	    print OUT "#ids-to-rm\tNU\tSampleID\n";
@@ -387,7 +395,7 @@ else{
 	$num_to_remove = @P_NU;
     }
 }
-
+my $ids = "";
 for(my $i=0; $i<$num_to_remove;$i++){
     if ($numargs_u_nu eq '0'){
 	if ($stranded eq "false"){
@@ -395,7 +403,11 @@ for(my $i=0; $i<$num_to_remove;$i++){
 	    $P_TOTAL = &format_large_int($P_TOTAL);
 	    my $P_U_F = &format_large_int($P_U[$i]);
 	    my $P_NU_F = &format_large_int($P_NU[$i]);
-	    print OUT "$i\t$P_U_F\t$P_NU_F\t$P_TOTAL\t$ID[$i]\n";
+	    print OUT "$i\t$P_U_F\t$P_NU_F\t$P_TOTAL\t";
+	    $ids .= ",$ID[$i],";
+	    $ids =~ s/,$//;
+	    $ids =~ s/^,//;
+	    print OUT "$ids\n";
 	}
 	if ($stranded eq "true"){
 	    my $P_TOTAL = $P_U[$i]+$P_NU[$i];
@@ -406,30 +418,50 @@ for(my $i=0; $i<$num_to_remove;$i++){
 	    $P_TOTAL_A = &format_large_int($P_TOTAL_A);
 	    my $P_U_F_A = &format_large_int($P_U_A[$i]);
             my $P_NU_F_A = &format_large_int($P_NU_A[$i]);
-            print OUT "$i\t$P_U_F\t$P_NU_F\t$P_TOTAL\t$P_U_F_A\t$P_NU_F_A\t$P_TOTAL_A\t$ID[$i]\n";
+            print OUT "$i\t$P_U_F\t$P_NU_F\t$P_TOTAL\t$P_U_F_A\t$P_NU_F_A\t$P_TOTAL_A\t";
+	    $ids .= ",$ID[$i],";
+	    $ids =~ s/,$//;
+	    $ids =~ s/^,//;
+	    print OUT "$ids\n";
 	}
     }
     else{
 	if ($U eq "true"){
 	    if ($stranded eq "false"){
 		my $P_U_F = &format_large_int($P_U[$i]);
-		print OUT "$i\t$P_U_F\t$ID[$i]\n";
+		print OUT "$i\t$P_U_F\t";
+		$ids .= ",$ID[$i],";
+		$ids =~ s/,$//;
+		$ids =~ s/^,//;
+		print OUT "$ids\n";
 	    }
 	    if ($stranded eq "true"){
                 my $P_U_F = &format_large_int($P_U[$i]);
                 my $P_U_F_A = &format_large_int($P_U_A[$i]);
-                print OUT "$i\t$P_U_F\t$P_U_F_A\t$ID[$i]\n";
+                print OUT "$i\t$P_U_F\t$P_U_F_A\t";
+		$ids .= ",$ID[$i],";
+		$ids =~ s/,$//;
+		$ids =~ s/^,//;
+		print OUT "$ids\n";
 	    }
 	}
 	if ($NU eq "true"){
 	    if ($stranded eq "false"){
 		my $P_NU_F = &format_large_int($P_NU[$i]);
-		print OUT "$i\t$P_NU_F\t$ID[$i]\n";
+		print OUT "$i\t$P_NU_F\t";
+		$ids .= ",$ID[$i],";
+		$ids =~ s/,$//;
+		$ids =~ s/^,//;
+		print OUT "$ids\n";
 	    }
 	    if ($stranded eq "true"){
 		my $P_NU_F = &format_large_int($P_NU[$i]);
 		my $P_NU_F_A = &format_large_int($P_NU_A[$i]);
-                print OUT "$i\t$P_NU_F\t$P_NU_F_A\t$ID[$i]\n";
+                print OUT "$i\t$P_NU_F\t$P_NU_F_A\t";
+		$ids .= ",$ID[$i],";
+		$ids =~ s/,$//;
+		$ids =~ s/^,//;
+		print OUT "$ids\n";
 	    }
 	}
     }

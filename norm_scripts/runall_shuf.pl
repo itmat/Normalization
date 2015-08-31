@@ -68,6 +68,11 @@ $mem = "";
 $jobname_option = "";
 $numargs = 0;
 $stranded = "false";
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for ($i=2; $i<@ARGV; $i++){
     $option_found = "false";
     $option_u_nu = "false";
@@ -110,10 +115,6 @@ for ($i=2; $i<@ARGV; $i++){
 	}
 	$i++;
 	$option_found = "true";
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-	die $USAGE;
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs++;
@@ -600,10 +601,10 @@ for($i=1; $i<=$i_exon; $i++) {
             if (@g ne '0'){
                 `rm $LOC/$dirNU/antisense/$checkNU`;
 	    }
-	    $outfileU_S =~ s/.sam$/_shuf_$numU_S.sam/;
-	    $outfileU_A =~ s/.sam$/_shuf_$numU_A.sam/;
-	    $outfileNU_S =~ s/.sam$/_shuf_$numNU_S.sam/;
-	    $outfileNU_A =~ s/.sam$/_shuf_$numNU_A.sam/;
+	    $outfileU_S =~ s/.sam$/_shuf_$numU_S.sam/i;
+	    $outfileU_A =~ s/.sam$/_shuf_$numU_A.sam/i;
+	    $outfileNU_S =~ s/.sam$/_shuf_$numNU_S.sam/i;
+	    $outfileNU_A =~ s/.sam$/_shuf_$numNU_A.sam/i;
             $shfileU_S[$i] = "$shdir/a" . $id . "exonmappers.u_runshuf.$i.sense.sh";
             $shfileU_A[$i] = "$shdir/a" . $id . "exonmappers.u_runshuf.$i.antisense.sh";
             $shfileNU_S[$i] = "$shdir/a" . $id . "exonmappers.nu_runshuf.$i.sense.sh";
@@ -668,8 +669,8 @@ for($i=1; $i<=$i_exon; $i++) {
 	    $total_lc = $LINECOUNTS{$for_lc};
 	    $numU = $minEU[$i];
 	    $numNU = $minENU[$i];
-	    $outfileU =~ s/.sam$/_shuf_$numU.sam/;
-	    $outfileNU =~ s/.sam$/_shuf_$numNU.sam/;
+	    $outfileU =~ s/.sam$/_shuf_$numU.sam/i;
+	    $outfileNU =~ s/.sam$/_shuf_$numNU.sam/i;
 	    @g = glob("$LOC/$dirU/$checkU");
 	    if (@g ne '0'){
 		`rm $LOC/$dirU/$checkU`;
@@ -745,27 +746,27 @@ for($i=1; $i<=$i_intron; $i++) {
                 `rm $LOC/$dirU/sense/$checkU`;
             }
             $outfileU_S = $filenameU;
-	    $outfileU_S =~ s/.sam$/_shuf_$numU_S.sam/;
+	    $outfileU_S =~ s/.sam$/_shuf_$numU_S.sam/i;
 	    @g = glob("$LOC/$dirU/antisense/$checkU");
 	    if (@g ne '0'){
                 `rm $LOC/$dirU/antisense/$checkU`;
             }
             $outfileU_A = $filenameU;
-	    $outfileU_A =~ s/.sam$/_shuf_$numU_A.sam/;
+	    $outfileU_A =~ s/.sam$/_shuf_$numU_A.sam/i;
 
 	    @g = glob("$LOC/$dirNU/sense/$checkNU");
             if (@g ne '0'){
                 `rm $LOC/$dirNU/sense/$checkNU`;
             }
             $outfileNU_S = $filenameNU;
-            $outfileNU_S =~ s/.sam$/_shuf_$numNU_S.sam/;
+            $outfileNU_S =~ s/.sam$/_shuf_$numNU_S.sam/i;
 
 	    @g = glob("$LOC/$dirNU/antisense/$checkNU");
             if (@g ne '0'){
                 `rm $LOC/$dirNU/antisense/$checkNU`;
             }
             $outfileNU_A = $filenameNU;
-            $outfileNU_A =~ s/.sam$/_shuf_$numNU_A.sam/;
+            $outfileNU_A =~ s/.sam$/_shuf_$numNU_A.sam/i;
 
 	    $shfileU_S[$i] = "$shdir/a" . $id . "intronmappers.u_runshuf.$i.sense.sh";
             $shfileNU_S[$i] = "$shdir/a" . $id . "intronmappers.nu_runshuf.$i.sense.sh";
@@ -837,13 +838,13 @@ for($i=1; $i<=$i_intron; $i++) {
 		`rm $LOC/$dirU/$checkU`;
 	    }
 	    $outfileU = $filenameU;
-	    $outfileU =~ s/.sam$/_shuf_$numU.sam/;
+	    $outfileU =~ s/.sam$/_shuf_$numU.sam/i;
 	    @g = glob("$LOC/$dirNU/$checkNU");
 	    if (@g ne '0'){
 		`rm $LOC/$dirNU/$checkNU`;
 	    }
 	    $outfileNU = $filenameNU;
-	    $outfileNU =~ s/.sam$/_shuf_$numNU.sam/;
+	    $outfileNU =~ s/.sam$/_shuf_$numNU.sam/i;
 
 	    $shfileU[$i] = "$shdir/a" . $id . "intronmappers.u_runshuf.$i.sh";
 	    $shfileNU[$i] = "$shdir/a" . $id . "intronmappers.nu_runshuf.$i.sh";

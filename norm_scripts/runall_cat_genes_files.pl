@@ -68,6 +68,11 @@ my $new_mem = "";
 my $status;
 my $index = 0;
 my $numargs_c = 0;
+for (my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+        die $USAGE;
+    }
+}
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
     if($ARGV[$i] eq '-nu') {
@@ -105,10 +110,6 @@ for (my $i=2; $i<@ARGV; $i++){
     if ($ARGV[$i] eq "-stranded"){
 	$stranded = "-stranded";
 	$option_found = "true";
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-	die $USAGE;
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs_c++;
