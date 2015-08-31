@@ -625,7 +625,7 @@ while (my $line = <IN>){
 	    $fa = "true";
 	}
 	else{
-	    die "\nERROR: cannot determine unaligned file type. Unaligned files need to be in fastq or fasta format.\n\n";
+	    die "\nERROR: Unaligned files need to be in fastq or fasta format.\n\n";
 	}
     }
 }
