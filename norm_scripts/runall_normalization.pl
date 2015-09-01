@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-use warnings;
+#use warnings;
 
 my $USAGE =  "\nUsage: perl runall_normalization.pl --sample_dirs <file of sample_dirs> --loc <s> --unaligned <file of fa/fqfiles> --alignedfilename <s> --cfg <cfg file> [options]
 
