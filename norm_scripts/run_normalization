@@ -497,7 +497,7 @@ unless (-d $logdir){
 my %SAMFLAGS;
 my $bam = "false";
 my $bam_cnt = 0;
-my $bam_option = "";
+my $bam_option = "-sam";
 #check sam/bam
 open(IN, $sample_dir) or die "ERROR: cannot find file \"$sample_dir\".\nPlease provide a file of sample directories.\n";
 while (my $line = <IN>){
