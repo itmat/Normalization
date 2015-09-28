@@ -3,6 +3,8 @@ use strict;
 
 my $USAGE = "\nperl runall_check_samformat.pl <sample_dirs> <loc> <samfilename>
 
+ -se :  set this if the data are single end, otherwise by default it will assume it's a paired end data.
+
  -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
 
  -sge : set this if you want to submit batch jobs to Sun Grid Engine (PGFI) cluster.
@@ -47,8 +49,13 @@ my $new_mem = "";
 my $status;
 my $numargs_c = 0;
 my $cnt_st = 0;
+my $seoption = "";
 for (my $i=3;$i<@ARGV;$i++){
     my $option_found = "false";
+    if ($ARGV[$i] eq '-se'){
+        $seoption = "-se";
+        $option_found = "true";
+    }
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];
@@ -142,7 +149,7 @@ while(my $line = <IN>){
     my $jobname = "$study.check_samformat";
     my $logname = "$logdir/check_samformat.$line";
     open(OUTFILE, ">$shfile");
-    print OUTFILE "perl $path/check_samformat.pl $samfile\n";
+    print OUTFILE "perl $path/check_samformat.pl $samfile $seoption\n";
     close(OUTFILE);
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);

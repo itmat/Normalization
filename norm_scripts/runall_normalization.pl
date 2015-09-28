@@ -714,7 +714,7 @@ if ($run_prepause eq "true"){
 	while(qx{$stat | wc -l} > $maxjobs){
 	    sleep(10);
 	}
-	$job = "echo \"perl $norm_script_dir/runall_check_samformat.pl $sample_dir $LOC $alignedfilename $c_option $new_queue $cluster_max\" | $batchjobs $mem $jobname \"$study.runall_bam2sam\" -o $logdir/$study.runall_check_samformat.out -e $logdir/$study.runall_check_samformat.err";    
+	$job = "echo \"perl $norm_script_dir/runall_check_samformat.pl $sample_dir $LOC $alignedfilename $se $c_option $new_queue $cluster_max\" | $batchjobs $mem $jobname \"$study.runall_bam2sam\" -o $logdir/$study.runall_check_samformat.out -e $logdir/$study.runall_check_samformat.err";    
 	if ($resume eq "false"){
 	    &clear_log($name_of_alljob, $err_name);
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
