@@ -73,6 +73,9 @@ while(my $dir = <DIRS>) {
     $total{$dir} = $x;
     my $TOTAL = $x;
     $TOTAL =~ s/,//g;
+    if ($TOTAL =~ /^$/){
+        $TOTAL = 0;
+    }
     $min_total = $TOTAL;
 
     $x = `grep "Both forward and reverse mapped consistently" $filename`;
@@ -85,6 +88,10 @@ while(my $dir = <DIRS>) {
     $x =~ s/\(//;
     $x =~ s/\)//;
     $uniqueandFRconsistently{$dir} = "$y ($x)";
+    if ($TOTAL_FRCONS =~ /^$/){
+        $TOTAL_FRCONS = 0;
+        $uniqueandFRconsistently{$dir} = "0 (0.00%)";
+    }
     $min_total_frcons = $TOTAL_FRCONS;
 
     $x = `grep "At least one of forward or reverse mapped" $filename | head -1`;
@@ -98,6 +105,10 @@ while(my $dir = <DIRS>) {
     $x =~ s/\(//;
     $x =~ s/\)//;
     $uniqueandAtLeastOneMapped{$dir} = "$y ($x)";
+    if ($UTOTAL_F_or_R_CONS =~ /^$/){
+        $UTOTAL_F_or_R_CONS = 0;
+        $uniqueandAtLeastOneMapped{$dir} = "0 (0.00%)";
+    }
     $min_utotal_f_or_r_cons = $UTOTAL_F_or_R_CONS;
     $min_utotal_f_or_r_cons =~ s/,//g;
 
@@ -112,6 +123,10 @@ while(my $dir = <DIRS>) {
     $x =~ s/\(//;
     $x =~ s/\)//;
     $NUandAtLeastOneMapped{$dir} = "$y ($x)";
+    if ($NUTOTAL_F_or_R =~ /^$/){
+        $NUTOTAL_F_or_R = 0;
+        $NUandAtLeastOneMapped{$dir} = "0 (0.00%)";
+    }
     $min_nutotal_f_or_r = $NUTOTAL_F_or_R;
     $min_nutotal_f_or_r =~ s/,//g;
 
@@ -125,6 +140,10 @@ while(my $dir = <DIRS>) {
     $x =~ s/\(//;
     $x =~ s/\)//;
     $TotalMapped{$dir} = "$y ($x)";
+    if ($TOTALMAPPED =~ /^$/){
+        $TOTALMAPPED = 0;
+        $TotalMapped{$dir} = "0 (0.00%)";
+    }
     $min_total_UorNU = $TOTALMAPPED;
     $min_total_UorNU =~ s/,//g;
 
@@ -138,6 +157,10 @@ while(my $dir = <DIRS>) {
     $x =~ s/\(//;
     $x =~ s/\)//;
     $TotalMapped_cons{$dir} = "$y ($x)";
+    if ($TOTALMAPPED_CONS =~ /^$/){
+        $TOTALMAPPED_CONS = 0;
+        $TotalMapped_cons{$dir} = "0 (0.00%)";
+    }
     $min_total_UandNU = $TOTALMAPPED_CONS;
     $min_total_UandNU =~ s/,//g;
 
@@ -147,6 +170,10 @@ while(my $dir = <DIRS>) {
     $x =~ /^(.*) /;
     my $NUTOTAL_F_and_R = $1;
     $NUTOTAL_F_and_R =~ s/,//g;
+    if ($NUTOTAL_F_and_R =~ /^$/){
+        $NUTOTAL_F_and_R = 0;
+        $x = "0 (0.00%)";
+    }
     $NUandFRconsistently{$dir} = $x;
     $min_nutotal = $NUTOTAL_F_and_R;
     $min_nutotal =~ s/,//g;
@@ -158,10 +185,11 @@ while(my $dir = <DIRS>) {
     $overlap =~ s/,//;
     $Overlap{$dir} = "$x";
 
+    my $noverlap = 0;
     $x = `grep "don.t overlap" $filename | head -1`;
     chomp($x);
     $x =~ s/[^\d,]//g;
-    my $noverlap = $x;
+    $noverlap = $x;
     $noverlap =~ s/,//;
     $NOverlap{$dir} = "$x";
 
@@ -182,7 +210,7 @@ while(my $dir = <DIRS>) {
     $min_pover =~ s/,//g;
     foreach my $key (sort keys %MITO){
         $x = `grep -w $key $filename | head -1`;
-        my @a1 = split(/\t/,$x);
+        my @a1 = split(" ",$x);
         $a1[1] =~ s/[^\d]//g;
         $x = $a1[1];
         if ($x eq ''){
@@ -213,7 +241,7 @@ foreach my $key (sort keys %MITO){
 }
 print MITO "\n";
 foreach my $dir (sort keys %UchrM) {
-    print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$Pover{$dir}\%\t$NUandFRconsistently{$dir}\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped_cons{$dir}\t$TotalMapped{$dir}\n";
+    print OUT "$dir\t$total{$dir}\t$uniqueandFRconsistently{$dir}\t$uniqueandAtLeastOneMapped{$dir}\t$Pover{$dir}%\t$NUandFRconsistently{$dir}\t$NUandAtLeastOneMapped{$dir}\t$TotalMapped_cons{$dir}\t$TotalMapped{$dir}\n";
     print MITO "$dir\t";
     foreach my $key (sort keys %{$UchrM{$dir}}){
         print MITO "$UchrM{$dir}{$key}\t";
@@ -221,6 +249,9 @@ foreach my $dir (sort keys %UchrM) {
     print MITO "\n";
     my $x = $total{$dir};
     $x =~ s/,//g;
+    if ($x =~ /^$/){
+      $x = 0;
+    }
     if($x < $min_total) {
 	$min_total = $x;
     }
@@ -231,6 +262,9 @@ foreach my $dir (sort keys %UchrM) {
     $x = $uniqueandFRconsistently{$dir};
     $x =~ s/ \(.*//;
     $x =~ s/,//g;
+    if ($x =~ /^$/){
+      $x = 0;
+    }
     if($x < $min_total_frcons) {
 	$min_total_frcons = $x;
     }
@@ -241,6 +275,9 @@ foreach my $dir (sort keys %UchrM) {
     $x = $TotalMapped{$dir};
     $x =~ s/ \(.*//;
     $x =~ s/,//g;
+    if ($x =~ /^$/){
+      $x = 0;
+    }
     if($x < $min_total_UorNU) {
 	$min_total_UorNU = $x;
     }
@@ -251,6 +288,9 @@ foreach my $dir (sort keys %UchrM) {
     $x = $uniqueandAtLeastOneMapped{$dir};
     $x =~ s/ \(.*//;
     $x =~ s/,//g;
+    if ($x =~ /^$/){
+      $x = 0;
+    }
     if($x < $min_utotal_f_or_r_cons) {
 	$min_utotal_f_or_r_cons = $x;
     }
@@ -261,6 +301,9 @@ foreach my $dir (sort keys %UchrM) {
     $x = $TotalMapped_cons{$dir};
     $x =~ s/ \(.*//;
     $x =~ s/,//g;
+    if ($x =~ /^$/){
+      $x = 0;
+    }
     if($x < $min_total_UandNU) {
         $min_total_UandNU = $x;
     }
@@ -271,6 +314,9 @@ foreach my $dir (sort keys %UchrM) {
     $x = $uniqueandAtLeastOneMapped{$dir};
     $x =~ s/ \(.*//;
     $x =~ s/,//g;
+    if ($x =~ /^$/){
+      $x = 0;
+    }
     if($x < $min_utotal_f_or_r_cons) {
         $min_utotal_f_or_r_cons = $x;
     }
@@ -283,6 +329,9 @@ foreach my $dir (sort keys %UchrM) {
         $x = $UchrM{$dir}{$key};
         $x =~ s/ \(.*//;
         $x =~ s/,//g;
+        if ($x =~ /^$/){
+          $x = 0;
+        }
         if($x < $min_chrm{$key}) {
             $min_chrm{$key} = $x;
         }
@@ -294,6 +343,9 @@ foreach my $dir (sort keys %UchrM) {
     $x = $Pover{$dir};
     $x =~ s/ \(.*//;
     $x =~ s/,//g;
+    if ($x =~ /^$/){
+      $x = 0;
+    }
     if($x < $min_pover) {
 	$min_pover = $x;
     }
@@ -304,6 +356,9 @@ foreach my $dir (sort keys %UchrM) {
     $x = $NUandFRconsistently{$dir};
     $x =~ s/ \(.*//;
     $x =~ s/,//g;
+    if ($x =~ /^$/){
+        $x = 0;
+    }
     if($x < $min_nutotal) {
 	$min_nutotal = $x;
     }
@@ -314,6 +369,9 @@ foreach my $dir (sort keys %UchrM) {
     $x = $NUandAtLeastOneMapped{$dir};
     $x =~ s/ \(.*//;
     $x =~ s/,//g;
+    if ($x =~ /^$/){
+      $x = 0;
+    }
     if($x < $min_nutotal_f_or_r) {
 	$min_nutotal_f_or_r = $x;
     }
