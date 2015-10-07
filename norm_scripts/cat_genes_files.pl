@@ -165,6 +165,5 @@ if ($norm eq "true"){
     }
 }
 
-
 print "got here\n";
 

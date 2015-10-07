@@ -88,23 +88,23 @@ if ($numargs eq '0'){
     }
 }
 elsif ($U eq "true"){
-    $exonfile = "$norm_exon_dir/$id.exonmappers.norm_u.sam";
-    $intronfile = "$norm_intron_dir/$id.intronmappers.norm_u.sam";
-    $igfile = "$norm_ig_dir/$id.intergenicmappers.norm_u.sam";
-    $undfile = "$norm_und_dir/$id.exon_inconsistent_reads.norm_u.sam";
+    $exonfile = "$norm_exon_dir/$id.exonmappers.norm.sam";
+    $intronfile = "$norm_intron_dir/$id.intronmappers.norm.sam";
+    $igfile = "$norm_ig_dir/$id.intergenicmappers.norm.sam";
+    $undfile = "$norm_und_dir/$id.exon_inconsistent_reads.norm.sam";
     if ($stranded eq "true"){
-	$exonfile_a = "$norm_exon_dir_a/$id.exonmappers.norm_u.sam";
-	$intronfile_a = "$norm_intron_dir_a/$id.intronmappers.norm_u.sam";
+	$exonfile_a = "$norm_exon_dir_a/$id.exonmappers.norm.sam";
+	$intronfile_a = "$norm_intron_dir_a/$id.intronmappers.norm.sam";
     }
 }
 elsif ($NU eq "true"){
-    $exonfile = "$norm_exon_dir/$id.exonmappers.norm_nu.sam";
-    $intronfile = "$norm_intron_dir/$id.intronmappers.norm_nu.sam";
-    $igfile = "$norm_ig_dir/$id.intergenicmappers.norm_nu.sam";
-    $undfile = "$norm_und_dir/$id.exon_inconsistent_reads.norm_nu.sam";
+    $exonfile = "$norm_exon_dir/$id.exonmappers.norm.sam";
+    $intronfile = "$norm_intron_dir/$id.intronmappers.norm.sam";
+    $igfile = "$norm_ig_dir/$id.intergenicmappers.norm.sam";
+    $undfile = "$norm_und_dir/$id.exon_inconsistent_reads.norm.sam";
     if ($stranded eq "true"){
-	$exonfile_a = "$norm_exon_dir_a/$id.exonmappers.norm_nu.sam";
-	$intronfile_a = "$norm_intron_dir_a/$id.intronmappers.norm_nu.sam";
+	$exonfile_a = "$norm_exon_dir_a/$id.exonmappers.norm.sam";
+	$intronfile_a = "$norm_intron_dir_a/$id.intronmappers.norm.sam";
     }
 }
 #identify common string and get chr names

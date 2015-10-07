@@ -84,7 +84,6 @@ chomp($id);
 my $dir = $id;
 my $current_LOC = "$LOC/$dir";
 if ($stranded eq "false"){
-
     if ($numargs eq '0'){
 	unless (-d "$current_LOC/EIJ/Unique/"){
 	    die "Input directory $current_LOC/EIJ/Unique/ doesn't exist\n";
@@ -132,7 +131,7 @@ if ($stranded eq "false"){
 	#exonmappers
 	@g = glob("$current_LOC/EIJ/Unique/$id.*_exonmappers.*_shuf_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/Unique/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/$id.exonmappers.norm_u.sam`;
+	    `cat $current_LOC/EIJ/Unique/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/$id.exonmappers.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/Unique/$id.*_exonmappers.*_shuf_*.sam does not exist\n";
@@ -140,15 +139,15 @@ if ($stranded eq "false"){
 	#intronmappers
 	@g = glob("$current_LOC/EIJ/Unique/$id.*_intronmappers.*_shuf_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/NU/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/$id.intronmappers.norm_u.sam`;
+	    `cat $current_LOC/EIJ/Unique/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/$id.intronmappers.norm.sam`;
 	}
 	else{
-	    print "WARNING: $current_LOC/EIJ/NU/$id.*_intronmappers.*_shuf_*.sam does not exist\n";
+	    print "WARNING: $current_LOC/EIJ/Unique/$id.*_intronmappers.*_shuf_*.sam does not exist\n";
 	}
 	#intergenicmappers
 	@g = glob("$current_LOC/EIJ/Unique/$id.intergenicmappers.norm_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/Unique/$id.intergenicmappers.norm_*.sam > $norm_ig_dir/$id.intergenicmappers.norm_u.sam`;
+	    `cat $current_LOC/EIJ/Unique/$id.intergenicmappers.norm_*.sam > $norm_ig_dir/$id.intergenicmappers.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/Unique/$id.intergenicmappers.norm_*.sam does not exist\n";
@@ -156,7 +155,7 @@ if ($stranded eq "false"){
 	#exon_inconsistent_reads
 	@g = glob("$current_LOC/EIJ/Unique/$id.exon_inconsistent_reads.norm_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/Unique/$id.exon_inconsistent_reads.norm_*.sam > $norm_und_dir/$id.exon_inconsistent_reads.norm_u.sam`;
+	    `cat $current_LOC/EIJ/Unique/$id.exon_inconsistent_reads.norm_*.sam > $norm_und_dir/$id.exon_inconsistent_reads.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/Unique/$id.exon_inconsistent_reads.norm_*.sam does not exist\n";
@@ -170,7 +169,7 @@ if ($stranded eq "false"){
 	#exonmappers
 	@g = glob("$current_LOC/EIJ/NU/$id.*_exonmappers.*_shuf_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/NU/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/$id.exonmappers.norm_nu.sam`;
+	    `cat $current_LOC/EIJ/NU/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/$id.exonmappers.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/NU/$id.*_exonmappers.*_shuf_*.sam does not exist\n";
@@ -178,7 +177,7 @@ if ($stranded eq "false"){
 	#intronmappers
 	@g = glob("$current_LOC/EIJ/NU/$id.*_intronmappers.*_shuf_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/NU/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/$id.intronmappers.norm_nu.sam`;
+	    `cat $current_LOC/EIJ/NU/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/$id.intronmappers.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/NU/$id.*_intronmappers.*_shuf_*.sam does not exist\n";
@@ -186,7 +185,7 @@ if ($stranded eq "false"){
 	#intergenicmappers
 	@g = glob("$current_LOC/EIJ/NU/$id.intergenicmappers.norm_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/NU/$id.intergenicmappers.norm_*.sam > $norm_ig_dir/$id.intergenicmappers.norm_nu.sam`;
+	    `cat $current_LOC/EIJ/NU/$id.intergenicmappers.norm_*.sam > $norm_ig_dir/$id.intergenicmappers.norm.sam`;
 	}        
 	else{
 	    print "WARNING: $current_LOC/EIJ/NU/$id.intergenicmappers.norm_*.sam does not exist\n";
@@ -194,7 +193,7 @@ if ($stranded eq "false"){
 	#exon_inconsistent_reads
 	@g = glob("$current_LOC/EIJ/NU/$id.exon_inconsistent_reads.norm_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/NU/$id.exon_inconsistent_reads.norm_*.sam > $norm_und_dir/$id.exon_inconsistent_reads.norm_nu.sam`;
+	    `cat $current_LOC/EIJ/NU/$id.exon_inconsistent_reads.norm_*.sam > $norm_und_dir/$id.exon_inconsistent_reads.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/NU/$id.exon_inconsistent_reads.norm_*.sam does not exist\n";
@@ -202,32 +201,31 @@ if ($stranded eq "false"){
     }
 }
 if ($stranded eq "true"){
-    unless (-d "$current_LOC/EIJ/Unique/sense/"){
-	die "Input directory $current_LOC/EIJ/Unique/sense/ doesn't exist\n";
-    }
-    unless (-d "$current_LOC/EIJ/NU/sense/"){
-	die "Input directory $current_LOC/EIJ/NU/sense/ doesn't exist\n";
-    }
-    unless (-d "$current_LOC/EIJ/Unique/antisense/"){
-	die "Input directory $current_LOC/EIJ/Unique/antisense/ doesn't exist\n";
-    }
-    unless (-d "$current_LOC/EIJ/NU/antisense/"){
-	die "Input directory $current_LOC/EIJ/NU/antisense/ doesn't exist\n";
-    }
     unless (-d "$norm_exon_dir/sense"){
-	`mkdir $norm_exon_dir/sense`;
+        `mkdir $norm_exon_dir/sense`;
     }
     unless (-d "$norm_exon_dir/antisense"){
-	`mkdir $norm_exon_dir/antisense`;
+        `mkdir $norm_exon_dir/antisense`;
     }
     unless (-d "$norm_intron_dir/sense"){
-	`mkdir $norm_intron_dir/sense`;
+        `mkdir $norm_intron_dir/sense`;
     }
     unless (-d "$norm_intron_dir/antisense"){
-	`mkdir $norm_intron_dir/antisense`;
+        `mkdir $norm_intron_dir/antisense`;
     }
-    if ($numargs eq "0"){
-
+   if ($numargs eq "0"){
+	unless (-d "$current_LOC/EIJ/Unique/sense/"){
+	    die "Input directory $current_LOC/EIJ/Unique/sense/ doesn't exist\n";
+	}
+	unless (-d "$current_LOC/EIJ/NU/sense/"){
+	    die "Input directory $current_LOC/EIJ/NU/sense/ doesn't exist\n";
+	}
+	unless (-d "$current_LOC/EIJ/Unique/antisense/"){
+	    die "Input directory $current_LOC/EIJ/Unique/antisense/ doesn't exist\n";
+	}
+	unless (-d "$current_LOC/EIJ/NU/antisense/"){
+	    die "Input directory $current_LOC/EIJ/NU/antisense/ doesn't exist\n";
+	}
 	#exonmappers
 	@g = glob("$current_LOC/EIJ/*/sense/$id.*_exonmappers.*_shuf_*.sam");
 	if (@g ne '0'){
@@ -276,17 +274,23 @@ if ($stranded eq "true"){
 	}
     }
     elsif($U eq "true"){
+        unless (-d "$current_LOC/EIJ/Unique/sense/"){
+            die "Input directory $current_LOC/EIJ/Unique/sense/ doesn't exist\n";
+        }
+        unless (-d "$current_LOC/EIJ/Unique/antisense/"){
+            die "Input directory $current_LOC/EIJ/Unique/antisense/ doesn't exist\n";
+	}
 	#exonmappers
 	@g = glob("$current_LOC/EIJ/Unique/sense/$id.*_exonmappers.*_shuf_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/Unique/sense/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/sense/$id.exonmappers.norm_u.sam`;
+	    `cat $current_LOC/EIJ/Unique/sense/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/sense/$id.exonmappers.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/Unique/sense/$id.*_exonmappers.*_shuf_*.sam does not exist\n";
 	}
 	@g = glob("$current_LOC/EIJ/Unique/antisense/$id.*_exonmappers.*_shuf_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/Unique/antisense/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/antisense/$id.exonmappers.norm_u.sam`;
+	    `cat $current_LOC/EIJ/Unique/antisense/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/antisense/$id.exonmappers.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/Unique/antisense/$id.*_exonmappers.*_shuf_*.sam does not exist\n";
@@ -294,14 +298,14 @@ if ($stranded eq "true"){
 	#intronmappers
 	@g = glob("$current_LOC/EIJ/Unique/sense/$id.*_intronmappers.*_shuf_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/Unique/sense/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/sense/$id.intronmappers.norm_u.sam`;
+	    `cat $current_LOC/EIJ/Unique/sense/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/sense/$id.intronmappers.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/Unique/sense/$id.*_intronmappers.*_shuf_*.sam does not exist\n";
 	}
 	@g = glob("$current_LOC/EIJ/Unique/antisense/$id.*_intronmappers.*_shuf_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/Unique/antisense/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/antisense/$id.intronmappers.norm_u.sam`;
+	    `cat $current_LOC/EIJ/Unique/antisense/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/antisense/$id.intronmappers.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/Unique/antisense/$id.*_intronmappers.*_shuf_*.sam does not exist\n";
@@ -309,7 +313,7 @@ if ($stranded eq "true"){
 	#intergenicmappers
 	@g = glob("$current_LOC/EIJ/Unique/$id.intergenicmappers.norm_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/Unique/$id.intergenicmappers.norm_*.sam > $norm_ig_dir/$id.intergenicmappers.norm_u.sam`;
+	    `cat $current_LOC/EIJ/Unique/$id.intergenicmappers.norm_*.sam > $norm_ig_dir/$id.intergenicmappers.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/Unique/$id.intergenicmappers.norm_*.sam does not exist\n";
@@ -317,24 +321,30 @@ if ($stranded eq "true"){
 	#exon_inconsistent_reads
 	@g = glob("$current_LOC/EIJ/Unique/$id.exon_inconsistent_reads.norm_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/Unique/$id.exon_inconsistent_reads.norm_*.sam > $norm_und_dir/$id.exon_inconsistent_reads.norm_u.sam`;
+	    `cat $current_LOC/EIJ/Unique/$id.exon_inconsistent_reads.norm_*.sam > $norm_und_dir/$id.exon_inconsistent_reads.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/Unique/$id.exon_inconsistent_reads.norm_*.sam does not exist\n";
 	}
     }
     elsif($NU eq "true"){
+        unless (-d "$current_LOC/EIJ/NU/sense/"){
+            die "Input directory $current_LOC/EIJ/NU/sense/ doesn't exist\n";
+        }
+        unless (-d "$current_LOC/EIJ/NU/antisense/"){
+            die "Input directory $current_LOC/EIJ/NU/antisense/ doesn't exist\n";
+        }
 	#exonmappers
 	@g = glob("$current_LOC/EIJ/NU/sense/$id.*_exonmappers.*_shuf_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/NU/sense/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/sense/$id.exonmappers.norm_nu.sam`;
+	    `cat $current_LOC/EIJ/NU/sense/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/sense/$id.exonmappers.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/NU/sense/$id.*_exonmappers.*_shuf_*.sam does not exist\n";
 	}
 	@g = glob("$current_LOC/EIJ/NU/antisense/$id.*_exonmappers.*_shuf_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/NU/antisense/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/antisense/$id.exonmappers.norm_nu.sam`;
+	    `cat $current_LOC/EIJ/NU/antisense/$id.*_exonmappers.*_shuf_*.sam > $norm_exon_dir/antisense/$id.exonmappers.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/NU/antisense/$id.*_exonmappers.*_shuf_*.sam does not exist\n";
@@ -342,14 +352,14 @@ if ($stranded eq "true"){
 	#intronmappers
 	@g = glob("$current_LOC/EIJ/NU/sense/$id.*_intronmappers.*_shuf_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/NU/sense/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/sense/$id.intronmappers.norm_nu.sam`;
+	    `cat $current_LOC/EIJ/NU/sense/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/sense/$id.intronmappers.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/NU/sense/$id.*_intronmappers.*_shuf_*.sam does not exist\n";
 	}
 	@g = glob("$current_LOC/EIJ/NU/antisense/$id.*_intronmappers.*_shuf_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/NU/antisense/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/antisense/$id.intronmappers.norm_nu.sam`;
+	    `cat $current_LOC/EIJ/NU/antisense/$id.*_intronmappers.*_shuf_*.sam > $norm_intron_dir/antisense/$id.intronmappers.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/NU/antisense/$id.*_intronmappers.*_shuf_*.sam does not exist\n";
@@ -357,7 +367,7 @@ if ($stranded eq "true"){
 	#intergenicmappers
 	@g = glob("$current_LOC/EIJ/NU/$id.intergenicmappers.norm_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/NU/$id.intergenicmappers.norm_*.sam > $norm_ig_dir/$id.intergenicmappers.norm_nu.sam`;
+	    `cat $current_LOC/EIJ/NU/$id.intergenicmappers.norm_*.sam > $norm_ig_dir/$id.intergenicmappers.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/NU/$id.intergenicmappers.norm_*.sam does not exist\n";
@@ -365,7 +375,7 @@ if ($stranded eq "true"){
 	#exon_inconsistent_reads
 	@g = glob("$current_LOC/EIJ/NU/$id.exon_inconsistent_reads.norm_*.sam");
 	if (@g ne '0'){
-	    `cat $current_LOC/EIJ/NU/$id.exon_inconsistent_reads.norm_*.sam > $norm_und_dir/$id.exon_inconsistent_reads.norm_nu.sam`;
+	    `cat $current_LOC/EIJ/NU/$id.exon_inconsistent_reads.norm_*.sam > $norm_und_dir/$id.exon_inconsistent_reads.norm.sam`;
 	}
 	else{
 	    print "WARNING: $current_LOC/EIJ/NU/$id.exon_inconsistent_reads.norm_*.sam does not exist\n";

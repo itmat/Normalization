@@ -70,7 +70,7 @@ if ($type =~ /^gene/i){
 }
 
 my $exon_dir = $norm_dir . "/FINAL_SAM/exonmappers";
-my $intron_dir = $norm_dir . "/FINAL_SAM/notexonmappers";
+my $intron_dir = $norm_dir . "/FINAL_SAM/intronmappers";
 my $spread_dir = $norm_dir . "/SPREADSHEETS";
 my ($exon_dir_a, $intron_dir_a);
 if ($stranded eq "true"){
@@ -86,13 +86,13 @@ unless (-d $spread_dir){
 my ($out, $sample_name_file, $out_min, $out_max);
 my ($out_a, $sample_name_file_a, $out_min_a, $out_max_a);
 if ($type =~ /^exon/i){
-    $out = "$spread_dir/master_list_of_exons_counts_u.$study.txt";
-    $sample_name_file = "$norm_dir/file_exonquants_u.txt";
+    $out = "$spread_dir/master_list_of_exons_counts_MIN.$study.txt";
+    $sample_name_file = "$norm_dir/file_exonquants.txt";
     if ($stranded eq "true"){
-	$out = "$spread_dir/master_list_of_exons_counts_u.sense.$study.txt";
-	$sample_name_file = "$norm_dir/file_exonquants_u.sense.txt";
-	$out_a = "$spread_dir/master_list_of_exons_counts_u.antisense.$study.txt";
-	$sample_name_file_a = "$norm_dir/file_exonquants_u.antisense.txt";
+	$out = "$spread_dir/master_list_of_exons_counts_MIN.sense.$study.txt";
+	$sample_name_file = "$norm_dir/file_exonquants.sense.txt";
+	$out_a = "$spread_dir/master_list_of_exons_counts_MIN.antisense.$study.txt";
+	$sample_name_file_a = "$norm_dir/file_exonquants.antisense.txt";
     }
     if ($nuonly eq "true"){
 	$out =~ s/_u.$study.txt/_nu.$study.txt/;
@@ -126,13 +126,13 @@ elsif ($type =~ /^gene/i){
     }
 }
 elsif ($type =~ /^intron/i){
-    $out = "$spread_dir/master_list_of_introns_counts_u.$study.txt";
-    $sample_name_file = "$norm_dir/file_intronquants_u.txt";
+    $out = "$spread_dir/master_list_of_introns_counts_MIN.$study.txt";
+    $sample_name_file = "$norm_dir/file_intronquants.txt";
     if ($stranded eq "true"){
-        $out = "$spread_dir/master_list_of_introns_counts_u.sense.$study.txt";
-        $sample_name_file = "$norm_dir/file_intronquants_u.sense.txt";
-        $out_a = "$spread_dir/master_list_of_introns_counts_u.antisense.$study.txt";
-        $sample_name_file_a = "$norm_dir/file_intronquants_u.antisense.txt";
+        $out = "$spread_dir/master_list_of_introns_counts_MIN.sense.$study.txt";
+        $sample_name_file = "$norm_dir/file_intronquants.sense.txt";
+        $out_a = "$spread_dir/master_list_of_introns_counts_MIN.antisense.$study.txt";
+        $sample_name_file_a = "$norm_dir/file_intronquants.antisense.txt";
     }
     if ($nuonly eq "true"){
         $out =~ s/_u.$study.txt/_nu.$study.txt/;
@@ -159,11 +159,11 @@ if($type =~ /^exon/i){
 	my $id = $line;
 	if($nuonly eq "false"){
 	    if ($stranded ne "true"){
-		print OUT "$exon_dir/$id.exonmappers.norm_u.exonquants\n";
+		print OUT "$exon_dir/$id.exonmappers.norm.exonquants\n";
 	    }
 	    if ($stranded eq "true"){
-		print OUT "$exon_dir/$id.exonmappers.norm_u.sense.exonquants\n";
-		print OUT_A "$exon_dir_a/$id.exonmappers.norm_u.antisense.exonquants\n";
+		print OUT "$exon_dir/$id.exonmappers.norm.sense.exonquants\n";
+		print OUT_A "$exon_dir_a/$id.exonmappers.norm.antisense.exonquants\n";
 	    }
 	}
 	if($nuonly eq "true"){
@@ -192,11 +192,11 @@ if($type =~ /^intron/i){
         my $id = $line;
         if($nuonly eq "false"){
             if ($stranded ne "true"){
-                print OUT "$intron_dir/$id.intronmappers.norm_u.intronquants\n";
+                print OUT "$intron_dir/$id.intronmappers.norm.intronquants\n";
             }
             if ($stranded eq "true"){
-                print OUT "$intron_dir/$id.intronmappers.norm_u.sense.intronquants\n";
-                print OUT_A "$intron_dir_a/$id.intronmappers.norm_u.antisense.intronquants\n";
+                print OUT "$intron_dir/$id.intronmappers.norm.sense.intronquants\n";
+                print OUT_A "$intron_dir_a/$id.intronmappers.norm.antisense.intronquants\n";
             }
         }
         if($nuonly eq "true"){
@@ -253,6 +253,7 @@ close(OUT);
 
 open(FILES, $sample_name_file);
 my $file = <FILES>;
+chomp($file);
 close(FILES);
 
 open(INFILE, $file) or die "cannot find file \"$file\"\n";
@@ -408,12 +409,10 @@ if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
 	if ($type =~ /^intron/i){
 	    if ($novel eq "true"){
 		if (exists $NOVEL_I{$id[$i]}){
-		    print OUT_MIN "\tN";
-		    print OUT_MAX "\tN";
+		    print OUTFILE "\tN";
 		}
 		else{
-		    print OUT_MIN "\t.";
-		    print OUT_MAX "\t.";
+		    print OUTFILE "\t.";
 		}
 	    }
 	}
@@ -565,23 +564,19 @@ if ($stranded eq "true"){
 	    }
 	    if ($type =~ /^intron/i){
 		if (exists $FR{$id[$i]}){
-		    print OUT_MIN "\tF";
-		    print OUT_MAX "\tF";
+		    print OUTFILE "\tF";
 		}
 		else{
 		    if ($novel eq "true"){
 			if (exists $NOVEL_I{$id[$i]}){
-			    print OUT_MIN "\tN";
-			    print OUT_MAX "\tN";
+			    print OUTFILE "\tN";
 			}
 			else{
-			    print OUT_MIN "\t.";
-			    print OUT_MAX "\t.";
+			    print OUTFILE "\t.";
 			}
 		    }
 		    else{
-			print OUT_MIN "\t.";
-			print OUT_MAX "\t.";
+			print OUTFILE "\t.";
 		    }
 		}
 	    }
@@ -589,6 +584,5 @@ if ($stranded eq "true"){
 	}
     }
 }
-close(OUT_MIN);
-close(OUT_MAX);
+close(OUTFILE);
 print "got here\n";

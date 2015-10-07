@@ -210,11 +210,13 @@ while(my $dir = <DIRS>) {
     $min_pover =~ s/,//g;
     foreach my $key (sort keys %MITO){
         $x = `grep -w $key $filename | head -1`;
-        my @a1 = split(" ",$x);
-        $a1[1] =~ s/[^\d]//g;
-        $x = $a1[1];
         if ($x eq ''){
 	    $x = '0';
+        }
+        else{
+            my @a1 = split(" ",$x);
+            $a1[1] =~ s/[^\d]//g;
+            $x = $a1[1];
         }
         $y = int($x / $TOTALMAPPED * 1000) / 10;
         $y = sprintf("%.2f",$y);

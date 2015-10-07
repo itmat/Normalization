@@ -231,36 +231,38 @@ while(my $line = <IN>){
 	}
 	my $total_lc = `wc -l $filename_u`;
 	$total_lc =~ /^(\d+)/;
-	my $div_5 = int($1/5);
-	my $x = `split -d --lines $div_5 $filename_u $filedir_u/sam2genes_temp.`;
-	my $temp_prefix = "$filedir_u/sam2genes_temp.0";
-	for (my $i=0;$i<5;$i++){
-	    my $infile = $temp_prefix . "$i";
-	    my $outfile = $infile . ".txt";
-	    my $sh = $shfile_u;
-	    $sh =~ s/.sh$/.$i.sh/;
-	    open(OUT, ">$sh");
-	    print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
-	    close(OUT);
-	    while (qx{$status | wc -l} > $njobs){
-		sleep(10);
+	unless ($1 == 0){
+	    my $div_5 = int($1/5);
+	    my $x = `split -d --lines $div_5 $filename_u $filedir_u/sam2genes_temp.`;
+	    my $temp_prefix = "$filedir_u/sam2genes_temp.0";
+	    for (my $i=0;$i<5;$i++){
+		my $infile = $temp_prefix . "$i";
+		my $outfile = $infile . ".txt";
+		my $sh = $shfile_u;
+		$sh =~ s/.sh$/.$i.sh/;
+		open(OUT, ">$sh");
+		print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $request_memory_option$mem $jobname_option $jobname -o $logname_u.$i.out -e $logname_u.$i.err < $sh`;
+		sleep(2);
 	    }
-	    `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_u.$i.out -e $logname_u.$i.err < $sh`;
-	    sleep(2);
-	}
-	my $infile = $temp_prefix . "5";
-	if (-e "$infile"){
-	    my $outfile = "$infile.txt";
-	    my $sh = $shfile_u;
-            $sh =~ s/.sh$/.5.sh/;
-	    open(OUT, ">$sh");
-            print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
-            close(OUT);
-            while (qx{$status | wc -l} > $njobs){
-                sleep(10);
-            }
-            `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_u.5.out -e $logname_u.5.err < $sh`;
-	    sleep(2);
+	    my $infile = $temp_prefix . "5";
+	    if (-e "$infile"){
+		my $outfile = "$infile.txt";
+		my $sh = $shfile_u;
+		$sh =~ s/.sh$/.5.sh/;
+		open(OUT, ">$sh");
+		print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $request_memory_option$mem $jobname_option $jobname -o $logname_u.5.out -e $logname_u.5.err < $sh`;
+		sleep(2);
+	    }
 	}
     }
     if ($NU eq "true"){
@@ -269,36 +271,38 @@ while(my $line = <IN>){
 	}
 	my $total_lc = `wc -l $filename_nu`;
         $total_lc =~ /^(\d+)/;
-        my $div_5 = int($1/5);
-        my $x = `split -d --lines $div_5 $filename_nu $filedir_nu/sam2genes_temp.`;
-        my $temp_prefix = "$filedir_nu/sam2genes_temp.0";
-        for (my $i=0;$i<5;$i++){
-            my $infile = $temp_prefix . "$i";
-            my $outfile = $infile . ".txt";
-            my $sh = $shfile_nu;
-            $sh =~ s/.sh$/.$i.sh/;
-            open(OUT, ">$sh");
-            print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
-            close(OUT);
-            while (qx{$status | wc -l} > $njobs){
-                sleep(10);
-            }
-            `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_nu.$i.out -e $logname_nu.$i.err < $sh`;
-	    sleep(2);
-        }
-	my $infile = $temp_prefix . "5";
-	if (-e "$infile"){
-            my $outfile = "$infile.txt";
-            my $sh = $shfile_nu;
-            $sh =~ s/.sh$/.5.sh/;
-            open(OUT, ">$sh");
-            print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
-            close(OUT);
-            while (qx{$status | wc -l} > $njobs){
-                sleep(10);
-            }
-            `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_nu.5.out -e $logname_nu.5.err < $sh`;
-	    sleep(2);
+	unless ($1 == 0){
+	    my $div_5 = int($1/5);
+	    my $x = `split -d --lines $div_5 $filename_nu $filedir_nu/sam2genes_temp.`;
+	    my $temp_prefix = "$filedir_nu/sam2genes_temp.0";
+	    for (my $i=0;$i<5;$i++){
+		my $infile = $temp_prefix . "$i";
+		my $outfile = $infile . ".txt";
+		my $sh = $shfile_nu;
+		$sh =~ s/.sh$/.$i.sh/;
+		open(OUT, ">$sh");
+		print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $request_memory_option$mem $jobname_option $jobname -o $logname_nu.$i.out -e $logname_nu.$i.err < $sh`;
+		sleep(2);
+	    }
+	    my $infile = $temp_prefix . "5";
+	    if (-e "$infile"){
+		my $outfile = "$infile.txt";
+		my $sh = $shfile_nu;
+		$sh =~ s/.sh$/.5.sh/;
+		open(OUT, ">$sh");
+		print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $request_memory_option$mem $jobname_option $jobname -o $logname_nu.5.out -e $logname_nu.5.err < $sh`;
+		sleep(2);
+	    }
 	}
     }
     if ($norm eq "true"){
@@ -307,50 +311,14 @@ while(my $line = <IN>){
 	}
         my $total_lc = `wc -l $filename`;
         $total_lc =~ /^(\d+)/;
-        my $div_5 = int($1/5);
-        my $x = `split -d --lines $div_5 $filename $filedir/$id.sam2genes_temp.`;
-        my $temp_prefix = "$filedir/$id.sam2genes_temp.0";
-        for (my $i=0;$i<5;$i++){
-            my $infile = $temp_prefix . "$i";
-            my $outfile = $infile . ".txt";
-            my $sh = $shfile;
-            $sh =~ s/.sh$/.$i.sh/;
-            open(OUT, ">$sh");
-            print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
-            close(OUT);
-            while (qx{$status | wc -l} > $njobs){
-                sleep(10);
-            }
-            `$submit $request_memory_option$mem $jobname_option $jobname -o $logname.$i.out -e $logname.$i.err < $sh`;
-	    sleep(2);
-        }
-	my $infile = $temp_prefix . "5";
-	if (-e "$infile"){
-            my $outfile = "$infile.txt";
-            my $sh = $shfile;
-            $sh =~ s/.sh$/.5.sh/;
-            open(OUT, ">$sh");
-            print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
-            close(OUT);
-            while (qx{$status | wc -l} > $njobs){
-                sleep(10);
-            }
-            `$submit $request_memory_option$mem $jobname_option $jobname -o $logname.5.out -e $logname.5.err < $sh`;
-	    sleep(2);
-	}
-	if ($stranded eq "true"){
-	    unless (-e $filename_a){
-		die "ERROR: $filename_a does not exist\n";
-	    }
-	    my $total_lc = `wc -l $filename_a`;
-	    $total_lc =~ /^(\d+)/;
+	unless ($1 == 0){
 	    my $div_5 = int($1/5);
-	    my $x = `split -d --lines $div_5 $filename_a $filedir_a/$id.sam2genes_temp.`;
-	    my $temp_prefix = "$filedir_a/$id.sam2genes_temp.0";
+	    my $x = `split -d --lines $div_5 $filename $filedir/$id.sam2genes_temp.`;
+	    my $temp_prefix = "$filedir/$id.sam2genes_temp.0";
 	    for (my $i=0;$i<5;$i++){
 		my $infile = $temp_prefix . "$i";
 		my $outfile = $infile . ".txt";
-		my $sh = $shfile_a;
+		my $sh = $shfile;
 		$sh =~ s/.sh$/.$i.sh/;
 		open(OUT, ">$sh");
 		print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
@@ -358,13 +326,13 @@ while(my $line = <IN>){
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
 		}
-		`$submit $request_memory_option$mem $jobname_option $jobname -o $logname_a.$i.out -e $logname_a.$i.err < $sh`;
+		`$submit $request_memory_option$mem $jobname_option $jobname -o $logname.$i.out -e $logname.$i.err < $sh`;
 		sleep(2);
 	    }
 	    my $infile = $temp_prefix . "5";
 	    if (-e "$infile"){
 		my $outfile = "$infile.txt";
-		my $sh = $shfile_a;
+		my $sh = $shfile;
 		$sh =~ s/.sh$/.5.sh/;
 		open(OUT, ">$sh");
 		print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
@@ -372,8 +340,48 @@ while(my $line = <IN>){
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
 		}
-		`$submit $request_memory_option$mem $jobname_option $jobname -o $logname_a.5.out -e $logname_a.5.err < $sh`;
+		`$submit $request_memory_option$mem $jobname_option $jobname -o $logname.5.out -e $logname.5.err < $sh`;
 		sleep(2);
+	    }
+	}
+	if ($stranded eq "true"){
+	    unless (-e $filename_a){
+		die "ERROR: $filename_a does not exist\n";
+	    }
+	    my $total_lc = `wc -l $filename_a`;
+	    $total_lc =~ /^(\d+)/;
+	    unless ($1 == 0){
+		my $div_5 = int($1/5);
+		my $x = `split -d --lines $div_5 $filename_a $filedir_a/$id.sam2genes_temp.`;
+		my $temp_prefix = "$filedir_a/$id.sam2genes_temp.0";
+		for (my $i=0;$i<5;$i++){
+		    my $infile = $temp_prefix . "$i";
+		    my $outfile = $infile . ".txt";
+		    my $sh = $shfile_a;
+		    $sh =~ s/.sh$/.$i.sh/;
+		    open(OUT, ">$sh");
+		    print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
+		    close(OUT);
+		    while (qx{$status | wc -l} > $njobs){
+			sleep(10);
+		    }
+		    `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_a.$i.out -e $logname_a.$i.err < $sh`;
+		    sleep(2);
+		}
+		my $infile = $temp_prefix . "5";
+		if (-e "$infile"){
+		    my $outfile = "$infile.txt";
+		    my $sh = $shfile_a;
+		    $sh =~ s/.sh$/.5.sh/;
+		    open(OUT, ">$sh");
+		    print OUT "perl $path/sam2genes.pl $infile $ens_file $outfile $se $orientation\n";
+		    close(OUT);
+		    while (qx{$status | wc -l} > $njobs){
+			sleep(10);
+		    }
+		    `$submit $request_memory_option$mem $jobname_option $jobname -o $logname_a.5.out -e $logname_a.5.err < $sh`;
+		    sleep(2);
+		}
 	    }
 	}
     }

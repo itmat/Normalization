@@ -36,7 +36,6 @@ my $outfile = $ARGV[2];
 
 my (%GENE, %GENE_COORDS, %GENE_counts_min, %GENE_counts_max, %READ_NU);
 open(IN, $genes);
-my $header = <IN>;
 while(my $line = <IN>){
     chomp($line);
     my @a = split(/\t/, $line);
@@ -51,7 +50,7 @@ while(my $line = <IN>){
 close(IN);
 
 open(INFILE2, $input) or die "cannot find file \"$input\"\n";
-$header = <INFILE2>;
+my $header = <INFILE2>;
 while(my $forward = <INFILE2>){
     if ($pe eq "true"){
 	chomp($forward);

@@ -132,10 +132,10 @@ if ($NU eq "true"){
 }
 
 if ($U eq "true"){
-    print TEMP "TOTAL_U_exon\tTOTAL_U_intron\tinterg_U\t";
+    print TEMP "TOTAL_U_exon\tTOTAL_U_intron\tinterg_U\texon_incons_U\t";
 }
 if ($NU eq "true"){
-    print TEMP "TOTAL_NU_exon\tTOTAL_NU_intron\tinterg_NU";
+    print TEMP "TOTAL_NU_exon\tTOTAL_NU_intron\tinterg_NU\texon_incons_NU\t";
 }
 print TEMP "\n";
 
@@ -149,6 +149,8 @@ for (my $i=1; $i<=$i_intron;$i++){
 }
 my $sumIGU = 0;
 my $sumIGNU = 0;
+my $sumEIU = 0;
+my $sumEINU = 0;
 
 open(IN, $ARGV[0]) or die "cannot find file \"$ARGV[0]\"\n";
 while(my $line = <IN>){
@@ -160,6 +162,8 @@ while(my $line = <IN>){
     my $total_nu_intron = 0;
     my $total_u_ig = 0;
     my $total_nu_ig = 0;
+    my $total_u_ei = 0;
+    my $total_nu_ei = 0;
     print TEMP "$id\t";
     my $linecountfile_u = "$LOC/$id/EIJ/Unique/linecounts.txt";
     if ($stranded eq "true"){
@@ -200,6 +204,13 @@ while(my $line = <IN>){
 	my $N = $a[1];
 	$total_u_ig += $N;
 	$sumIGU += $N;
+
+        my $str_ei = `grep exon_inconsistent_reads.sam $linecountfile_u`;
+        chomp($str_ei);
+        my @b = split (/\t/, $str_ei);
+        my $M = $b[1];
+	$total_u_ei += $M;
+        $sumEIU += $M;
     }
     if ($NU eq "true"){
 	for (my $i=1; $i<=$i_exon; $i++){
@@ -232,12 +243,19 @@ while(my $line = <IN>){
 	my $N = $a[1];
 	$total_nu_ig += $N;
 	$sumIGNU += $N;
+
+        my $str_ei = `grep exon_inconsistent_reads.sam $linecountfile_nu`;
+        chomp($str_ei);
+        my @b = split (/\t/, $str_ei);
+        my $M = $b[1];
+        $total_nu_ei += $M;
+        $sumEINU += $M;
     }
     if ($U eq "true"){
-	print TEMP "$total_u_exon\t$total_u_intron\t$total_u_ig\t";
+	print TEMP "$total_u_exon\t$total_u_intron\t$total_u_ig\t$total_u_ei\t";
     }
     if ($NU eq "true"){
-	print TEMP "$total_nu_exon\t$total_nu_intron\t$total_nu_ig\t";
+	print TEMP "$total_nu_exon\t$total_nu_intron\t$total_nu_ig\t$total_nu_ei\t";
     }
     print TEMP "\n";
 }
@@ -276,6 +294,8 @@ my %COLUMN_U_INT;
 my %COLUMN_NU_INT;
 my %COLUMN_U_IG;
 my %COLUMN_NU_IG;
+my %COLUMN_U_EI;
+my %COLUMN_NU_EI;
 # predict # reads after removing samples
 open(IN, "$tempfile.sorted");
 my $header = <IN>;
@@ -297,11 +317,17 @@ while(my $line = <IN>){
         }
 	my $ig_u_col = $col_total+1;
 	push @{$COLUMN_U_IG{$ig_u_col}}, $a[$ig_u_col];
-	my $ig_nu_col = $col_total+4;
+	my $ig_nu_col = $col_total+5;
 	push @{$COLUMN_NU_IG{$ig_nu_col}}, $a[$ig_nu_col];
+
+        my $ei_u_col = $col_total+2;
+        push @{$COLUMN_U_EI{$ei_u_col}}, $a[$ei_u_col];
+        my $ei_nu_col = $col_total+6;
+        push @{$COLUMN_NU_EI{$ei_nu_col}}, $a[$ei_nu_col];
     }
     else{
 	my $ig_col = $col_total+1;
+	my $ei_col = $col_total+2;
 	if ($U eq 'true'){
 	    for(my $i=1;$i<=$i_exon;$i++){
 		push @{$COLUMN_U_EX{$i}}, $a[$i];
@@ -310,6 +336,7 @@ while(my $line = <IN>){
                 push @{$COLUMN_U_INT{$i}}, $a[$i];
 	    }
 	    push @{$COLUMN_U_IG{$ig_col}}, $a[$ig_col];
+	    push @{$COLUMN_U_EI{$ei_col}}, $a[$ei_col];
 	}
 	else{
 	    for(my $i=1;$i<=$i_exon;$i++){
@@ -319,6 +346,7 @@ while(my $line = <IN>){
                 push @{$COLUMN_NU_INT{$i}}, $a[$i];
             }
 	    push @{$COLUMN_NU_IG{$ig_col}}, $a[$ig_col];
+	    push @{$COLUMN_NU_EI{$ei_col}}, $a[$ei_col];
 	}
     }
 }
@@ -330,6 +358,8 @@ my @P_SUM_U_INT;
 my @P_SUM_NU_INT;
 my @P_IG_U;
 my @P_IG_NU;
+my @P_EI_U;
+my @P_EI_NU;
 if ($U eq "true"){
     foreach my $key (sort {$a <=> $b} keys %COLUMN_U_EX){
 	my $min_ex = &get_min(@{$COLUMN_U_EX{$key}});
@@ -360,6 +390,16 @@ if ($U eq "true"){
 	    $P_IG_U[$i] += $min_ig;
 	}
     }
+    my $ei_key = $col_total+2;
+    if (defined $COLUMN_U_EI{$ei_key}){
+        my $min_ei = &get_min(@{$COLUMN_U_EI{$ei_key}});
+        $P_EI_U[0] += $min_ei;
+        for(my $i=1; $i<$size;$i++){
+            shift @{$COLUMN_U_EI{$ei_key}};
+            $min_ei = &get_min(@{$COLUMN_U_EI{$ei_key}});
+            $P_EI_U[$i] += $min_ei;
+        }
+    }
 }
 if ($NU eq "true"){
     foreach my $key (sort {$a <=> $b} keys %COLUMN_NU_EX){
@@ -381,7 +421,7 @@ if ($NU eq "true"){
 	    }
 	}
     }
-    my $ig_key = $col_total+4;
+    my $ig_key = $col_total+5;
     if ($numargs_u_nu ne '0'){
 	$ig_key = $col_total+1;
     }
@@ -394,6 +434,20 @@ if ($NU eq "true"){
             $P_IG_NU[$i] += $min_ig;
         }
     }
+    my $ei_key = $col_total+6;
+    if ($numargs_u_nu ne '0'){
+        $ei_key = $col_total+2;
+    }
+    if (defined $COLUMN_NU_EI{$ei_key}){
+        my $min_ei = &get_min(@{$COLUMN_NU_EI{$ei_key}});
+        $P_EI_NU[0] += $min_ei;
+        for(my $i=1; $i<$size;$i++){
+            shift @{$COLUMN_NU_EI{$ei_key}};
+            $min_ei = &get_min(@{$COLUMN_NU_EI{$ei_key}});
+            $P_EI_NU[$i] += $min_ei;
+        }
+    }
+
 }
 =debug
 for(my $i=0;$i<$size;$i++){
@@ -441,7 +495,7 @@ if ($numargs_u_nu eq '0'){
     for (my $i=2+$i_exon+$i_intron+$i_exon; $i<2+$i_exon+$i_intron+$i_exon+$new_intron_nu;$i++){
     	$to_print = $to_print . ",\$$i";
     }
-    $to_print = $to_print . ",\$$col_total, \$($col_total+1), \$($col_total+2), \$($col_total+3), \$($col_total+4), \$($col_total+5)";
+    $to_print = $to_print . ",\$$col_total, \$($col_total+1), \$($col_total+2), \$($col_total+3), \$($col_total+4), \$($col_total+5), \$($col_total+6), \$($col_total+7)";
 }
 else{
     #Unique
@@ -452,7 +506,7 @@ else{
 	for (my $i=2+$i_exon; $i<2+$i_exon+$new_intron_u;$i++){
 	    $to_print = $to_print . ",\$$i";
 	}
-	$to_print = $to_print . ",\$$col_total, \$($col_total+1), \$($col_total+2)";
+	$to_print = $to_print . ",\$$col_total, \$($col_total+1), \$($col_total+2), \$($col_total+3)";
     }
     #NU
     if ($NU eq "true"){
@@ -462,7 +516,7 @@ else{
         for (my $i=2+$i_exon; $i<2+$i_exon+$new_intron_nu;$i++){
             $to_print = $to_print . ",\$$i";
         }
-	$to_print = $to_print . ",\$$col_total, \$($col_total+1), \$($col_total+2)";
+	$to_print = $to_print . ",\$$col_total, \$($col_total+1), \$($col_total+2), \$($col_total+3)";
     }
 }
 
@@ -471,12 +525,15 @@ my $rearr = `awk -v OFS=\$\'\t\' \'{print $to_print}\' $tempfile.sorted`;
 my $TOTAL_EXON;
 my $TOTAL_INTRON;
 my $TOTAL_IG;
+my $TOTAL_EI;
 my $SUM_U_EX = 0;
 my $SUM_NU_EX = 0;
 my $SUM_U_INT = 0;
 my $SUM_NU_INT = 0;
 my $IG_U = 0;
 my $IG_NU = 0;
+my $EI_U = 0;
+my $EI_NU = 0;
 if (($U eq "true") && ($NU eq "true")){
     $TOTAL_EXON = $P_SUM_U_EX[0] + $P_SUM_NU_EX[0];
     $SUM_U_EX = &format_large_int($P_SUM_U_EX[0]);
@@ -487,6 +544,9 @@ if (($U eq "true") && ($NU eq "true")){
     $TOTAL_IG = $P_IG_U[0] + $P_IG_NU[0];
     $IG_U = &format_large_int($P_IG_U[0]);
     $IG_NU = &format_large_int($P_IG_NU[0]);
+    $TOTAL_EI = $P_EI_U[0] + $P_EI_NU[0];
+    $EI_U = &format_large_int($P_EI_U[0]);
+    $EI_NU = &format_large_int($P_EI_NU[0]);
 }
 else{
     if ($U eq "true"){
@@ -496,6 +556,8 @@ else{
 	$SUM_U_INT = &format_large_int($P_SUM_U_INT[0]);
 	$TOTAL_IG = $P_IG_U[0];
 	$IG_U = &format_large_int($P_IG_U[0]);
+	$TOTAL_EI = $P_EI_U[0];
+	$EI_U = &format_large_int($P_EI_U[0]);
     }
     if ($NU eq "true"){
 	$TOTAL_EXON = $P_SUM_NU_EX[0];
@@ -504,6 +566,8 @@ else{
 	$SUM_NU_INT = &format_large_int($P_SUM_NU_INT[0]);
         $TOTAL_IG = $P_IG_NU[0];
         $IG_NU = &format_large_int($P_IG_NU[0]);
+        $TOTAL_EI = $P_EI_NU[0];
+        $EI_NU = &format_large_int($P_EI_NU[0]);
     }
 }
 #print "exonu = $new_exon_u\nintronu = $new_intron_u\n exonnu = $new_exon_nu\n intronnu = $new_intron_nu\n";
@@ -512,18 +576,19 @@ open(OUT, ">$outfile");
 $TOTAL_EXON = &format_large_int($TOTAL_EXON);
 $TOTAL_INTRON = &format_large_int($TOTAL_INTRON);
 $TOTAL_IG = &format_large_int($TOTAL_IG);
+$TOTAL_EI = &format_large_int($TOTAL_EI);
 print OUT "\n[EXON INTRON JUNCTION NORMALIZATION]\n";
 if (($U eq "true") && ($NU eq "true")){
-    print OUT "\nExpected number of reads after normalization (estimate): $TOTAL_EXON total exonmappers\t$TOTAL_INTRON total intronmappers\t$TOTAL_IG total intergenicmappers\n";
-    print OUT "\t\t\t\t\t\t\t $SUM_U_EX unique exonmappers\t$SUM_U_INT unique intronmappers\t$IG_U unique intergenicmappers\n";
-    print OUT "\t\t\t\t\t\t\t $SUM_NU_EX non-unique exonmappers\t$SUM_NU_INT non-unique intronmappers\t$IG_NU non-unique intergenicmappers\n";
+    print OUT "\nExpected number of reads after normalization (estimate): $TOTAL_EXON total exonmappers\t$TOTAL_INTRON total intronmappers\t$TOTAL_IG total intergenicmappers\t$TOTAL_EI total exon inconsistent reads\n";
+    print OUT "\t\t\t\t\t\t\t $SUM_U_EX unique exonmappers\t$SUM_U_INT unique intronmappers\t$IG_U unique intergenicmappers\t$EI_U unique exon inconsistent reads\n";
+    print OUT "\t\t\t\t\t\t\t $SUM_NU_EX non-unique exonmappers\t$SUM_NU_INT non-unique intronmappers\t$IG_NU non-unique intergenicmappers\t$EI_NU non-unique exon inconsistent reads\n";
 }
 else{
     if ($U eq "true"){
-	print OUT "\nExpected number of reads after normalization (estimate): $TOTAL_EXON unique exonmappers\t$TOTAL_INTRON unique intronamppers\t$TOTAL_IG unique intergenicmappers\n";
+	print OUT "\nExpected number of reads after normalization (estimate): $TOTAL_EXON unique exonmappers\t$TOTAL_INTRON unique intronamppers\t$TOTAL_IG unique intergenicmappers\t$TOTAL_EI unique exon inconsistent reads\n";
     }
     if ($NU eq "true"){
-	print OUT "\nExpected number of reads after normalization (estimate): $TOTAL_EXON non-unique exonmappers\t$TOTAL_INTRON non-unique intronamppers\t$TOTAL_IG non-unique intergenicmappers\n";
+	print OUT "\nExpected number of reads after normalization (estimate): $TOTAL_EXON non-unique exonmappers\t$TOTAL_INTRON non-unique intronamppers\t$TOTAL_IG non-unique intergenicmappers\t$TOTAL_EI non-unique exon inconsistent reads\n";
     }
 }
 if ($stranded eq "true"){
@@ -532,16 +597,16 @@ if ($stranded eq "true"){
 print OUT "\n[1] You may remove sample ids from <sample_dirs> file to get more reads:\n\n<Expected number of reads after removing samples>\n";
 my $num_to_remove;
 if ($numargs_u_nu eq '0'){
-    print OUT "#ids-to-rm\tu-EX\tu-INT\tu-IG\tnu-EX\tnu-INT\tnu-IG\tSampleIDs-to-rm\n";
+    print OUT "#ids-to-rm\tu-EX\tu-INT\tu-IG\tu-EI\tnu-EX\tnu-INT\tnu-IG\tnu-EI\tSampleIDs-to-rm\n";
     $num_to_remove = @P_SUM_U_EX;
 }
 else{
     if ($U eq "true"){
-	print OUT "#ids-to-rm\tu-EX\tu-INT\tu-IG\tSampleIDs-to-rm\n";
+	print OUT "#ids-to-rm\tu-EX\tu-INT\tu-IG\tu-EI\tSampleIDs-to-rm\n";
 	$num_to_remove = @P_SUM_U_EX;
     }
     else{ 
-	print OUT "#ids-to-rm\tnu-EX\tnu-INT\tnu-IG\ttSampleIDs-to-rm\n";
+	print OUT "#ids-to-rm\tnu-EX\tnu-INT\tnu-IG\tnu-EI\tSampleIDs-to-rm\n";
 	$num_to_remove = @P_SUM_NU_EX;
     }
 }
@@ -551,10 +616,12 @@ for(my $i=0; $i<$num_to_remove;$i++){
 	my $P_U_EX = &format_large_int($P_SUM_U_EX[$i]);
 	my $P_U_INT = &format_large_int($P_SUM_U_INT[$i]);
 	my $P_U_IG = &format_large_int($P_IG_U[$i]);
+	my $P_U_EI = &format_large_int($P_EI_U[$i]);
 	my $P_NU_EX = &format_large_int($P_SUM_NU_EX[$i]);
 	my $P_NU_INT = &format_large_int($P_SUM_NU_INT[$i]);
 	my $P_NU_IG = &format_large_int($P_IG_NU[$i]);
-	print OUT "$i\t$P_U_EX\t$P_U_INT\t$P_U_IG\t$P_NU_EX\t$P_NU_INT\t$P_NU_IG\t";
+	my $P_NU_EI = &format_large_int($P_EI_NU[$i]);
+	print OUT "$i\t$P_U_EX\t$P_U_INT\t$P_U_IG\t$P_U_EI\t$P_NU_EX\t$P_NU_INT\t$P_NU_IG\t$P_NU_EI\t";
 	$ids .= ",$ID[$i],";
 	$ids =~ s/,$//;
 	$ids =~ s/^,//;
@@ -565,7 +632,8 @@ for(my $i=0; $i<$num_to_remove;$i++){
 	    my $P_U_EX = &format_large_int($P_SUM_U_EX[$i]);
 	    my $P_U_INT = &format_large_int($P_SUM_U_INT[$i]);
 	    my $P_U_IG = &format_large_int($P_IG_U[$i]);
-	    print OUT "$i\t$P_U_EX\t$P_U_INT\t$P_U_IG\t";
+	    my $P_U_EI = &format_large_int($P_EI_U[$i]);
+	    print OUT "$i\t$P_U_EX\t$P_U_INT\t$P_U_IG\t$P_U_EI\t";
 	    $ids .= ",$ID[$i],";
 	    $ids =~ s/,$//;
 	    $ids =~ s/^,//;
@@ -575,7 +643,8 @@ for(my $i=0; $i<$num_to_remove;$i++){
 	    my $P_NU_EX = &format_large_int($P_SUM_NU_EX[$i]);
 	    my $P_NU_INT = &format_large_int($P_SUM_NU_INT[$i]);
 	    my $P_NU_IG = &format_large_int($P_IG_NU[$i]);
-	    print OUT "$i\t$P_NU_EX\t$P_NU_INT\t$P_NU_IG\t";
+	    my $P_NU_EI = &format_large_int($P_EI_NU[$i]);
+	    print OUT "$i\t$P_NU_EX\t$P_NU_INT\t$P_NU_IG\t$P_NU_EI\t";
 	    $ids .= ",$ID[$i],";
 	    $ids =~ s/,$//;
 	    $ids =~ s/^,//;

@@ -178,6 +178,7 @@ if ($gnorm eq "true"){
     open(IN, $dirs);
     while (my $line = <IN>){
         chomp($line);
+	print OUT "$line";
         #totalnumreads
 	if ($total eq "true"){
 	    $total_num = `cut -f 1,2 $study_dir/STATS/mappingstats_summary.txt | grep -w $line`;
@@ -185,6 +186,8 @@ if ($gnorm eq "true"){
             $total_num =~ s/$line//g;
 	    $total_num =~ s/^\s*(.*?)\s*$/$1/;
             $total_num =~ s/\,//g;
+	    print OUT "\t$total_num";
+
         }
         #U (FWDorREV)
         if ($U eq "true"){
@@ -194,6 +197,7 @@ if ($gnorm eq "true"){
             $U_num =~ s/^\s*(.*?)\s*$/$1/;
             $U_num =~ m/\((.*)\%\)/;
             $U_num_m = $1;
+	    print OUT "\t$U_num_m";
         }
         #NU (FWDorREV)
         if ($NU eq "true"){
@@ -203,6 +207,7 @@ if ($gnorm eq "true"){
             $NU_num =~ s/^\s*(.*?)\s*$/$1/;
             $NU_num =~ m/\((.*)\%\)/;
             $NU_num_m = $1;
+	    print OUT "\t$NU_num_m";
         }
 	#non-map (total - FWDorREVmapped)
 	if ($non_map eq "true"){
@@ -214,6 +219,7 @@ if ($gnorm eq "true"){
 	    my $mapped_m = $1;
 	    $non_num = 100 - $mapped_m;
 	    $non_num = sprintf("%.2f",$non_num);
+	    print OUT "\t$non_num";
 	}
 	#chrM
 	if ($chrM eq "true"){
@@ -225,6 +231,7 @@ if ($gnorm eq "true"){
 		$chrM_num[$i] =~ s/^\s*(.*?)\s*$/$1/;
 		$chrM_num[$i] =~ m/\((.*)\%\)/;
 		$chrM_num_m[$i] = $1;
+		print OUT "\t$chrM_num_m[$i]";
 	    }
         }
 
@@ -234,6 +241,7 @@ if ($gnorm eq "true"){
             chomp($ribo_num);
             $ribo_num =~ s/$line//g;
             $ribo_num =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$ribo_num";
 	}
         #gene u
         if ($geneU eq "true"){
@@ -246,6 +254,7 @@ if ($gnorm eq "true"){
             chomp($gene_u);
             $gene_u =~ s/$line//g;
             $gene_u =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$gene_u";
         }
 	#gene u anti
 	if ($geneU_A eq "true"){
@@ -253,6 +262,7 @@ if ($gnorm eq "true"){
 	    chomp($gene_u_a);
             $gene_u_a =~ s/$line//g;
             $gene_u_a =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$gene_u_a";
 	}
         #gene nu
         if ($geneNU eq "true"){
@@ -265,6 +275,7 @@ if ($gnorm eq "true"){
             chomp($gene_nu);
             $gene_nu =~ s/$line//g;
             $gene_nu =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$gene_nu";
         }
 	#gene nu anti        
 	if ($geneNU_A eq "true"){
@@ -272,6 +283,7 @@ if ($gnorm eq "true"){
 	    chomp($gene_nu_a);
 	    $gene_nu_a =~ s/$line//g;
             $gene_nu_a =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$gene_nu_a";
 	}
 	#senseU
 	if ($senseG_U eq "true"){
@@ -279,6 +291,7 @@ if ($gnorm eq "true"){
 	    chomp($sense_g_u);
             $sense_g_u =~ s/$line//g;
             $sense_g_u =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$sense_g_u";
 	}
 	#senseNU
 	if ($senseG_NU eq "true"){
@@ -286,21 +299,9 @@ if ($gnorm eq "true"){
             chomp($sense_g_nu);
             $sense_g_nu =~ s/$line//g;
             $sense_g_nu =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$sense_g_nu";
 	}
-	print OUT "$line\t$total_num\t$U_num_m\t$NU_num_m\t$non_num\t";
-	my $size = keys %MITO;
-	for (my$i=2;$i<$size+2;$i++){
-	    print OUT "$chrM_num_m[$i]\t";
-	}
-	if ($ribo eq "true"){
-	    print OUT "$ribo_num\t";
-	}
-	if ($stranded eq "false"){
-	    print OUT "$gene_u\t$gene_nu\n";
-	}
-	if ($stranded eq "true"){
-	    print OUT "$gene_u\t$gene_u_a\t$gene_nu\t$gene_nu_a\t$sense_g_u\t$sense_g_nu\n";
-	}
+	print OUT "\n";
     }
     print OUT $footer;
     close(OUT);
@@ -442,6 +443,7 @@ if ($eij eq "true"){
     open(IN, $dirs);
     while (my $line = <IN>){
 	chomp($line);
+	print OUT "$line";
 	#totalnumreads
 	if ($total eq "true"){
 	    $total_num = `cut -f 1,2 $study_dir/STATS/mappingstats_summary.txt | grep -w $line`;
@@ -449,6 +451,7 @@ if ($eij eq "true"){
 	    $total_num =~ s/$line//g;
 	    $total_num =~ s/^\s*(.*?)\s*$/$1/;
 	    $total_num =~ s/\,//g;
+	    print OUT "\t$total_num";
 	}
 	#U (FWDorREV)
         if ($U eq "true"){
@@ -458,6 +461,7 @@ if ($eij eq "true"){
             $U_num =~ s/^\s*(.*?)\s*$/$1/;
             $U_num =~ m/\((.*)\%\)/;
             $U_num_m = $1;
+	    print OUT "\t$U_num_m";
         }
 	#NU (FWDorREV)
 	if ($NU eq "true"){
@@ -467,6 +471,7 @@ if ($eij eq "true"){
 	    $NU_num =~ s/^\s*(.*?)\s*$/$1/;
 	    $NU_num =~ m/\((.*)\%\)/;
 	    $NU_num_m = $1;
+	    print OUT "\t$NU_num_m";
 	}
 	#non-map (total - FWDorREVmapped)
 	if ($non_map eq "true"){
@@ -478,6 +483,7 @@ if ($eij eq "true"){
 	    my $mapped_m = $1;
 	    $non_num = 100 - $mapped_m;
 	    $non_num = sprintf("%.2f",$non_num);
+	    print OUT "\t$non_num";
 	}
 	#chrM
         if ($chrM eq "true"){
@@ -489,6 +495,7 @@ if ($eij eq "true"){
 		$chrM_num[$i] =~ s/^\s*(.*?)\s*$/$1/;
 		$chrM_num[$i] =~ m/\((.*)\%\)/;
 		$chrM_num_m[$i] = $1;
+		print OUT "\t$chrM_num_m[$i]";
 	    }
         }
 	#ribo
@@ -497,6 +504,7 @@ if ($eij eq "true"){
 	    chomp($ribo_num);
 	    $ribo_num =~ s/$line//g;
 	    $ribo_num =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$ribo_num";
 	}
 
 	#exonic u
@@ -510,6 +518,7 @@ if ($eij eq "true"){
 	    chomp($exonic_u);
 	    $exonic_u =~ s/$line//g;
 	    $exonic_u =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$exonic_u";
 	}
 	#exonic u anti
 	if ($exonicU_A eq "true"){
@@ -517,6 +526,7 @@ if ($eij eq "true"){
             chomp($exonic_u_a);
             $exonic_u_a =~ s/$line//g;
             $exonic_u_a =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$exonic_u_a";
         }
 	
 	#exonic nu
@@ -530,6 +540,7 @@ if ($eij eq "true"){
 	    chomp($exonic_nu);
 	    $exonic_nu =~ s/$line//g;
 	    $exonic_nu =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$exonic_nu";
 	}
 	#exonic nu anti
 	if ($exonicNU_A eq "true"){
@@ -537,6 +548,7 @@ if ($eij eq "true"){
             chomp($exonic_nu_a);
             $exonic_nu_a =~ s/$line//g;
             $exonic_nu_a =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$exonic_nu_a";
         }
 
 	#one-vs-multi u
@@ -550,6 +562,7 @@ if ($eij eq "true"){
 	    chomp($one_u);
 	    $one_u =~ s/$line//g;
 	    $one_u =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$one_u";
 	}
         #one-vs-multi u anti
         if ($oneexonmappersU_A eq "true"){
@@ -557,6 +570,7 @@ if ($eij eq "true"){
             chomp($one_u_a);
             $one_u_a =~ s/$line//g;
             $one_u_a =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$one_u_a";
         }
 	#one-vs-multi nu
 	if ($oneexonmappersNU eq "true"){
@@ -569,6 +583,7 @@ if ($eij eq "true"){
 	    chomp($one_nu);
 	    $one_nu =~ s/$line//g;
 	    $one_nu =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$one_nu";
 	}
 	#one-vs-multi nu anti
         if ($oneexonmappersNU_A eq "true"){
@@ -576,6 +591,7 @@ if ($eij eq "true"){
             chomp($one_nu_a);
             $one_nu_a =~ s/$line//g;
             $one_nu_a =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$one_nu_a";
         }
 	#sense exon u
 	if ($senseE_U eq "true"){
@@ -583,6 +599,7 @@ if ($eij eq "true"){
 	    chomp($sense_ex_u);
             $sense_ex_u =~ s/$line//g;
             $sense_ex_u =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$sense_ex_u";
 	}
         #sense exon nu
 	if ($senseE_NU eq "true"){
@@ -590,6 +607,7 @@ if ($eij eq "true"){
             chomp($sense_ex_nu);
             $sense_ex_nu =~ s/$line//g;
             $sense_ex_nu =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$sense_ex_nu";
 	}
         #sense intron u
 	if ($senseI_U eq "true"){
@@ -597,6 +615,7 @@ if ($eij eq "true"){
             chomp($sense_int_u);
             $sense_int_u =~ s/$line//g;
             $sense_int_u =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$sense_int_u";
 	}
         #sense intron nu
         if ($senseI_NU eq "true"){
@@ -604,6 +623,7 @@ if ($eij eq "true"){
             chomp($sense_int_nu);
             $sense_int_nu =~ s/$line//g;
             $sense_int_nu =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$sense_int_nu";
 	}
 	#intergenic u
 	if ($intergenicU eq "true"){
@@ -611,6 +631,7 @@ if ($eij eq "true"){
 	    chomp($intergenic_u);
 	    $intergenic_u =~ s/$line//g;
 	    $intergenic_u =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$intergenic_u";
 	}
 	#intergenic nu
 	if ($intergenicNU eq "true"){
@@ -618,6 +639,7 @@ if ($eij eq "true"){
 	    chomp($intergenic_nu);
 	    $intergenic_nu =~ s/$line//g;
 	    $intergenic_nu =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$intergenic_nu";
 	}
         #exon_inconsistent u
         if ($undU eq "true"){
@@ -625,6 +647,7 @@ if ($eij eq "true"){
             chomp($und_u);
             $und_u =~ s/$line//g;
             $und_u =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$und_u";
         }
         #exon_inconsistent nu
         if ($undNU eq "true"){
@@ -632,23 +655,9 @@ if ($eij eq "true"){
             chomp($und_nu);
             $und_nu =~ s/$line//g;
             $und_nu =~ s/^\s*(.*?)\s*$/$1/;
+	    print OUT "\t$und_nu";
         }
-	print OUT "$line\t$total_num\t$U_num_m\t$NU_num_m\t$non_num\t";
-        my $size = keys %MITO;
-        for (my$i=2;$i<$size+2;$i++){
-            print OUT "$chrM_num_m[$i]\t";
-        }
-	if ($ribo eq "true"){
-	    print OUT "$ribo_num\t";
-	}
-	if ($stranded eq "false"){
-	    print OUT "$exonic_u\t$exonic_nu\t$one_u\t$one_nu\t$intergenic_u\t$intergenic_nu\t$und_u\t$und_nu\n";
-	}
-	if ($stranded eq "true"){
-#	    print OUT "\$line\t\$total_num\t\$chrM_num_m\t\$NU_num_m\t\$ribo_num\t\$exonic_u\t\$exonic_u_a\t\$exonic_nu\t\$exonic_nu_a\t\$one_u\t\$one_u_a\t\$one_nu\t\$one_nu_a\t\$sense_ex_u\t\$sense_ex_nu\t\$sense_int_u\t\$sense_int_nu\t\$intergenic_u\t\$intergenic_nu\t\$und_u\t\$und_nu\n";
-	    print OUT "$exonic_u\t$exonic_u_a\t$exonic_nu\t$exonic_nu_a\t$one_u\t$one_u_a\t$one_nu\t$one_nu_a\t$sense_ex_u\t$sense_ex_nu\t$sense_int_u\t$sense_int_nu\t$intergenic_u\t$intergenic_nu\t$und_u\t$und_nu\n";
-	    
-	}
+	print OUT "\n";
     }
     print OUT $footer;
     close(OUT);
