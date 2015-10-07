@@ -82,14 +82,6 @@ if ($stranded eq "false"){
     my $file_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.norm.sam";
     my $file_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.norm.sam";
     my $outfile = "$gnorm_dir/$id.gene.norm.sam";
-    if ($numargs ne 0){
-	if ($U eq "true"){
-	    $outfile =~ s/.sam$/_u.sam/i;
-	}
-	if ($NU eq "true"){
-	    $outfile =~ s/.sam$/_nu.sam/i;
-	}
-    }
     open (OUT, ">$outfile");
     print OUT $header;
     close(OUT);
@@ -122,16 +114,6 @@ if ($stranded eq "true"){
     my $file_NU_A = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.antisense.norm.sam";
     my $outfile = "$sense_dir/$id.gene.norm.sam";
     my $outfile_a = "$antisense_dir/$id.gene.norm.sam";
-    if ($numargs ne 0){
-	if ($U eq "true"){
-	    $outfile =~ s/.sam$/_u.sam/i;
-	    $outfile_a =~ s/.sam$/_u.sam/i;
-	}
-	if ($NU eq "true"){
-	    $outfile =~ s/.sam$/_nu.sam/i;
-	    $outfile_a =~ s/.sam$/_nu.sam/i;
-	}
-    }
     open (OUT, ">$outfile");
     print OUT $header;
     close(OUT);

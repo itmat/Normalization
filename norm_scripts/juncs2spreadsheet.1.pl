@@ -38,8 +38,8 @@ $spread_dir = $norm_dir . "/SPREADSHEETS";
 unless (-d $spread_dir){
     `mkdir $spread_dir`;
 }
-$outfile = "$spread_dir/master_list_of_junctions_counts_u.$study.txt";
-$sample_name_file = "$norm_dir/file_junctions_u.txt";
+$outfile = "$spread_dir/master_list_of_junctions_counts_MIN.$study.txt";
+$sample_name_file = "$norm_dir/file_junctions.txt";
 if ($nuonly eq "true"){
     $outfile =~ s/_u.$study.txt/_nu.$study.txt/;
     $sample_name_file =~ s/_u.txt/_nu.txt/;

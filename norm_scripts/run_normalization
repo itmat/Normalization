@@ -849,7 +849,7 @@ while(qx{$stat | wc -l} > $maxjobs){
 }
 my $check_study_port = `$status | grep $study.RUNALL_NORMALIZATION | wc -l`;
 if ($check_study_port == 1){
-    die "ERROR: PORT job with study name \"$study\" is already running.\n\n"
+    die "\nERROR: PORT job with study name \"$study\" is already running.\n\n"
 }
 
 `$batchjobs $request$queue_3G $jobname "$study.RUNALL_NORMALIZATION" -o $logdir/$study.runall_normalization.out -e $logdir/$study.runall_normalization.err < $runall_shfile`;

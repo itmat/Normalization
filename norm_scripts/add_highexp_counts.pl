@@ -50,6 +50,10 @@ unless (-e $numreads){
 my ($num_unique, $num_unique_a);
 if ($stranded eq "false"){
     $num_unique = `grep unique $numreads | grep -v non`;
+    if ($num_unique =~ /\:/){
+	my @a = split(":", $num_unique);
+	$num_unique = $a[1];
+    }
     $num_unique =~ s/\,//g;
     $num_unique =~ s/unique//;
     $num_unique =~ s/reads//;
@@ -58,6 +62,10 @@ if ($stranded eq "false"){
 
 if ($stranded eq "true"){
     my $x = `grep unique $numreads | grep -v non`;
+    if ($x =~ /\:/){
+        my @a = split(":", $x);
+        $x = $a[1];
+    }
     $x =~ s/\,//g;
     $x =~ m/(\d+)\ sense unique/;
     $num_unique = $1;
