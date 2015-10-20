@@ -567,7 +567,7 @@ if (-e $statsfile){
     }
 }
 open(LOG, ">>$logfile");
-print LOG "\nPORT v0.7.4\n";
+print LOG "\nPORT v0.7.5-beta\n";
 print LOG "\n*************\n$input\n*************\n";
 if (-e "$logdir/$study.runall_normalization.out"){
     `rm $logdir/$study.runall_normalization.out`;
@@ -2878,7 +2878,7 @@ if ($run_norm eq "true"){
         }
     }
     if (($run_job eq "true") && ($GNORM eq "true")){
-        $name_of_job = "$study.quantifygenes_gnorm2";
+        $name_of_job = "$study.quantifygenes.gnorm2";
         $err_name = "quantifygenes.gnorm2*.err";
 	if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_10G, $stat\\\"";

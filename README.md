@@ -116,6 +116,8 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
      **[pipeline options]**<br>
      **-part1_part2** : Use this option if you want to run steps in PART1 and PART2 without pausing. <br>
      **-part2** : Use this option to resume the pipeline at PART2 after running PORT without any pipeline options. <br>
+     **-h** : print this usage<br>
+     **-v** : print version of PORT
 
       **[resume options]**<br>
       You may not change the normalization parameters with resume option.<br>
@@ -140,7 +142,6 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
                    (Default = 10)<br>
      **-flanking_region &lt;n>** : <br>is used for generating list of flanking regions.<br>
                             by default, 5000 bp up/downstream of each gene will be considered a flanking region.<br>
-     **-h** : print this usage
 
 
 This creates the `runall_normalization.sh` file in the `STUDY/shell_scripts` directory and runs the entire PORT pipeline. In addition to the STDOUT and STDERR files in `STUDY/logs`, this will create a log file called **`STUDY/logs/STUDY.run_normalization.log`**, which you can use to check the status.

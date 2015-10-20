@@ -127,7 +127,7 @@ if ($gnorm eq "true"){
     if (-e "$study_dir/STATS/ribo_percents.txt"){
         print OUT "%ribo\t";
         $ribo = "true";
-	$footer .= "# %ribo : %ribosomal out of all mapped reads\n";
+	$footer .= "# %ribo : %ribosomal out of total number of reads\n";
     }
     if ($stranded eq "false"){
 	if (-e "$study_dir/STATS/GENE/percent_genemappers_Unique.txt"){
@@ -333,7 +333,7 @@ if ($eij eq "true"){
     if (-e "$study_dir/STATS/ribo_percents.txt"){
 	print OUT "%ribo\t";
 	$ribo = "true";
-	$footer .= "# %ribo : %ribosomal out of all mapped reads\n";
+	$footer .= "# %ribo : %ribosomal out of total number of reads\n";
     }
     if ($stranded eq "false"){
 	if (-e "$study_dir/STATS/EXON_INTRON_JUNCTION/exon2nonexon_signal_stats_Unique.txt"){

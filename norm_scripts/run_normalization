@@ -26,6 +26,8 @@ OPTIONS:
      -part1_part2 : Use this option if you want to run steps in PART1 and PART2 without pausing. 
      -part2 : Use this option to resume the pipeline at PART2. You may edit the <file of sample_dirs> file 
                and/or change the highexpresser cutoff value.
+     -h : print usage 
+     -v : print version of PORT
 
      [resume options]
      You may not change the normalization parameters with resume option.
@@ -59,10 +61,24 @@ OPTIONS:
      -flanking_region <n> : is used for generating list of flanking regions.
                             by default, 5000 bp up/downstream of each gene will be considered a flanking region.
                             use this option to change the size <n>.
-     -h : print usage 
 
 ";
 
+
+for(my $i=0; $i<@ARGV; $i++) {
+    my $option_found = "false";
+    if ($ARGV[$i] eq '-v'){
+        $option_found = "true";
+        die "\nPORT v.0.7.5-beta\n\n";
+    }
+    if ($ARGV[$i] eq '-h'){
+        $option_found = "true";
+        die $USAGE;
+    }
+    if($option_found eq "false") {
+        die "option \"$ARGV[$i]\" was not recognized.\n";
+    }
+}
 
 if(@ARGV < 10) {
     die $USAGE;
@@ -88,10 +104,6 @@ my ($sample_dir, $LOC, $unaligned_file, $alignedfilename, $cfg_file, $cutoff_tem
 my $part2 = "false";
 for(my $i=0; $i<@ARGV; $i++) {
     my $option_found = "false";
-    if ($ARGV[$i] eq '-h'){
-	$option_found = "true";
-	die $USAGE;
-    }
     if ($ARGV[$i] eq '-part1_part2'){
 	$option_found = "true";
 	$shfile_name = "runall_normalization_part1_part2.sh";
