@@ -65,24 +65,21 @@ OPTIONS:
 ";
 
 
-for(my $i=0; $i<@ARGV; $i++) {
-    my $option_found = "false";
-    if ($ARGV[$i] eq '-v'){
-        $option_found = "true";
-        die "\nPORT v.0.7.5-beta\n\n";
-    }
-    if ($ARGV[$i] eq '-h'){
-        $option_found = "true";
-        die $USAGE;
-    }
-    if($option_found eq "false") {
-        die "option \"$ARGV[$i]\" was not recognized.\n";
-    }
-}
 
 if(@ARGV < 10) {
     die $USAGE;
 }
+else{
+    if ($ARGV[0] eq '-v'){
+	$option_found = "true";
+	die "\nPORT v.0.7.5-beta\n\n";
+    }
+    elsif ($ARGV[0] eq '-h'){
+	$option_found = "true";
+	die $USAGE;
+    }
+}
+
 
 my $required = 0;
 my $count_b = 0;
@@ -104,6 +101,10 @@ my ($sample_dir, $LOC, $unaligned_file, $alignedfilename, $cfg_file, $cutoff_tem
 my $part2 = "false";
 for(my $i=0; $i<@ARGV; $i++) {
     my $option_found = "false";
+    if ($ARGV[$i] eq '-h'){
+        $option_found = "true";
+        die $USAGE;
+    }
     if ($ARGV[$i] eq '-part1_part2'){
 	$option_found = "true";
 	$shfile_name = "runall_normalization_part1_part2.sh";
