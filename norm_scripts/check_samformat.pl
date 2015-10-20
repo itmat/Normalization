@@ -78,6 +78,9 @@ while (!eof SAM){
                 die "\nINPUT FORMAT ERROR: SAM file \"$ARGV[0]\" must have the HI tag.\n\n$second\n";
             }
 	}
+	if ($f_read_id ne $s_read_id){
+	    die "\nINPUT FORMAT ERROR:\nPaired End data -- mated alignments need to be in adjacent lines.\n\n$first\n$second\n";
+	}
 	unless (($f_tag eq 0) || ($s_tag eq 0)){
 	    if (($f_read_id ne $s_read_id) || ($f_tag ne $s_tag)){
 		die "\nINPUT FORMAT ERROR:\nPaired End data -- mated alignments need to be in adjacent lines.\n\n$first\n$second\n";
