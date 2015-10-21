@@ -19,6 +19,7 @@ Make sure you have the latest version of PORT:
 ##### i. Input Files
 
 - Unaligned reads (fasta/fastq)
+ - Raw sequence reads used to generate SAM/BAM.
  - Unaligned files can be gzipped.
 - Aligned reads (SAM/BAM) 
  - SAM/BAM files need to have unique read ids. 
