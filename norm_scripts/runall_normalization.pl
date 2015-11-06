@@ -876,11 +876,11 @@ if ($run_prepause eq "true"){
 	    $name_of_job = "$study.runblast";
 	    $err_name = "runblast.*.err";
 	    if ($other eq "true"){
-		$c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_15G, $stat\\\"";
+		$c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_30G, $stat\\\"";
 		$new_queue = "";
 	    }
 	    else{
-		$new_queue = "-mem $queue_15G";
+		$new_queue = "-mem $queue_30G";
 	    }
 	    
 	    while(qx{$stat | wc -l} > $maxjobs){
@@ -2342,6 +2342,7 @@ if ($run_prepause eq "true"){
 	    $default_input =~ s/\ -sam\ //;
 	    $default_input =~ s/\ -bam\ //;
 	    $default_input =~ s/\ -gz\ //;
+	    $default_input =~ s/\ -gz//;
 	    $default_input =~ s/\ -se\ //;
 	    $default_input =~ s/\ '-resume_at'\ .+\ //;
 	    $default_input =~ s/\ -resume\ //;
@@ -2647,7 +2648,7 @@ if ($run_norm eq "true"){
         @g = glob("$LOC/*/GNORM/*/*linecount*txt");
         if (@g ne '0'){
             $max_lc = `cut -f 2 $LOC/*/GNORM/*/*linecount*txt | sort -nr | head -1`;
-            if ($max_lc > 50000000){
+            if ($max_lc > 40000000){
                 $new_queue = "-mem $queue_10G";
                 if (100000000 < $max_lc){
                     if ($max_lc <= 300000000){
@@ -4137,8 +4138,10 @@ sub check_exit_alljob{
 		}
 	    }
 	}
-	$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
-	$job =~ s/$sample_dir/$resume_file/;
+	unless ($name_of_alljob =~ /runall_shuf/){
+	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+	    $job =~ s/$sample_dir/$resume_file/;
+	}
 	my $jobnum_rep = "\t**Job exited before completing\n\tretrying...";
         &runalljob($job, $name_of_alljob, $name_of_job, $jobnum_rep, $err_name);
     }
@@ -4180,8 +4183,10 @@ sub check_exit_alljob{
 		    }
 		}
 	    }
-            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
-            $job =~ s/$sample_dir/$resume_file/;
+	    unless ($name_of_alljob =~ /runall_shuf/){
+		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+		$job =~ s/$sample_dir/$resume_file/;
+	    }
 	    my $jobnum_rep = "\t**Job exited before completing\n\tretrying...";
 	    &runalljob($job, $name_of_alljob, $name_of_job, $jobnum_rep, $err_name);
 	}
