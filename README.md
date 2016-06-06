@@ -24,7 +24,7 @@ Make sure you have the latest version of PORT:
 - Aligned reads (SAM/BAM) 
  - SAM/BAM files need to have unique read ids. 
  - __Paired End data: mated alignments need to be in adjacent lines.__
-  - If aligning with STAR v2.5.1a or higher, use "--outSAMunmapped Within KeepPairs" option.
+  > If aligning with STAR v2.5.1a or higher, use "--outSAMunmapped Within KeepPairs" option.
  - Required tags: **IH (or NH) and HI**.
 - [Gene info files](https://github.com/itmat/Normalization/blob/master/about_cfg.md#2-gene-info)
 - [Genome fa/fai](https://github.com/itmat/Normalization/blob/master/about_cfg.md#3-fa-and-fai)
