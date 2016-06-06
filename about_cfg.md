@@ -50,7 +50,7 @@ ensembl gene info files for mm9, mm10, hg19, hg38, dm3 and danRer7 are available
       dm3: /path/to/Normalization/norm_scripts/dm3_ensGenes.txt
       danRer7: /path/to/Normalization/norm_scripts/danRer7_ensGenes.txt
 
-You can download the gene information file from UCSC table browser. Alternatively, you can use a perl script (/path/to/Normalization/norm_scripts/convert_gtf_to_PORT_geneinfo.transcripts.pl) to convert an ENSEMBL gtf file to a gene information file. 
+You can download the gene information file from the [UCSC table browser](http://genome.ucsc.edu/cgi-bin/hgTables). Alternatively, you can use a perl script (**/path/to/Normalization/norm_scripts/convert_gtf_to_PORT_geneinfo.transcripts.pl**) to convert an ENSEMBL gtf file to a gene information file. 
 
 ####[2] Gene information file for [Exon-Intron-Junction Normalization]
 Gene info file must contain column names with these suffixes: __chrom, strand, txStart, txEnd, exonStarts, exonEnds and geneSymbol.__
@@ -63,7 +63,7 @@ ucsc gene info files for mm9, hg19, and refseq gene info file for dm3 and danRer
       dm3: /path/to/Normalization/norm_scripts/refseq_dm3
       danRer7: /path/to/Normalization/norm_scripts/refseq_danRer7
 
-You can download the gene information file from UCSC table browser. 
+You can download the gene information file from the UCSC [table browser](http://genome.ucsc.edu/cgi-bin/hgTables). 
 
 ========================================================================================================
 
