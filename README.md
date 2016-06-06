@@ -21,15 +21,14 @@ Make sure you have the latest version of PORT:
 - Unaligned reads (fasta/fastq)
  - Raw sequence reads used to generate SAM/BAM.
  - Unaligned files can be gzipped.
+- [Gene info files](https://github.com/itmat/Normalization/blob/master/about_cfg.md#2-gene-info)
+- [Genome fa/fai](https://github.com/itmat/Normalization/blob/master/about_cfg.md#3-fa-and-fai)
 - Aligned reads (SAM/BAM) 
  - SAM/BAM files need to have unique read ids. 
+ - Required tags: **IH (or NH) and HI**.
  - __Paired End data: mated alignments need to be in adjacent lines.__
 
 > If aligning with STAR v2.5.1a or higher, use "--outSAMunmapped Within KeepPairs" option.
-
- - Required tags: **IH (or NH) and HI**.
-- [Gene info files](https://github.com/itmat/Normalization/blob/master/about_cfg.md#2-gene-info)
-- [Genome fa/fai](https://github.com/itmat/Normalization/blob/master/about_cfg.md#3-fa-and-fai)
  
 ##### ii. Input Directory Structure
 The input files need to be organized into a specific directory structure for PORT to run properly.
