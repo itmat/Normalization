@@ -63,7 +63,7 @@ ucsc gene info files for mm9, hg19, and refseq gene info file for dm3 and danRer
       dm3: /path/to/Normalization/norm_scripts/refseq_dm3
       danRer7: /path/to/Normalization/norm_scripts/refseq_danRer7
 
-You can download the gene information file from the UCSC [table browser](http://genome.ucsc.edu/cgi-bin/hgTables). 
+You can download the gene information file from the [UCSC table browser](http://genome.ucsc.edu/cgi-bin/hgTables). 
 
 ========================================================================================================
 
