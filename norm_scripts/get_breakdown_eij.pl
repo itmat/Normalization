@@ -65,10 +65,10 @@ my $outfileU = "$stats_dir/EXON_INTRON_JUNCTION/breakdown_Unique.txt";
 my $outfileNU = "$stats_dir/EXON_INTRON_JUNCTION/breakdown_NU.txt";
 my $header = "";
 if ($stranded eq "false"){
-    $header = "sample\t%ex-only\t%int-only\t%ig-only\t%ex-int\t%ex-ig\t%int-ig\t%ex-int-ig\t%ex-inc-only\n";
+    $header = "sample\t%ex-only\t%int-only\t%ex-int\t%ig-only\t%ex-inc-only\n";
 }
 else{
-    $header = "sample\t%ex-only-s\t%int-only-s\t%ig-only\t%ex-int-s\t%ex-ig-s\t%int-ig-s\t%ex-int-ig-s\t%ex-only-a\t%int-only-a\t%ex-int-a\t%ex-ig-a\t%int-ig-a\t%ex-int-ig-a\t%ex-inc-only\n";
+    $header = "sample\t%ex-only-s\t%int-only-s\t%ex-int-s\t%ex-only-a\t%int-only-a\t%ex-int-a\t%ig-only\t%ex-inc-only\n";
 }
 if ($U eq "true"){
     open(OUTU, ">$outfileU") or die "file '$outfileU' cannot open for writing.\n";
@@ -76,27 +76,18 @@ if ($U eq "true"){
     if ($stranded eq "false"){
 	$footer_U .= "# %ex-only : % exonmappers out of all unique-mappers (to standard chrs)\n";
 	$footer_U .= "# %int-only : % intronmappers out of all unique-mappers (to standard chrs)\n";
-	$footer_U .= "# %ig-only : % intergenicmappers out of all unique-mappers (to standard chrs)\n";
 	$footer_U .= "# %ex-int : % exon-and-intronmappers out of all unique-mappers (to standard chrs)\n";
-	$footer_U .= "# %ex-ig : % exon-and-intergenicmappers out of all unique-mappers (to standard chrs)\n";
-	$footer_U .= "# %int-ig : % intron-and-intergenicmappers out of all unique-mappers (to standard chrs)\n";
-	$footer_U .= "# %ex-int-ig : % exon-intron-and-intergenicmappers out of all unique-mappers (to standard chrs)\n";
+	$footer_U .= "# %ig-only : % intergenicmappers out of all unique-mappers (to standard chrs)\n";
 	$footer_U .= "# %ex-inc-only : % exon inconsistent reads out of all unique-mappers (to standard chrs)\n";
     }
     else{
 	$footer_U .= "# %ex-only-s : % sense exonmappers out of all unique-mappers (to standard chrs)\n";
 	$footer_U .= "# %int-only-s : % sense intronmappers out of all unique-mappers (to standard chrs)\n";
-	$footer_U .= "# %ig-only : % intergenicmappers out of all unique-mappers (to standard chrs)\n";
 	$footer_U .= "# %ex-int-s : % sense exon-and-intronmappers out of all unique-mappers (to standard chrs)\n";
-	$footer_U .= "# %ex-ig-s : % sense exon-and-intergenicmappers out of all unique-mappers (to standard chrs)\n";
-	$footer_U .= "# %int-ig-s : % sense intron-and-intergenicmappers out of all unique-mappers (to standard chrs)\n";
-	$footer_U .= "# %ex-int-ig-s : % sense exon-intron-and-intergenicmappers out of all unique-mappers (to standard chrs)\n";
 	$footer_U .= "# %ex-only-a : % antisense exonmappers out of all unique-mappers (to standard chrs)\n";
 	$footer_U .= "# %int-only-a : % antisense intronmappers out of all unique-mappers (to standard chrs)\n";
 	$footer_U .= "# %ex-int-a : % antisense exon-and-intronmappers out of all unique-mappers (to standard chrs)\n";
-	$footer_U .= "# %ex-ig-a : % antisense exon-and-intergenicmappers out of all unique-mappers (to standard chrs)\n";
-	$footer_U .= "# %int-ig-a : % antisense intron-and-intergenicmappers out of all unique-mappers (to standard chrs)\n";
-	$footer_U .= "# %ex-int-ig-a : % antisense exon-intron-and-intergenicmappers out of all unique-mappers (to standard chrs)\n";
+	$footer_U .= "# %ig-only : % intergenicmappers out of all unique-mappers (to standard chrs)\n";
 	$footer_U .= "# %ex-inc-only : % exon inconsistent reads out of all unique-mappers (to standard chrs)\n";
     }
 }
@@ -106,27 +97,18 @@ if ($NU eq "true"){
     if ($stranded eq "false"){
         $footer_NU .= "# %ex-only : % exonmappers out of all non-unique-mappers (to standard chrs)\n";
         $footer_NU .= "# %int-only : % intronmappers out of all non-unique-mappers (to standard chrs)\n";
-        $footer_NU .= "# %ig-only : % intergenicmappers out of all non-unique-mappers (to standard chrs)\n";
         $footer_NU .= "# %ex-int : % exon-and-intronmappers out of all non-unique-mappers (to standard chrs)\n";
-        $footer_NU .= "# %ex-ig : % exon-and-intergenicmappers out of all non-unique-mappers (to standard chrs)\n";
-        $footer_NU .= "# %int-ig : % intron-and-intergenicmappers out of all non-unique-mappers (to standard chrs)\n";
-        $footer_NU .= "# %ex-int-ig : % exon-intron-and-intergenicmappers out of all non-unique-mappers (to standard chrs)\n";
+        $footer_NU .= "# %ig-only : % intergenicmappers out of all non-unique-mappers (to standard chrs)\n";
         $footer_NU .= "# %ex-inc-only : % exon inconsistent reads out of all non-unique-mappers (to standard chrs)\n";
     }
     else{
         $footer_NU .= "# %ex-only-s : % sense exonmappers out of all non-unique-mappers (to standard chrs)\n";
         $footer_NU .= "# %int-only-s : % sense intronmappers out of all non-unique-mappers (to standard chrs)\n";
-        $footer_NU .= "# %ig-only : % intergenicmappers out of all non-unique-mappers (to standard chrs)\n";
         $footer_NU .= "# %ex-int-s : % sense exon-and-intronmappers out of all non-unique-mappers (to standard chrs)\n";
-        $footer_NU .= "# %ex-ig-s : % sense exon-and-intergenicmappers out of all non-unique-mappers (to standard chrs)\n";
-        $footer_NU .= "# %int-ig-s : % sense intron-and-intergenicmappers out of all non-unique-mappers (to standard chrs)\n";
-        $footer_NU .= "# %ex-int-ig-s : % sense exon-intron-and-intergenicmappers out of all non-unique-mappers (to standard chrs)\n";
         $footer_NU .= "# %ex-only-a : % antisense exonmappers out of all non-unique-mappers (to standard chrs)\n";
         $footer_NU .= "# %int-only-a : % antisense intronmappers out of all non-unique-mappers (to standard chrs)\n";
         $footer_NU .= "# %ex-int-a : % antisense exon-and-intronmappers out of all non-unique-mappers (to standard chrs)\n";
-        $footer_NU .= "# %ex-ig-a : % antisense exon-and-intergenicmappers out of all non-unique-mappers (to standard chrs)\n";
-        $footer_NU .= "# %int-ig-a : % antisense intron-and-intergenicmappers out of all non-unique-mappers (to standard chrs)\n";
-        $footer_NU .= "# %ex-int-ig-a : % antisense exon-intron-and-intergenicmappers out of all non-unique-mappers (to standard chrs)\n";
+        $footer_NU .= "# %ig-only : % intergenicmappers out of all non-unique-mappers (to standard chrs)\n";
         $footer_NU .= "# %ex-inc-only : % exon inconsistent reads out of all non-unique-mappers (to standard chrs)\n";
     }
 }
@@ -160,15 +142,6 @@ while(my $line = <INFILE>){
 	my $ratio = int(($ex_only/$total_lc) * 10000)/100;
 	$ratio = sprintf("%.2f", $ratio);
 	print OUTU "$ratio\t";
-	if ($stranded eq "true"){
-	    #antisense-ex-only
-            $xU = `grep antisense-exon-only $fileU`;
-	    @x =split(/\t/,$xU);
-	    my $a_ex_only = $x[1];
-	    $ratio = int(($a_ex_only/$total_lc) * 10000)/100;
-	    $ratio = sprintf("%.2f", $ratio);
-	    print OUTU "$ratio\t";
-	}
 	#int-only
 	if ($stranded eq "false"){
             $xU= `grep intron-only $fileU`;
@@ -179,22 +152,6 @@ while(my $line = <INFILE>){
 	@x =split(/\t/,$xU);
 	my $int_only = $x[1];
 	$ratio =int(($int_only/$total_lc) * 10000)/100;
-	$ratio = sprintf("%.2f", $ratio);
-	print OUTU "$ratio\t";
-	if ($stranded eq "true"){
-            #antisense-int-only
-	    $xU = `grep antisense-intron-only $fileU`;
-            @x =split(/\t/,$xU);
-            my $a_int_only = $x[1];
-            $ratio = int(($a_int_only/$total_lc) * 10000)/100;
-            $ratio = sprintf("%.2f", $ratio);
-	    print OUTU "$ratio\t";
-        }
-	#ig-only
-	$xU= `grep intergenic-only $fileU`;
-	@x =split(/\t/,$xU);
-	my $ig_only = $x[1];
-	$ratio =int(($ig_only/$total_lc) * 10000)/100;
 	$ratio = sprintf("%.2f", $ratio);
 	print OUTU "$ratio\t";
 	#ex-int
@@ -210,6 +167,20 @@ while(my $line = <INFILE>){
 	$ratio = sprintf("%.2f", $ratio);
 	print OUTU "$ratio\t";
 	if ($stranded eq "true"){
+	    #antisense-ex-only
+            $xU = `grep antisense-exon-only $fileU`;
+	    @x =split(/\t/,$xU);
+	    my $a_ex_only = $x[1];
+	    $ratio = int(($a_ex_only/$total_lc) * 10000)/100;
+	    $ratio = sprintf("%.2f", $ratio);
+	    print OUTU "$ratio\t";
+            #antisense-int-only
+	    $xU = `grep antisense-intron-only $fileU`;
+            @x =split(/\t/,$xU);
+            my $a_int_only = $x[1];
+            $ratio = int(($a_int_only/$total_lc) * 10000)/100;
+            $ratio = sprintf("%.2f", $ratio);
+	    print OUTU "$ratio\t";
 	    #antisense-ex-int
             $xU = `grep antisense-exon-intron $fileU | grep -v intergenic`;
             @x =split(/\t/,$xU);
@@ -218,69 +189,13 @@ while(my $line = <INFILE>){
             $ratio = sprintf("%.2f", $ratio);
             print OUTU "$ratio\t";
 	}
-	#ex-ig
-	if ($stranded eq "false"){
-	    $xU= `grep -w exon-intergenic $fileU`;
-	}
-	else{
-	    $xU= `grep -w sense-exon-intergenic $fileU | grep -v anti`;
-	}
+	#ig-only
+	$xU= `grep intergenic-only $fileU`;
 	@x =split(/\t/,$xU);
-	my $ex_ig = $x[1];
-	$ratio =int(($ex_ig/$total_lc) * 10000)/100;
+	my $ig_only = $x[1];
+	$ratio =int(($ig_only/$total_lc) * 10000)/100;
 	$ratio = sprintf("%.2f", $ratio);
 	print OUTU "$ratio\t";
-	if ($stranded eq "true"){
-            #antisense-ex-ig
-            $xU = `grep antisense-exon-intergenic $fileU`;
-            @x =split(/\t/,$xU);
-            my $a_ex_ig = $x[1];
-            $ratio = int(($a_ex_ig/$total_lc) * 10000)/100;
-            $ratio = sprintf("%.2f", $ratio);
-            print OUTU "$ratio\t";
-	}
-	#int-ig
-	if ($stranded eq "false"){
-            $xU= `grep -w intron-intergenic $fileU | grep -v exon`;
-	}
-	else{
-	    $xU= `grep -w sense-intron-intergenic $fileU | grep -v anti`;
-	}
-	@x =split(/\t/,$xU);
-	my $int_ig = $x[1];
-	$ratio =int(($int_ig/$total_lc) * 10000)/100;
-	$ratio = sprintf("%.2f", $ratio);
-	print OUTU "$ratio\t";
-	if ($stranded eq "true"){
-            #antisense-int-ig
-            $xU = `grep antisense-intron-intergenic $fileU`;
-            @x =split(/\t/,$xU);
-            my $a_int_ig = $x[1];
-            $ratio = int(($a_int_ig/$total_lc) * 10000)/100;
-            $ratio = sprintf("%.2f", $ratio);
-            print OUTU "$ratio\t";
-        }
-	#ex-int-ig
-	if ($stranded eq "false"){
-            $xU= `grep -w exon-intron-intergenic $fileU`;
-	}
-	else{
-            $xU= `grep -w sense-exon-intron-intergenic $fileU | grep -v anti`;
-	}
-	@x =split(/\t/,$xU);
-	my $ex_int_ig = $x[1];
-	$ratio =int(($ex_int_ig/$total_lc) * 10000)/100;
-	$ratio = sprintf("%.2f", $ratio);
-	print OUTU "$ratio\t";
-	if ($stranded eq "true"){
-	    #antisense-ex-int-ig
-            $xU = `grep antisense-exon-intron-intergenic $fileU`;
-            @x =split(/\t/,$xU);
-            my $a_ex_int_ig = $x[1];
-            $ratio = int(($a_ex_int_ig/$total_lc) * 10000)/100;
-            $ratio = sprintf("%.2f", $ratio);
-            print OUTU "$ratio\t";
-	}
 	#ex-inc-only
 	$xU= `grep -w exon-inconsistent-only $fileU`;
 	@x =split(/\t/,$xU);
@@ -310,15 +225,6 @@ while(my $line = <INFILE>){
 	my $ratio = int(($ex_only/$total_lc) * 10000)/100;
 	$ratio = sprintf("%.2f", $ratio);
 	print OUTNU "$ratio\t";
-	if ($stranded eq "true"){
-	    #antisense-ex-only
-            $xNU = `grep antisense-exon-only $fileNU`;
-	    @x =split(/\t/,$xNU);
-	    my $a_ex_only = $x[1];
-	    $ratio = int(($a_ex_only/$total_lc) * 10000)/100;
-	    $ratio = sprintf("%.2f", $ratio);
-	    print OUTNU "$ratio\t";
-	}
 	#int-only
 	if ($stranded eq "false"){
             $xNU= `grep intron-only $fileNU`;
@@ -329,23 +235,6 @@ while(my $line = <INFILE>){
 	@x =split(/\t/,$xNU);
 	my $int_only = $x[1];
 	$ratio =int(($int_only/$total_lc) * 10000)/100;
-	$ratio = sprintf("%.2f", $ratio);
-	print OUTNU "$ratio\t";
-	if ($stranded eq "true"){
-            #antisense-int-only
-	    $xNU = `grep antisense-intron-only $fileNU`;
-
-            @x =split(/\t/,$xNU);
-            my $a_int_only = $x[1];
-            $ratio = int(($a_int_only/$total_lc) * 10000)/100;
-            $ratio = sprintf("%.2f", $ratio);
-	    print OUTNU "$ratio\t";
-        }
-	#ig-only
-	$xNU= `grep intergenic-only $fileNU`;
-	@x =split(/\t/,$xNU);
-	my $ig_only = $x[1];
-	$ratio =int(($ig_only/$total_lc) * 10000)/100;
 	$ratio = sprintf("%.2f", $ratio);
 	print OUTNU "$ratio\t";
 	#ex-int
@@ -361,6 +250,23 @@ while(my $line = <INFILE>){
 	$ratio = sprintf("%.2f", $ratio);
 	print OUTNU "$ratio\t";
 	if ($stranded eq "true"){
+	    #antisense-ex-only
+            $xNU = `grep antisense-exon-only $fileNU`;
+	    @x =split(/\t/,$xNU);
+	    my $a_ex_only = $x[1];
+	    $ratio = int(($a_ex_only/$total_lc) * 10000)/100;
+	    $ratio = sprintf("%.2f", $ratio);
+	    print OUTNU "$ratio\t";
+
+            #antisense-int-only
+	    $xNU = `grep antisense-intron-only $fileNU`;
+
+            @x =split(/\t/,$xNU);
+            my $a_int_only = $x[1];
+            $ratio = int(($a_int_only/$total_lc) * 10000)/100;
+            $ratio = sprintf("%.2f", $ratio);
+	    print OUTNU "$ratio\t";
+
 	    #antisense-ex-int
             $xNU = `grep antisense-exon-intron $fileNU | grep -v intergenic`;
             @x =split(/\t/,$xNU);
@@ -369,69 +275,13 @@ while(my $line = <INFILE>){
             $ratio = sprintf("%.2f", $ratio);
             print OUTNU "$ratio\t";
 	}
-	#ex-ig
-	if ($stranded eq "false"){
-	    $xNU= `grep -w exon-intergenic $fileNU`;
-	}
-	else{
-	    $xNU= `grep -w sense-exon-intergenic $fileNU | grep -v anti`;
-	}
+	#ig-only
+	$xNU= `grep intergenic-only $fileNU`;
 	@x =split(/\t/,$xNU);
-	my $ex_ig = $x[1];
-	$ratio =int(($ex_ig/$total_lc) * 10000)/100;
+	my $ig_only = $x[1];
+	$ratio =int(($ig_only/$total_lc) * 10000)/100;
 	$ratio = sprintf("%.2f", $ratio);
 	print OUTNU "$ratio\t";
-	if ($stranded eq "true"){
-            #antisense-ex-ig
-            $xNU = `grep antisense-exon-intergenic $fileNU`;
-            @x =split(/\t/,$xNU);
-            my $a_ex_ig = $x[1];
-            $ratio = int(($a_ex_ig/$total_lc) * 10000)/100;
-            $ratio = sprintf("%.2f", $ratio);
-            print OUTNU "$ratio\t";
-	}
-	#int-ig
-	if ($stranded eq "false"){
-            $xNU= `grep -w intron-intergenic $fileNU | grep -v exon`;
-	}
-	else{
-	    $xNU= `grep -w sense-intron-intergenic $fileNU | grep -v anti`;
-	}
-	@x =split(/\t/,$xNU);
-	my $int_ig = $x[1];
-	$ratio =int(($int_ig/$total_lc) * 10000)/100;
-	$ratio = sprintf("%.2f", $ratio);
-	print OUTNU "$ratio\t";
-	if ($stranded eq "true"){
-            #antisense-int-ig
-            $xNU = `grep antisense-intron-intergenic $fileNU`;
-            @x =split(/\t/,$xNU);
-            my $a_int_ig = $x[1];
-            $ratio = int(($a_int_ig/$total_lc) * 10000)/100;
-            $ratio = sprintf("%.2f", $ratio);
-            print OUTNU "$ratio\t";
-        }
-	#ex-int-ig
-	if ($stranded eq "false"){
-            $xNU= `grep -w exon-intron-intergenic $fileNU`;
-	}
-	else{
-            $xNU= `grep -w sense-exon-intron-intergenic $fileNU | grep -v anti`;
-	}
-	@x =split(/\t/,$xNU);
-	my $ex_int_ig = $x[1];
-	$ratio =int(($ex_int_ig/$total_lc) * 10000)/100;
-	$ratio = sprintf("%.2f", $ratio);
-	print OUTNU "$ratio\t";
-	if ($stranded eq "true"){
-	    #antisense-ex-int-ig
-            $xNU = `grep antisense-exon-intron-intergenic $fileNU`;
-            @x =split(/\t/,$xNU);
-            my $a_ex_int_ig = $x[1];
-            $ratio = int(($a_ex_int_ig/$total_lc) * 10000)/100;
-            $ratio = sprintf("%.2f", $ratio);
-            print OUTNU "$ratio\t";
-	}
 	#ex-inc-only
 	$xNU= `grep -w exon-inconsistent-only $fileNU`;
 	@x =split(/\t/,$xNU);

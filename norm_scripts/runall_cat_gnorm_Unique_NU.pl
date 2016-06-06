@@ -9,6 +9,8 @@ my $USAGE = "perl runall_cat_gnorm_Unique_NU.pl <sample dirs> <loc> <samfilename
 <samfilename>
 
 options:
+ -bam <samtools> : bam input
+
  -stranded : set this if the data are strand-specific.
 
  -u  :  set this if you are using unique mappers only.
@@ -62,6 +64,7 @@ my $mem = "";
 my $new_mem = "";
 my $status;
 my $numargs_c = 0;
+my $b_option = "";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -73,6 +76,11 @@ for (my $i=3; $i<@ARGV; $i++){
 	$type = "-nu";
 	$numargs++;
         $option_found = "true";
+    }
+    if ($ARGV[$i] eq '-bam'){
+	$b_option = "-bam $ARGV[$i+1]";
+	$i++;
+	$option_found = "true";
     }
     if($ARGV[$i] eq '-u') {
 	$type = "-u";
@@ -169,7 +177,7 @@ while(my $line = <IN>){
     my $jobname = "$study.cat_gnorm_Unique_NU";
     my $logname = "$logdir/cat_gnorm_Unique_NU.$id";
     open(OUTFILE, ">$shfile");
-    print OUTFILE "perl $path/cat_gnorm_Unique_NU.pl $id $LOC $samfilename $type $stranded\n";
+    print OUTFILE "perl $path/cat_gnorm_Unique_NU.pl $id $LOC $samfilename $type $stranded $b_option\n";
     close(OUTFILE);
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);

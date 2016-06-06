@@ -1,6 +1,8 @@
 #!/usr/bin/env perl
+use warnings;
+use strict;
 
-$USAGE =  "\nUsage: perl runall_sam2mappingstats.pl <sample dir> <loc> <sam file name> <total_num_reads?> [options]
+my $USAGE =  "\nUsage: perl runall_sam2mappingstats.pl <sample dir> <loc> <sam file name> <total_num_reads?> [options]
 
 where:
 <sample dir> is a file with the names of the sample directories. 
@@ -30,6 +32,8 @@ option:
 
         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
+ -bam <samtools>: bam input
+
  -mem <s> : set this if your job requires more memory.
             <s> is the queue name for required mem.
             Default: 30G
@@ -50,24 +54,27 @@ if(@ARGV < 4) {
     die $USAGE;
 }
 
-$njobs = 200;
-$replace_mem = "false";
-$numargs = 0;
-$submit = "";
-$jobname_option = "";
-$request_memory_option = "";
-$mem = "";
-$norm = "false";
-$norm_u = "false";
-$norm_nu = "false";
-$total_reads_file = $ARGV[3];
+my $njobs = 200;
+my $replace_mem = "false";
+my $numargs = 0;
+my $submit = "";
+my $jobname_option = "";
+my $request_memory_option = "";
+my $mem = "";
+my $norm = "false";
+my $norm_u = "false";
+my $norm_nu = "false";
+my $total_reads_file = $ARGV[3];
+my $b_option = "";
+my $status = "";
+my $new_mem = "";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
     }
 }
-for ($i=4; $i<@ARGV; $i++){
-    $option_found = "false";
+for (my $i=4; $i<@ARGV; $i++){
+    my $option_found = "false";
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];
@@ -75,6 +82,11 @@ for ($i=4; $i<@ARGV; $i++){
             die "-max_jobs <n> : <n> needs to be a number\n";
         }
         $i++;
+    }
+    if ($ARGV[$i] eq '-bam'){
+	$option_found = "true";
+	$b_option = "-bam $ARGV[$i+1]";
+	$i++;
     }
     if ($ARGV[$i] eq '-norm'){
 	$option_found = "true";
@@ -112,8 +124,8 @@ for ($i=4; $i<@ARGV; $i++){
     if ($ARGV[$i] eq '-other'){
         $numargs++;
 	$option_found = "true";
-	$argv_all = $ARGV[$i+1];
-	@a = split(",", $argv_all);
+	my $argv_all = $ARGV[$i+1];
+	my @a = split(",", $argv_all);
         $submit = $a[0];
         $jobname_option = $a[1];
         $request_memory_option = $a[2];
@@ -150,26 +162,26 @@ if ($replace_mem eq "true"){
 }
 
 use Cwd 'abs_path';
-$path = abs_path($0);
+my $path = abs_path($0);
 $path =~ s/runall_//;
-$sampledirs = $ARGV[0];
-$LOC = $ARGV[1];
+my $sampledirs = $ARGV[0];
+my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
-@fields = split("/", $LOC);
-$last_dir = $fields[@fields-1];
-$study = $fields[@fields-2];
-$study_dir = $LOC;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study = $fields[@fields-2];
+my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
-$shdir = $study_dir . "shell_scripts";
-$logdir = $study_dir . "logs";
-$stats_dir = $study_dir . "STATS";
+my $shdir = $study_dir . "shell_scripts";
+my $logdir = $study_dir . "logs";
+my $stats_dir = $study_dir . "STATS";
 unless (-d $stats_dir){
     `mkdir $stats_dir`;}
 unless (-d $shdir){
     `mkdir $shdir`;}
 unless (-d $logdir){
     `mkdir $logdir`;}
-$sam_name = $ARGV[2];
+my $sam_name = $ARGV[2];
 
 my %DIRS;
 open(D, $sampledirs) or die "cannot find file '$sampledirs'\n";
@@ -180,21 +192,21 @@ while(my $dir = <D>){
 close(D);
 
 if ($total_reads_file eq "true"){
-    $dirs_reads = "$stats_dir/total_num_reads.txt";
+    my $dirs_reads = "$stats_dir/total_num_reads.txt";
     open(INFILE, $dirs_reads) or die "cannot find file '$dirs_reads'\n";
-    while($line = <INFILE>){
+    while(my $line = <INFILE>){
 	chomp($line);
-	@fields = split(" ", $line);
-	$size = @fields;
-	$dir = $fields[0];
-	$num_id = $fields[1];
-	$id = $dir;
+	my @fields = split(" ", $line);
+	my $size = @fields;
+	my $dir = $fields[0];
+	my $num_id = $fields[1];
+	my $id = $dir;
 	if (exists $DIRS{$id}){
-	    $shfile = "$shdir/m." . $id . "runsam2mappingstats.sh";
-	    $jobname = "$study.sam2mappingstats";
-	    $logname = "$logdir/sam2mappingstats.$id";
+	    my $shfile = "$shdir/m." . $id . "runsam2mappingstats.sh";
+	    my $jobname = "$study.sam2mappingstats";
+	    my $logname = "$logdir/sam2mappingstats.$id";
 	    open(OUTFILE, ">$shfile");
-	    print OUTFILE "perl $path $LOC/$dir/$sam_name $LOC/$dir/$id.mappingstats.txt -numreads $num_id\n";
+	    print OUTFILE "perl $path $LOC/$dir/$sam_name $LOC/$dir/$id.mappingstats.txt -numreads $num_id $b_option\n";
 	    close(OUTFILE);
 	    while (qx{$status | wc -l} > $njobs){
 		sleep(10);
@@ -209,11 +221,12 @@ close(INFILE);
 
 if ($total_reads_file eq "false"){
     open(INFILE, $sampledirs);
-    while($line = <INFILE>){
+    while(my $line = <INFILE>){
 	chomp($line);
-	$dir = $line;
-	$id = $dir;
+	my $dir = $line;
+	my $id = $dir;
 	$id =~ s/\//_/g;
+	my ($shfile, $jobname, $logname);
 	if ($norm eq "true"){
 	    $shfile = "$shdir/sam2mapping.FINALSAM.$id.sh";
 	    $jobname = "$study.sam2mappingstats.norm";
@@ -236,16 +249,16 @@ if ($total_reads_file eq "false"){
 	}
 	open(OUTFILE, ">$shfile");
 	if ($norm eq "true"){
-	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/MERGED/$id.FINAL.norm.sam $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/MERGED/$id.FINAL.norm.mappingstats.txt";
+	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/MERGED/$id.FINAL.norm.sam $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/MERGED/$id.FINAL.norm.mappingstats.txt $b_option";
 	}
 	elsif ($norm_u eq "true"){
-	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/Unique/$id.FINAL.norm_u.sam $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/Unique/$id.FINAL.norm_u.mappingstats.txt";
+	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/Unique/$id.FINAL.norm_u.sam $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/Unique/$id.FINAL.norm_u.mappingstats.txt $b_option";
 	}
 	elsif ($norm_nu eq "true"){
-	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/NU/$id.FINAL.norm_nu.sam $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/NU/$id.FINAL.norm_nu.mappingstats.txt";
+	    print OUTFILE "perl $path $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/NU/$id.FINAL.norm_nu.sam $study_dir/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/NU/$id.FINAL.norm_nu.mappingstats.txt $b_option";
 	}
 	else{
-	    print OUTFILE "perl $path $LOC/$dir/$sam_name $LOC/$dir/$id.mappingstats.txt\n";
+	    print OUTFILE "perl $path $LOC/$dir/$sam_name $LOC/$dir/$id.mappingstats.txt $b_option\n";
 	}
 	close(OUTFILE);
 	while (qx{$status | wc -l} > $njobs){

@@ -5,14 +5,12 @@ use warnings;
 my $USAGE = "\nUsage: perl get_master_list_of_exons.pl <gene info file> <loc> [option]
 
 
-<gene info file> gene info file must contain columns with the following suffixes: chrom, strand, exonStarts, and exonEnds.
+<gene info file> gene info file must contain columns with the following suffixes: chrom, strand, exonStarts, exonEnds and geneSymbol.
 <loc> is where the sample directories are.
 
 option:
  -stranded: set this if your data are strand-specific.
- -percent <n> : by default, 0% of the size of first and last exon of each transcript
-                will be added to the start of the first and the end of the last exon, respectively.
-                use this option to change the percentage <n>. (<n> has to be a number between 0-100)
+ -readlength <n> : 2 * readlength will be added to the start of the first and the end of the last exon, respectively.
 
 ";
 
@@ -21,26 +19,27 @@ if (@ARGV <2 ){
 }
 
 my $stranded = "false";
-my $percent = 0;
+my $readlength = 0;
+my $rl_cnt = 0;
 for(my $i=2; $i<@ARGV; $i++) {
     my $option_found = "false";
     if ($ARGV[$i] eq '-stranded'){
 	$stranded = "true";
 	$option_found = "true";
     }
-    if ($ARGV[$i] eq "-percent"){
+    if ($ARGV[$i] eq "-readlength"){
 	$option_found = "true";
-	$percent = $ARGV[$i+1];
+	$readlength = $ARGV[$i+1];
+	$rl_cnt++;
 	$i++;
-	if (($percent !~ /(\d+$)/) || ($percent > 100) || ($percent < 0) ){
-            die "-percent <n> : <n> needs to be a number between 0-100\n";
-        }
     }
     if($option_found eq "false") {
 	die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
-
+if ($rl_cnt ne 1){
+    die "-readlength <n> is required.\n";
+}
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 my $geneinfoFile = $ARGV[0];
@@ -49,7 +48,7 @@ open(GENE, $geneinfoFile) or die "cannot find file \"$geneinfoFile\"\n";
 my $header = <GENE>;
 chomp($header);
 my @GHEADER = split(/\t/, $header);
-my ($chrcol, $exonstartcol, $exonendcol, $strandcol);
+my ($chrcol, $exonstartcol, $exonendcol, $strandcol, $symcol);
 for(my $i=0; $i<@GHEADER; $i++){
     if ($GHEADER[$i] =~ /strand$/){
         $strandcol = $i;
@@ -63,9 +62,12 @@ for(my $i=0; $i<@GHEADER; $i++){
     if ($GHEADER[$i] =~ /exonEnds$/){
         $exonendcol = $i;
     }
+    if ($GHEADER[$i] =~ /geneSymbol$/){
+        $symcol = $i;
+    }
 }
 
-if (!defined($chrcol) || !defined($exonstartcol) || !defined($exonendcol) || !defined($strandcol)){
+if (!defined($chrcol) || !defined($exonstartcol) || !defined($exonendcol) || !defined($strandcol) || !defined($symcol)){
     die "Your header must contain columns with the following suffixes: chrom, strand, exonStarts, and exonEnds\n";
 }
 my (%EXONS, %STR);
@@ -85,10 +87,10 @@ while(my $line = <GENE>){
     my $N = @S;
     for(my $e=0; $e<$N; $e++) {
 	if ($e == 0){
-	    $S[$e] = $S[$e] - int(($E[$e]-$S[$e]) * $percent/100);
+	    $S[$e] = $S[$e] - (2 * $readlength);
 	}
 	if ($e == $N-1){
-	    $E[$e] = $E[$e] + int(($E[$e]-$S[$e]) * $percent/100);
+	    $E[$e] = $E[$e] + (2 * $readlength);
 	}
 	if ($S[$e] < 0){
 	    $S[$e] = 0;

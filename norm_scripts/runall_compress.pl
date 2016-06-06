@@ -10,6 +10,10 @@ where:
 <fai file> fai file (full path)
 
 option:
+ -eij : set this for exon-intron-junction level normalization
+
+ -gnorm : set this for gene level normalization
+
  -bam : set this if the input aligned files are in bam format
 
  -samtools <s> : provide location of samtools <s>
@@ -58,6 +62,8 @@ my $njobs = 200;
 my ($status, $new_mem) ;
 my $samtools = "";
 my $bam = "false";
+my $EIJ = "false";
+my $GNORM = "false";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -65,6 +71,14 @@ for (my $i=0;$i<@ARGV;$i++){
 }
 for (my $i=4; $i<@ARGV; $i++){
     my $option_found = "false";
+    if ($ARGV[$i] eq '-eij'){
+	$option_found = "true";
+	$EIJ = "true";
+    }
+    if ($ARGV[$i] eq '-gnorm'){
+	$option_found = "true";
+	$GNORM = "true";
+    }
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];
@@ -170,7 +184,7 @@ my $gcov_dir = "$gnorm_dir/COV/";
 
 my $sam_name = $ARGV[2];
 my $bam_name = $sam_name;
-$bam_name =~ s/.sam$/.bam/i;
+
 my $fai_file = $ARGV[3];
 if ($sam2bam eq 'true'){
     unless (-e $samtools){
@@ -186,6 +200,9 @@ if ($sam2bam eq 'true'){
 	my $jobname = "$study.compress";
 	my $logname = "$logdir/sam2bam.$id";
 	my $samname = "$LOC/$dir/$sam_name";
+	if ($bam eq "true"){
+	    $samname =~ s/bam$/sam/i;
+	}
 	my $bamname = "$LOC/$dir/$bam_name";
 	#mergedsam
 	my $shfile_m = "$shdir/$id.sam2bam.norm.merged.sh";
@@ -272,15 +289,16 @@ if ($sam2bam eq 'true'){
 	if ($bam eq "false"){
 	    if (-e "$samname"){
 		my $sam = $samname;
-		my $bam = $bamname;
+		my $bamf = $bamname;
+		$bamf =~ s/.sam$/.bam/i;
 		my $sh = $shfile;
 		my $log = $logname;
 		open(OUT, ">$sh");
-		print OUT "$samtools view -bt $fai_file $sam > $bam\n";
-		print OUT "lc=`cat $bam | wc -l`\n";
+		print OUT "$samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "lc=`cat $bamf | wc -l`\n";
 		print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-		print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
-		print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
+		print OUT "else $samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bamf' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
 		print OUT "echo \"got here \"\n";
 		close(OUT);
 		while (qx{$status | wc -l} > $njobs){
@@ -292,210 +310,209 @@ if ($sam2bam eq 'true'){
 		print STDOUT "WARNING: file \"$LOC/$line/$sam_name\" doesn't exist. please check the input samfile name/path\n\n";
 	    }
 	}
-	else{ #input bam
-	    if (-e $samname){
-		my $x = `rm $samname`;
+	#merged
+	if ($EIJ eq "true"){
+	    if (-e "$samname_m") {
+		my $sam = $samname_m;
+		my $bamf = $bamname_m;
+		my $sh = $shfile_m;
+		my $log = $logname_m;
+		open(OUT, ">$sh");
+		print OUT "$samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "lc=`cat $bamf | wc -l`\n";
+		print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
+		print OUT "else $samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
+		print OUT "echo \"got here \"\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+	    }
+	    #exon
+	    if ((-e "$samname_ex") && ($EIJ eq "true")){
+		my $sam = $samname_ex;
+		my $bamf = $bamname_ex;
+		my $sh = $shfile_ex;
+		my $log = $logname_ex;
+		open(OUT, ">$sh");
+		print OUT "$samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "lc=`cat $bamf | wc -l`\n";
+		print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
+		print OUT "else $samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
+		print OUT "echo \"got here \"\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+	    }
+	    else{
+		print STDOUT "WARNING: file \"$samname_ex\" doesn't exist. please check the input samfile name/path\n\n";
+	    }
+	    #exon_a
+	    if ((-e "$samname_ex_a")&& ($EIJ eq "true")){
+		my $sam = $samname_ex_a;
+		my $bamf = $bamname_ex_a;
+		my $sh = $shfile_ex_a;
+		my $log = $logname_ex_a;
+		open(OUT, ">$sh");
+		print OUT "$samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "lc=`cat $bamf | wc -l`\n";
+		print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
+		print OUT "else $samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
+		print OUT "echo \"got here \"\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+	    }
+	    #intron
+	    if (-e "$samname_int"){
+		my $sam = $samname_int;
+		my $bamf = $bamname_int;
+		my $sh = $shfile_int;
+		my $log = $logname_int;
+		open(OUT, ">$sh");
+		print OUT "$samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "lc=`cat $bamf | wc -l`\n";
+		print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
+		print OUT "else $samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
+		print OUT "echo \"got here \"\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+	    }
+	    else{
+		print STDOUT "WARNING: file \"$samname_int\" doesn't exist. please check the input samfile name/path\n\n";
+	    }
+	    #intron_a
+	    if (-e "$samname_int_a"){
+		my $sam = $samname_int_a;
+		my $bamf = $bamname_int_a;
+		my $sh = $shfile_int_a;
+		my $log = $logname_int_a;
+		open(OUT, ">$sh");
+		print OUT "$samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "lc=`cat $bamf | wc -l`\n";
+		print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
+		print OUT "else $samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
+		print OUT "echo \"got here \"\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+	    }
+	    #ig
+	    if (-e "$samname_ig"){
+		my $sam = $samname_ig;
+		my $bamf = $bamname_ig;
+		my $sh = $shfile_ig;
+		my $log = $logname_ig;
+		open(OUT, ">$sh");
+		print OUT "$samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "lc=`cat $bamf | wc -l`\n";
+		print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
+		print OUT "else $samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
+		print OUT "echo \"got here \"\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+	    }
+	    #und
+	    if (-e "$samname_und"){
+		my $sam = $samname_und;
+		my $bamf = $bamname_und;
+		my $sh = $shfile_und;
+		my $log = $logname_und;
+		open(OUT, ">$sh");
+		print OUT "$samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "lc=`cat $bamf | wc -l`\n";
+		print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
+		print OUT "else $samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
+		print OUT "echo \"got here \"\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
 	    }
 	}
-	#merged
-	if (-e "$samname_m"){
-            my $sam = $samname_m;
-            my $bam = $bamname_m;
-            my $sh = $shfile_m;
-            my $log = $logname_m;
-            open(OUT, ">$sh");
-            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "lc=`cat $bam | wc -l`\n";
-            print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
-            print OUT "echo \"got here \"\n";
-            close(OUT);
-            while (qx{$status | wc -l} > $njobs){
-                sleep(10);
-            }
-            `$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
-        }
-	#exon
-        if (-e "$samname_ex"){
-            my $sam = $samname_ex;
-            my $bam = $bamname_ex;
-            my $sh = $shfile_ex;
-            my $log = $logname_ex;
-            open(OUT, ">$sh");
-            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "lc=`cat $bam | wc -l`\n";
-            print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
-            print OUT "echo \"got here \"\n";
-            close(OUT);
-            while (qx{$status | wc -l} > $njobs){
-                sleep(10);
-            }
-            `$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
-        }
-        else{
-            print STDOUT "WARNING: file \"$samname_ex\" doesn't exist. please check the input samfile name/path\n\n";
-        }
-        #exon_a
-        if (-e "$samname_ex_a"){
-            my $sam = $samname_ex_a;
-            my $bam = $bamname_ex_a;
-            my $sh = $shfile_ex_a;
-            my $log = $logname_ex_a;
-            open(OUT, ">$sh");
-            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "lc=`cat $bam | wc -l`\n";
-            print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
-            print OUT "echo \"got here \"\n";
-            close(OUT);
-            while (qx{$status | wc -l} > $njobs){
-                sleep(10);
-            }
-            `$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
-        }
-        #intron
-        if (-e "$samname_int"){
-            my $sam = $samname_int;
-            my $bam = $bamname_int;
-            my $sh = $shfile_int;
-            my $log = $logname_int;
-            open(OUT, ">$sh");
-            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "lc=`cat $bam | wc -l`\n";
-            print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
-            print OUT "echo \"got here \"\n";
-            close(OUT);
-            while (qx{$status | wc -l} > $njobs){
-                sleep(10);
-            }
-            `$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
-        }
-        else{
-            print STDOUT "WARNING: file \"$samname_int\" doesn't exist. please check the input samfile name/path\n\n";
-        }
-        #intron_a
-        if (-e "$samname_int_a"){
-            my $sam = $samname_int_a;
-            my $bam = $bamname_int_a;
-            my $sh = $shfile_int_a;
-            my $log = $logname_int_a;
-            open(OUT, ">$sh");
-            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "lc=`cat $bam | wc -l`\n";
-            print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
-            print OUT "echo \"got here \"\n";
-            close(OUT);
-            while (qx{$status | wc -l} > $njobs){
-                sleep(10);
-            }
-            `$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
-        }
-        #ig
-        if (-e "$samname_ig"){
-            my $sam = $samname_ig;
-            my $bam = $bamname_ig;
-            my $sh = $shfile_ig;
-            my $log = $logname_ig;
-            open(OUT, ">$sh");
-            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "lc=`cat $bam | wc -l`\n";
-            print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
-            print OUT "echo \"got here \"\n";
-            close(OUT);
-            while (qx{$status | wc -l} > $njobs){
-                sleep(10);
-            }
-            `$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
-        }
-        #und
-        if (-e "$samname_und"){
-            my $sam = $samname_und;
-            my $bam = $bamname_und;
-            my $sh = $shfile_und;
-            my $log = $logname_und;
-            open(OUT, ">$sh");
-            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "lc=`cat $bam | wc -l`\n";
-            print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
-            print OUT "echo \"got here \"\n";
-            close(OUT);
-            while (qx{$status | wc -l} > $njobs){
-                sleep(10);
-            }
-            `$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
-        }
-        #gene
-        if (-e "$samname_g"){
-            my $sam = $samname_g;
-            my $bam = $bamname_g;
-            my $sh = $shfile_g;
-            my $log = $logname_g;
-            open(OUT, ">$sh");
-            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "lc=`cat $bam | wc -l`\n";
-            print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
-            print OUT "echo \"got here \"\n";
-            close(OUT);
-            while (qx{$status | wc -l} > $njobs){
-                sleep(10);
-            }
-            `$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
-        }
-        else{
-            print STDOUT "WARNING: file \"$samname_g\" doesn't exist. please check the input samfile name/path\n\n";
-        }
-	#gene-a
-        if (-e "$samname_g_a"){
-            my $sam = $samname_g_a;
-            my $bam = $bamname_g_a;
-            my $sh = $shfile_g_a;
-            my $log = $logname_g_a;
-            open(OUT, ">$sh");
-            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "lc=`cat $bam | wc -l`\n";
-            print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
-            print OUT "echo \"got here \"\n";
-            close(OUT);
-            while (qx{$status | wc -l} > $njobs){
-                sleep(10);
-            }
-            `$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
-        }
-	#gene_m
-        if (-e "$samname_g_m"){
-            my $sam = $samname_g_m;
-            my $bam = $bamname_g_m;
-            my $sh = $shfile_g_m;
-            my $log = $logname_g_m;
-            open(OUT, ">$sh");
-            print OUT "$samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "lc=`cat $bam | wc -l`\n";
-            print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
-            print OUT "else $samtools view -bt $fai_file $sam > $bam\n";
-            print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
-            print OUT "echo \"got here \"\n";
-            close(OUT);
-            while (qx{$status | wc -l} > $njobs){
-                sleep(10);
-            }
-            `$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
-        }
+	if ($GNORM eq "true"){
+	    #gene
+	    if (-e "$samname_g"){
+		my $sam = $samname_g;
+		my $bamf = $bamname_g;
+		my $sh = $shfile_g;
+		my $log = $logname_g;
+		open(OUT, ">$sh");
+		print OUT "$samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "lc=`cat $bamf | wc -l`\n";
+		print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
+		print OUT "else $samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
+		print OUT "echo \"got here \"\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+	    }
+	    else{
+		print STDOUT "WARNING: file \"$samname_g\" doesn't exist. please check the input samfile name/path\n\n";
+	    }
+	    #gene-a
+	    if (-e "$samname_g_a"){
+		my $sam = $samname_g_a;
+		my $bamf = $bamname_g_a;
+		my $sh = $shfile_g_a;
+		my $log = $logname_g_a;
+		open(OUT, ">$sh");
+		print OUT "$samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "lc=`cat $bamf | wc -l`\n";
+		print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
+		print OUT "else $samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
+		print OUT "echo \"got here \"\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+	    }
+	    #gene_m
+	    if (-e "$samname_g_m"){
+		my $sam = $samname_g_m;
+		my $bamf = $bamname_g_m;
+		my $sh = $shfile_g_m;
+		my $log = $logname_g_m;
+		open(OUT, ">$sh");
+		print OUT "$samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "lc=`cat $bamf | wc -l`\n";
+		print OUT "if [ \"\$lc\" -ne 0 ]; then rm $sam\n";
+		print OUT "else $samtools view -bt $fai_file $sam > $bamf\n";
+		print OUT "echo sam2bam ran twice for '$sam'. please make sure '$bam' file is not empty and delete the sam file >> $logdir/$study.sam2bam.log\nfi\n";
+		print OUT "echo \"got here \"\n";
+		close(OUT);
+		while (qx{$status | wc -l} > $njobs){
+		    sleep(10);
+		}
+		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+	    }
+	}
     }
 }
 if ($gzip_cov eq 'true'){

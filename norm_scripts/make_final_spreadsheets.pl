@@ -8,6 +8,7 @@ where:
 <loc> is the path to the sample directories.
 
 options:
+ -filter_highexp
  -stranded : set this if your data are strand-specific
 
  -novel : set this to label the novel exons/introns in the final spreadsheet
@@ -60,6 +61,7 @@ my $jobname_option = "";
 my $request_memory_option = "";
 my $mem6 = "";
 my $mem10 = "";
+my $filter = "";
 my ($status, $argv_all, $new_mem);
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
@@ -75,6 +77,10 @@ for(my $i=2; $i<@ARGV; $i++) {
             die "-max_jobs <n> : <n> needs to be a number\n";
         }
         $i++;
+    }
+    if ($ARGV[$i] eq '-filter_highexp'){
+        $option_found = "true";
+	$filter = "-filter_highexp";
     }
     if($ARGV[$i] eq '-nu') {
         $U = "false";
@@ -189,11 +195,11 @@ my ($sh_exon, $sh_intron, $sh_junctions, $jobname, $lognameE, $lognameI, $lognam
 if ($numargs eq "0"){
     $sh_exon = "$shdir/exonquants2spreadsheet_min_max.sh";
     open(OUTexon, ">$sh_exon");
-    print OUTexon "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC exonquants $novel $stranded";
+    print OUTexon "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC exonquants $novel $stranded $filter";
     close(OUTexon);
     $sh_intron = "$shdir/intronquants2spreadsheet_min_max.sh";
     open(OUTintron, ">$sh_intron");
-    print OUTintron "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC intronquants $novel $stranded";
+    print OUTintron "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC intronquants $novel $stranded $filter";
     close(OUTintron);
     $sh_junctions = "$shdir/juncs2spreadsheet_min_max.sh";
     open(OUTjunctions, ">$sh_junctions");

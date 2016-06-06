@@ -12,6 +12,8 @@ where
 <more ids> ribosomalids file
 
 option:
+  -bam <samtools>: bam input
+
   -chromnames <file> : a file of chromosome names
 
   -mito \"<name>, <name>, ... ,<name>\": name(s) of mitochondrial chromosomes
@@ -53,12 +55,20 @@ my $use_chr_names = "false";
 my $chromnames;
 my %MITO;
 my $count = 0;
+my $bam = "false";
+my $samtools = "";
 for(my $i=3; $i<@ARGV; $i++) {
     my $option_found = "false";
     if ($ARGV[$i] eq '-chromnames'){
 	$option_found = "true";
 	$chromnames = $ARGV[$i+1];
 	$use_chr_names = "true";
+	$i++;
+    }
+    if ($ARGV[$i] eq '-bam'){
+	$option_found = "true";
+	$bam = "true";
+	$samtools = $ARGV[$i+1];
 	$i++;
     }
     if ($ARGV[$i] eq '-mito'){
@@ -140,8 +150,13 @@ if ($use_chr_names eq "true"){
     }
     close(CHR);
 }
-
-open(INFILE, $ARGV[0]) or die "file '$ARGV[0]' cannot open for reading\n";  # the sam file
+if ($bam eq "true"){
+    my $pipecmd = "$samtools view -h $ARGV[0]";
+    open(INFILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
+}
+else{
+    open(INFILE, $ARGV[0]) or die "cannot find file \"$ARGV[0]\"\n";
+}
 my $cnt = 0;
 my $line = <INFILE>;
 my @a = split(/\t/,$line);
@@ -154,8 +169,13 @@ until($n > 8) {
     $cnt++;
 }
 close(INFILE);
-
-open(INFILE, $ARGV[0]);  # the sam file
+if ($bam eq "true"){
+    my $pipecmd = "$samtools view -h $ARGV[0]";
+    open(INFILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
+}
+else{
+    open(INFILE, $ARGV[0]) or die "cannot find file \"$ARGV[0]\"\n";
+}
 for(my $i=0; $i<$cnt; $i++) { # skip header
     my $line = <INFILE>;
 }

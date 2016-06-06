@@ -61,7 +61,6 @@ my $norm_merged_dir = $norm_dir . "/merged";
 unless (-d $norm_merged_dir){
     `mkdir $norm_merged_dir`;
 }
-
 my $id = $ARGV[0];
 my ($genefile, $genefile_a);
 my $outfile = "$norm_merged_dir/$id.merged.sam";

@@ -24,6 +24,8 @@ my $USAGE = "\nperl runall_check_samformat.pl <sample_dirs> <loc> <samfilename>
            <s> is the queue name for required mem.
            Default: 3G
 
+ -bam <samtools>: baminput
+
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                    by default, <n> = 200.
 
@@ -50,11 +52,17 @@ my $status;
 my $numargs_c = 0;
 my $cnt_st = 0;
 my $seoption = "";
+my $b_option = "";
 for (my $i=3;$i<@ARGV;$i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-se'){
         $seoption = "-se";
         $option_found = "true";
+    }
+    if ($ARGV[$i] eq '-bam'){
+        $b_option = "-bam $ARGV[$i+1]";
+        $option_found = "true";
+	$i++;
     }
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
@@ -149,7 +157,7 @@ while(my $line = <IN>){
     my $jobname = "$study.check_samformat";
     my $logname = "$logdir/check_samformat.$line";
     open(OUTFILE, ">$shfile");
-    print OUTFILE "perl $path/check_samformat.pl $samfile $seoption\n";
+    print OUTFILE "perl $path/check_samformat.pl $samfile $seoption $b_option\n";
     close(OUTFILE);
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);

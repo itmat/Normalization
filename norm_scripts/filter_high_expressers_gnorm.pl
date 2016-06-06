@@ -87,12 +87,19 @@ while (my $line = <INFILE>){
 }
 close(INFILE);
 
-
 my $sampleid = $ARGV[3];
 if ($U eq "true"){
     my $geneu = "$LOC/$sampleid/GNORM/Unique/$sampleid.filtered_u.genefilter.txt";
     if ($stranded eq "true"){
         $geneu = "$LOC/$sampleid/GNORM/Unique/$sampleid.filtered_u.genefilter.sense.txt";
+    }
+    foreach my $key (keys %HIGH_GENE){
+        my $highfile = $geneu;
+        $highfile =~ s/.txt$/.$key.txt/;
+        if (-e $highfile){
+            `rm $highfile`;
+        }
+        my $x = `echo header > $highfile`;
     }
     my $filteredu = $geneu;
     $filteredu =~ s/.txt$/.filter_highexp.txt/;
@@ -107,8 +114,12 @@ if ($U eq "true"){
             my $reverse = <IN>;
             chomp($reverse);
             foreach my $key (keys %HIGH_GENE){
+                my $highfile = $geneu;
+                $highfile =~ s/.txt$/.$key.txt/;
                 if (($forward =~ /$key/) || ($reverse =~ /$key/)){
                     $flag = 1;
+                    my $x = `echo $forward >> $highfile`;
+                    my $y = `echo $reverse >> $highfile`;
                 }
             }
             if ($flag eq '0'){
@@ -117,8 +128,11 @@ if ($U eq "true"){
         }
         if ($se eq "true"){
             foreach my $key (keys %HIGH_GENE){
+                my $highfile = $geneu;
+                $highfile =~ s/.txt$/.$key.txt/;
                 if ($forward =~ /$key/){
                     $flag = 1;
+                    my $x = `echo $forward >> $highfile`;
                 }
             } 
             if ($flag eq '0'){
@@ -130,6 +144,14 @@ if ($U eq "true"){
     close(IN);
     if ($stranded eq "true"){
         my $geneu_a = "$LOC/$sampleid/GNORM/Unique/$sampleid.filtered_u.genefilter.antisense.txt";
+        foreach my $key (keys %HIGH_GENE_A){
+            my $highfile = $geneu_a;
+            $highfile =~ s/.txt$/.$key.txt/;
+            if (-e $highfile){
+                `rm $highfile`;
+            }
+            my $x = `echo header > $highfile`;
+        }
         my $filteredu_a = $geneu_a;
         $filteredu_a =~ s/.txt$/.filter_highexp.txt/;
         open(IN, $geneu_a);
@@ -143,8 +165,12 @@ if ($U eq "true"){
                 my $reverse = <IN>;
                 chomp($reverse);
                 foreach my $key (keys %HIGH_GENE_A){
+                    my $highfile = $geneu_a;
+                    $highfile =~ s/.txt$/.$key.txt/;
                     if (($forward =~ /$key/) || ($reverse =~ /$key/)){
                         $flag = 1;
+                        my $x = `echo $forward >> $highfile`;
+                        my $y = `echo $reverse >> $highfile`;
                     }
                 }
                 if ($flag eq '0'){
@@ -153,8 +179,11 @@ if ($U eq "true"){
             }
             if ($se eq "true"){
                 foreach my $key (keys %HIGH_GENE_A){
+                    my $highfile = $geneu_a;
+                    $highfile =~ s/.txt$/.$key.txt/;
                     if ($forward =~ /$key/){
                         $flag = 1;
+                       my $x = `echo $forward >> $highfile`;
                     }
                 }
                 if ($flag eq '0'){
@@ -171,6 +200,14 @@ if ($NU eq "true"){
     if ($stranded eq "true"){
         $genenu = "$LOC/$sampleid/GNORM/NU/$sampleid.filtered_nu.genefilter.sense.txt";
     }
+    foreach my $key (keys %HIGH_GENE){
+        my $highfile = $genenu;
+        $highfile =~ s/.txt$/.$key.txt/;
+        if (-e $highfile){
+            `rm $highfile`;
+        }
+        my $x = `echo header > $highfile`;
+    }
     my $filterednu = $genenu;
     $filterednu =~ s/.txt$/.filter_highexp.txt/;
     open(IN, $genenu);
@@ -184,8 +221,12 @@ if ($NU eq "true"){
             my $reverse = <IN>;
             chomp($reverse);
             foreach my $key (keys %HIGH_GENE){
+                my $highfile = $genenu;
+                $highfile =~ s/.txt$/.$key.txt/;
                 if (($forward =~ /$key/) || ($reverse =~ /$key/)){
                     $flag = 1;
+                    my $x = `echo $forward >> $highfile`;
+                    my $y = `echo $reverse >> $highfile`;
                 }
             }
             if ($flag eq '0'){
@@ -194,8 +235,11 @@ if ($NU eq "true"){
         }
         if ($se eq "true"){
             foreach my $key (keys %HIGH_GENE){
+                my $highfile = $genenu;
+                $highfile =~ s/.txt$/.$key.txt/;
                 if ($forward =~ /$key/){
                     $flag = 1;
+                    my $x = `echo $forward >> $highfile`;
                 }
             }
             if ($flag eq '0'){
@@ -207,6 +251,14 @@ if ($NU eq "true"){
     close(OUT);
     if ($stranded eq "true"){
         my $genenu_a = "$LOC/$sampleid/GNORM/NU/$sampleid.filtered_nu.genefilter.antisense.txt";
+        foreach my $key (keys %HIGH_GENE_A){
+            my $highfile = $genenu_a;
+            $highfile =~ s/.txt$/.$key.txt/;
+            if (-e $highfile){
+                `rm $highfile`;
+            }
+            my $x = `echo header > $highfile`;
+        }
         my $filterednu_a = $genenu_a;
         $filterednu_a =~ s/.txt$/.filter_highexp.txt/;
         open(IN, $genenu_a);
@@ -220,8 +272,12 @@ if ($NU eq "true"){
                 my $reverse = <IN>;
                 chomp($reverse);
                 foreach my $key (keys %HIGH_GENE_A){
+                    my $highfile = $genenu_a;
+                    $highfile =~ s/.txt$/.$key.txt/;
                     if (($forward =~ /$key/) || ($reverse =~ /$key/)){
                         $flag = 1;
+                        my $x = `echo $forward >> $highfile`;
+                        my $y = `echo $reverse >> $highfile`;
                     }
                 }
                 if ($flag eq '0'){
@@ -230,8 +286,11 @@ if ($NU eq "true"){
             }
             if ($se eq "true"){
                 foreach my $key (keys %HIGH_GENE_A){
+                    my $highfile = $genenu_a;
+                    $highfile =~ s/.txt$/.$key.txt/;
                     if ($forward =~ /$key/){
                         $flag = 1;
+                        my $x = `echo $forward >> $highfile`;
                     }
                 }
                 if ($flag eq '0'){

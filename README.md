@@ -1,4 +1,4 @@
-# PORT
+ PORT
 ## RNA-Seq Normalization & Quantification
 **PORT** offers two types of normalization: <br>__GENE Normalization__ and __EXON-INTRON-JUNCTION Normalization__.<br>
 
@@ -24,6 +24,7 @@ Make sure you have the latest version of PORT:
 - Aligned reads (SAM/BAM) 
  - SAM/BAM files need to have unique read ids. 
  - __Paired End data: mated alignments need to be in adjacent lines.__
+  - If aligning with STAR v2.5.1a or higher, use "--outSAMunmapped Within KeepPairs" option.
  - Required tags: **IH (or NH) and HI**.
 - [Gene info files](https://github.com/itmat/Normalization/blob/master/about_cfg.md#2-gene-info)
 - [Genome fa/fai](https://github.com/itmat/Normalization/blob/master/about_cfg.md#3-fa-and-fai)
@@ -35,7 +36,6 @@ The input files need to be organized into a specific directory structure for POR
 - Sample directories (Sample_1, Sample_2, etc) can have any name.
 - Make sure the **unaligned reads** and **alignment outputs** (SAM/BAM files) are in each sample directory inside the `READS` folder.
 - All alignment files (SAM/BAM files) **MUST have the same name** across samples. 
-- BAM file name must end with **.bam**.
 
 <pre>
 STUDY
@@ -117,6 +117,7 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
      **[pipeline options]**<br>
      **-part1_part2** : Use this option if you want to run steps in PART1 and PART2 without pausing. <br>
      **-part2** : Use this option to resume the pipeline at PART2 after running PORT without any pipeline options. <br>
+     **-alt_out &lt;s>** : Use this option to redirect the normalized data to an alternate output directory (full path) (Default: /path/to/studydir/NORMALIZED_DATA/) <br>
      **-h** : print this usage<br>
      **-v** : print version of PORT
 
@@ -155,7 +156,7 @@ All PORT job names begin with the unique `STUDY` name (e.g. "STUDY.get_total_num
 
 ### 2. Output
 ####A. Output Directory Structure
-You will find all log files and shell scripts in the `STUDY/logs` and `STUDY/shell_scripts` directory, respectively. Once you complete the normalization pipeline, your directory structure will look like this if you run both Gene and Exon-Intron-Junction Normalization (If your data are stranded, each FINAL_SAM directory will have sense and antisense directory inside):
+You will find all log files and shell scripts in the `STUDY/logs` and `STUDY/shell_scripts` directory, respectively. Once you complete the normalization pipeline, your directory structure will look like this if you run both Gene and Exon-Intron-Junction Normalization (If your data are stranded, each FINAL_SAM directory will have sense and antisense directory inside). You may use '-alt_out' option to output NORMALIZED_DATA to an alternate location.:
 <pre>
 STUDY
 │── READS

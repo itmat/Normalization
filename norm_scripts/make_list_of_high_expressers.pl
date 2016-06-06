@@ -65,23 +65,29 @@ while (my $line = <INFILE>){
 	while (my $gene = <IN>){
 	    chomp($gene);
 	    my @a = split(/\t/, $gene);
-	    my $exon = $a[0];
-	    my $list = $a[3];
-	    my @b = split(',', $list);
-	    if ($list =~ /^[a-z]?$/){ #gene symbol not available
-		$EXON_REMOVE{$exon} = 1;
+	    my $asize = @a;
+	    if ($asize < 3){ #no annotation
+		$EXON_REMOVE{$a[0]} = 1;
 	    }
 	    else{
-		if (@b eq 0){
-		    $EXON_REMOVE{$exon} = 1;
-		}
-	    }
-	    for (my $i=0; $i<@b; $i++){
-		if ($b[$i] =~ /^[a-z]?$/){
+		my $exon = $a[0];
+		my $list = $a[3];
+		my @b = split(',', $list);
+		if ($list =~ /^[a-z]?$/){ #gene symbol not available
 		    $EXON_REMOVE{$exon} = 1;
 		}
 		else{
-		    push(@{$HIGH_GENE{$b[$i]}},$exon);
+		    if (@b eq 0){
+			$EXON_REMOVE{$exon} = 1;
+		    }
+		}
+		for (my $i=0; $i<@b; $i++){
+		    if ($b[$i] =~ /^[a-z]?$/){
+			$EXON_REMOVE{$exon} = 1;
+		    }
+		    else{
+			push(@{$HIGH_GENE{$b[$i]}},$exon);
+		    }
 		}
 	    }
 	}
@@ -106,24 +112,29 @@ while (my $line = <INFILE>){
         while (my $gene = <IN_S>){
             chomp($gene);
             my @a = split(/\t/, $gene);
-            my $exon = $a[0];
-            my $list = $a[3];
-            my @b = split(',', $list);
-            if ($list =~ /^[a-z]?$/){ #gene symbol not available
-                $EXON_REMOVE_S{$exon} = 1;
+            if (@a < 3){ #no annotation
+                $EXON_REMOVE_S{$a[0]} = 1;
             }
-            else{
-                if (@b eq 0){
-                    $EXON_REMOVE_S{$exon} = 1;
-                }
-            }
-	    for (my $i=0; $i<@b; $i++){
-                if ($b[$i] =~ /^[a-z]?$/){
-                    $EXON_REMOVE_S{$exon} = 1;
-                }
-                else{
-                    push(@{$HIGH_GENE_S{$b[$i]}},$exon);
-                }
+	    else{
+		my $exon = $a[0];
+		my $list = $a[3];
+		my @b = split(',', $list);
+		if ($list =~ /^[a-z]?$/){ #gene symbol not available
+		    $EXON_REMOVE_S{$exon} = 1;
+		}
+		else{
+		    if (@b eq 0){
+			$EXON_REMOVE_S{$exon} = 1;
+		    }
+		}
+		for (my $i=0; $i<@b; $i++){
+		    if ($b[$i] =~ /^[a-z]?$/){
+			$EXON_REMOVE_S{$exon} = 1;
+		    }
+		    else{
+			push(@{$HIGH_GENE_S{$b[$i]}},$exon);
+		    }
+		}
             }
 	}
 	close(IN_S);
@@ -166,7 +177,6 @@ while (my $line = <INFILE>){
     }
 }
 close(INFILE);
-
 #non-stranded 
 if ($stranded eq "false"){
     ###exon
@@ -221,8 +231,8 @@ if ($stranded eq "true"){
         my $exon = $l[0];
         $exon =~ s/exon://;
         (my $chr, my $exonstart, my $exonend) = $exon =~  /^(.*):(\d*)-(\d*)/;
-        if (@l > 4){
-            my $list2 = $l[3];
+        if (@l > 3){
+            my $list2 = $l[2];
             my @b = split(',', $list2);
             for (my $i=0; $i<@b; $i++){
                 foreach my $g (keys %HIGH_GENE_S){

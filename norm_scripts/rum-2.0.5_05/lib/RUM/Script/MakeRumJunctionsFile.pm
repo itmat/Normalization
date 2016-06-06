@@ -89,6 +89,7 @@ sub main {
 
     GetOptions(
 	"sam-in=s" => \(my $sam),
+	"bam=s" => \(my $samtools),
         "genome=s" => \(my $genome_sequence),
         "genes=s" => \(my $gene_annot),
         "all-rum-out=s" => \(my $outfile1),        
@@ -398,8 +399,13 @@ sub main {
         undef %badoverlapNU;
         undef %goodoverlapU;
         undef %goodoverlapNU;
-            
-        open(INFILE, $sam) or die "\nError: in script make_RUM_junctions_file.pl: cannot open file '$sam' for reading\n\n";
+	if ($samtools){
+	    my $pipecmd = "$samtools view -h $sam";
+	    open(INFILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
+	}
+	else{
+	    open(INFILE, $sam) or die "\nError: in script make_RUM_junctions_file.pl: cannot open file '$sam' for reading\n\n";
+	}
         while ($line = <INFILE>) {
 	    $NU = "false";
             chomp($line);

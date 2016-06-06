@@ -15,6 +15,8 @@ option:
  -novel : set this to label the novel exons/introns
 
  -stranded : set this if your data are strand-specific.
+
+ -filter_highexp : set this to label highexpressers
  
  -h : print usage
 
@@ -25,6 +27,7 @@ if(@ARGV<3) {
 my $stranded = "false";
 my $nuonly = 'false';
 my $novel = "false";
+my $filter = "false";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -32,6 +35,10 @@ for (my $i=0;$i<@ARGV;$i++){
 }
 for(my $i=3; $i<@ARGV; $i++) {
     my $arg_recognized = 'false';
+    if ($ARGV[$i] eq "-filter_highexp"){
+        $arg_recognized = "true";
+        $filter = "true";
+    }
     if($ARGV[$i] eq '-NU') {
 	$nuonly = 'true';
 	$arg_recognized = 'true';
@@ -62,6 +69,19 @@ my $last_dir = $fields[@fields-1];
 my $norm_dir = $LOC;
 $norm_dir =~ s/$last_dir//;
 
+my $HE_GENE = "$LOC/high_expressers_gene.txt";
+my $HE_EXON = "$LOC/high_expressers_exon.txt";
+my $HE_INTRON = "$LOC/high_expressers_intron.txt";
+my ($HE_GENE_A, $HE_EXON_A, $HE_INTRON_A);
+if ($stranded eq "true"){
+    $HE_GENE = "$LOC/high_expressers_gene_sense.txt";
+    $HE_EXON = "$LOC/high_expressers_exon_sense.txt";
+    $HE_INTRON = "$LOC/high_expressers_intron_sense.txt";
+    $HE_GENE_A = "$LOC/high_expressers_gene_antisense.txt";
+    $HE_EXON_A = "$LOC/high_expressers_exon_antisense.txt";
+    $HE_INTRON_A = "$LOC/high_expressers_intron_antisense.txt";
+}
+
 if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
     $norm_dir = $norm_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION";
 }
@@ -86,12 +106,12 @@ unless (-d $spread_dir){
 my ($out, $sample_name_file, $out_min, $out_max);
 my ($out_a, $sample_name_file_a, $out_min_a, $out_max_a);
 if ($type =~ /^exon/i){
-    $out = "$spread_dir/master_list_of_exons_counts_MIN.$study.txt";
+    $out = "$spread_dir/master_list_of_exon_counts_MIN.$study.txt";
     $sample_name_file = "$norm_dir/file_exonquants.txt";
     if ($stranded eq "true"){
-	$out = "$spread_dir/master_list_of_exons_counts_MIN.sense.$study.txt";
+	$out = "$spread_dir/master_list_of_exon_counts_MIN.sense.$study.txt";
 	$sample_name_file = "$norm_dir/file_exonquants.sense.txt";
-	$out_a = "$spread_dir/master_list_of_exons_counts_MIN.antisense.$study.txt";
+	$out_a = "$spread_dir/master_list_of_exon_counts_MIN.antisense.$study.txt";
 	$sample_name_file_a = "$norm_dir/file_exonquants.antisense.txt";
     }
     if ($nuonly eq "true"){
@@ -104,14 +124,14 @@ if ($type =~ /^exon/i){
     }
 }
 elsif ($type =~ /^gene/i){
-    $out_min = "$spread_dir/master_list_of_genes_counts_u.MIN.$study.txt";
-    $out_max = "$spread_dir/master_list_of_genes_counts_u.MAX.$study.txt";
+    $out_min = "$spread_dir/master_list_of_gene_counts_u.MIN.$study.txt";
+    $out_max = "$spread_dir/master_list_of_gene_counts_u.MAX.$study.txt";
     $sample_name_file = "$norm_dir/file_genequants_u.txt";
     if ($stranded eq "true"){
-	$out_min = "$spread_dir/master_list_of_genes_counts_u.MIN.sense.$study.txt";
-	$out_max = "$spread_dir/master_list_of_genes_counts_u.MAX.sense.$study.txt";
-	$out_min_a = "$spread_dir/master_list_of_genes_counts_u.MIN.antisense.$study.txt";
-	$out_max_a = "$spread_dir/master_list_of_genes_counts_u.MAX.antisense.$study.txt";
+	$out_min = "$spread_dir/master_list_of_gene_counts_u.MIN.sense.$study.txt";
+	$out_max = "$spread_dir/master_list_of_gene_counts_u.MAX.sense.$study.txt";
+	$out_min_a = "$spread_dir/master_list_of_gene_counts_u.MIN.antisense.$study.txt";
+	$out_max_a = "$spread_dir/master_list_of_gene_counts_u.MAX.antisense.$study.txt";
 	$sample_name_file = "$norm_dir/file_genequants_u.sense.txt";
 	$sample_name_file_a = "$norm_dir/file_genequants_u.antisense.txt";
     }
@@ -126,12 +146,12 @@ elsif ($type =~ /^gene/i){
     }
 }
 elsif ($type =~ /^intron/i){
-    $out = "$spread_dir/master_list_of_introns_counts_MIN.$study.txt";
+    $out = "$spread_dir/master_list_of_intron_counts_MIN.$study.txt";
     $sample_name_file = "$norm_dir/file_intronquants.txt";
     if ($stranded eq "true"){
-        $out = "$spread_dir/master_list_of_introns_counts_MIN.sense.$study.txt";
+        $out = "$spread_dir/master_list_of_intron_counts_MIN.sense.$study.txt";
         $sample_name_file = "$norm_dir/file_intronquants.sense.txt";
-        $out_a = "$spread_dir/master_list_of_introns_counts_MIN.antisense.$study.txt";
+        $out_a = "$spread_dir/master_list_of_intron_counts_MIN.antisense.$study.txt";
         $sample_name_file_a = "$norm_dir/file_intronquants.antisense.txt";
     }
     if ($nuonly eq "true"){
@@ -227,20 +247,20 @@ if ($type =~ /^gene/i){
         my $id = $line;
         if($nuonly eq "false"){
             if ($stranded ne "true"){
-                print OUT "$norm_dir/FINAL_SAM/$id.gene.norm_u.genefilter.genequants\n";
+                print OUT "$norm_dir/FINAL_SAM/$id.gene.norm.genequants\n";
             }
             if ($stranded eq "true"){
-                print OUT "$norm_dir/FINAL_SAM/$id.gene.norm_u.genefilter.sense.genequants\n";
-                print OUT_A "$norm_dir/FINAL_SAM/$id.gene.norm_u.genefilter.antisense.genequants\n";
+                print OUT "$norm_dir/FINAL_SAM/sense/$id.gene.norm_u.genefilter.sense.genequants";
+                print OUT_A "$norm_dir/FINAL_SAM/antisense/$id.gene.norm_u.genefilter.antisense.genequants";
             }
         }
         if($nuonly eq "true"){
             if ($stranded ne "true"){
-                print OUT "$norm_dir/FINAL_SAM/$id.gene.norm_nu.genefilter.genequants\n";
+                print OUT "$norm_dir/FINAL_SAM/$id.gene.norm.genequants";
             }
             if ($stranded eq "true"){
-                print OUT "$norm_dir/FINAL_SAM/$id.gene.norm_nu.genefilter.sense.genequants\n";
-                print OUT_A "$norm_dir/FINAL_SAM/$id.gene.norm_nu.genefilter.antisense.genequants\n";
+                print OUT "$norm_dir/FINAL_SAM/sense/$id.gene.norm_nu.genefilter.sense.genequants\n";
+                print OUT_A "$norm_dir/FINAL_SAM/antisense/$id.gene.norm_nu.genefilter.antisense.genequants\n";
             }
         }
     }
@@ -292,6 +312,8 @@ while($file = <FILES>) {
     $id =~ s/.exonmappers.norm_nu.exonquants//;
     $id =~ s/.intronmappers.norm_u.intronquants//;
     $id =~ s/.intronmappers.norm_nu.intronquants//;
+    $id =~ s/.intronmappers.norm.intronquants//;
+    $id =~ s/.exonmappers.norm.exonquants//;
     $id =~ s/.exonmappers.norm_u.sense.exonquants//;
     $id =~ s/.exonmappers.norm_nu.sense.exonquants//;
     $id =~ s/.intronmappers.norm_u.sense.intronquants//;
@@ -300,6 +322,7 @@ while($file = <FILES>) {
     $id =~ s/.gene.norm_u.genefilter.genequants//;
     $id =~ s/.gene.norm_nu.genefilter.sense.genequants//;
     $id =~ s/.gene.norm_nu.genefilter.genequants//;
+    $id =~ s/.gene.norm.genequants//;
     $ID[$filecnt] = $id;
     open(INFILE, $file);
     my $firstline = <INFILE>;
@@ -363,6 +386,81 @@ if ($novel eq "true"){
         close(IN);
     }
 }
+my (%HIGH_G, %HIGH_E, %HIGH_I, %HIGH_GA, %HIGH_EA, %HIGH_IA);
+if ($filter eq "true"){
+    if ($type =~ /^exon/i){
+        if (-e "$HE_EXON"){
+            open(IN, $HE_EXON);
+            while(my $line = <IN>){
+                chomp($line);
+                my @a = split(/\t/,$line);
+                my $exon = $a[0];
+                $HIGH_E{$exon} = 1;
+            }
+            close(IN);
+        }
+	if ($stranded eq "true"){
+	    if (-e "$HE_EXON_A"){
+		open(IN, $HE_EXON_A);
+		while(my $line = <IN>){
+		    chomp($line);
+		    my @a = split(/\t/,$line);
+		    my $exon = $a[0];
+		    $HIGH_EA{$exon} = 1;
+		}
+		close(IN);
+	    }
+	}
+    }
+    if ($type =~ /^intron/i){
+        if (-e "$HE_INTRON"){
+            open(IN, $HE_INTRON);
+            while(my $line = <IN>){
+                chomp($line);
+                my @a = split(/\t/,$line);
+                my $intron = $a[0];
+                $HIGH_I{$intron} = 1;
+            }
+            close(IN);
+        }
+	if ($stranded eq "true"){
+	    if (-e "$HE_INTRON_A"){
+		open(IN, $HE_INTRON_A);
+		while(my $line = <IN>){
+		    chomp($line);
+		    my @a = split(/\t/,$line);
+		    my $intron = $a[0];
+		    $HIGH_IA{$intron} = 1;
+		}
+		close(IN);
+	    }
+	}
+    }
+    if ($type =~ /^gene/i){
+        if (-e "$HE_GENE"){
+            open(IN, $HE_GENE);
+            while(my $line = <IN>){
+                chomp($line);
+                my @a = split(/\t/,$line);
+                my $gene = $a[0];
+                $HIGH_G{$gene} = 1;
+            }
+            close(IN);
+        }
+        if ($stranded eq "true"){
+            if (-e "$HE_GENE_A"){
+                open(IN, $HE_GENE_A);
+                while(my $line = <IN>){
+		    chomp($line);
+                    my @a = split(/\t/,$line);
+                    my $gene = $a[0];
+                    $HIGH_GA{$gene} = 1;
+                }
+                close(IN);
+            }
+        }
+    }
+}
 
 if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
     open(OUTFILE, ">$out");
@@ -374,11 +472,17 @@ if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
 	if ($novel eq "true"){
 	    print OUTFILE "\tNovelExon";
 	}
+	if ($filter eq "true"){
+	    print OUTFILE "\thighExp";
+	}
     }
     if ($type =~ /^intron/i){
 	if ($novel eq "true"){
 	    print OUTFILE "\tNovelIntron";
 	}
+        if ($filter eq "true"){
+            print OUTFILE "\thighExp";
+        }
     }
     print OUTFILE "\n";
     for(my $i=0; $i<$rowcnt; $i++) {
@@ -404,6 +508,15 @@ if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
 		else{
 		    print OUTFILE "\t.";
 		}
+		
+	    }
+	    if ($filter eq "true"){
+		if (exists $HIGH_E{$id[$i]}){
+		    print OUTFILE "\tH";
+		}
+		else{
+		    print OUTFILE "\t.";
+		}
 	    }
 	}
 	if ($type =~ /^intron/i){
@@ -415,13 +528,19 @@ if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
 		    print OUTFILE "\t.";
 		}
 	    }
+	    if ($filter eq "true"){
+		if (exists $HIGH_I{$id[$i]}){
+		    print OUTFILE "\tH";
+		}
+		else{
+		    print OUTFILE "\t.";
+		}
+	    }
 	}
 	print OUTFILE "\n";
     }
 }
 close(OUTFILE);
-
-
 
 if ($type =~ /^gene/i){
     open(OUT_MIN, ">$out_min");
@@ -432,8 +551,16 @@ if ($type =~ /^gene/i){
         print OUT_MIN "\t$ID[$i]";
         print OUT_MAX "\t$ID[$i]";
     }
-    print OUT_MIN "\tgeneCoordinate\tgeneSymbol\n";
-    print OUT_MAX "\tgeneCoordinate\tgeneSymbol\n";
+    print OUT_MIN "\tgeneCoordinate\tgeneSymbol";
+    print OUT_MAX "\tgeneCoordinate\tgeneSymbol";
+=comment
+    if ($filter eq "true"){
+	print OUT_MIN "\thighExp";
+	print OUT_MAX "\thighExp";
+    }
+=cut
+    print OUT_MIN "\n";
+    print OUT_MAX "\n";
     for(my $i=0; $i<$rowcnt; $i++) {
 	print OUT_MIN "gene:$id[$i]";
 	print OUT_MAX "gene:$id[$i]";
@@ -441,8 +568,22 @@ if ($type =~ /^gene/i){
             print OUT_MIN "\t$DATA_MIN[$j][$i]";
             print OUT_MAX "\t$DATA_MAX[$j][$i]";
 	}
-	print OUT_MIN "\t$coord[$i]\t$sym[$i]\n";
-	print OUT_MAX "\t$coord[$i]\t$sym[$i]\n";
+	print OUT_MIN "\t$coord[$i]\t$sym[$i]";
+	print OUT_MAX "\t$coord[$i]\t$sym[$i]";
+=comment
+	if ($filter eq "true"){
+	    if (exists $HIGH_G{$id[$i]}){
+		print OUT_MIN "\tH";
+		print OUT_MAX "\tH";
+	    }
+	    else{
+		print OUT_MIN "\t.";
+		print OUT_MAX "\t.";
+	    }
+	}
+=cut
+	print OUT_MIN "\n";
+	print OUT_MAX "\n";
     }
     close(OUT_MIN);
     close(OUT_MAX);
@@ -488,12 +629,15 @@ if ($stranded eq "true"){
 	$id =~ s/.exonmappers.norm_nu.exonquants//;
 	$id =~ s/.intronmappers.norm_u.intronquants//;
 	$id =~ s/.intronmappers.norm_nu.intronquants//;
+	$id =~ s/.intronmappers.norm.intronquants//;
+	$id =~ s/.exonmappers.norm.exonquants//;
 	$id =~ s/.exonmappers.norm_u.sense.exonquants//;
 	$id =~ s/.exonmappers.norm_nu.sense.exonquants//;
 	$id =~ s/.intronmappers.norm_u.sense.intronquants//;
 	$id =~ s/.intronmappers.norm_nu.sense.intronquants//;
 	$id =~ s/.gene.norm_nu.genefilter.antisense.genequants//;
 	$id =~ s/.gene.norm_u.genefilter.antisense.genequants//;
+	$id =~ s/.gene.norm.genequants//;
 	$ID[$filecnt] = $id;
 	open(INFILE, $file);
 	my $firstline = <INFILE>;
@@ -530,11 +674,18 @@ if ($stranded eq "true"){
 	    if ($novel eq "true"){
 		print OUTFILE "\tNovelExon";
 	    }
+	    if ($filter eq "true"){
+		print OUTFILE "\thighExp";
+	    }
+
 	}
 	if ($type =~ /^intron/i){
 	    if ($novel eq "true"){
 		print OUTFILE "\tNovelIntron";
 	    }
+            if ($filter eq "true"){
+                print OUTFILE "\thighExp";
+            }
 	}
 	print OUTFILE "\n";
 	for(my $i=0; $i<$rowcnt; $i++) {
@@ -561,6 +712,14 @@ if ($stranded eq "true"){
 			print OUTFILE "\t.";
 		    }
 		}
+		if ($filter eq "true"){
+		    if (exists $HIGH_EA{$id[$i]}){
+			print OUTFILE "\tH";
+		    }
+		    else{
+			print OUTFILE "\t.";
+		    }
+		}
 	    }
 	    if ($type =~ /^intron/i){
 		if (exists $FR{$id[$i]}){
@@ -575,14 +734,65 @@ if ($stranded eq "true"){
 			    print OUTFILE "\t.";
 			}
 		    }
-		    else{
-			print OUTFILE "\t.";
+		    if ($filter eq "true"){
+			if (exists $HIGH_IA{$id[$i]}){
+			    print OUTFILE "\tH";
+			}
+			else{
+			    print OUTFILE "\t.";
+			}
 		    }
 		}
 	    }
 	    print OUTFILE "\n";
 	}
     }
+    if ($type =~ /^gene/i){
+	open(OUT_MIN, ">$out_min_a");
+	open(OUT_MAX, ">$out_max_a");
+	print OUT_MIN "id";
+	print OUT_MAX "id";
+	for(my $i=0; $i<@ID; $i++) {
+	    print OUT_MIN "\t$ID[$i]";
+	    print OUT_MAX "\t$ID[$i]";
+	}
+	print OUT_MIN "\tgeneCoordinate\tgeneSymbol";
+	print OUT_MAX "\tgeneCoordinate\tgeneSymbol";
+=comment
+	if ($filter eq "true"){
+	    print OUT_MIN "\thighExp";
+	    print OUT_MAX "\thighExp";
+	}
+=cut
+	print OUT_MIN "\n";
+	print OUT_MAX "\n";
+	for(my $i=0; $i<$rowcnt; $i++) {
+	    print OUT_MIN "gene:$id[$i]";
+	    print OUT_MAX "gene:$id[$i]";
+	    for(my $j=0; $j<$filecnt; $j++) {
+		print OUT_MIN "\t$DATA_MIN[$j][$i]";
+		print OUT_MAX "\t$DATA_MAX[$j][$i]";
+	    }
+	    print OUT_MIN "\t$coord[$i]\t$sym[$i]";
+	    print OUT_MAX "\t$coord[$i]\t$sym[$i]";
+=comment
+	    if ($filter eq "true"){
+		if (exists $HIGH_GA{$id[$i]}){
+		    print OUT_MIN "\tH";
+		    print OUT_MAX "\tH";
+		}
+		else{
+		    print OUT_MIN "\t.";
+		    print OUT_MAX "\t.";
+		}
+	    }
+=cut
+	    print OUT_MIN "\n";
+	    print OUT_MAX "\n";
+	}
+    }
+    close(OUT_MIN);
+    close(OUT_MAX);
 }
 close(OUTFILE);
 print "got here\n";

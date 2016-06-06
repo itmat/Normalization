@@ -154,11 +154,19 @@ my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 my @fields = split("/", $LOC);
 my $last_dir = $fields[@fields-1];
+my $loc_study = $LOC;
+$loc_study =~ s/$last_dir//;
+my $norm_dir = $loc_study."NORMALIZED_DATA/GENE/FINAL_SAM/";
+my $norm_merged_dir = $norm_dir . "/merged";
+unless (-d $norm_merged_dir){
+    `mkdir $norm_merged_dir`;
+}
 my $study = $fields[@fields-2];
 my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
+
 open(IN, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; # dirnames;
 while(my $line = <IN>){
     chomp($line);

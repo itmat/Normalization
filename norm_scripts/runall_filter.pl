@@ -17,6 +17,8 @@ option:
 
   -se :  set this if the data are single end, otherwise by default it will assume it's a paired end data.
 
+  -bam <samtools>: bam input
+
   -chromnames <file> : a file of chromosome names
 
   -mito \"<name>, <name>, ... ,<name>\": name(s) of mitochondrial chromosomes
@@ -78,6 +80,7 @@ my $status;
 my $use_chr_names = "";
 my $use_mito_names = "";
 my $chromnames;
+my $b_option = "";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -90,6 +93,11 @@ for(my $i=3; $i<@ARGV; $i++) {
         $chromnames = $ARGV[$i+1];
         $use_chr_names = "-chromnames $chromnames";
         $i++;
+    }
+    if ($ARGV[$i] eq '-bam'){
+	$option_found = "true";
+	$b_option = "-bam $ARGV[$i+1]";
+	$i++;
     }
     if ($ARGV[$i] eq '-mito'){
         my $argv_all = $ARGV[$i+1];
@@ -220,27 +228,27 @@ while(my $line = <INFILE>) {
     open(OUTFILE, ">$shfile");
     if ($numargs_1 eq "0"){
 	if ($pe eq "true"){
-	    print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile $use_chr_names $use_mito_names\n";
+	    print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile $use_chr_names $use_mito_names $b_option\n";
 	}
 	else {
-	    print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -se $use_chr_names $use_mito_names\n";
+	    print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -se $use_chr_names $use_mito_names $b_option\n";
 	}
     }
     else {
 	if($U eq "true") {
 	    if ($pe eq "true"){
-		print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -u $use_chr_names $use_mito_names\n";
+		print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -u $use_chr_names $use_mito_names $b_option\n";
 	    }
 	    else{
-		print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -se -u $use_chr_names $use_mito_names\n";
+		print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -se -u $use_chr_names $use_mito_names $b_option\n";
 	    }
 	}
 	if($NU eq "true") {
 	    if ($pe eq "true"){
-		print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -nu $use_chr_names $use_mito_names\n";
+		print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -nu $use_chr_names $use_mito_names $b_option\n";
 	    }
 	    else{
-		print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -se -nu $use_chr_names $use_mito_names\n";
+		print OUTFILE "perl $path/filter_sam.pl $LOC/$dir/$sam_name $LOC/$dir/$id.filtered.sam $idsfile -se -nu $use_chr_names $use_mito_names $b_option\n";
 	    }
 	}
     }

@@ -192,8 +192,17 @@ my (@intron_sam_outfile, @anti_intron_sam_outfile,  @OUTFILE_INTRON, @OUTFILE_IN
 my $statsfile = "$directory/stats.txt";
 my $total_lc = 0;
 my $total_lc_a = 0;
-my ($ex_only, $int_only, $ig_only, $ex_int, $int_ig, $ex_ig, $ex_int_ig, $ex_inc_only) = (0,0,0,0,0,0,0,0);
-my ($ex_only_a, $int_only_a, $ex_int_a, $int_ig_a, $ex_ig_a, $ex_int_ig_a) = (0,0,0,0,0,0);
+my ($ex_only, $int_only, $ig_only, $ex_int, $ex_inc_only) = (0,0,0,0,0,0,0,0);
+my ($ex_only_a, $int_only_a, $ex_int_a) = (0,0,0,0,0,0);
+
+my $max_exon = 20;
+my $max_intron = 10;
+unless ($i_exon eq $max_exon){
+    $max_exon = $i_exon;
+}
+unless ($i_intron eq $max_intron){
+    $max_intron = $i_intron;
+}
 
 if ($print eq "true"){
     open(EXONSAMOUT, ">$exon_sam_out");
@@ -201,12 +210,12 @@ if ($print eq "true"){
     open(INTRONSAMOUT, ">$intron_sam_out");
     open(INTERGENIC, ">$intergenic_sam_out");
     open(EXON_INCONSISTENT, ">$exon_inconsistent_sam_out");
-    for (my $i=1; $i<=$i_exon;$i++){
+    for (my $i=1; $i<=$max_exon;$i++){
         $exon_sam_outfile[$i] = $exon_sam_out;
         $exon_sam_outfile[$i] =~ s/.sam$/.$i.sam/;
         open($OUTFILE_EXON[$i], ">$exon_sam_outfile[$i]");
     }
-    for (my $i=1; $i<=$i_intron;$i++){
+    for (my $i=1; $i<=$max_intron;$i++){
         $intron_sam_outfile[$i] = $intron_sam_out;
         $intron_sam_outfile[$i] =~ s/.sam$/.$i.sam/;
         open($OUTFILE_INTRON[$i], ">$intron_sam_outfile[$i]");
@@ -215,12 +224,12 @@ if ($print eq "true"){
         open(LC_A, ">$linecountfile_anti");
         open(ANTIEXONSAMOUT, ">$exon_sam_out_anti");
         open(ANTIINTRONSAMOUT, ">$intron_sam_out_anti");
-        for (my $i=1; $i<=$i_exon;$i++){
+        for (my $i=1; $i<=$max_exon;$i++){
             $anti_exon_sam_outfile[$i] = $exon_sam_out_anti;
             $anti_exon_sam_outfile[$i] =~ s/.sam$/.$i.sam/;
             open($OUTFILE_EXON_A[$i], ">$anti_exon_sam_outfile[$i]");
         }
-        for (my $i=1; $i<=$i_intron;$i++){
+        for (my $i=1; $i<=$max_intron;$i++){
             $anti_intron_sam_outfile[$i] = $intron_sam_out_anti;
             $anti_intron_sam_outfile[$i] =~ s/.sam$/.$i.sam/;
             open($OUTFILE_INTRON_A[$i], ">$anti_intron_sam_outfile[$i]");
@@ -228,18 +237,40 @@ if ($print eq "true"){
     }
 }
 
-my %REMOVE_E = ();
-my %REMOVE_E_A = ();
-my %REMOVE_I = ();
-my %REMOVE_I_A = ();
+my %HIGHEXP_E = ();
+my %HIGHEXP_E_A = ();
+my %HIGHEXP_I = ();
+my %HIGHEXP_I_A = ();
+
+my (%CNT_HIGH_E, %CNT_HIGH_E_A, %CNT_HIGH_I, %CNT_HIGH_I_A);
+my (%OUT_HIGH_E, %OUT_HIGH_E_A, %OUT_HIGH_I, %OUT_HIGH_I_A);
 if ($filter eq "true"){
     #highly expressed exons
-    if ($qexon eq "true"){
-	my $highexp_file = "$LOC/high_expressers_exon.txt";
-	if ($stranded eq "true"){
-	    $highexp_file = "$LOC/high_expressers_exon_sense.txt";
+    my $highexp_file = "$LOC/high_expressers_exon.txt";
+    if ($stranded eq "true"){
+	$highexp_file = "$LOC/high_expressers_exon_sense.txt";
+    }
+    open(HIGH, $highexp_file) or die "cannot find file '$highexp_file'.\n";
+    while(my $line = <HIGH>){
+	chomp($line);
+	if ($line =~ /([^:\t\s]+):(\d+)-(\d+)/) {
+	    my $chr = $1;
+	    my $start = $2;
+	    my $end = $3;
+	    my $exon = "$chr:$start-$end";
+	    if ($line =~ /\.[1]$/){
+		$exon = $exon . ".1";
+	    }
+	    $HIGHEXP_E{$exon} = 1;
 	}
-	open(HIGH, $highexp_file) or die "cannot find file '$highexp_file'.\n";
+	else{
+	    next;
+	}
+    }
+    close(HIGH);
+    if ($stranded eq "true"){
+	my $highexp_file_a = "$LOC/high_expressers_exon_antisense.txt";
+	open(HIGH, $highexp_file_a) or die "cannot find file '$highexp_file_a'.\n";
 	while(my $line = <HIGH>){
 	    chomp($line);
 	    if ($line =~ /([^:\t\s]+):(\d+)-(\d+)/) {
@@ -250,79 +281,92 @@ if ($filter eq "true"){
 		if ($line =~ /\.[1]$/){
 		    $exon = $exon . ".1";
 		}
-		$REMOVE_E{$exon} = 1;
+		$HIGHEXP_E_A{$exon} = 1;
 	    }
 	    else{
 		next;
 	    }
 	}
 	close(HIGH);
-	if ($stranded eq "true"){
-	    my $highexp_file_a = "$LOC/high_expressers_exon_antisense.txt";
-	    open(HIGH, $highexp_file_a) or die "cannot find file '$highexp_file_a'.\n";
-	    while(my $line = <HIGH>){
-		chomp($line);
-		if ($line =~ /([^:\t\s]+):(\d+)-(\d+)/) {
-		    my $chr = $1;
-		    my $start = $2;
-		    my $end = $3;
-		    my $exon = "$chr:$start-$end";
-		    if ($line =~ /\.[1]$/){
-			$exon = $exon . ".1";
-		    }
-		    $REMOVE_E_A{$exon} = 1;
-		}
-		else{
-		    next;
-		}
-	    }
-	    close(HIGH);
+    }
+    if ($print eq "true"){
+	foreach my $exon (keys %HIGHEXP_E){
+	    my $highexp = $exon_sam_out;
+	    my $tmp = $exon;
+	    $tmp =~ s/:/./;
+	    $highexp =~ s/.sam$/.$tmp.sam/;
+	    open($OUT_HIGH_E{$exon}, ">$highexp");
+	    $CNT_HIGH_E{$exon} = 0;
+	}
+	foreach my $exon (keys %HIGHEXP_E_A){
+	    my $highexp = $exon_sam_out_anti;
+	    my $tmp = $exon;
+	    $tmp =~ s/:/./;
+	    $highexp =~ s/.sam$/.$tmp.sam/;
+	    open($OUT_HIGH_E_A{$exon}, ">$highexp");
+	    $CNT_HIGH_E_A{$exon} = 0;
 	}
     }
     #introns
-    if ($qintron eq "true"){
-        my $highexp_file_i = "$LOC/high_expressers_intron.txt";
-        if ($stranded eq "true"){
-            $highexp_file_i = "$LOC/high_expressers_intron_sense.txt";
-        }
-        open(HIGH, $highexp_file_i) or die "cannot find file '$highexp_file_i'.\n";
-        while(my $line = <HIGH>){
-            chomp($line);
-            if ($line =~ /([^:\t\s]+):(\d+)-(\d+)/) {
-                my $chr = $1;
-                my $start = $2;
-                my $end = $3;
-                my $intron = "$chr:$start-$end";
-                if ($line =~ /\.[1]$/){
-                    $intron = $intron . ".1";
-                }
-                $REMOVE_I{$intron} = 1;
-            }
-            else{
-                next;
-            }
-        }
-        close(HIGH);
-	if ($stranded eq "true"){
-	    my $highexp_file_i_a = "$LOC/high_expressers_intron_antisense.txt";
-	    open(HIGH, $highexp_file_i_a) or die "cannot find file '$highexp_file_i_a'.\n";
-	    while(my $line = <HIGH>){
-		chomp($line);
-		if ($line =~ /([^:\t\s]+):(\d+)-(\d+)/) {
-		    my $chr = $1;
-		    my $start = $2;
-		    my $end = $3;
-		    my $intron = "$chr:$start-$end";
-		    if ($line =~ /\.[1]$/){
-			$intron = $intron . ".1";
-		    }
-		    $REMOVE_I_A{$intron} = 1;
-		}
-		else{
-		    next;
-		}
+    my $highexp_file_i = "$LOC/high_expressers_intron.txt";
+    if ($stranded eq "true"){
+	$highexp_file_i = "$LOC/high_expressers_intron_sense.txt";
+    }
+    open(HIGH, $highexp_file_i) or die "cannot find file '$highexp_file_i'.\n";
+    while(my $line = <HIGH>){
+	chomp($line);
+	if ($line =~ /([^:\t\s]+):(\d+)-(\d+)/) {
+	    my $chr = $1;
+	    my $start = $2;
+	    my $end = $3;
+	    my $intron = "$chr:$start-$end";
+	    if ($line =~ /\.[1]$/){
+		$intron = $intron . ".1";
 	    }
-	    close(HIGH);
+	    $HIGHEXP_I{$intron} = 1;
+	}
+	else{
+	    next;
+	}
+    }
+    close(HIGH);
+    if ($stranded eq "true"){
+	my $highexp_file_i_a = "$LOC/high_expressers_intron_antisense.txt";
+	open(HIGH, $highexp_file_i_a) or die "cannot find file '$highexp_file_i_a'.\n";
+	while(my $line = <HIGH>){
+	    chomp($line);
+	    if ($line =~ /([^:\t\s]+):(\d+)-(\d+)/) {
+		my $chr = $1;
+		my $start = $2;
+		my $end = $3;
+		my $intron = "$chr:$start-$end";
+		if ($line =~ /\.[1]$/){
+			$intron = $intron . ".1";
+		}
+		$HIGHEXP_I_A{$intron} = 1;
+	    }
+	    else{
+		next;
+	    }
+	}
+	close(HIGH);
+    }
+    if ($print eq "true"){
+	foreach my $intron (keys %HIGHEXP_I){
+	    my $highexp = $intron_sam_out;
+	    my $tmp = $intron;
+	    $tmp =~ s/:/./;
+	    $highexp =~ s/.sam$/.$tmp.sam/;
+	    open($OUT_HIGH_I{$intron}, ">$highexp");
+	    $CNT_HIGH_I{$intron} = 0;
+	}
+	foreach my $intron (keys %HIGHEXP_I_A){
+	    my $highexp = $intron_sam_out_anti;
+	    my $tmp = $intron;
+	    $tmp =~ s/:/./;
+	    $highexp =~ s/.sam$/.$tmp.sam/;
+	    open($OUT_HIGH_I_A{$intron}, ">$highexp");
+	    $CNT_HIGH_I_A{$intron} = 0;
 	}
     }
 }
@@ -331,92 +375,88 @@ my (%exonHASH, %exSTART, %exEND, %exonSTR, %exon_uniqueCOUNT, %exon_nuCOUNT, %do
 my (%ML_E, %ML_E_A);
 # master list of exons
 my $exonsfile = $ARGV[1];
-if ($qexon eq "true"){
-    open(EXONS, $exonsfile) or die "cannot find '$exonsfile'\n";
-    while(my $line = <EXONS>){
-	chomp($line);
-	my @a = split(/\t/, $line);
-	my $line1 = $a[0];
-	my $strand = $a[1];
-	my ($chr, $start, $end);
-	if ($line1 =~ /([^:\t\s]+):(\d+)-(\d+)/){
-	    $chr = $1;
-	    $start = $2;
-	    $end = $3;
-	}
-	my $exon = "$chr:$start-$end";
-	if ($line1 =~ /\.[1]$/){
-	    $exon = $exon . ".1";
-	}
-	my $index_st = int($start/1000);
-	my $index_end = int($end/1000);
-	if (exists $exonSTR{$exon}){
-	    next;
-	}
-	for (my $index = $index_st; $index <= $index_end; $index++){
-	    push (@{$exonHASH{$chr}[$index]}, $exon);
-	}
-	my @exonStArray = ();
-	my @exonEndArray = ();
-	$exonSTR{$exon} = $strand;
-	$ML_E{$exon} = 1;
-	push (@exonStArray, $start);
-	push (@exonEndArray, $end);
-	$exSTART{$exon} = \@exonStArray;
-	$exEND{$exon} = \@exonEndArray;
-	$exon_uniqueCOUNT{$exon} = 0;
-	$exon_nuCOUNT{$exon} = 0;
-	if ($stranded eq "true"){
-	    $exon_uniqueCOUNT_anti{$exon} = 0;
-	    $exon_nuCOUNT_anti{$exon} = 0;
-	    $ML_E_A{$exon} = 1;
-	}
+open(EXONS, $exonsfile) or die "cannot find '$exonsfile'\n";
+while(my $line = <EXONS>){
+    chomp($line);
+    my @a = split(/\t/, $line);
+    my $line1 = $a[0];
+    my $strand = $a[1];
+    my ($chr, $start, $end);
+    if ($line1 =~ /([^:\t\s]+):(\d+)-(\d+)/){
+	$chr = $1;
+	$start = $2;
+	$end = $3;
+    }
+    my $exon = "$chr:$start-$end";
+    if ($line1 =~ /\.[1]$/){
+	$exon = $exon . ".1";
+    }
+    my $index_st = int($start/1000);
+    my $index_end = int($end/1000);
+    if (exists $exonSTR{$exon}){
+	next;
+    }
+    for (my $index = $index_st; $index <= $index_end; $index++){
+	push (@{$exonHASH{$chr}[$index]}, $exon);
+    }
+    my @exonStArray = ();
+    my @exonEndArray = ();
+    $exonSTR{$exon} = $strand;
+    $ML_E{$exon} = 1;
+    push (@exonStArray, $start);
+    push (@exonEndArray, $end);
+    $exSTART{$exon} = \@exonStArray;
+    $exEND{$exon} = \@exonEndArray;
+    $exon_uniqueCOUNT{$exon} = 0;
+    $exon_nuCOUNT{$exon} = 0;
+    if ($stranded eq "true"){
+	$exon_uniqueCOUNT_anti{$exon} = 0;
+	$exon_nuCOUNT_anti{$exon} = 0;
+	$ML_E_A{$exon} = 1;
     }
 }
 my (%intronHASH, %intSTART, %intEND, %intronSTR, %intron_uniqueCOUNT, %intron_nuCOUNT, %intron_uniqueCOUNT_anti, %intron_nuCOUNT_anti, %doneINTRON, %doneINTRON_ANTI);
 my (%ML_I, %ML_I_A);
 # master list of introns
 my $intronsfile = $ARGV[2];
-if ($qintron eq "true"){
-    open(INTRONS, $intronsfile) or die "cannot find '$intronsfile'\n";
-    while(my $line = <INTRONS>){
-	chomp($line);
-	my @a = split(/\t/, $line);
-	my $line1 = $a[0];
-	my $strand = $a[1];
-	my ($chr, $start, $end);
-	if ($line1 =~ /([^:\t\s]+):(\d+)-(\d+)/){
-	    $chr = $1;
-	    $start = $2;
-	    $end = $3;
-	}
-	my $intron = "$chr:$start-$end";
-	if ($line1 =~ /\.[1]$/){
-	    $intron = $intron . ".1";
-	}
-	my $index_st = int($start/1000);
-	my $index_end = int($end/1000);
-	if (exists $intronSTR{$intron}){
-	    next;
-	}
-	for (my $index = $index_st; $index <= $index_end; $index++){
-	    push (@{$intronHASH{$chr}[$index]}, $intron);
-	}
-	my @intronStArray = ();
-	my @intronEndArray = ();
-	$intronSTR{$intron} = $strand;
-	$ML_I{$intron} = 1;
-	push (@intronStArray, $start);
-	push (@intronEndArray, $end);
-	$intSTART{$intron} = \@intronStArray;
-	$intEND{$intron} = \@intronEndArray;
-	$intron_uniqueCOUNT{$intron} = 0;
-	$intron_nuCOUNT{$intron} = 0;
-	if ($stranded eq "true"){
-	    $intron_uniqueCOUNT_anti{$intron} = 0;
-	    $intron_nuCOUNT_anti{$intron} = 0;
-	    $ML_I_A{$intron}=1;
-	}
+open(INTRONS, $intronsfile) or die "cannot find '$intronsfile'\n";
+while(my $line = <INTRONS>){
+    chomp($line);
+    my @a = split(/\t/, $line);
+    my $line1 = $a[0];
+    my $strand = $a[1];
+    my ($chr, $start, $end);
+    if ($line1 =~ /([^:\t\s]+):(\d+)-(\d+)/){
+	$chr = $1;
+	$start = $2;
+	$end = $3;
+    }
+    my $intron = "$chr:$start-$end";
+    if ($line1 =~ /\.[1]$/){
+	$intron = $intron . ".1";
+    }
+    my $index_st = int($start/1000);
+    my $index_end = int($end/1000);
+    if (exists $intronSTR{$intron}){
+	next;
+    }
+    for (my $index = $index_st; $index <= $index_end; $index++){
+	push (@{$intronHASH{$chr}[$index]}, $intron);
+    }
+    my @intronStArray = ();
+    my @intronEndArray = ();
+    $intronSTR{$intron} = $strand;
+    $ML_I{$intron} = 1;
+    push (@intronStArray, $start);
+    push (@intronEndArray, $end);
+    $intSTART{$intron} = \@intronStArray;
+    $intEND{$intron} = \@intronEndArray;
+    $intron_uniqueCOUNT{$intron} = 0;
+    $intron_nuCOUNT{$intron} = 0;
+    if ($stranded eq "true"){
+	$intron_uniqueCOUNT_anti{$intron} = 0;
+	$intron_nuCOUNT_anti{$intron} = 0;
+	$ML_I_A{$intron}=1;
     }
 }
 my (%igHASH, %igSTART, %igEND, %doneIG);
@@ -458,8 +498,8 @@ my (@EXON_FLAG_DIST, @EXON_FLAG_DIST_ANTI, @INTRON_FLAG_DIST, @INTRON_FLAG_DIST_
 my (@exon_outfile_cnt, @A_exon_outfile_cnt, @intron_outfile_cnt, @A_intron_outfile_cnt);
 my $ig_outfile_cnt = 0;
 my $exon_inconsistent_outfile_cnt = 0;
-my $max_exon = 20;
-my $max_intron = 10;
+
+
 for (my $i=0;$i<=$max_exon;$i++){
     $exon_outfile_cnt[$i] = 0;
     $EXON_FLAG_DIST[$i] = 0;
@@ -485,12 +525,13 @@ while(my $line = <SAM>){
 	next;
     }
     my $sense = "false";
-
+    
     my $exonFlag = 0;
     my $AexonFlag = 0;
     my $intronFlag = 0;
     my $AintronFlag = 0;
     my $igFlag = 0;
+    my $eiFlag = 0;
     my $print_exon = "true";
     my $print_exon_A = "true";
     my $print_intron = "true";
@@ -523,7 +564,7 @@ while(my $line = <SAM>){
 	$cigar =~ s/$str/$new_str/;
     }
     my $spans = &cigar2spans($readSt, $cigar);
-#    print "$read_id\t"; #debug
+#    print "===============\n$read_id\t"; #debug
     my %EXONS = (); #debug
     my %A_EXONS = (); #debug
     my %INTRONS = (); #debug
@@ -545,6 +586,20 @@ while(my $line = <SAM>){
     undef %doneEXON_ANTI;
     undef %doneINTRON_ANTI;
     undef %doneIG;
+    
+    #set highexp feature to 0
+    foreach my $exon (keys %HIGHEXP_E){
+	$HIGHEXP_E{$exon} = 0;
+    }
+    foreach my $intron (keys %HIGHEXP_I){
+        $HIGHEXP_I{$intron} = 0;
+    }
+    foreach my $exon (keys %HIGHEXP_E_A){
+	$HIGHEXP_E_A{$exon} = 0;
+    }
+    foreach my $intron (keys %HIGHEXP_I_A){
+	$HIGHEXP_I_A{$intron} = 0;
+    }
     # if stranded, check read orientation using exon
     if ($stranded eq "true"){
 	for(my $i=0;$i<@b;$i++){
@@ -628,93 +683,94 @@ while(my $line = <SAM>){
 	}
     }
     for(my $i=0;$i<@b;$i++){
+	# NON-STRANDED: if a span is an exonmapper, it cannot be an intronmapper.
+	# STRANDED: if a span is a sense-exonmapper, it cannot be anything else. [priority: sense-exon > sense-intron > (anti-exon and anti-intron)]
+
+	#check one span at a time
+	my @readStarts_span = ();
+	my @readEnds_span = ();
+	my @c = split("-", $b[$i]);
+	my $read_st = $c[0];
+        $read_st =~ s/^\s*(.*?)\s*$/$1/;
+	my $read_end = $c[1];
+        $read_end =~ s/^\s*(.*?)\s*$/$1/;
+        push (@readStarts_span, $read_st);
+        push (@readEnds_span, $read_end);
+
+	my $exon_mapper = 0;
+	my $intron_mapper = 0;
 	$b[$i] =~ /(\d+)-(\d+)/;
 	my $read_segment_start = $1;
 	my $read_segment_end = $2;
 	my $read_segment_start_block = int($read_segment_start / 1000);
 	my $read_segment_end_block = int($read_segment_end / 1000);
+	#print "\n$b[$i]\n------\n";
+	my %temp_AE = ();
 	for(my $index=$read_segment_start_block; $index<= $read_segment_end_block; $index++) {
-	    if ($qexon eq "true"){
-		# check if read span maps to exon
-		if (exists $exonHASH{$chr}[$index]){
-		    my $hashsize = @{$exonHASH{$chr}[$index]};
-		    for (my $j=0; $j<$hashsize; $j++){
-			my $exon = $exonHASH{$chr}[$index][$j];
-			my $check = &checkCompatibility($chr, $exSTART{$exon}, $exEND{$exon}, $chr, \@readStarts, \@readEnds);
-			my $check_anti = &compareSegments_overlap($chr, $chr, $exSTART{$exon}->[0], $exEND{$exon}->[0], \@readStarts, \@readEnds);
-			if ($stranded eq "true"){
-			    my $read_strand = "";
-			    if ($FWD eq "true"){
-				if ($bitflag & 16){
-				    $read_strand = "-";
-				}
-				else{
-				    $read_strand = "+";
-				}
+	    # check if read span maps to exon
+	    if (exists $exonHASH{$chr}[$index]){
+		my $hashsize = @{$exonHASH{$chr}[$index]};
+		for (my $j=0; $j<$hashsize; $j++){
+		    my $exon = $exonHASH{$chr}[$index][$j];
+		    my $check_all = &checkCompatibility($chr, $exSTART{$exon}, $exEND{$exon}, $chr, \@readStarts, \@readEnds);
+		    my $check_span = &checkCompatibility($chr, $exSTART{$exon}, $exEND{$exon}, $chr, \@readStarts_span, \@readEnds_span);
+		    my $check = $check_all + $check_span;
+		    my $check_anti = &compareSegments_overlap($chr, $chr, $exSTART{$exon}->[0], $exEND{$exon}->[0], \@readStarts, \@readEnds);
+		    #print "all:$check_all\tspan:$check_span\tanti:$check_anti\n"; #debug
+		    if ($stranded eq "true"){
+			my $read_strand = "";
+			if ($FWD eq "true"){
+			    if ($bitflag & 16){
+				$read_strand = "-";
 			    }
-			    if ($REV eq "true"){
-				if ($bitflag & 16){
-				    $read_strand = "+";
-				}
-				else{
-				    $read_strand = "-";
-				}
+			    else{
+				$read_strand = "+";
 			    }
-			    if ($check eq "1"){
-				if ($read_strand eq $exonSTR{$exon}){ #sense
-				    if (!(defined $doneEXON{$exon})){
-					$EXONS{$exon} = 1; #debug
-					if (exists $REMOVE_E{$exon}){
-					    $print_exon = "false";
-					    delete $ML_E{$exon};
+			}
+			if ($REV eq "true"){
+			    if ($bitflag & 16){
+				$read_strand = "+";
+			    }
+			    else{
+				$read_strand = "-";
+			    }
+			}
+			if ($check eq "2"){ #read span maps to sense-exon
+			    if ($read_strand eq $exonSTR{$exon}){ #sense
+				if (!(defined $doneEXON{$exon})){
+				    $EXONS{$exon} = 1; #debug
+				    if (exists $HIGHEXP_E{$exon}){
+					$print_exon = "false";
+					$HIGHEXP_E{$exon}++;
+					#delete $ML_E{$exon};
+				    }
+				    else{
+					$exonFlag++;
+					$exon_mapper++;
+					if($exonFlag == 1) {
+					    $CNT_OF_FRAGS_WHICH_HIT_EXONS++;
 					}
-					else{
-					    $exonFlag++;
-					    if($exonFlag == 1) {
-						$CNT_OF_FRAGS_WHICH_HIT_EXONS++;
-					    }
-					    if ($UNIQUE eq "true"){
-						$exon_uniqueCOUNT{$exon}++;
-					    }
-					    if ($NU eq "true"){
-						$exon_nuCOUNT{$exon}++;
-					    }
+					if ($UNIQUE eq "true"){
+					    $exon_uniqueCOUNT{$exon}++;
+					}
+					if ($NU eq "true"){
+					    $exon_nuCOUNT{$exon}++;
 					}
 				    }
-				    $doneEXON{$exon} = 1;
 				}
-				elsif ($sense eq "false"){ # antisense
-				    if (!(defined $doneEXON_ANTI{$exon})){
-					$A_EXONS{$exon} = 1; #debug
-					if (exists $REMOVE_E_A{$exon}){
-					    $print_exon_A = "false";
-					    delete $ML_E_A{$exon};
-					}
-					else{
-					    $AexonFlag++;
-					    if ($AexonFlag == 1){
-						$CNT_OF_FRAGS_WHICH_HIT_EXONS_ANTI++;
-					    }
-					    if ($UNIQUE eq "true"){
-						$exon_uniqueCOUNT_anti{$exon}++;
-					    }
-					    if ($NU eq "true"){
-						$exon_nuCOUNT_anti{$exon}++;
-					    }
-					}
-				    }
-				    $doneEXON_ANTI{$exon}=1;
-				}
+				$doneEXON{$exon} = 1;
 			    }
-			    if (($sense eq "false") && ($check_anti eq "1") && ($read_strand ne $exonSTR{$exon})){ # antisense
+			    elsif ($sense eq "false"){ # antisense
 				if (!(defined $doneEXON_ANTI{$exon})){
 				    $A_EXONS{$exon} = 1; #debug
-				    if (exists $REMOVE_E_A{$exon}){
+				    if (exists $HIGHEXP_E_A{$exon}){
 					$print_exon_A = "false";
-					delete $ML_E_A{$exon};
+					$HIGHEXP_E_A{$exon}++;
+					#delete $ML_E_A{$exon};
 				    }
 				    else{
 					$AexonFlag++;
+					$temp_AE{$exon} = 1;
 					if ($AexonFlag == 1){
 					    $CNT_OF_FRAGS_WHICH_HIT_EXONS_ANTI++;
 					}
@@ -729,52 +785,61 @@ while(my $line = <SAM>){
 				$doneEXON_ANTI{$exon}=1;
 			    }
 			}
-			if ($stranded eq "false"){
-			    if ($check eq "1"){
-				if (!(defined $doneEXON{$exon})){
-				    $EXONS{$exon} = 1; #debug
-				    if (exists $REMOVE_E{$exon}){
-					$print_exon = "false";
-					delete $ML_E{$exon};
+			elsif (($sense eq "false") && ($check_anti eq "1") && ($read_strand ne $exonSTR{$exon})){ # antisense
+			    if (!(defined $doneEXON_ANTI{$exon})){
+				$A_EXONS{$exon} = 1; #debug
+				if (exists $HIGHEXP_E_A{$exon}){
+				    $print_exon_A = "false";
+				    $HIGHEXP_E_A{$exon}++;
+				    #delete $ML_E_A{$exon};
+				}
+				else{
+				    $AexonFlag++;
+				    $temp_AE{$exon} = 1;
+				    if ($AexonFlag == 1){
+					$CNT_OF_FRAGS_WHICH_HIT_EXONS_ANTI++;
 				    }
-				    else{
-					$exonFlag++;
-					if($exonFlag == 1) {
-					    $CNT_OF_FRAGS_WHICH_HIT_EXONS++;
-					}
-					if ($UNIQUE eq "true"){
-					    $exon_uniqueCOUNT{$exon}++;
-					}
-					elsif ($NU eq "true"){
-					    $exon_nuCOUNT{$exon}++;
-					}
+				    if ($UNIQUE eq "true"){
+					$exon_uniqueCOUNT_anti{$exon}++;
+				    }
+				    if ($NU eq "true"){
+					$exon_nuCOUNT_anti{$exon}++;
 				    }
 				}
-				$doneEXON{$exon}=1;
 			    }
+			    $doneEXON_ANTI{$exon}=1;
 			}
 		    }
-		}
-	    }
-	    # check if read span maps to intergenic region
-	    if ($print eq "true"){
-		if (exists $igHASH{$chr}[$index]){
-		    my $hashsize = @{$igHASH{$chr}[$index]};
-		    for (my $j=0;$j<$hashsize;$j++){
-			my $interg = $igHASH{$chr}[$index][$j];
-			my $check = &compareSegments_overlap($chr,$chr,$igSTART{$interg}->[0], $igEND{$interg}->[0], \@readStarts, \@readEnds);
-			if ($check eq "1"){
-			    $IGS{$interg} = 1; #debug
-			    if (!(defined $doneIG{$interg})){
-				$igFlag++;
+		    if ($stranded eq "false"){
+			if ($check eq "2"){
+			    if (!(defined $doneEXON{$exon})){
+				$EXONS{$exon} = 1; #debug
+				if (exists $HIGHEXP_E{$exon}){
+				    $print_exon = "false";
+				    $HIGHEXP_E{$exon}++;
+				    #delete $ML_E{$exon};
+				}
+				else{
+				    $exonFlag++;
+				    $exon_mapper++;
+				    if($exonFlag == 1) {
+					$CNT_OF_FRAGS_WHICH_HIT_EXONS++;
+				    }
+				    if ($UNIQUE eq "true"){
+					$exon_uniqueCOUNT{$exon}++;
+				    }
+				    elsif ($NU eq "true"){
+					$exon_nuCOUNT{$exon}++;
+				    }
+				}
 			    }
-			    $doneIG{$interg}=1;
+			    $doneEXON{$exon}=1;
 			}
 		    }
 		}
 	    }
 	    # check if read span maps to introns
-	    if ($qintron eq "true"){
+	    if ($exon_mapper == 0){ #only if span not mapped to exon/sense-exon
 		if (exists $intronHASH{$chr}[$index]){
 		    my $hashsize = @{$intronHASH{$chr}[$index]};
 		    for (my $j=0; $j<$hashsize; $j++){
@@ -784,12 +849,14 @@ while(my $line = <SAM>){
 			    if ($check eq "1"){
 				if (!(defined $doneINTRON{$intron})){                            
 				    $INTRONS{$intron} = 1; #debug
-				    if (exists $REMOVE_I{$intron}){
+				    if (exists $HIGHEXP_I{$intron}){
                                         $print_intron = "false";
-					delete $ML_I{$intron};
+					$HIGHEXP_I{$intron}++;
+					#delete $ML_I{$intron};
                                     }
                                     else{
 					$intronFlag++;
+					$intron_mapper++;
 					if($intronFlag == 1) {
 					    $CNT_OF_FRAGS_WHICH_HIT_INTRONS++;
 					}
@@ -819,7 +886,7 @@ while(my $line = <SAM>){
 				    $read_strand = "+";
 				}
 				else{
-				$read_strand = "-";
+				    $read_strand = "-";
 				}
 			    }
 			    if ($check eq "1"){
@@ -827,12 +894,14 @@ while(my $line = <SAM>){
 				    if ($read_strand eq $intronSTR{$intron}){ #sense
 					if (!(defined $doneINTRON{$intron})){
 					    $INTRONS{$intron} = 1; #debug
-					    if (exists $REMOVE_I{$intron}){
+					    if (exists $HIGHEXP_I{$intron}){
 						$print_intron = "false";
-						delete $ML_I{$intron};
+						$HIGHEXP_I{$intron}++;
+						#delete $ML_I{$intron};
 					    }
 					    else{
 						$intronFlag++;
+						$intron_mapper++;
 						if($intronFlag == 1) {
 						    $CNT_OF_FRAGS_WHICH_HIT_INTRONS++;
 						}
@@ -847,12 +916,13 @@ while(my $line = <SAM>){
 					$doneINTRON{$intron} = 1;
 				    }
 				}
-				elsif ($sense eq "false"){ #antisense
+				else { #antisense
 				    if (!(defined $doneINTRON_ANTI{$intron})){
 					$A_INTRONS{$intron} = 1; #debug				
-					if (exists $REMOVE_I_A{$intron}){
+					if (exists $HIGHEXP_I_A{$intron}){
 					    $print_intron_A = "false";
-					    delete $ML_I_A{$intron};
+					    $HIGHEXP_I_A{$intron}++;
+					    #delete $ML_I_A{$intron};
 					}
 					else{
 					    $AintronFlag++;
@@ -875,74 +945,110 @@ while(my $line = <SAM>){
 		}
 	    }
 	}
+	# if span is sense-intron mapper AND antisense-exon mapper, uncount antisense exon
+	if ($stranded eq "true"){
+	    if ($intron_mapper == 1){ #sense intronmapper
+		# un-count antisense-exon
+		if ($AexonFlag > 0){
+		    foreach my $exon (keys %temp_AE){
+#			print "ANTI:$exon\t";
+			delete $A_EXONS{$exon};
+			if (exists $HIGHEXP_E_A{$exon}){
+			    $print_exon_A = "true";
+			    $HIGHEXP_E_A{$exon}--;
+			}
+			else{
+			    if ($AexonFlag == 1){
+				$CNT_OF_FRAGS_WHICH_HIT_EXONS_ANTI--;
+			    }
+			    if ($AexonFlag > 0){
+				$AexonFlag--;
+			    }
+			    if ($UNIQUE eq "true"){
+				$exon_uniqueCOUNT_anti{$exon}--;
+			    }
+			    elsif ($NU eq "true"){
+				$exon_nuCOUNT_anti{$exon}--;
+			    }
+			}
+			delete $doneEXON_ANTI{$exon};
+		    }
+		}
+	    }
+	}
+#	print "exonmapper:$exon_mapper\tintronmapper:$intron_mapper\n"; #debug
     }
+    # intergenic mapper?
+    # check if read span maps to intergenic region only if it didn't map to anything
+    if ($print eq "true"){
+	if (($exonFlag == 0) && ($intronFlag == 0) && ($AexonFlag == 0) && ($AintronFlag == 0)){
+	    for(my $i=0;$i<@b;$i++){
+		$b[$i] =~ /(\d+)-(\d+)/;
+		my $read_segment_start = $1;
+		my $read_segment_end = $2;
+		my $read_segment_start_block = int($read_segment_start / 1000);
+		my $read_segment_end_block = int($read_segment_end / 1000);
+		for(my $index=$read_segment_start_block; $index<= $read_segment_end_block; $index++) {
+		    if (exists $igHASH{$chr}[$index]){
+			my $hashsize = @{$igHASH{$chr}[$index]};
+			for (my $j=0;$j<$hashsize;$j++){
+			    my $interg = $igHASH{$chr}[$index][$j];
+			    my $check = &compareSegments_overlap($chr,$chr,$igSTART{$interg}->[0], $igEND{$interg}->[0], \@readStarts, \@readEnds);
+			    if ($check eq "1"){
+				$IGS{$interg} = 1; #debug
+				if (!(defined $doneIG{$interg})){
+				    $igFlag++;
+				}
+				$doneIG{$interg}=1;
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+    # START PRINTING : READ LEVEL NOW
     #exon
     if (($print eq "true") && ($print_exon eq "true")){
 	if ($exonFlag >= 1){
 	    print EXONSAMOUT "$line\n";
-	    for (my $i=1; $i<$i_exon;$i++){
+	    for (my $i=1; $i<$max_exon;$i++){
 		if ($exonFlag == $i){
 		    $exon_outfile_cnt[$i]++;
 		    print {$OUTFILE_EXON[$i]} "$line\n";
 		}
 	    }
-	    if ($exonFlag >= $i_exon){
-		$exon_outfile_cnt[$i_exon]++;
-		print {$OUTFILE_EXON[$i_exon]} "$line\n";
+	    if ($exonFlag >= $max_exon){
+		$exon_outfile_cnt[$max_exon]++;
+		print {$OUTFILE_EXON[$max_exon]} "$line\n";
 	    }
 	    if ($intronFlag >= 1){
-		if ($igFlag >= 1){ #exon-intron-intergenic
-		    $ex_int_ig++;
-		}
-		else{ #exon-intron
-		    $ex_int++;
-		}
+		$ex_int++; #exon-intron
 	    }
-	    elsif ($igFlag >= 1){ #exon-intergenic
-		$ex_ig++;
-	    }
-	    else{ #exon-only
-		$ex_only++;
+	    else{
+		$ex_only++; #exon-only
 	    }
 	}
     }
+    #antisense-exon
     if (($print eq "true") && ($print_exon_A eq "true")){
 	if ($AexonFlag >= 1){
 	    print ANTIEXONSAMOUT "$line\n";
-	    for (my $i=1; $i<$i_exon;$i++){
+	    for (my $i=1; $i<$max_exon;$i++){
                 if ($AexonFlag == $i){
                     $A_exon_outfile_cnt[$i]++;
                     print {$OUTFILE_EXON_A[$i]} "$line\n";
                 }
             }
-            if ($AexonFlag >= $i_exon){
-		$A_exon_outfile_cnt[$i_exon]++;
-		print {$OUTFILE_EXON_A[$i_exon]} "$line\n";
+            if ($AexonFlag >= $max_exon){
+		$A_exon_outfile_cnt[$max_exon]++;
+		print {$OUTFILE_EXON_A[$max_exon]} "$line\n";
             }
 	    if ($AintronFlag >= 1){
-		if ($igFlag >= 1){ #exon-intron-intergenic
-		    $ex_int_ig_a++;
-		}
-		else{ #exon-intron
-		    $ex_int_a++;
-		}
+		$ex_int_a++; #antisense exon and antisense intron
 	    }
-	    elsif ($igFlag >= 1){ #exon-intergenic
-		$ex_ig_a++;
-	    }
-	    else{ #exon-only
-		$ex_only_a++;
-	    }
-
-	}
-    }
-    #intergenic region
-    if ($print eq "true"){
-	if ($igFlag >=1){
-	    $ig_outfile_cnt++;
-	    print INTERGENIC "$line\n";
-	    if (($exonFlag == 0) && ($intronFlag == 0) && ($AexonFlag == 0) && ($AintronFlag == 0)){
-		$ig_only++;
+	    else{
+		$ex_only_a++; #antisense exon only
 	    }
 	}
     }
@@ -950,54 +1056,95 @@ while(my $line = <SAM>){
     if (($print eq "true") && ($print_intron eq "true")){
         if ($intronFlag >= 1){
             print INTRONSAMOUT "$line\n";
-            for (my $i=1; $i<$i_intron;$i++){
+            for (my $i=1; $i<$max_intron;$i++){
                 if ($intronFlag == $i){
-                    $intron_outfile_cnt[$i]++;
+		    $intron_outfile_cnt[$i]++;
                     print {$OUTFILE_INTRON[$i]} "$line\n";
                 }
             }
-            if ($intronFlag >= $i_intron){
-                $intron_outfile_cnt[$i_intron]++;
-                print {$OUTFILE_INTRON[$i_intron]} "$line\n";
+            if ($intronFlag >= $max_intron){
+		$intron_outfile_cnt[$max_intron]++;
+                print {$OUTFILE_INTRON[$max_intron]} "$line\n";
             }
-	    if (($exonFlag == 0) && ($igFlag == 0)){
-		$int_only++;
-	    }
-	    if (($igFlag >= 1) && ($exonFlag == 0)){
-		$int_ig++;
+	    if ($exonFlag == 0){
+		$int_only++; #intron only
 	    }
         }
     }
+    #antisense-intron
     if (($print eq "true") && ($print_intron_A eq "true")){
         if ($AintronFlag >= 1){
             print ANTIINTRONSAMOUT "$line\n";
-            for (my $i=1; $i<$i_intron;$i++){
+            for (my $i=1; $i<$max_intron;$i++){
                 if ($AintronFlag == $i){
                     $A_intron_outfile_cnt[$i]++;
                     print {$OUTFILE_INTRON_A[$i]} "$line\n";
                 }
             }
-            if ($AintronFlag >= $i_intron){
-                $A_intron_outfile_cnt[$i_intron]++;
-                print {$OUTFILE_INTRON_A[$i_intron]} "$line\n";
+            if ($AintronFlag >= $max_intron){
+                $A_intron_outfile_cnt[$max_intron]++;
+                print {$OUTFILE_INTRON_A[$max_intron]} "$line\n";
             }
-	    if (($AexonFlag == 0) && ($igFlag == 0)){
-		$int_only_a++;
-	    }
-	    if (($igFlag >= 1) && ($AexonFlag == 0)){
-		$int_ig_a++;
+	    if ($AexonFlag == 0){
+		$int_only_a++; #antisense-intron only
 	    }
         }
     }
-    #exon_inconsistent reads
     if ($print eq "true"){
 	if (($print_exon eq "true") && ($print_intron eq "true")&& ($print_exon_A eq "true")&& ($print_intron_A eq "true")){ # read doesn't map to high expressers
+	    #exon_inconsistent reads
 	    if (($intronFlag eq '0') && ($exonFlag eq '0') && ($igFlag eq '0') && ($AexonFlag eq '0') && ($AintronFlag eq "0")){
 		print EXON_INCONSISTENT "$line\n";
+		$eiFlag++;
 		$exon_inconsistent_outfile_cnt++;
 		$ex_inc_only++; #exon-inconsistent-only
 	    }
+	    #intergenic region
+	    if ($igFlag >= 1){           
+		print INTERGENIC "$line\n";
+		$ig_outfile_cnt++;
+		$ig_only++; #intergenic only
+	    }
 	}
+    }
+    #high exp reads
+    if ($print eq "true"){
+	foreach my $exon (keys %HIGHEXP_E){
+	    if ($HIGHEXP_E{$exon} > 0){
+                print {$OUT_HIGH_E{$exon}} "$line\n";
+		$CNT_HIGH_E{$exon}++;
+	    }
+	}
+        foreach my $exon (keys %HIGHEXP_E_A){
+            if ($HIGHEXP_E_A{$exon} > 0){
+                print {$OUT_HIGH_E_A{$exon}} "$line\n";
+		$CNT_HIGH_E_A{$exon}++;
+            }
+	}
+        foreach my $intron (keys %HIGHEXP_I){
+            if ($HIGHEXP_I{$intron} > 0){
+		print {$OUT_HIGH_I{$intron}} "$line\n";
+		$CNT_HIGH_I{$intron}++;
+            }
+	}
+	foreach my $intron (keys %HIGHEXP_I_A){
+            if ($HIGHEXP_I_A{$intron} > 0){
+                print {$OUT_HIGH_I_A{$intron}} "$line\n";
+		$CNT_HIGH_I_A{$intron}++;
+            }
+        }
+    }
+    if ($exonFlag > $max_exon){
+	$exonFlag = $max_exon;
+    }
+    if ($AexonFlag > $max_exon){
+	$AexonFlag = $max_exon;
+    }
+    if ($intronFlag > $max_intron){
+	$intronFlag = $max_intron;
+    }
+    if ($AintronFlag > $max_intron){
+	$AintronFlag = $max_intron;
     }
     $EXON_FLAG_DIST[$exonFlag]++;
     $EXON_FLAG_DIST_ANTI[$AexonFlag]++;
@@ -1021,13 +1168,13 @@ while(my $line = <SAM>){
     foreach my $ig (sort keys %IGS){
 	print "IG:$ig; ";
     }
-    die"\n";
+    print"\n";
 =cut
 }
 close(SAM);
 
 if ($print eq "true"){
-    for (my $i=1;$i<=$i_exon;$i++){
+    for (my $i=1;$i<=$max_exon;$i++){
 	print LC "$exon_sam_outfile[$i]\t$exon_outfile_cnt[$i]\n";
 	print {$OUTFILE_EXON[$i]} "line count = $exon_outfile_cnt[$i]\n";
 	close($OUTFILE_EXON[$i]);
@@ -1037,7 +1184,7 @@ if ($print eq "true"){
 	    close($OUTFILE_EXON_A[$i]);
 	}
     }
-    for (my $i=1;$i<=$i_intron;$i++){
+    for (my $i=1;$i<=$max_intron;$i++){
         print LC "$intron_sam_outfile[$i]\t$intron_outfile_cnt[$i]\n";
         print {$OUTFILE_INTRON[$i]} "line count = $intron_outfile_cnt[$i]\n";
         close($OUTFILE_INTRON[$i]);
@@ -1052,30 +1199,32 @@ if ($print eq "true"){
 
     print LC "$exon_inconsistent_sam_out\t$exon_inconsistent_outfile_cnt\n";
     print EXON_INCONSISTENT "line count = $exon_inconsistent_outfile_cnt\n";
-    
+
+    foreach my $exon (keys %HIGHEXP_E){
+	print {$OUT_HIGH_E{$exon}} "line count = $CNT_HIGH_E{$exon}\n";
+	print LC "$exon\t$CNT_HIGH_E{$exon}\n";
+    }
+    foreach my $exon (keys %HIGHEXP_E_A){
+	print {$OUT_HIGH_E_A{$exon}} "line count = $CNT_HIGH_E_A{$exon}\n";
+	print LC_A "$exon\t$CNT_HIGH_E_A{$exon}\n";
+    }
+    foreach my $intron (keys %HIGHEXP_I){
+	print {$OUT_HIGH_I{$intron}} "line count = $CNT_HIGH_I{$intron}\n";
+	print LC "$intron\t$CNT_HIGH_I{$intron}\n";
+    }
+    foreach my $intron (keys %HIGHEXP_I_A){
+	print {$OUT_HIGH_I_A{$intron}} "line count = $CNT_HIGH_I_A{$intron}\n";
+        print LC_A "$intron\t$CNT_HIGH_I_A{$intron}\n";
+    }
     #stats
     open(STATS, ">$statsfile");
     if ($stranded eq "false"){ #not stranded
-	print STATS "total-linecount-standard-chr\t$total_lc\nexon-only\t$ex_only\nintron-only\t$int_only\nintergenic-only\t$ig_only\nexon-intron\t$ex_int\nexon-intergenic\t$ex_ig\nintron-intergenic\t$int_ig\nexon-intron-intergenic\t$ex_int_ig\nexon-inconsistent-only\t$ex_inc_only\n";
+	print STATS "total-linecount-standard-chr\t$total_lc\nexon-only\t$ex_only\nintron-only\t$int_only\nexon-intron\t$ex_int\nintergenic-only\t$ig_only\nexon-inconsistent-only\t$ex_inc_only\n";
     }
     else{ #stranded
-	print STATS "total-linecount-standard-chr\t$total_lc\nsense-exon-only\t$ex_only\nantisense-exon-only\t$ex_only_a\nsense-intron-only\t$int_only\nantisense-intron-only\t$int_only_a\nintergenic-only\t$ig_only\nsense-exon-intron\t$ex_int\nantisense-exon-intron\t$ex_int_a\nsense-exon-intergenic\t$ex_ig\nantisense-exon-intergenic\t$ex_ig_a\nsense-intron-intergenic\t$int_ig\nantisense-intron-intergenic\t$int_ig_a\nsense-exon-intron-intergenic\t$ex_int_ig\nantisense-exon-intron-intergenic\t$ex_int_ig_a\nexon-inconsistent-only\t$ex_inc_only\n";
+	print STATS "total-linecount-standard-chr\t$total_lc\nsense-exon-only\t$ex_only\nsense-intron-only\t$int_only\nsense-exon-intron\t$ex_int\nantisense-exon-only\t$ex_only_a\nantisense-intron-only\t$int_only_a\nantisense-exon-intron\t$ex_int_a\nintergenic-only\t$ig_only\nexon-inconsistent-only\t$ex_inc_only\n";
     }
     close(STATS);
-
-}
-
-if ($i_exon > $max_exon){
-    $max_exon = $i_exon;
-    if (@EXON_FLAG_DIST > $max_exon){
-	$max_exon = @EXON_FLAG_DIST;
-    }
-}
-if ($i_intron > $max_intron){
-    $max_intron = $i_intron;
-    if (@INTRON_FLAG_DIST > $max_intron){
-	$max_intron = @INTRON_FLAG_DIST;
-    }
 }
 #exonquants
 if ($qexon eq "true"){
@@ -1166,6 +1315,30 @@ sub cigar2spans {
     if($matchstring =~ /(\d+)S$/) {
         $matchstring =~ s/(\d+)S$//;
     }
+    while($matchstring =~ /(\d+)M(\d+)M/) {
+        my $n1 = $1;
+        my $n2 = $2;
+        my $n = $n1 + $n2;
+        my $str1 = $n1 . "M" . $n2 . "M";
+        my $str2 = $n . "M";
+        $matchstring =~ s/$str1/$str2/;
+    }
+    while($matchstring =~ /(\d+)N(\d+)D/) {
+        my $n1 = $1;
+	my $n2 = $2;
+        my $n = $n1 + $n2;
+        my $str1 = $n1 . "N" . $n2 . "D";
+        my $str2 = $n . "N";
+        $matchstring =~ s/$str1/$str2/;
+    }
+    while($matchstring =~ /(\d+)D(\d+)N/) {
+        my $n1 = $1;
+        my $n2 = $2;
+        my $n = $n1 + $n2;
+        my $str1 = $n1 . "D" . $n2 . "N";
+        my $str2 = $n . "N";
+        $matchstring =~ s/$str1/$str2/;
+    }
     if($matchstring =~ /D/) {
         $matchstring =~ /(\d+)M(\d+)D(\d+)M/;
         my $l1 = $1;
@@ -1175,6 +1348,14 @@ sub cigar2spans {
         $L = $L . "M";
         $matchstring =~ s/\d+M\d+D\d+M/$L/;
 
+    }
+    while($matchstring =~ /(\d+)M(\d+)M/) {
+        my $n1 = $1;
+        my $n2 = $2;
+        my $n = $n1 + $n2;
+        my $str1 = $n1 . "M" . $n2 . "M";
+        my $str2 = $n . "M";
+        $matchstring =~ s/$str1/$str2/;
     }
     while($matchstring =~ /^(\d+)([^\d])/) {
         my $num = $1;

@@ -10,6 +10,7 @@ where:
 <genome> is the genome sequene fasta file (with full path)
 
 option:
+ -bam <samtools> : bam input
  -samfilename <s> : set this to create junctions files using unfiltered aligned samfile.
                     <s> is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam)
                     and all sam files in each sample directory should have the same name.
@@ -65,6 +66,7 @@ my $request_memory_option = "";
 my $mem = "";
 my $gnorm = "false";
 my $stranded = "false";
+my $b_option = "";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -72,6 +74,11 @@ for (my $i=0;$i<@ARGV;$i++){
 }
 for(my $i=4; $i<@ARGV; $i++) {
     my $option_found = "false";
+    if ($ARGV[$i] eq '-bam'){
+	$b_option = "-bam $ARGV[$i+1]";
+	$option_found = "true";
+	$i++;
+    }
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];
@@ -213,13 +220,16 @@ while(my $line = <INFILE>) {
 	$logname = "$logdir/sam2junctions_gnorm.$id";
     }
     my $outfile1 = $filename;
-    $outfile1 =~ s/.sam$/_junctions_all.rum/;
+    $outfile1 =~ s/.sam$/_junctions_all.rum/i;
+    $outfile1 =~ s/.bam$/_junctions_all.rum/i;
     my $outfile2 = $filename;
-    $outfile2 =~ s/.sam$/_junctions_all.bed/;
+    $outfile2 =~ s/.sam$/_junctions_all.bed/i;
+    $outfile2 =~ s/.bam$/_junctions_all.bed/i;
     my $outfile3 = $filename;
-    $outfile3 =~ s/.sam$/_junctions_hq.bed/;
+    $outfile3 =~ s/.sam$/_junctions_hq.bed/i;
+    $outfile3 =~ s/.bam$/_junctions_hq.bed/i;
     open(OUTFILE, ">$shfile");
-    print OUTFILE "perl $path/rum-2.0.5_05/bin/make_RUM_junctions_file.pl --genes $genes --sam-in $final_dir/$filename --genome $genome --all-rum-out $junctions_dir/$outfile1 --all-bed-out $junctions_dir/$outfile2 --high-bed-out $junctions_dir/$outfile3 -faok\n";
+    print OUTFILE "perl $path/rum-2.0.5_05/bin/make_RUM_junctions_file.pl --genes $genes --sam-in $final_dir/$filename --genome $genome --all-rum-out $junctions_dir/$outfile1 --all-bed-out $junctions_dir/$outfile2 --high-bed-out $junctions_dir/$outfile3 -faok $b_option\n";
     close(OUTFILE);
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);

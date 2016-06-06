@@ -11,6 +11,8 @@ where:
 option:
  -stranded : set this if the data are strand-specific.
 
+ -se : set this for single end data
+
  -nu :  set this if you want to return only non-unique genepercents, otherwise by default
          it will return unique genepercents.
 
@@ -61,6 +63,7 @@ my $numargs = 0;
 my $status;
 my $new_mem;
 my $index = 0;
+my $se_option = "";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -68,6 +71,10 @@ for (my $i=0;$i<@ARGV;$i++){
 }
 for(my $i=3; $i<@ARGV; $i++) {
     my $option_found = 'false';
+    if ($ARGV[$i] eq '-se'){
+        $option_found = "true";
+	$se_option = "-se";
+    }
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];
@@ -188,10 +195,10 @@ while(my $line = <INFILE>){
     my $jobname = "$study.get_genepercents";
     open(OUT, ">$shfile");
     if ($U eq "true"){
-	print OUT "perl $path/get_genepercents.pl $sampledir $cutoff $outfile $stranded\n";
+	print OUT "perl $path/get_genepercents.pl $sampledir $cutoff $outfile $stranded $se_option\n";
     }
     if ($NU eq "true"){
-	print OUT "perl $path/get_genepercents.pl $sampledir $cutoff $outfile -nu $stranded\n";
+	print OUT "perl $path/get_genepercents.pl $sampledir $cutoff $outfile -nu $stranded $se_option\n";
     }
     close(OUT);
     while (qx{$status | wc -l} > $njobs){

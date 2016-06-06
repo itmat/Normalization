@@ -6,6 +6,8 @@ my $USAGE = "perl check_samformat.pl <samfile>
 
 option:
  -se: set this for single end data
+ -bam <samtools>: bam input
+
 
 ";
 
@@ -13,18 +15,32 @@ if (@ARGV<1){
     die $USAGE;
 }
 my $pe = "true";
+my $bam = "false";
+my $samtools = "";
 for (my $i=1; $i<@ARGV;$i++){
     my $option_found ="false";
     if ($ARGV[$i] eq "-se"){
 	$pe = "false";
 	$option_found = "true";
     }
+    if ($ARGV[$i] eq "-bam"){
+	$bam = "true";
+	$samtools = $ARGV[$i+1];
+	$option_found = "true";
+	$i++;
+    }
     if($option_found eq "false") {
 	die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
 my $cnt = 0;
-open(SAM, $ARGV[0]) or die "cannot find file \"$ARGV[0]\"\n";
+if ($bam eq "true"){
+    my $pipecmd = "$samtools view -h $ARGV[0]";
+    open(SAM, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
+}
+else{
+    open(SAM, $ARGV[0]) or die "cannot find file \"$ARGV[0]\"\n";
+}
 while (!eof SAM){
     my $first = <SAM>;
     if ($first =~ /^@/){

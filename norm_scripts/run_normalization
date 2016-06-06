@@ -26,6 +26,8 @@ OPTIONS:
      -part1_part2 : Use this option if you want to run steps in PART1 and PART2 without pausing. 
      -part2 : Use this option to resume the pipeline at PART2. You may edit the <file of sample_dirs> file 
                and/or change the highexpresser cutoff value.
+     -alt_out <s> : Use this option to redirect the normalized data to an alternate output directory <s> (full path)
+                    (Default: /path/to/studydir/NORMALIZED_DATA/)
      -h : print usage 
      -v : print version of PORT
 
@@ -67,7 +69,7 @@ OPTIONS:
 
 for(my $i=0; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq '-v'){
-	die "\nPORT v.0.7.5-beta\n\n";
+	die "\nPORT v0.8-beta\n\n";
     }
 }
 for(my $i=0; $i<@ARGV; $i++) {
@@ -102,6 +104,10 @@ my ($sample_dir, $LOC, $unaligned_file, $alignedfilename, $cfg_file, $cutoff_tem
 my $part2 = "false";
 for(my $i=0; $i<@ARGV; $i++) {
     my $option_found = "false";
+    if ($ARGV[$i] eq '-alt_out'){
+	$option_found = "true";
+	$i++;
+    }
     if ($ARGV[$i] eq '-part1_part2'){
 	$option_found = "true";
 	$shfile_name = "runall_normalization_part1_part2.sh";
@@ -286,11 +292,6 @@ if ($EXON_INTRON_JUNCTION_NORM =~ /^true/i){
     $normcnt++;
 }
 
-my $read_length = $READ_LENGTH;
-if (($read_length !~ /(\d+$)/) || ($read_length <= 0) ){
-    die "ERROR: Please provide # 0. NORMALIZATION and DATA TYPE - [C] Read Length in your cfg file \"$cfg_file\")\n\n";
-}
-
 if ($normcnt == 0){
     die "ERROR: Please select a type of Normalization you'd like to use (# 0. NORMALIZTION and DATA TYPE - [A] Normalization Type in your cfg file \"$cfg_file\")\n\n";
 }
@@ -418,7 +419,6 @@ if ($GZIP_COV ne ""){
 	$gzip_cov = "false";
     }
 }
-
 my $lsf = "false";
 my $sge = "false";
 my $other = "false";
@@ -492,10 +492,10 @@ if ($OTHER_CLUSTER =~ /^true/i){
 	$maxjobs = $MAX_JOBS;
     }
 }
+
 if ($num_cluster ne '1'){
     die "ERROR: please specify which cluster you're using in your configuration file \"$cfg_file\"\n";
 }
-
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
 my $logfile = $logdir . "/$study.run_normalization.log";
@@ -654,7 +654,7 @@ if ($EIJ eq "true"){
     my $header = <EIJ>;
     chomp($header);
     my @EIJHEADER = split(/\t/, $header);
-    my ($chrcol, $exonstartcol, $exonendcol, $strandcol, $txSt, $txEnd);
+    my ($chrcol, $exonstartcol, $exonendcol, $strandcol, $txSt, $txEnd, $symcol);
     for(my $i=0; $i<@EIJHEADER; $i++){
         if ($EIJHEADER[$i] =~ /strand$/){
             $strandcol = $i;
@@ -674,10 +674,13 @@ if ($EIJ eq "true"){
         if ($EIJHEADER[$i] =~ /txEnd$/){
             $txEnd = $i;
         }
+        if ($EIJHEADER[$i] =~ /geneSymbol$/){
+            $symcol = $i;
+        }
     }
 
-    if (!defined($chrcol) || !defined($exonstartcol) || !defined($exonendcol) || !defined($strandcol) || !defined($txSt) || !defined($txEnd)){
-        die "\nERROR: Input GENE_INFO_FILE \"$geneinfo\"\nmust contain column headers with the following suffixes: chrom, strand, txStart, txEnd, exonStarts, and exonEnds.\n\n";
+    if (!defined($chrcol) || !defined($exonstartcol) || !defined($exonendcol) || !defined($strandcol) || !defined($txSt) || !defined($txEnd) || !defined($symcol)){
+        die "\nERROR: Input GENE_INFO_FILE \"$geneinfo\"\nmust contain column headers with the following suffixes: chrom, strand, txStart, txEnd, exonStarts, exonEnds, and geneSymbol.\n\n";
     }
     while(my $line = <EIJ>){
         chomp($line);
@@ -792,11 +795,17 @@ close(SH);
 my ($p2_I, $p2_E);
 if ($part2 eq "true"){
 #if -part2 is set, check to make sure runall_normalization.sh file exists.
-    unless (-e "$shdir/runall_normalization.sh"){
-	die "ERROR: cannot find file \"$shdir/runall_normalization.sh\".\n-part2 option cannot be used. please run the pipeline using default pipeline setting first.\n";
+    unless ((-e "$shdir/runall_normalization.sh") || (-e "$shdir/runall_normalization_part1_part2.sh")){
+	die "ERROR: cannot find file \"$shdir/runall_normalization.sh\" or \"$shdir/runall_normalization_part1_part2.sh\".\n-part2 option cannot be used. please run the pipeline using default pipeline setting first.\n";
     }
 #if -depthE and/or -depthI is greater than before
-    my $default_sh = `cat $shdir/runall_normalization.sh`;
+    my $default_sh;
+    if (-e "$shdir/runall_normalization.sh"){
+	$default_sh = `cat $shdir/runall_normalization.sh`;
+    }
+    if (-e "$shdir/runall_normalization_part1_part2.sh"){
+	$default_sh = `cat $shdir/runall_normalization_part1_part2.sh`;
+    }
     my $part2_sh = `cat $runall_shfile`;
     my $def_E = 20;
     my $def_I = 10;
@@ -882,7 +891,7 @@ sub parse_config_file () {
         $config_line =~ s/^\s*//;
         $config_line =~ s/\s*$//;
         if ( ($config_line !~ /^#/) && ($config_line ne "") ){
-	    my ($Name, $Value) = split(/\s*=\s*/, $config_line);
+	    my ($Name, $Value) = split(/\s*=\s*/, $config_line,2);
 	    if ($Value =~ /^"/){
 		$Value =~ s/^"//;
 		$Value =~ s/"$//;

@@ -151,6 +151,7 @@ my $logdir = $study_dir . "logs";
 my $sam_name = $ARGV[2];
 my $junc_name = $sam_name;
 $junc_name =~ s/.sam$/_junctions_all.rum/i;
+$junc_name =~ s/.bam$/_junctions_all.rum/i;
 my $sorted_junc = $junc_name;
 $sorted_junc =~ s/.rum/.sorted.rum/;
 my $jobname = "$study.get_inferred_exons";

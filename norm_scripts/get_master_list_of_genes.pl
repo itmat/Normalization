@@ -9,9 +9,7 @@ my $USAGE = "\nUsage: perl get_master_list_of_genes.pl <ensGenes file> <loc> [op
 
 option:
  -stranded: set this if your data are strand-specific.
- -percent <n> : by default, 0% of the size of first and last exon of each transcript 
-                will be added to the start of the first and the end of the last exon, respectively.
-                use this option to change the percentage <n>. (<n> has to be a number between 0-100)
+ -readlength <n> : 2 * readlength will be added to the start of the first and the end of the last exon, respectively.
 
 
 ";
@@ -19,7 +17,8 @@ option:
 if (@ARGV <2 ){
     die $USAGE;
 }
-my $percent = 0;
+my $readlength = 0;
+my $rl_cnt = 0;
 my $stranded = "false";
 for(my $i=2; $i<@ARGV; $i++) {
     my $option_found = "false";
@@ -27,20 +26,19 @@ for(my $i=2; $i<@ARGV; $i++) {
 	$stranded = "true";
 	$option_found = "true";
     }
-    if ($ARGV[$i] eq "-percent"){
+    if ($ARGV[$i] eq "-readlength"){
         $option_found = "true";
-        $percent = $ARGV[$i+1];
+        $readlength = $ARGV[$i+1];
         $i++;
-	if (($percent !~ /(\d+$)/) || ($percent > 100) || ($percent < 0) ){
-            die "-percent <n> : <n> needs to be a number between 0-100\n";
-        }
+	$rl_cnt++;
     }
     if($option_found eq "false") {
 	die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
-
-
+if ($rl_cnt ne 1){
+    die "-readlength <n> is required.\n";
+}
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 my $ensFile = $ARGV[0];
@@ -94,11 +92,11 @@ while(my $line = <ENS>){
     my $geneid = $a[$genenamecol];
     my $genesym = $a[$genesymbolcol];
     my $txstrand = $a[$strandcol];
-    $txst = $txst - int(($e[0]-$s[0]) * $percent / 100);
+    $txst = $txst - (2 * $readlength);
     if ($txst < 0){
 	$txst = 0;
     }
-    $txend = $txend + int(($e[@s-1]-$s[@s-1]) * $percent / 100);
+    $txend = $txend + (2 * $readlength);
     $txst++;
     $ID{$geneid}= $genesym;
     $GENECHR{$geneid} = $txchr;

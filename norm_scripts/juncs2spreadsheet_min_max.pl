@@ -25,7 +25,7 @@ unless (-d $spread_dir){
     `mkdir $spread_dir`;
 }
 
-$outfile = "$spread_dir/master_list_of_junctions_counts";
+$outfile = "$spread_dir/master_list_of_junction_counts";
 $out_MIN = $outfile . "_MIN.$study.txt";
 $out_MAX = $outfile . "_MAX.$study.txt";
 $sample_name_file = "$norm_dir/file_junctions_minmax.txt";

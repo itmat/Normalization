@@ -159,6 +159,19 @@ my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
+
+my $loc_study = $LOC;
+$loc_study =~ s/$last_dir//;
+my $norm_dir = $loc_study."NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/";
+my $norm_exon_dir = $norm_dir . "/exonmappers";
+my $norm_intron_dir = $norm_dir . "/intronmappers";
+my $norm_ig_dir = $norm_dir . "/intergenicmappers";
+my $norm_und_dir = $norm_dir . "/exon_inconsistent";
+my $norm_merged_dir = $norm_dir . "/merged";
+unless (-d $norm_merged_dir){
+    `mkdir $norm_merged_dir`;
+}
+
 open(IN, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; # dirnames;
 while(my $line = <IN>){
     chomp($line);

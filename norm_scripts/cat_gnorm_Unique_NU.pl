@@ -11,6 +11,7 @@ where:
 <samfilename> 
 
 option:
+
  -stranded: set this if your data are strand-specific.
 
  -u  :  set this if you want to return only unique mappers, otherwise by default
@@ -19,6 +20,8 @@ option:
  -nu :  set this if you want to return only non-unique mappers, otherwise by default
         it will return both unique and non-unique mappers.
 
+ -bam <samtools> : bam input
+
 
 ";
 }
@@ -26,6 +29,8 @@ my $NU = "true";
 my $U = "true";
 my $numargs = 0;
 my $stranded = "false";
+my $bam = "false";
+my $samtools = "";
 for(my$i=3; $i<@ARGV; $i++) {
     my $option_found = "false";
     if($ARGV[$i] eq '-stranded') {
@@ -41,6 +46,12 @@ for(my$i=3; $i<@ARGV; $i++) {
 	$NU = "false";
 	$numargs++;
 	$option_found = "true";
+    }
+    if ($ARGV[$i] eq "-bam"){
+	$bam = "true";
+	$samtools = $ARGV[$i+1];
+	$option_found = "true";
+	$i++;
     }
     if($option_found eq "false") {
 	die "option \"$ARGV[$i]\" was not recognized.\n";
@@ -77,41 +88,37 @@ if ($stranded eq "true"){
 my $id = $ARGV[0];
 chomp($id);
 my $original = "$LOC/$id/$samfilename";
-my $header = `grep ^@ $original`;
+my $header = "";
+if ($bam eq "true"){
+    $header = `$samtools view -H $original`;
+}
+else{
+    $header = `grep ^@ $original`;
+}
 if ($stranded eq "false"){
-    my $file_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.norm.sam";
-    my $file_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.norm.sam";
+    my @a = glob("$LOC/$id/GNORM/*/*.norm.sam");
+    my $string = "";
+    foreach my $file (@a){
+	$string .= "$file\t";
+    }
     my $outfile = "$gnorm_dir/$id.gene.norm.sam";
     open (OUT, ">$outfile");
     print OUT $header;
     close(OUT);
-    if ($numargs eq '0'){
-	unless (-e $file_U){
-	    die "input file $file_U does not exist.\n";
-	}
-	unless (-e $file_NU){
-	    die "input file $file_NU does not exist.\n";
-	}
-	`cat $file_U $file_NU >> $outfile`;
-    }
-    elsif ($U eq "true"){
-	unless (-e $file_U){
-            die "input file $file_U does not exist.\n";
-	}
-	`cat $file_U >> $outfile`;
-    }
-    elsif ($NU eq "true"){
-        unless (-e $file_NU){
-            die "input file $file_NU does not exist.\n";
-        }
-	`cat $file_NU >> $outfile`;
-    }
+    my $x = `cat $string >> $outfile`;
 }
 if ($stranded eq "true"){
-    my $file_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.sense.norm.sam";
-    my $file_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.sense.norm.sam";
-    my $file_U_A = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.antisense.norm.sam";
-    my $file_NU_A = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.antisense.norm.sam";
+    my @s = glob("$LOC/$id/GNORM/*/*.sense.norm.sam");
+    my $string_s = "";
+    foreach my $file (@s){
+        $string_s .= "$file\t";
+    }
+
+    my @a = glob("$LOC/$id/GNORM/*/*.antisense.norm.sam");
+    my $string_a = "";
+    foreach my $file (@a){
+        $string_a .= "$file\t";
+    }
     my $outfile = "$sense_dir/$id.gene.norm.sam";
     my $outfile_a = "$antisense_dir/$id.gene.norm.sam";
     open (OUT, ">$outfile");
@@ -120,41 +127,7 @@ if ($stranded eq "true"){
     open (OUT_A, ">$outfile_a");
     print OUT_A $header;
     close(OUT_A);
-    if ($numargs eq '0'){
-	unless (-e $file_U){
-	    die "input file $file_U does not exist.\n";
-        }
-        unless (-e $file_NU){
-	    die "input file $file_NU does not exist.\n";
-        }
-        unless (-e $file_U_A){
-	    die "input file $file_U_A does not exist.\n";
-        }
-        unless (-e $file_NU_A){
-	    die "input file $file_NU_A does not exist.\n";
-        }
-	`cat $file_U $file_NU >> $outfile`;
-	`cat $file_U_A $file_NU_A >> $outfile_a`;
-    }
-    elsif ($U eq "true"){
-        unless (-e $file_U){
-	    die "input file $file_U does not exist.\n";
-        }
-        unless (-e $file_U_A){
-            die "input file $file_U_A does not exist.\n";
-        }
-	`cat $file_U >> $outfile`;
-	`cat $file_U_A >> $outfile_a`;
-    }
-    elsif ($NU eq "true"){
-	unless (-e $file_NU){
-            die "input file $file_NU does not exist.\n";
-        }
-        unless (-e $file_NU_A){
-            die "input file $file_NU_A does not exist.\n";
-        }
-	`cat $file_NU >> $outfile`;
-	`cat $file_NU_A >> $outfile_a`;
-    }
+    `cat $string_s >> $outfile`;
+    `cat $string_a >> $outfile_a`;
 }
 print "got here\n";

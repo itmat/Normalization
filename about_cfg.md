@@ -1,18 +1,18 @@
 ## CONFIGURATION FILE
 
 ###0. NORMALIZATION and DATA TYPE
+
 ####A. Normalization Type
 PORT offers **Exon-Intron-Junction** level normalization and **Gene** level normalization. Select the normalization type by setting GENE_NORM and/or EXON_INTRON_JUNCTION_NORM to TRUE. At least one normalization type needs to be used.
+
 ####B. Data Type
 #####i. STRANDED
 Set STRANDED to TRUE if the data are stranded.<br>
 #####ii. FWD or REV
 If STRANDED is set to TRUE, strand information needs to be provided. Set FWD to TRUE if forward read is in the same orientation as the transcripts/genes (sense) and set REV to TRUE if reverse read is in the same orientation as the transcripts/genes (sense).<br>
 Note that when dUTP-based protocol (e.g. Illumina TruSeq stranded protocol) is used, strand information comes from reverse read.
-####C. Read Length
-Provide sequencing read length of your data. (If you have samples with varying read lengths, equalize them before using PORT.)
 
-####D. Chromosome Names
+####C. Chromosome Names
 By default, PORT uses numbered, X or Y (e.g. chr1,chr2,...,chrX,chrY OR 1,2,...,X,Y) as standard chromosome names.
 
 #####i. File of standard chromosome [optional]
@@ -37,20 +37,24 @@ If not, use OTHER_CLUSTER option and specify the required parameters.
 ========================================================================================================
 
 ###2. GENE INFO
-Gene information file with required suffixes need to be provided. You may use the same file for [1] and [2].
+Gene information file with required suffixes need to be provided.
 ####[1] Gene information file for [Gene Normalization]
-Gene normalization requires an ensembl gene info file. The gene info file must contain column names with these suffixes: __name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value.__ 
+Gene normalization requires an **ensembl** gene info file. The gene info file must contain column names with these suffixes: __name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value.__ 
 
-ensembl gene info files for mm9, hg19, dm3 and danRer7 are available in Normalization/norm_scripts directory:
+ensembl gene info files for mm9, mm10, hg19, hg38, dm3 and danRer7 are available in Normalization/norm_scripts directory:
 
       mm9: /path/to/Normalization/norm_scripts/mm9_ensGenes.txt
+      mm10: /path/to/Normalization/norm_scripts/Mus_musculus.GRCm38.84.PORT_geneinfo.txt
       hg19: /path/to/Normalization/norm_scripts/hg19_ensGenes.txt
+      hg38: /path/to/Normalization/norm_scripts/Homo_sapiens.GRCh38.84.PORT_geneinfo.txt
       dm3: /path/to/Normalization/norm_scripts/dm3_ensGenes.txt
       danRer7: /path/to/Normalization/norm_scripts/danRer7_ensGenes.txt
 
+You can download the gene information file from UCSC table browser. Alternatively, you can use a perl script (/path/to/Normalization/norm_scripts/convert_gtf_to_PORT_geneinfo.transcripts.pl) to convert an ENSEMBL gtf file to a gene information file. 
+
 ####[2] Gene information file for [Exon-Intron-Junction Normalization]
-Gene info file must contain column names with these suffixes: __chrom, strand, txStart, txEnd, exonStarts, and exonEnds.__
-(optional suffixes for annotation: geneSymbol and description)
+Gene info file must contain column names with these suffixes: __chrom, strand, txStart, txEnd, exonStarts, exonEnds and geneSymbol.__
+(optional suffix for annotation: description)
 
 ucsc gene info files for mm9, hg19, and refseq gene info file for dm3 and danRer7 are available in Normalization/norm_scripts directory:
 
@@ -59,10 +63,12 @@ ucsc gene info files for mm9, hg19, and refseq gene info file for dm3 and danRer
       dm3: /path/to/Normalization/norm_scripts/refseq_dm3
       danRer7: /path/to/Normalization/norm_scripts/refseq_danRer7
 
+You can download the gene information file from UCSC table browser. 
+
 ========================================================================================================
 
 ###3. FA and FAI
-####[1] genome sequence one-line fasta file
+####[1] genome fasta file
 
 The description line (the header line that begins with ">") **MUST** begin with chromosome names that match the chromosome names in [GENE INFO](https://github.com/itmat/Normalization/blob/master/about_cfg.md#2-gene-info) file(s).
 
@@ -75,7 +81,6 @@ ucsc genome FASTA files for mm9, hg19, dm3, and danRer7 are available for downlo
       dm3: wget http://itmat.indexes.s3.amazonaws.com/dm3_genome_one-line-seqs.fa.gz
       danRer7: wget http://itmat.indexes.s3.amazonaws.com/danRer7_genome_one-line-seqs.fa.gz
 
-For other organisms, follow the instructions [here](https://github.com/itmat/rum/wiki/Creating-indexes) to create indexes.
 
 ####[2] index file
 You can get the index file (*.fai) using [samtools](http://samtools.sourceforge.net/) (samtools faidx &lt;ref.fa>)

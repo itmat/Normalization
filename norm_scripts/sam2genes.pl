@@ -378,6 +378,33 @@ sub cigar2spans {
     if($matchstring =~ /(\d+)S$/) {
         $matchstring =~ s/(\d+)S$//;
     }
+    $matchstring =~ s/(\d+)I//g;
+#    print "$matchstring\n";
+    while($matchstring =~ /(\d+)M(\d+)M/) {
+        my $n1 = $1;
+        my $n2 = $2;
+        my $n = $n1 + $n2;
+        my $str1 = $n1 . "M" . $n2 . "M";
+        my $str2 = $n . "M";
+        $matchstring =~ s/$str1/$str2/;
+    }
+    while($matchstring =~ /(\d+)N(\d+)D/) {
+	my $n1 = $1;
+	my $n2 = $2;
+	my $n = $n1 + $n2;
+	my $str1 = $n1 . "N" . $n2 . "D";
+	my $str2 = $n . "N";
+	$matchstring =~ s/$str1/$str2/;
+    }
+    while($matchstring =~ /(\d+)D(\d+)N/) {
+        my $n1 = $1;
+        my $n2 = $2;
+        my $n = $n1 + $n2;
+        my $str1 = $n1 . "D" . $n2 . "N";
+        my $str2 = $n . "N";
+        $matchstring =~ s/$str1/$str2/;
+    }
+#    print "$matchstring\n";
     if($matchstring =~ /D/) {
         $matchstring =~ /(\d+)M(\d+)D(\d+)M/;
         my $l1 = $1;
@@ -387,6 +414,14 @@ sub cigar2spans {
         $L = $L . "M";
         $matchstring =~ s/\d+M\d+D\d+M/$L/;
 
+    }
+    while($matchstring =~ /(\d+)M(\d+)M/) {
+        my $n1 = $1;
+        my $n2 = $2;
+        my $n = $n1 + $n2;
+        my $str1 = $n1 . "M" . $n2 . "M";
+        my $str2 = $n . "M";
+        $matchstring =~ s/$str1/$str2/;
     }
     while($matchstring =~ /^(\d+)([^\d])/) {
         my $num = $1;
@@ -421,6 +456,7 @@ sub cigar2spans {
             }
         }
     }
+#    print "$spans\n";
     return $spans;
 }
 

@@ -183,13 +183,19 @@ else{
 
 my $annot_file = $ARGV[3];
 my $exons = $ARGV[4];
+unless (-e $exons){
+    die "Cannot find $exons file\n";
+}
+my $exons_to_annot = "$exons.tmp";
+my $x = `cut -f 1 $exons > $exons_to_annot`;
 my $annotated_exons = $exons;
 $annotated_exons =~ s/master_list/annotated_master_list/;
 my $master_sh = "$shdir/annotate_master_list_of_exons.sh";
 my $master_jobname = "$study.get_high_expresser";
 my $master_logname = "$logdir/annotate.$index.master_exon";
 open(OUTFILE, ">$master_sh");
-print OUTFILE "perl $path/annotate.pl $annot_file $exons $annotated_exons\n";
+print OUTFILE "perl $path/annotate.pl $annot_file $exons_to_annot $annotated_exons\n";
+print OUTFILE "rm $exons_to_annot\n";
 close(OUTFILE);
 while (qx{$status | wc -l} > $njobs){
     sleep(10);

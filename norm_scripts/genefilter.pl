@@ -86,7 +86,7 @@ if ($filter eq "false"){
 	    my $geneid_f = $f[2];
 	    my $geneid_r = $r[2];
 	    if (($id_f ne $id_r) | ($ih_hi_f ne $ih_hi_r)){
-		die "\"$genesfile\" is not in the right format.\n\n";
+		die "$id_f\t$id_r\t$ih_hi_f\t$ih_hi_r\n\"$genesfile\" is not in the right format.\n\n";
 	    }
 	    if (($geneid_f =~ /^$/) | ($geneid_r =~ /^$/)){
 		next;
@@ -287,7 +287,7 @@ if ($filter eq "true"){
 		my $geneid_f = $f[2];
 		my $geneid_r = $r[2];
 		if (($id_f ne $id_r) || ($ih_hi_f ne $ih_hi_r) || ($geneid_f ne $geneid_r)){
-		    die "\"$genesfile_ns\" is not in the right format.\n\n";
+		    die "$id_f\t$id_r\t$ih_hi_f\t$ih_hi_r\n\"$genesfile_ns\" is not in the right format.\n\n";
 		}
 		if (($geneid_f =~ /^$/) | ($geneid_r =~ /^$/)){
 		    next;
@@ -329,7 +329,7 @@ if ($filter eq "true"){
                 my $geneid_f = $f[2];
                 my $geneid_r = $r[2];
                 if (($id_f ne $id_r) || ($ih_hi_f ne $ih_hi_r) || ($geneid_f ne $geneid_r)){
-		    die "\"$genesfile_s\" is not in the right format.\n\n";
+		    die "$id_f\t$id_r\t$ih_hi_f\t$ih_hi_r\n\"$genesfile_s\" is not in the right format.\n\n";
                 }
                 if (($geneid_f =~ /^$/) | ($geneid_r =~ /^$/)){
                     next;
@@ -365,7 +365,7 @@ if ($filter eq "true"){
                 my $geneid_f = $f[2];
                 my $geneid_r = $r[2];
                 if (($id_f ne $id_r) || ($ih_hi_f ne $ih_hi_r) || ($geneid_f ne $geneid_r)){
-		    die "\"$genesfile_a\" is not in the right format.\n\n";
+		    die "$id_f\t$id_r\t$ih_hi_f\t$ih_hi_r\n\"$genesfile_a\" is not in the right format.\n\n";
                 }
                 if (($geneid_f =~ /^$/) | ($geneid_r =~ /^$/)){
                     next;

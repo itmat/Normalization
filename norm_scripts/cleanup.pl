@@ -136,13 +136,14 @@ if (-d $gnorm_dir){
 	`rm $gnorm_dir/to_filter.txt`;
     }
 }
+=comment
 if (-d $gspread_dir){
-    @g = glob("$gspread_dir/master_list_of_genes_counts_*.txt");
+    @g = glob("$gspread_dir/master_list_of_gene_counts_*.txt");
     if (@g > 0){
-	`rm $gspread_dir/master_list_of_genes_counts_*.txt`;
+	`rm $gspread_dir/master_list_of_gene_counts_*.txt`;
     }
 }
-
+=cut
 if (-d $norm_dir){
     @g = glob("$norm_dir/*txt");
     if (@g > 0){

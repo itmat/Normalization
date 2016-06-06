@@ -29,9 +29,14 @@ while(my $line = <IN>){
     my $known = $a[3];
     # novel intron if depth >=10 and unannotated
     if (($score >= 10) && ($known == 0)){ 
-	$INF_INTRONS{$intron} = $score;
-	$STR{$intron} = $strand;
-	print TEMP1 "$intron\n";
+	(my $int_chr, my $int_start, my $int_end) = $intron =~  /^(.*):(\d*)-(\d*)$/g;
+	my $size = $int_end - $int_start + 1;
+	# keep novel intron only if it's smaller than 75,000
+	if ($size < 75000){
+	    $INF_INTRONS{$intron} = $score;
+	    $STR{$intron} = $strand;
+	    print TEMP1 "$intron\n";
+	}
     }
     
 }
