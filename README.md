@@ -212,8 +212,9 @@ PORT outputs gene counts spreadsheets to `STUDY/NORMALIZED_DATA/GENE/SPREADSHEET
 - Proportion of Non-Unique reads (multi-mappers)
 - Percent exon to non-exon signal
 - 3' biased-ness
-- Proportion of intergenic signal
+- Proportion of intergenic to intronic signal
 - Sense vs. anti-sense transcription
+- Very highly expressed and variable exons/introns
 
 ######-Gene Normalization:<br>
 `STUDY/STATS/gene_normalization_factors.txt` file provides summary statistics	of the normalization factors used: 
@@ -223,6 +224,7 @@ PORT outputs gene counts spreadsheets to `STUDY/NORMALIZED_DATA/GENE/SPREADSHEET
 - Mitochondrial content
 - Proportion of Non-Unique reads (multi-mappers)
 - Proportion of genemappers
+- Very highly expressed and variable genes
 - Sense vs. anti-sense transcription
 
 Percentage of reads mapping to each chromosome (`STUDY/STATS/percent_reads_chr*txt`) and percentage of highly expressed features (`STUDY/STATS/*/percent_high_expresser_*.txt`) are also provided (for both normalization types).
