@@ -13,7 +13,7 @@ my $Usage =  "perl convert_gtf_to_PORT_geneinfo.transcripts.pl <gtffile>
 
 
 # Accepts a GTF file and coverts it to the following format:
-#chrom	strand	txStart	txEnd	exonCount	exonStarts	exonEnds	name(txID)	name2(geneID)	ensemblToGeneName.value(genesymbol)
+#chrom	strand	txStart	txEnd	exonCount	exonStarts	exonEnds	name(txID)	name2(geneID)	ensemblToGeneName.value(genesymbol)	geneSymbol(for featurelevel normalization)
 
 # This script derives the transcript info from the \"exon\" lines in the gtf file
 # and assumes the exons are listed in order numerically, as opposed to by plus-
@@ -63,7 +63,7 @@ my $outfile = $gtf_file;
 $outfile =~ s/.gtf$/.PORT_geneinfo.txt/;
 
 open(OUT, ">$outfile") or die "cannot open $outfile\n";
-print OUT "#$name.chrom\t$name.strand\t$name.txStart\t$name.txEnd\t$name.exonCount\t$name.exonStarts\t$name.exonEnds\t$name.name\t$name.name2\t$name.ensemblToGeneName.value\n";
+print OUT "#$name.chrom\t$name.strand\t$name.txStart\t$name.txEnd\t$name.exonCount\t$name.exonStarts\t$name.exonEnds\t$name.name\t$name.name2\t$name.ensemblToGeneName.value\n\t$name.geneSymbol";
 
 #my $line = ""; #Current line of input
 my @line_data; #Array of line fields
@@ -201,6 +201,6 @@ print OUT "\t";
 foreach my $coord (@stops) {
     print OUT "$coord,";
 }
-print OUT "\t$tx_id\t$gene\t$genesym\n";
+print OUT "\t$tx_id\t$gene\t$genesym\t$genesym\n";
 
 close(INFILE);
