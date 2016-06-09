@@ -900,11 +900,11 @@ if ($run_prepause eq "true"){
 	    $name_of_job = "$study.runblast";
 	    $err_name = "runblast.*.err";
 	    if ($other eq "true"){
-		$c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_45G, $stat\\\"";
+		$c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_60G, $stat\\\"";
 		$new_queue = "";
 	    }
 	    else{
-		$new_queue = "-mem $queue_45G";
+		$new_queue = "-mem $queue_60G";
 	    }
 	    
 	    while(qx{$stat | wc -l} > $maxjobs){
