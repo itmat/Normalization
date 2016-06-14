@@ -9,7 +9,9 @@ where:
 <sam file name> name of the aligned sam file
 <fai file> fai file (full path)
 
-option:
+option: 
+ -normdir <s>
+
  -eij : set this for exon-intron-junction level normalization
 
  -gnorm : set this for gene level normalization
@@ -64,6 +66,8 @@ my $samtools = "";
 my $bam = "false";
 my $EIJ = "false";
 my $GNORM = "false";
+my $normdir = "";
+my $ncnt = 0;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -74,6 +78,12 @@ for (my $i=4; $i<@ARGV; $i++){
     if ($ARGV[$i] eq '-eij'){
 	$option_found = "true";
 	$EIJ = "true";
+    }
+    if ($ARGV[$i] eq '-normdir'){
+        $option_found = "true";
+	$normdir = $ARGV[$i+1];
+	$i++;
+	$ncnt++;
     }
     if ($ARGV[$i] eq '-gnorm'){
 	$option_found = "true";
@@ -159,7 +169,9 @@ if($numargs ne '1'){
 if ($replace_mem eq "true"){
     $mem = $new_mem;
 }
-
+if ($ncnt ne '1'){
+    die "please specify -normdir path\n";
+}
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 my @fields = split("/", $LOC);
@@ -169,7 +181,7 @@ my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
-my $norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION";
+my $norm_dir = "$normdir/EXON_INTRON_JUNCTION";
 my $exon_dir = $norm_dir . "/FINAL_SAM/exonmappers";
 my $intron_dir = $norm_dir . "/FINAL_SAM/intronmappers";
 my $ig_dir = $norm_dir . "/FINAL_SAM/intergenicmappers";
@@ -177,7 +189,7 @@ my $und_dir = $norm_dir . "/FINAL_SAM/exon_inconsistent";
 my $merged_dir = $norm_dir . "/FINAL_SAM/merged";
 my $cov_dir = "$norm_dir/COV/";
 
-my $gnorm_dir = $study_dir . "NORMALIZED_DATA/GENE";
+my $gnorm_dir = "$normdir/GENE";
 my $gfinalsam_dir = "$gnorm_dir/FINAL_SAM";
 my $gmerged_dir = "$gfinalsam_dir/merged";
 my $gcov_dir = "$gnorm_dir/COV/";

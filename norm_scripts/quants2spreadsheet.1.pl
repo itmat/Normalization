@@ -8,7 +8,8 @@ where:
 <loc> is the path to the sample directories
 <type of quants file> is the type of quants file (e.g: exonquants, intronquants, genequants)
 
-option:
+option: 
+ -normdir <s>
  -NU: set this if you want to use non-unique quants, otherwise by default it will 
       use unique quants files as input
 
@@ -28,6 +29,8 @@ my $stranded = "false";
 my $nuonly = 'false';
 my $novel = "false";
 my $filter = "false";
+my $normdir = "";
+my $ncnt =0;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -43,6 +46,12 @@ for(my $i=3; $i<@ARGV; $i++) {
 	$nuonly = 'true';
 	$arg_recognized = 'true';
     }
+    if($ARGV[$i] eq '-normdir') {
+        $arg_recognized = 'true';
+	$normdir = $ARGV[$i+1];
+	$i++;
+	$ncnt++;
+    }
     if ($ARGV[$i] eq '-stranded'){
 	$arg_recognized = "true";
 	$stranded = "true";
@@ -55,7 +64,9 @@ for(my $i=3; $i<@ARGV; $i++) {
 	die "arg \"$ARGV[$i]\" not recognized.\n";
     }
 }
-
+if ($ncnt ne '1'){
+    die "please specify -normdir path\n";
+}
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 my $type = $ARGV[2];
@@ -66,9 +77,7 @@ my $novellist_intron = "$LOC/$study.list_of_novel_introns.txt";
 my $list_of_fr = "$LOC/list_of_flanking_regions.txt";
 
 my $last_dir = $fields[@fields-1];
-my $norm_dir = $LOC;
-$norm_dir =~ s/$last_dir//;
-
+my $norm_dir = "";
 my $HE_GENE = "$LOC/high_expressers_gene.txt";
 my $HE_EXON = "$LOC/high_expressers_exon.txt";
 my $HE_INTRON = "$LOC/high_expressers_intron.txt";
@@ -83,10 +92,10 @@ if ($stranded eq "true"){
 }
 
 if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
-    $norm_dir = $norm_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION";
+    $norm_dir = "$normdir/EXON_INTRON_JUNCTION";
 }
 if ($type =~ /^gene/i){
-    $norm_dir = $norm_dir . "NORMALIZED_DATA/GENE";
+    $norm_dir = "$normdir/GENE";
 }
 
 my $exon_dir = $norm_dir . "/FINAL_SAM/exonmappers";

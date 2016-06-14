@@ -11,7 +11,7 @@ my $USAGE = "\nUsage: perl runall_quantify_genes_gnorm.pl <sample dirs> <loc> <g
 option:
  -stranded : set this if the data are strand-specific.
 
- -norm : set this to quantify normalized sam.
+ -norm <s>: set this to quantify normalized sam.
 
  -u  :  set this if your sam files have unique mappers only.
         otherwise by default it will use merged(unique+non-unique) mappers.
@@ -68,6 +68,7 @@ my $jobname_option = "";
 my $status;
 my $norm = "false";
 my $stranded = "false";
+my $normdir = "";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -86,6 +87,8 @@ for (my $i=3; $i<@ARGV; $i++){
     if ($ARGV[$i] eq "-norm"){
 	$norm = "true";
 	$option_found = "true";
+	$normdir = $ARGV[$i+1];
+	$i++;
     }
     if ($ARGV[$i] eq "-stranded"){
         $stranded = "true";
@@ -175,7 +178,7 @@ my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
-my $gnorm_dir = $study_dir . "NORMALIZED_DATA/GENE/FINAL_SAM/";
+my $gnorm_dir = "$normdir/GENE/FINAL_SAM/";
 my $ensFile = $ARGV[2];
 
 open(IN, $samples) or die "cannot find file '$samples'\n"; # dirnames;

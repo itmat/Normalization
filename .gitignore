@@ -46,3 +46,4 @@ norm_scripts/make_list_of_high_expressers.0.pl
 norm_scripts/get_genepercents.use_ambcol.pl
 norm_scripts/get_genepercents.tmp.pl
 norm_scripts/get_exon_intron_percents.new.pl
+norm_scripts/test_cigar2spans.pl

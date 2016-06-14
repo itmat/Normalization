@@ -13,6 +13,8 @@ where:
 <exons> master list of exons file
 
 option:
+ -part2 
+
  -stranded : set this if your data are strand-specific. 
  
  -nu :  set this if you want to return only non-unique exonpercents/intronpercents, 
@@ -64,6 +66,7 @@ my $request_memory_option = "";
 my $mem = "";
 my $numargs = 0;
 my $index = 0;
+my $part2 = "false";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -78,6 +81,10 @@ for(my $i=5; $i<@ARGV; $i++) {
             die "-max_jobs <n> : <n> needs to be a number\n";
         }
         $i++;
+    }
+    if ($ARGV[$i] eq '-part2'){
+	$option_found = "true";
+	$part2 = "true";
     }
     if ($ARGV[$i] eq '-i'){
         $option_found = "true";
@@ -202,6 +209,10 @@ while (qx{$status | wc -l} > $njobs){
 }
 `$submit $jobname_option $master_jobname $request_memory_option$mem -o $master_logname.out -e $master_logname.err < $master_sh`;
 
+my $getscript = "$path/get_exon_intron_percents.pl";
+if ($part2 eq "true"){
+    $getscript = "$path/get_exon_intron_percents.p2.pl";
+}
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
 while(my $line = <INFILE>){
     chomp($line);
@@ -220,10 +231,10 @@ while(my $line = <INFILE>){
     my $logname = "$logdir/annotate.$index.highexpresser.$id";
     open(OUT, ">$shfile");
     if ($NU eq "false"){
-	print OUT "perl $path/get_exon_intron_percents.pl $sampledir $cutoff $outfile $outfile_i $strand_info\n";
+	print OUT "perl $getscript $sampledir $cutoff $outfile $outfile_i $strand_info\n";
     }
     if ($NU eq "true"){
-	print OUT "perl $path/get_exon_intron_percents.pl $sampledir $cutoff $outfile $outfile_i -nu $strand_info\n";
+	print OUT "perl $getscript $sampledir $cutoff $outfile $outfile_i -nu $strand_info\n";
     }
     if ($stranded eq "false"){
 	print OUT "perl $path/annotate.pl $annot_file $highfile $annotated\n";

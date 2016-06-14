@@ -20,7 +20,7 @@ option:
  -nu  :  set this if you are using non-unique mappers only.
         otherwise by default it will use both unique and non-unique mappers.
 
- -norm : set this to get genes file for the gene-normalized sam files.
+ -norm <s> : set this to get genes file for the gene-normalized sam files.
 
  -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
 
@@ -71,6 +71,7 @@ my $orientation = "";
 my $str_args = 0;
 my $replace_mem = "false";
 my $new_mem = "";
+my $normdir = "";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -91,6 +92,8 @@ for (my $i=3; $i<@ARGV; $i++){
 	$U = "false";
 	$NU = "false";
 	$option_found = "true";
+	$normdir = $ARGV[$i+1];
+	$i++;
     }
     if ($ARGV[$i] eq "-se"){
         $se = "-se";
@@ -194,7 +197,7 @@ $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
 my $ens_file = $ARGV[2];
-my $gnormdir = $study_dir . "NORMALIZED_DATA/GENE/FINAL_SAM";
+my $gnormdir = "$normdir/GENE/FINAL_SAM";
 open(IN, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; # dirnames;
 while(my $line = <IN>){
     chomp($line);

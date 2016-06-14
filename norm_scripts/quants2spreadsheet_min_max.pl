@@ -10,6 +10,7 @@ where:
 <type of quants file> is the type of quants file. e.g: exonquants, intronquants, genequants
 
 options:
+ -normdir <s>
  -novel: set this to label the novel exons/introns
  -stranded : set this if your data are strand-specific
  -filter_highexp : set this to label highexpressers
@@ -22,6 +23,8 @@ if(@ARGV<3) {
 my $novel = "false";
 my $stranded = "false";
 my $filter = "false";
+my $normdir = "";
+my $ncnt = 0;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -29,6 +32,12 @@ for (my $i=0;$i<@ARGV;$i++){
 }
 for(my $i=3;$i<@ARGV;$i++){
     my $option_found = "false";
+    if ($ARGV[$i] eq '-normdir'){
+	$option_found = "true";
+	$normdir = $ARGV[$i+1];
+	$i++;
+	$ncnt++;
+    }
     if ($ARGV[$i] eq "-novel"){
 	$option_found = "true";
 	$novel = "true";
@@ -44,6 +53,9 @@ for(my $i=3;$i<@ARGV;$i++){
     if ($option_found eq "false"){
 	die "option \"$ARGV[$i]\" was not recognized.\n";
     }
+}
+if ($ncnt ne '1'){
+    die "please specify -normdir path\n";
 }
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
@@ -68,13 +80,12 @@ if ($stranded eq "true"){
 }
 
 my $last_dir = $fields[@fields-1];
-my $norm_dir = $LOC;
-$norm_dir =~ s/$last_dir//;
+my $norm_dir = "";
 if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
-    $norm_dir = $norm_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION";
+    $norm_dir = "$normdir/EXON_INTRON_JUNCTION";
 }
 if ($type =~ /^gene/i){
-    $norm_dir = $norm_dir . "NORMALIZED_DATA/GENE";
+    $norm_dir = "$normdir/GENE";
 }
 my ($exon_dir_a, $intron_dir_a);
 my $exon_dir = $norm_dir . "/FINAL_SAM/exonmappers";

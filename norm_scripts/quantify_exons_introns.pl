@@ -1315,6 +1315,7 @@ sub cigar2spans {
     if($matchstring =~ /(\d+)S$/) {
         $matchstring =~ s/(\d+)S$//;
     }
+    $matchstring =~ s/(\d+)I//g;
     while($matchstring =~ /(\d+)M(\d+)M/) {
         my $n1 = $1;
         my $n2 = $2;
@@ -1340,14 +1341,14 @@ sub cigar2spans {
         $matchstring =~ s/$str1/$str2/;
     }
     if($matchstring =~ /D/) {
-        $matchstring =~ /(\d+)M(\d+)D(\d+)M/;
-        my $l1 = $1;
-        my $l2 = $2;
-        my $l3 = $3;
-        my $L = $1 + $2 + $3;
-        $L = $L . "M";
-        $matchstring =~ s/\d+M\d+D\d+M/$L/;
-
+        while ($matchstring =~ /(\d+)M(\d+)D(\d+)M/){
+	    my $l1 = $1;
+	    my $l2 = $2;
+	    my $l3 = $3;
+	    my $L = $1 + $2 + $3;
+	    $L = $L . "M";
+	    $matchstring =~ s/\d+M\d+D\d+M/$L/;
+	}
     }
     while($matchstring =~ /(\d+)M(\d+)M/) {
         my $n1 = $1;

@@ -9,6 +9,8 @@ where:
 <loc> is the path to the sample directories
 
 option:
+  -normdir <s>
+
   -stranded : set this if your data are strand-specific.
 
   -u  :  set this if you want to return only unique mappers, otherwise by default
@@ -24,8 +26,16 @@ my $NU = "true";
 my $U = "true";
 my $numargs = 0;
 my $stranded = "false";
+my $normdir = "";
+my $ncnt = 0;
 for(my$i=2; $i<@ARGV; $i++) {
     my $option_found = "false";
+    if ($ARGV[$i] eq '-normdir'){
+	$option_found = "true";
+	$normdir = $ARGV[$i+1];
+	$i++;
+	$ncnt++;
+    }
     if($ARGV[$i] eq '-nu') {
 	$U = "false";
 	$numargs++;
@@ -50,13 +60,15 @@ and non-unique by default so if that's what you want don't use either arg
 -u or -nu.
 ";
 }
-
+if ($ncnt ne '1'){
+    die "please specify -normdir path\n";
+}
 my $LOC = $ARGV[1];
 my @fields = split("/", $LOC);
 my $last_dir = $fields[@fields-1];
 my $loc_study = $LOC;
 $loc_study =~ s/$last_dir//;
-my $norm_dir = $loc_study."NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/";
+my $norm_dir = "$normdir/EXON_INTRON_JUNCTION/FINAL_SAM/";
 unless (-d $norm_dir){
     `mkdir -p $norm_dir`;
 }

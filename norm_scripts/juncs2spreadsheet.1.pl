@@ -9,29 +9,40 @@ where:
 option:
 -NU: set this if you want to use non-unique junctions, otherwise by default it will
      use unique junctions files as input
+
+-normdir <s>
+
 ";
 }
 $nuonly = 'false';
+my $normdir = "";
+my $ncnt =0;
 for($i=2; $i<@ARGV; $i++) {
     $arg_recognized = 'false';
     if($ARGV[$i] eq '-NU') {
 	$nuonly = 'true';
 	$arg_recognized = 'true';
     }
+    if ($ARGV[$i] eq '-normdir'){
+	$arg_recognized = 'true';
+	$normdir = $ARGV[$i+1];
+	$i++;
+	$ncnt++;
+    }
     if($arg_recognized eq 'false') {
 	die "arg \"$ARGV[$i]\" not recognized.\n";
     }
 }
-
+if ($ncnt ne '1'){
+    die "please specify -normdir path\n";
+}
 $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 $type = $ARGV[2];
 @fields = split("/", $LOC);
 $study = $fields[@fields-2];
 $last_dir = $fields[@fields-1];
-$norm_dir = $LOC;
-$norm_dir =~ s/$last_dir//;
-$norm_dir = $norm_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
+$norm_dir = "$normdir/EXON_INTRON_JUNCTION/";
 $junc_dir = $norm_dir . "/JUNCTIONS";
 $spread_dir = $norm_dir . "/SPREADSHEETS";
 

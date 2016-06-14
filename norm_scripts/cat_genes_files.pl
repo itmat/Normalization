@@ -17,7 +17,7 @@ options:
  -nu  :  set this if you are using non-unique mappers only.
         otherwise by default it will use both unique and non-unique mappers.
 
- -norm : set this to get genes file for the gene-normalized sam files.
+ -norm <s> : set this to get genes file for the gene-normalized sam files.
 
 ";
 
@@ -30,7 +30,7 @@ my $numargs = 0;
 my $U = "true";
 my $NU = "true";
 my $stranded = "false";
-
+my $normdir = "";
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq "-norm"){
@@ -38,6 +38,8 @@ for (my $i=2; $i<@ARGV; $i++){
 	$U = "false";
 	$NU = "false";
 	$option_found = "true";
+	$normdir = $ARGV[$i+1];
+	$i++;
     }
     if ($ARGV[$i] eq "-stranded"){
 	$stranded = "true";
@@ -72,7 +74,7 @@ my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
-my $gnormdir = $study_dir . "NORMALIZED_DATA/GENE/FINAL_SAM";
+my $gnormdir = "$normdir/GENE/FINAL_SAM";
 my $id = $ARGV[0];
 my $genedir = "$LOC/$id/GNORM";
 my $filedir_u = "$genedir/Unique/";

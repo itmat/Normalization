@@ -61,6 +61,50 @@ my $loc_study = $LOC;
 $loc_study =~ s/$last_dir//;
 
 my %READ_HASH;
+my (%HIGHE, %HIGHI, %HIGHE_A, %HIGHI_A);
+my $hEx = "$LOC/high_expressers_exon.txt";
+my $hInt = "$LOC/high_expressers_intron.txt";
+my ($hEx_a, $hInt_a);
+if ($stranded eq "true"){
+    $hEx = "$LOC/high_expressers_exon_sense.txt";
+    $hInt = "$LOC/high_expressers_intron_sense.txt";
+    $hEx_a = "$LOC/high_expressers_exon_antisense.txt";
+    $hInt_a = "$LOC/high_expressers_intron_antisense.txt";
+}
+open(IN, $hEx) or die "cannot open $hEx\n";
+while(my $line = <IN>){
+    chomp($line);
+    $line =~ s/:/./;
+    $HIGHE{$line}=1;
+}
+close(IN);
+open(IN2, $hInt) or die "cannot open $hInt\n";
+while(my $line = <IN2>){
+    chomp($line);
+    $line =~ s/:/./;
+    $HIGHI{$line}=1;
+}
+close(IN2);
+if ($stranded eq "true"){
+    open(IN, $hEx_a) or die "cannot open $hEx_a\n";
+    while(my $line = <IN>){
+	chomp($line);
+	$line =~ s/:/./;
+	$HIGHE_A{$line}=1;
+    }
+    close(IN);
+    open(IN2, $hInt_a) or die "cannot open $hInt_a\n";
+    while(my $line = <IN2>){
+	chomp($line);
+	$line =~ s/:/./;
+	$HIGHI_A{$line}=1;
+    }
+    close(IN2);
+}
+my $cntE = keys %HIGHE;
+my $cntI = keys %HIGHI;
+my $cntEA = keys %HIGHE_A;
+my $cntIA = keys %HIGHI_A;
 my $id = $ARGV[0];
 chomp($id);
 if ($U eq "true"){
@@ -69,6 +113,12 @@ if ($U eq "true"){
 	$outEx = "$LOC/$id/EIJ/Unique/$id.filtered_u_exonmappers.highexp_shuf_norm.sam";
 	$outInt = "$LOC/$id/EIJ/Unique/$id.filtered_u_intronmappers.highexp_shuf_norm.sam";
 	$dir = "$LOC/$id/EIJ/Unique";
+	if (-e $outEx){
+	    `rm $outEx`;
+	}
+	if (-e $outInt){
+	    `rm $outInt`;
+	}
     }
     if ($stranded eq "true"){
 	$outEx = "$LOC/$id/EIJ/Unique/sense/$id.filtered_u_exonmappers.highexp_shuf_norm.sam";
@@ -77,155 +127,184 @@ if ($U eq "true"){
 	$outEx_a = "$LOC/$id/EIJ/Unique/antisense/$id.filtered_u_exonmappers.highexp_shuf_norm.sam";
         $outInt_a = "$LOC/$id/EIJ/Unique/antisense/$id.filtered_u_intronmappers.highexp_shuf_norm.sam";
         $dir_a = "$LOC/$id/EIJ/Unique/antisense/";
-    }
-    my @ex = glob("$dir/*exonmappers*.highexp.sam");
-    if (@ex > 0){
-	open(OUT, ">$outEx") or die;
-	%READ_HASH=();
-	foreach my $file (@ex){
-	    open(FILE, $file) or die "cannot find $file file\n";
-	    while(my $line = <FILE>){
-		chomp($line);
-		if ($line =~ /^@/){
-		    next;
-		}
-		my @a = split (/\t/, $line);
-		my $readname = $a[0];
-		$readname =~ s/[^A-Za-z0-9 ]//g;
-		my $chr = $a[2];
-		my ($HI_tag, $IH_tag);
-		if ($line =~ /(N|I)H:i:(\d+)/){
-		    $line =~ /(N|I)H:i:(\d+)/;
-		    $IH_tag = $2;
-		}
-		if ($line =~ /HI:i:(\d+)/){
-		    $line =~ /HI:i:(\d+)/;
-		    $HI_tag = $1;
-		}
-		my $for_hash = "$readname:$IH_tag:$HI_tag";
-		if (exists $READ_HASH{$chr}{$for_hash}){
-		    next;
-		}
-		else{
-		    print OUT "$line\n";
-		    $READ_HASH{$chr}{$for_hash} = 1;
-		}
-	    }
-	    close(FILE);
+	if (-e $outEx){
+            `rm $outEx`;
 	}
-	close(OUT);
-    }
-    my @int = glob("$dir/*intronmappers*.highexp.sam");
-    if (@int > 0){
-	open(OUT, ">$outInt") or die;
-	%READ_HASH=();
-	foreach my $file (@int){
-	    open(FILE, $file) or die "cannot find $file file\n";
-	    while(my $line = <FILE>){
-		chomp($line);
-		if ($line =~ /^@/){
-		    next;
-		}
-		my @a = split (/\t/, $line);
-		my $readname = $a[0];
-		$readname =~ s/[^A-Za-z0-9 ]//g;
-		my $chr = $a[2];
-		my ($HI_tag, $IH_tag);
-		if ($line =~ /(N|I)H:i:(\d+)/){
-		    $line =~ /(N|I)H:i:(\d+)/;
-		    $IH_tag = $2;
-		}
-		if ($line =~ /HI:i:(\d+)/){
-		    $line =~ /HI:i:(\d+)/;
-		    $HI_tag = $1;
-		}
-		my $for_hash = "$readname:$IH_tag:$HI_tag";
-		if (exists $READ_HASH{$chr}{$for_hash}){
-		    next;
-		}
-		else{
-		    print OUT "$line\n";
-		    $READ_HASH{$chr}{$for_hash} = 1;
-		}
-	    }
-	    close(FILE);
+	if (-e $outInt){
+	    `rm $outInt`;
 	}
-	close(OUT);
+	if (-e $outEx_a){
+            `rm $outEx_a`;
+	}
+	if (-e $outInt_a){
+	    `rm $outInt_a`;
+	}
+
+    }
+    if ($cntE > 0){
+	foreach my $exon (keys %HIGHE){
+	    my @ex = glob("$dir/*exonmappers*$exon.highexp.sam");
+	    if (@ex > 0){
+		open(OUT, ">$outEx") or die;
+		%READ_HASH=();
+		foreach my $file (@ex){
+		    open(FILE, $file) or die "cannot find $file file\n";
+		    while(my $line = <FILE>){
+			chomp($line);
+			if ($line =~ /^@/){
+			    next;
+			}
+			my @a = split (/\t/, $line);
+			my $readname = $a[0];
+			$readname =~ s/[^A-Za-z0-9 ]//g;
+			my $chr = $a[2];
+			my ($HI_tag, $IH_tag);
+			if ($line =~ /(N|I)H:i:(\d+)/){
+			    $line =~ /(N|I)H:i:(\d+)/;
+			    $IH_tag = $2;
+			}
+			if ($line =~ /HI:i:(\d+)/){
+			    $line =~ /HI:i:(\d+)/;
+			    $HI_tag = $1;
+			}
+			my $for_hash = "$readname:$IH_tag:$HI_tag";
+			if (exists $READ_HASH{$chr}{$for_hash}){
+			    next;
+			}
+			else{
+			    print OUT "$line\n";
+			    $READ_HASH{$chr}{$for_hash} = 1;
+			}
+		    }
+		    close(FILE);
+		}
+		close(OUT);
+	    }
+	}
+    }
+    if ($cntI > 0){
+        foreach my $intron (keys %HIGHI){
+            my @int = glob("$dir/*intronmappers*$intron.highexp.sam");
+	    if (@int > 0){
+		open(OUT, ">$outInt") or die;
+		%READ_HASH=();
+		foreach my $file (@int){
+		    open(FILE, $file) or die "cannot find $file file\n";
+		    while(my $line = <FILE>){
+			chomp($line);
+			if ($line =~ /^@/){
+			    next;
+			}
+			my @a = split (/\t/, $line);
+			my $readname = $a[0];
+			$readname =~ s/[^A-Za-z0-9 ]//g;
+			my $chr = $a[2];
+			my ($HI_tag, $IH_tag);
+			if ($line =~ /(N|I)H:i:(\d+)/){
+			    $line =~ /(N|I)H:i:(\d+)/;
+			    $IH_tag = $2;
+			}
+			if ($line =~ /HI:i:(\d+)/){
+			    $line =~ /HI:i:(\d+)/;
+			    $HI_tag = $1;
+			}
+			my $for_hash = "$readname:$IH_tag:$HI_tag";
+			if (exists $READ_HASH{$chr}{$for_hash}){
+			    next;
+			}
+			else{
+			    print OUT "$line\n";
+			    $READ_HASH{$chr}{$for_hash} = 1;
+			}
+		    }
+		    close(FILE);
+		}
+		close(OUT);
+	    }
+	}
     }
     if ($stranded eq "true"){
-	my @ex = glob("$dir_a/*exonmappers*.highexp.sam");
-	if (@ex > 0){
-	    open(OUT, ">$outEx_a") or die;
-	    %READ_HASH=();
-	    foreach my $file (@ex){
-		open(FILE, $file) or die "cannot find $file file\n";
-		while(my $line = <FILE>){
-		    chomp($line);
-		    if ($line =~ /^@/){
-			next;
+	if ($cntEA > 0){
+	    foreach my $exon (keys %HIGHE_A){
+		my @ex = glob("$dir_a/*exonmappers*$exon.highexp.sam");
+		if (@ex > 0){
+		    open(OUT, ">$outEx_a") or die;
+		    %READ_HASH=();
+		    foreach my $file (@ex){
+			open(FILE, $file) or die "cannot find $file file\n";
+			while(my $line = <FILE>){
+			    chomp($line);
+			    if ($line =~ /^@/){
+				next;
+			    }
+			    my @a = split (/\t/, $line);
+			    my $readname = $a[0];
+			    $readname =~ s/[^A-Za-z0-9 ]//g;
+			    my $chr = $a[2];
+			    my ($HI_tag, $IH_tag);
+			    if ($line =~ /(N|I)H:i:(\d+)/){
+				$line =~ /(N|I)H:i:(\d+)/;
+				$IH_tag = $2;
+			    }
+			    if ($line =~ /HI:i:(\d+)/){
+				$line =~ /HI:i:(\d+)/;
+				$HI_tag = $1;
+			    }
+			    my $for_hash = "$readname:$IH_tag:$HI_tag";
+			    if (exists $READ_HASH{$chr}{$for_hash}){
+				next;
+			    }
+			    else{
+				print OUT "$line\n";
+				$READ_HASH{$chr}{$for_hash} = 1;
+			    }
+			}
+			close(FILE);
 		    }
-		    my @a = split (/\t/, $line);
-		    my $readname = $a[0];
-		    $readname =~ s/[^A-Za-z0-9 ]//g;
-		    my $chr = $a[2];
-		    my ($HI_tag, $IH_tag);
-		    if ($line =~ /(N|I)H:i:(\d+)/){
-			$line =~ /(N|I)H:i:(\d+)/;
-			$IH_tag = $2;
-		    }
-		    if ($line =~ /HI:i:(\d+)/){
-			$line =~ /HI:i:(\d+)/;
-			$HI_tag = $1;
-		    }
-		    my $for_hash = "$readname:$IH_tag:$HI_tag";
-		    if (exists $READ_HASH{$chr}{$for_hash}){
-			next;
-		    }
-		    else{
-			print OUT "$line\n";
-			$READ_HASH{$chr}{$for_hash} = 1;
-		    }
+		    close(OUT);
 		}
-		close(FILE);
 	    }
-	    close(OUT);
 	}
-	my @int = glob("$dir_a/*intronmappers*.highexp.sam");
-	if (@int > 0){
-	    open(OUT, ">$outInt_a") or die;
-	    %READ_HASH=();
-	    foreach my $file (@int){
-		open(FILE, $file) or die "cannot find $file file\n";
-		while(my $line = <FILE>){
-		    chomp($line);
-		    if ($line =~ /^@/){
-			next;
+	if ($cntIA > 0){
+	    foreach my $intron (keys %HIGHI_A){
+		my @int = glob("$dir_a/*intronmappers*$intron.highexp.sam");
+		if (@int > 0){
+		    open(OUT, ">$outInt_a") or die;
+		    %READ_HASH=();
+		    foreach my $file (@int){
+			open(FILE, $file) or die "cannot find $file file\n";
+			while(my $line = <FILE>){
+			    chomp($line);
+			    if ($line =~ /^@/){
+				next;
+			    }
+			    my @a = split (/\t/, $line);
+			    my $readname = $a[0];
+			    $readname =~ s/[^A-Za-z0-9 ]//g;
+			    my $chr = $a[2];
+			    my ($HI_tag, $IH_tag);
+			    if ($line =~ /(N|I)H:i:(\d+)/){
+				$line =~ /(N|I)H:i:(\d+)/;
+				$IH_tag = $2;
+			    }
+			    if ($line =~ /HI:i:(\d+)/){
+				$line =~ /HI:i:(\d+)/;
+				$HI_tag = $1;
+			    }
+			    my $for_hash = "$readname:$IH_tag:$HI_tag";
+			    if (exists $READ_HASH{$chr}{$for_hash}){
+				next;
+			    }
+			    else{
+				print OUT "$line\n";
+				$READ_HASH{$chr}{$for_hash} = 1;
+			    }
+			}
+			close(FILE);
 		    }
-		    my @a = split (/\t/, $line);
-		    my $readname = $a[0];
-		    $readname =~ s/[^A-Za-z0-9 ]//g;
-		    my $chr = $a[2];
-		    my ($HI_tag, $IH_tag);
-		    if ($line =~ /(N|I)H:i:(\d+)/){
-			$line =~ /(N|I)H:i:(\d+)/;
-			$IH_tag = $2;
-		    }
-		    if ($line =~ /HI:i:(\d+)/){
-			$line =~ /HI:i:(\d+)/;
-			$HI_tag = $1;
-		    }
-		    my $for_hash = "$readname:$IH_tag:$HI_tag";
-		    if (exists $READ_HASH{$chr}{$for_hash}){
-			next;
-		    }
-		    else{
-			print OUT "$line\n";
-			$READ_HASH{$chr}{$for_hash} = 1;
-		    }
+		    close(OUT);
 		}
-		close(FILE);
 	    }
-	    close(OUT);
 	}
     }
 }
@@ -235,6 +314,12 @@ if ($NU eq "true"){
 	$outEx = "$LOC/$id/EIJ/NU/$id.filtered_nu_exonmappers.highexp_shuf_norm.sam";
 	$outInt = "$LOC/$id/EIJ/NU/$id.filtered_nu_intronmappers.highexp_shuf_norm.sam";
         $dir = "$LOC/$id/EIJ/NU";
+	if (-e $outEx){
+	    `rm $outEx`;
+	}
+	if (-e $outInt){
+	    `rm $outInt`;
+	}
     }
     if ($stranded eq "true"){
         $outEx = "$LOC/$id/EIJ/NU/sense/$id.filtered_nu_exonmappers.highexp_shuf_norm.sam";
@@ -243,155 +328,183 @@ if ($NU eq "true"){
         $outEx_a = "$LOC/$id/EIJ/NU/antisense/$id.filtered_nu_exonmappers.highexp_shuf_norm.sam";
         $outInt_a = "$LOC/$id/EIJ/NU/antisense/$id.filtered_nu_intronmappers.highexp_shuf_norm.sam";
         $dir_a = "$LOC/$id/EIJ/NU/antisense/";
-    }
-    my @ex = glob("$dir/*exonmappers*.highexp.sam");
-    if (@ex > 0){
-	open(OUT, ">$outEx") or die;
-	%READ_HASH=();
-	foreach my $file (@ex){
-	    open(FILE, $file) or die "cannot find $file file\n";
-	    while(my $line = <FILE>){
-		chomp($line);
-		if ($line =~ /^@/){
-		    next;
-		}
-		my @a = split (/\t/, $line);
-		my $readname = $a[0];
-		$readname =~ s/[^A-Za-z0-9 ]//g;
-		my $chr = $a[2];
-		my ($HI_tag, $IH_tag);
-		if ($line =~ /(N|I)H:i:(\d+)/){
-		    $line =~ /(N|I)H:i:(\d+)/;
-		    $IH_tag = $2;
-		}
-		if ($line =~ /HI:i:(\d+)/){
-		    $line =~ /HI:i:(\d+)/;
-		    $HI_tag = $1;
-		}
-		my $for_hash = "$readname:$IH_tag:$HI_tag";
-		if (exists $READ_HASH{$chr}{$for_hash}){
-		    next;
-		}
-		else{
-		    print OUT "$line\n";
-		    $READ_HASH{$chr}{$for_hash} = 1;
-		}
-	    }
-	    close(FILE);
+	if (-e $outEx){
+            `rm $outEx`;
 	}
-	close(OUT);
-    }
-    my @int = glob("$dir/*intronmappers*.highexp.sam");
-    if (@int > 0){
-	open(OUT, ">$outInt") or die;
-	%READ_HASH=();
-	foreach my $file (@int){
-	    open(FILE, $file) or die "cannot find $file file\n";
-	    while(my $line = <FILE>){
-		chomp($line);
-		if ($line =~ /^@/){
-		    next;
-		}
-		my @a = split (/\t/, $line);
-		my $readname = $a[0];
-                    $readname =~ s/[^A-Za-z0-9 ]//g;
-		my $chr = $a[2];
-		my ($HI_tag, $IH_tag);
-		if ($line =~ /(N|I)H:i:(\d+)/){
-		    $line =~ /(N|I)H:i:(\d+)/;
-		    $IH_tag = $2;
-		}
-		if ($line =~ /HI:i:(\d+)/){
-		    $line =~ /HI:i:(\d+)/;
-		    $HI_tag = $1;
-		}
-		my $for_hash = "$readname:$IH_tag:$HI_tag";
-		if (exists $READ_HASH{$chr}{$for_hash}){
-		    next;
-		}
-		else{
-		    print OUT "$line\n";
-		    $READ_HASH{$chr}{$for_hash} = 1;
-		}
-	    }
-	    close(FILE);
+	if (-e $outInt){
+	    `rm $outInt`;
 	}
-	close(OUT);
+	if (-e $outEx_a){
+            `rm $outEx_a`;
+	}
+	if (-e $outInt_a){
+	    `rm $outInt_a`;
+	}
+    }
+    if ($cntE > 0){
+        foreach my $exon (keys %HIGHE){
+            my @ex = glob("$dir/*exonmappers*$exon.highexp.sam");
+	    if (@ex > 0){
+		open(OUT, ">$outEx") or die;
+		%READ_HASH=();
+		foreach my $file (@ex){
+		    open(FILE, $file) or die "cannot find $file file\n";
+		    while(my $line = <FILE>){
+			chomp($line);
+			if ($line =~ /^@/){
+			    next;
+			}
+			my @a = split (/\t/, $line);
+			my $readname = $a[0];
+			$readname =~ s/[^A-Za-z0-9 ]//g;
+			my $chr = $a[2];
+			my ($HI_tag, $IH_tag);
+			if ($line =~ /(N|I)H:i:(\d+)/){
+			    $line =~ /(N|I)H:i:(\d+)/;
+			    $IH_tag = $2;
+			}
+			if ($line =~ /HI:i:(\d+)/){
+			    $line =~ /HI:i:(\d+)/;
+			    $HI_tag = $1;
+			}
+			my $for_hash = "$readname:$IH_tag:$HI_tag";
+			if (exists $READ_HASH{$chr}{$for_hash}){
+			    next;
+			}
+			else{
+			    print OUT "$line\n";
+			    $READ_HASH{$chr}{$for_hash} = 1;
+			}
+		    }
+		    close(FILE);
+		}
+		close(OUT);
+	    }
+	}
+    }
+    if ($cntI > 0){
+        foreach my $intron (keys %HIGHI){
+            my @int = glob("$dir/*intronmappers*$intron.highexp.sam");
+	    if (@int > 0){
+		open(OUT, ">$outInt") or die;
+		%READ_HASH=();
+		foreach my $file (@int){
+		    open(FILE, $file) or die "cannot find $file file\n";
+		    while(my $line = <FILE>){
+			chomp($line);
+			if ($line =~ /^@/){
+			    next;
+			}
+			my @a = split (/\t/, $line);
+			my $readname = $a[0];
+			$readname =~ s/[^A-Za-z0-9 ]//g;
+			my $chr = $a[2];
+			my ($HI_tag, $IH_tag);
+			if ($line =~ /(N|I)H:i:(\d+)/){
+			    $line =~ /(N|I)H:i:(\d+)/;
+			    $IH_tag = $2;
+			}
+			if ($line =~ /HI:i:(\d+)/){
+			    $line =~ /HI:i:(\d+)/;
+			    $HI_tag = $1;
+			}
+			my $for_hash = "$readname:$IH_tag:$HI_tag";
+			if (exists $READ_HASH{$chr}{$for_hash}){
+			    next;
+			}
+			else{
+			    print OUT "$line\n";
+			    $READ_HASH{$chr}{$for_hash} = 1;
+			}
+		    }
+		    close(FILE);
+		}
+		close(OUT);
+	    }
+	}
     }
     if ($stranded eq "true"){
-	my @ex = glob("$dir_a/*exonmappers*.highexp.sam");
-	if (@ex > 0){
-	    open(OUT, ">$outEx_a") or die;
-	    %READ_HASH=();
-	    foreach my $file (@ex){
-		open(FILE, $file) or die "cannot find $file file\n";
-		while(my $line = <FILE>){
-		    chomp($line);
-		    if ($line =~ /^@/){
-			next;
+	if ($cntEA > 0){
+	    foreach my $exon (keys %HIGHE_A){
+		my @ex = glob("$dir_a/*exonmappers*$exon.highexp.sam");
+		if (@ex > 0){
+		    open(OUT, ">$outEx_a") or die;
+		    %READ_HASH=();
+		    foreach my $file (@ex){
+			open(FILE, $file) or die "cannot find $file file\n";
+			while(my $line = <FILE>){
+			    chomp($line);
+			    if ($line =~ /^@/){
+				next;
+			    }
+			    my @a = split (/\t/, $line);
+			    my $readname = $a[0];
+			    $readname =~ s/[^A-Za-z0-9 ]//g;
+			    my $chr = $a[2];
+			    my ($HI_tag, $IH_tag);
+			    if ($line =~ /(N|I)H:i:(\d+)/){
+				$line =~ /(N|I)H:i:(\d+)/;
+				$IH_tag = $2;
+			    }
+			    if ($line =~ /HI:i:(\d+)/){
+				$line =~ /HI:i:(\d+)/;
+				$HI_tag = $1;
+			    }
+			    my $for_hash = "$readname:$IH_tag:$HI_tag";
+			    if (exists $READ_HASH{$chr}{$for_hash}){
+				next;
+			    }
+			    else{
+				print OUT "$line\n";
+				$READ_HASH{$chr}{$for_hash} = 1;
+			    }
+			}
+			close(FILE);
 		    }
-		    my @a = split (/\t/, $line);
-		    my $readname = $a[0];
-                $readname =~ s/[^A-Za-z0-9 ]//g;
-		    my $chr = $a[2];
-		    my ($HI_tag, $IH_tag);
-                if ($line =~ /(N|I)H:i:(\d+)/){
-                    $line =~ /(N|I)H:i:(\d+)/;
-                    $IH_tag = $2;
-                }
-                if ($line =~ /HI:i:(\d+)/){
-                    $line =~ /HI:i:(\d+)/;
-                    $HI_tag = $1;
-                }
-                my $for_hash = "$readname:$IH_tag:$HI_tag";
-		    if (exists $READ_HASH{$chr}{$for_hash}){
-			next;
-		    }
-		    else{
-			print OUT "$line\n";
-			$READ_HASH{$chr}{$for_hash} = 1;
-		    }
+		    close(OUT);
 		}
-		close(FILE);
 	    }
-	    close(OUT);
 	}
-	my @int = glob("$dir_a/*intronmappers*.highexp.sam");
-	if (@int > 0){
-	    open(OUT, ">$outInt_a") or die;
-	    %READ_HASH=();
-	    foreach my $file (@int){
-		open(FILE, $file) or die "cannot find $file file\n";
-		while(my $line = <FILE>){
-		    chomp($line);
-		    if ($line =~ /^@/){
-			next;
+	if ($cntIA > 0){
+	    foreach my $intron (keys %HIGHI_A){
+		my @int = glob("$dir_a/*intronmappers*$intron.highexp.sam");
+		if (@int > 0){
+		    open(OUT, ">$outInt_a") or die;
+		    %READ_HASH=();
+		    foreach my $file (@int){
+			open(FILE, $file) or die "cannot find $file file\n";
+			while(my $line = <FILE>){
+			    chomp($line);
+			    if ($line =~ /^@/){
+				next;
+			    }
+			    my @a = split (/\t/, $line);
+			    my $readname = $a[0];
+			    $readname =~ s/[^A-Za-z0-9 ]//g;
+			    my $chr = $a[2];
+			    my ($HI_tag, $IH_tag);
+			    if ($line =~ /(N|I)H:i:(\d+)/){
+				$line =~ /(N|I)H:i:(\d+)/;
+				$IH_tag = $2;
+			    }
+			    if ($line =~ /HI:i:(\d+)/){
+				$line =~ /HI:i:(\d+)/;
+				$HI_tag = $1;
+			    }
+			    my $for_hash = "$readname:$IH_tag:$HI_tag";
+			    if (exists $READ_HASH{$chr}{$for_hash}){
+				next;
+			    }
+			    else{
+				print OUT "$line\n";
+				$READ_HASH{$chr}{$for_hash} = 1;
+			    }
+			}
+			close(FILE);
 		    }
-		    my @a = split (/\t/, $line);
-		    my $readname = $a[0];
-                    $readname =~ s/[^A-Za-z0-9 ]//g;
-		    my $chr = $a[2];
-		    my ($HI_tag, $IH_tag);
-		    if ($line =~ /(N|I)H:i:(\d+)/){
-			$line =~ /(N|I)H:i:(\d+)/;
-			$IH_tag = $2;
-		    }
-		    if ($line =~ /HI:i:(\d+)/){
-			$line =~ /HI:i:(\d+)/;
-			$HI_tag = $1;
-		    }
-		    my $for_hash = "$readname:$IH_tag:$HI_tag";
-		    if (exists $READ_HASH{$chr}{$for_hash}){
-			next;
-		    }
-		    else{
-			print OUT "$line\n";
-			$READ_HASH{$chr}{$for_hash} = 1;
-		    }
+		    close(OUT);
 		}
-		close(FILE);
 	    }
-	    close(OUT);
 	}
     }
 }

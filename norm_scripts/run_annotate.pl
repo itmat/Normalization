@@ -9,7 +9,8 @@ at minimum name, chrom, strand, exonStarts, exonEnds, all kgXref fields and hgnc
 protein and gene fields from the Linked Tables table.
 <loc> is the path to the sample directories.
 
-option: 
+option:  
+ -normdir <s>
  -outputdesc : set this if you don't want to output description. it will print the description by default.
 
  -lsf : set this if you want to submit batch jobs to LSF cluster (PMACS).
@@ -50,6 +51,8 @@ $request_memory_option = "";
 $mem = "";
 $outputdesc = "";
 $njobs = 200;
+my $normdir = "";
+my $ncnt=0;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -65,6 +68,13 @@ for($i=3; $i<@ARGV; $i++) {
         }
         $i++;
     }
+    if ($ARGV[$i] eq '-normdir'){
+	$option_found = "true";
+	$normdir = $ARGV[$i+1];
+	$i++;
+	$ncnt++;
+    }
+
     if($ARGV[$i] eq '-outputdesc') {
 	$option_found = 'true';
 	$outputdesc = "-outputdesc";
@@ -122,7 +132,9 @@ if($numargs ne '1'){
     die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_15G>,<status>\".\n
 ";
 }
-
+if ($ncnt ne '1'){
+    die "please specify -normdir path\n";
+}
 if ($replace_mem eq "true"){
     $mem = $new_mem;
 }
@@ -144,7 +156,7 @@ unless (-d $shdir){
     `mkdir $shdir`;}
 unless (-d $logdir){
     `mkdir $logdir`;}
-$norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION";
+$norm_dir = "$normdir/EXON_INTRON_JUNCTION";
 $spread_dir = $norm_dir . "/SPREADSHEETS";
 
 unless (-d $spread_dir){

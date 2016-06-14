@@ -6,7 +6,7 @@ where
 <file of quants files> is a file with the names of the quants file without path
 <number_of_samples> is number of samples
 <cutoff> cutoff value
-<loc> is the path to the sample directories
+<loc> normdir
 
 ";
 }
@@ -16,13 +16,8 @@ $path = abs_path($0);
 $path =~ s/runall_//;
 $num_samples = $ARGV[1];
 $cutoff = $ARGV[2];
-$LOC = $ARGV[3];
-$LOC =~ s/\/$//;
-@fields = split("/", $LOC);
-$last_dir = $fields[@fields-1];
-$norm_dir = $LOC;
-$norm_dir =~ s/$last_dir//;
-$norm_dir = $norm_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
+$normdir = $ARGV[3];
+$norm_dir = "$normdir/EXON_INTRON_JUNCTION/";
 $spread_dir = $norm_dir . "/SPREADSHEETS";
 
 unless (-d $spread_dir){

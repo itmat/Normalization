@@ -37,7 +37,7 @@ options:
  -nu  :  set this if you are using non-unique mappers only.
         otherwise by default it will use both unique and non-unique mappers.
 
- -norm : set this to get genes file for the gene-normalized sam files.
+ -norm <s> : set this to get genes file for the gene-normalized sam files.
 
  -lsf : set this if you want to submit batch jobs to LSF (PMACS) cluster.
 
@@ -100,6 +100,7 @@ my $filter = "";
 my $qinfo = "";
 my $qcnt = 0;
 my $index = 0;
+my $normdir = "";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -161,6 +162,8 @@ for (my $i=5; $i<@ARGV; $i++){
     if ($ARGV[$i] eq "-norm"){
         $norm = "true";
         $option_found = "true";
+	$normdir = $ARGV[$i+1];
+	$i++;
     }
     if ($ARGV[$i] eq "-str_f"){
         $orientation = "-str_f";
@@ -268,7 +271,7 @@ my $logdir = $study_dir . "logs";
 my $exons = $ARGV[2];
 my $introns = $ARGV[3];
 my $igs = $ARGV[4];
-my $normdir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM";
+my $norm_dir = "$normdir/EXON_INTRON_JUNCTION/FINAL_SAM";
 open(IN, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; # dirnames;
 while(my $line = <IN>){
     my ($filename_u, $filename_nu, $shfile_u, $shfile_nu, $logname_u, $logname_nu);
@@ -315,8 +318,8 @@ while(my $line = <IN>){
 
     if ($norm eq "true"){
 	if ($stranded eq "false"){
-	    $filename_exon = "$normdir/exonmappers/$id.exonmappers.norm.sam";
-	    $filename_intron = "$normdir/intronmappers/$id.intronmappers.norm.sam";
+	    $filename_exon = "$norm_dir/exonmappers/$id.exonmappers.norm.sam";
+	    $filename_intron = "$norm_dir/intronmappers/$id.intronmappers.norm.sam";
 	    $shfile_exon = "$shdir/Q.$id.quantify_exons_introns.2.exon.sh";
 	    $shfile_intron = "$shdir/Q.$id.quantify_exons_introns.2.intron.sh";
 	    $logname_exon = "$logdir/quantify_exons_introns.2.$id.exon";
@@ -341,10 +344,10 @@ while(my $line = <IN>){
 	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_intron.out -e $logname_intron.err < $shfile_intron`;
 	}
 	if ($stranded eq "true"){
-	    my $filename_exon_s = "$normdir/exonmappers/sense/$id.exonmappers.norm.sam";
-            my $filename_intron_s = "$normdir/intronmappers/sense/$id.intronmappers.norm.sam";
-	    my $filename_exon_a = "$normdir/exonmappers/antisense/$id.exonmappers.norm.sam";
-            my $filename_intron_a = "$normdir/intronmappers/antisense/$id.intronmappers.norm.sam";
+	    my $filename_exon_s = "$norm_dir/exonmappers/sense/$id.exonmappers.norm.sam";
+            my $filename_intron_s = "$norm_dir/intronmappers/sense/$id.intronmappers.norm.sam";
+	    my $filename_exon_a = "$norm_dir/exonmappers/antisense/$id.exonmappers.norm.sam";
+            my $filename_intron_a = "$norm_dir/intronmappers/antisense/$id.intronmappers.norm.sam";
             my $shfile_exon_s = "$shdir/Q.$id.quantify_exons_introns.2.exon_sense.sh";
             my $shfile_exon_a = "$shdir/Q.$id.quantify_exons_introns.2.exon_antisense.sh";
             my $shfile_intron_s = "$shdir/Q.$id.quantify_exons_introns.2.intron_sense.sh";

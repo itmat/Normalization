@@ -8,6 +8,7 @@ where:
 <loc> is the path to the sample directories.
 
 options:
+ -normdir <s>
  -filter_highexp
  -stranded : set this if your data are strand-specific
 
@@ -62,6 +63,8 @@ my $request_memory_option = "";
 my $mem6 = "";
 my $mem10 = "";
 my $filter = "";
+my $normdir = "";
+my $ncnt = 0;
 my ($status, $argv_all, $new_mem);
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
@@ -70,6 +73,12 @@ for (my $i=0;$i<@ARGV;$i++){
 }
 for(my $i=2; $i<@ARGV; $i++) {
     my $option_found = "false";
+    if ($ARGV[$i] eq '-normdir'){
+	$option_found = "true";
+	$normdir = $ARGV[$i+1];
+	$i++;
+	$ncnt++;
+    }
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];
@@ -160,6 +169,9 @@ if($numargs > 1) {
 if($numargs_c ne '1'){
     die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_6G>,<queue_name_for_10G>\".\n";
 }
+if ($ncnt ne '1'){
+    die "please specify -normdir path\n";
+}
 if ($replace_mem eq "true"){
     $mem6 = $new_mem;
     $mem10 = $new_mem;
@@ -184,7 +196,7 @@ unless (-d $shdir){
 unless (-d $logdir){
     `mkdir $logdir`;}
 
-my $norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION";
+my $norm_dir = "$normdir/EXON_INTRON_JUNCTION";
 my $spread_dir = $norm_dir . "/SPREADSHEETS";
 unless (-d $spread_dir){
     `mkdir $spread_dir`;
@@ -195,15 +207,15 @@ my ($sh_exon, $sh_intron, $sh_junctions, $jobname, $lognameE, $lognameI, $lognam
 if ($numargs eq "0"){
     $sh_exon = "$shdir/exonquants2spreadsheet_min_max.sh";
     open(OUTexon, ">$sh_exon");
-    print OUTexon "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC exonquants $novel $stranded $filter";
+    print OUTexon "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC exonquants $novel $stranded $filter -normdir $normdir";
     close(OUTexon);
     $sh_intron = "$shdir/intronquants2spreadsheet_min_max.sh";
     open(OUTintron, ">$sh_intron");
-    print OUTintron "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC intronquants $novel $stranded $filter";
+    print OUTintron "perl $path/quants2spreadsheet_min_max.pl $FILE $LOC intronquants $novel $stranded $filter -normdir $normdir";
     close(OUTintron);
     $sh_junctions = "$shdir/juncs2spreadsheet_min_max.sh";
     open(OUTjunctions, ">$sh_junctions");
-    print OUTjunctions "perl $path/juncs2spreadsheet_min_max.pl $FILE $LOC";
+    print OUTjunctions "perl $path/juncs2spreadsheet_min_max.pl $FILE $LOC -normdir $normdir";
     close(OUTjunctions);
     $jobname = "$study.final_spreadsheet";
     $lognameE = "$logdir/exonquants2spreadsheet_min_max";
@@ -226,11 +238,11 @@ else{
     if ($U eq "true"){
 	$sh_exon = "$shdir/exonquants2spreadsheet.u.sh";
 	open(OUTexon, ">$sh_exon");
-	print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants $novel $stranded";
+	print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants $novel $stranded -normdir $normdir";
 	close(OUTexon);
 	$sh_intron = "$shdir/intronquants2spreadsheet.u.sh";
 	open(OUTintron, ">$sh_intron");
-	print OUTintron "perl $path/quants2spreadsheet.1.pl $FILE $LOC intronquants $novel $stranded";
+	print OUTintron "perl $path/quants2spreadsheet.1.pl $FILE $LOC intronquants $novel $stranded -normdir $normdir";
 	close(OUTintron);
 	$jobname = "$study.final_spreadsheet";
 	$lognameE ="$logdir/exonquants2spreadsheet.u";
@@ -247,11 +259,11 @@ else{
     if ($NU eq "true"){
         $sh_exon = "$shdir/exonquants2spreadsheet.nu.sh";
         open(OUTexon, ">$sh_exon");
-	print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -NU $novel $stranded";
+	print OUTexon "perl $path/quants2spreadsheet.1.pl $FILE $LOC exonquants -NU $novel $stranded -normdir $normdir";
         close(OUTexon);
         $sh_intron = "$shdir/intronquants2spreadsheet.nu.sh";
         open(OUTintron, ">$sh_intron");
-        print OUTintron "perl $path/quants2spreadsheet.1.pl $FILE $LOC intronquants -NU $novel $stranded";
+        print OUTintron "perl $path/quants2spreadsheet.1.pl $FILE $LOC intronquants -NU $novel $stranded -normdir $normdir";
         close(OUTintron);
         $jobname = "$study.final_spreadsheet";
         $lognameE ="$logdir/exonquants2spreadsheet.nu";
@@ -267,7 +279,7 @@ else{
     }
     $sh_junctions = "$shdir/juncs2spreadsheet.u.sh";
     open(OUTjunctions, ">$sh_junctions");
-    print OUTjunctions "perl $path/juncs2spreadsheet.1.pl $FILE $LOC";
+    print OUTjunctions "perl $path/juncs2spreadsheet.1.pl $FILE $LOC -normdir $normdir";
     close(OUTjunctions);
     $lognameJ ="$logdir/juncs2spreadsheet.1";
     while (qx{$status | wc -l} > $njobs){

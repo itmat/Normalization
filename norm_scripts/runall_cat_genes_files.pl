@@ -68,6 +68,7 @@ my $new_mem = "";
 my $status;
 my $index = 0;
 my $numargs_c = 0;
+my $normdir = "";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -87,9 +88,11 @@ for (my $i=2; $i<@ARGV; $i++){
     }
 
     if ($ARGV[$i] eq "-norm"){
-	$type_norm = "-norm";
 	$type = "";
 	$option_found = "true";
+	$normdir = $ARGV[$i+1];
+	$type_norm = "-norm $normdir";
+	$i++;
     }
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";

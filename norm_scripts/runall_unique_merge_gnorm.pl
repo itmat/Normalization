@@ -8,6 +8,8 @@ my $USAGE = "perl runall_unique_merge_gnorm.pl <sample dirs> <loc> [options]
 <loc> is where the sample directories are
 
 options:
+ -normdir <s>
+
  -se : set this for single read data.
 
  -u  :  set this if you are using unique mappers only.
@@ -61,6 +63,8 @@ my $mem = "";
 my $new_mem = "";
 my $status;
 my $numargs_c = 0;
+my $normdir = "";
+my $ncnt = 0;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -72,6 +76,12 @@ for (my $i=2; $i<@ARGV; $i++){
 	$type = "-nu";
 	$numargs++;
         $option_found = "true";
+    }
+    if ($ARGV[$i] eq '-normdir'){
+	$option_found = "true";
+	$normdir = $ARGV[$i+1];
+	$i++;
+	$ncnt++;
     }
     if($ARGV[$i] eq '-u') {
 	$type = "-u";
@@ -147,6 +157,9 @@ if($numargs > 1) {
 if($numargs_c ne '1'){
     die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit> ,<jobname_option>, <request_memory_option>, <queue_name_for_6G>, <status>\".\n";
 }
+if ($ncnt ne '1'){
+    die "please specify -normdir path\n";
+}
 if ($replace_mem eq "true"){
     $mem = $new_mem;
 }
@@ -156,7 +169,7 @@ my @fields = split("/", $LOC);
 my $last_dir = $fields[@fields-1];
 my $loc_study = $LOC;
 $loc_study =~ s/$last_dir//;
-my $norm_dir = $loc_study."NORMALIZED_DATA/GENE/FINAL_SAM/";
+my $norm_dir = "$normdir/GENE/FINAL_SAM/";
 my $norm_merged_dir = $norm_dir . "/merged";
 unless (-d $norm_merged_dir){
     `mkdir $norm_merged_dir`;
@@ -175,7 +188,7 @@ while(my $line = <IN>){
     my $jobname = "$study.unique_merge_gnorm";
     my $logname = "$logdir/unique_merge_gnorm.$id";
     open(OUTFILE, ">$shfile");
-    print OUTFILE "perl $path/unique_merge_gnorm.pl $id $LOC $type $se\n";
+    print OUTFILE "perl $path/unique_merge_gnorm.pl $id $LOC $type $se -normdir $normdir\n";
     close(OUTFILE);
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);

@@ -8,14 +8,14 @@ my $USAGE= "Usage: perl cleanup.pl <sample dirs> <loc> [options]
 <sample dirs> is the file with the names of the sample directories
 <loc> is the location where the sample directories are
 
-option:
+option: 
+ -normdir <s>
+
  -fa : set this if the unaligned files are in fasta format
 
  -fq : set this if the unaligned files are in fastq format
 
  -gz : set this if the unaligned files are compressed
-
- -bam <samfilename> : set this if the aligned files are in bam format
 
 ";
 if(@ARGV<2) {
@@ -26,21 +26,19 @@ my $cnt = 0;
 my $gz = "false";
 my $delete_temp_fa = "false";
 my $bam = "false";
-my $samname;
+my $normdir = "";
+my $ncnt = 0;
 for(my $i=2;$i<@ARGV;$i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-gz'){
 	$option_found = "true";
 	$gz = "true";
     }
-    if ($ARGV[$i] eq '-bam'){
-	$option_found = "true";
-	$bam = "true";
-	$samname = $ARGV[$i+1];
-	if ($samname =~ /^$/){
-	    die "please provide the sam name\n";
-	}
+    if ($ARGV[$i] eq '-normdir'){
+        $option_found = "true";
+	$normdir = $ARGV[$i+1];
 	$i++;
+	$ncnt++;
     }
     if ($ARGV[$i] eq '-fa'){
 	$option_found = "true";
@@ -58,19 +56,21 @@ for(my $i=2;$i<@ARGV;$i++){
 if ($cnt ne '1'){
     die "please specify the type of the unaligned files : '-fa' or '-fq'\n";
 }
-
+if ($ncnt ne '1'){
+    die "please specify -normdir path\n";
+}
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 my @fields = split("/", $LOC);
 my $last_dir = $fields[@fields-1];
 my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
-my $norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
+my $norm_dir = "$normdir/EXON_INTRON_JUNCTION/";
 my $exon_dir = $norm_dir . "/FINAL_SAM/exonmappers";
 my $intron_dir = $norm_dir . "/FINAL_SAM/intronmappers";
 my $ig_dir = $norm_dir . "/FINAL_SAM/intergenicmappers";
 my $spread_dir = $norm_dir . "/SPREADSHEETS";
-my $gnorm_dir = $study_dir . "NORMALIZED_DATA/GENE/";
+my $gnorm_dir = "$normdir/GENE/";
 my $gene_dir = $gnorm_dir . "/FINAL_SAM/";
 my $gspread_dir = $gnorm_dir . "/SPREADSHEETS";
 my @g;
@@ -231,11 +231,6 @@ while(my $line = <INFILE>){
     @g = glob("$LOC/$line/*_junctions_all.sorted.rum");
     if (@g>0){
 	`rm $LOC/$line/*junctions_*`;
-    }
-    if ($bam eq "true"){
-	if (-e "$LOC/$line/$samname"){
-	    `rm $LOC/$line/$samname`;
-	}
     }
 }
 print "got here\n";

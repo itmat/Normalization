@@ -8,6 +8,8 @@ my $USAGE = "perl runall_unique_merge_samfiles.pl <sample dirs> <loc> [options]
 <loc> is where the sample directories are
 
 options:
+ -normdir <s>
+
  -stranded : set this if the data are strand-specific.
 
  -u  :  set this if you are using unique mappers only.
@@ -61,6 +63,8 @@ my $mem = "";
 my $new_mem = "";
 my $status;
 my $numargs_c = 0;
+my $normdir = "";
+my $ncnt=0;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -68,6 +72,12 @@ for (my $i=0;$i<@ARGV;$i++){
 }
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
+    if ($ARGV[$i] eq '-normdir'){
+	$option_found = "true";
+	$normdir = $ARGV[$i+1];
+	$i++;
+	$ncnt++;
+    }
     if($ARGV[$i] eq '-nu') {
 	$type = "-nu";
 	$numargs++;
@@ -144,6 +154,9 @@ if($numargs > 1) {
     die "you cannot use both -u and -nu\n.
 ";
 }
+if ($ncnt ne '1'){
+    die "please specify -normdir path\n";
+}
 if($numargs_c ne '1'){
     die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit> ,<jobname_option>, <request_memory_option>, <queue_name_for_6G>, <status>\".\n";
 }
@@ -162,7 +175,7 @@ my $logdir = $study_dir . "logs";
 
 my $loc_study = $LOC;
 $loc_study =~ s/$last_dir//;
-my $norm_dir = $loc_study."NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM/";
+my $norm_dir = "$normdir/EXON_INTRON_JUNCTION/FINAL_SAM/";
 my $norm_exon_dir = $norm_dir . "/exonmappers";
 my $norm_intron_dir = $norm_dir . "/intronmappers";
 my $norm_ig_dir = $norm_dir . "/intergenicmappers";
@@ -180,7 +193,7 @@ while(my $line = <IN>){
     my $jobname = "$study.unique_merge_samfiles";
     my $logname = "$logdir/unique_merge_samfiles.$id";
     open(OUTFILE, ">$shfile");
-    print OUTFILE "perl $path/unique_merge_samfiles.pl $id $LOC $type $stranded\n";
+    print OUTFILE "perl $path/unique_merge_samfiles.pl $id $LOC $type $stranded -normdir $normdir\n";
     close(OUTFILE);
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);

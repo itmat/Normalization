@@ -10,6 +10,7 @@ where:
 <genome> is the genome sequene fasta file (with full path)
 
 option:
+ -normdir <s>
  -bam <samtools> : bam input
  -samfilename <s> : set this to create junctions files using unfiltered aligned samfile.
                     <s> is the name of aligned sam file (e.g. RUM.sam, Aligned.out.sam)
@@ -67,6 +68,8 @@ my $mem = "";
 my $gnorm = "false";
 my $stranded = "false";
 my $b_option = "";
+my $normdir = "";
+my $ncnt =0;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -96,6 +99,12 @@ for(my $i=4; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq '-gnorm'){
 	$option_found = "true";
 	$gnorm = "true";
+    }
+    if ($ARGV[$i] eq '-normdir'){
+	$option_found = "true";
+	$normdir = $ARGV[$i+1];
+	$i++;
+	$ncnt++;
     }
     if ($ARGV[$i] eq '-stranded'){
         $option_found = "true";
@@ -153,6 +162,11 @@ for(my $i=4; $i<@ARGV; $i++) {
 if($numargs_c ne '1'){
     die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit> <jobname_option> <request_memory_option> <queue_name_for_6G>\".\n";
 }
+if ($samfilename eq "false"){
+    if ($ncnt ne '1'){
+	die "please specify -normdir path\n";
+    }
+}
 if ($replace_mem eq "true"){
     $mem = $new_mem;
 }
@@ -172,9 +186,9 @@ unless (-d $shdir){
     `mkdir $shdir`;}
 unless (-d $logdir){
     `mkdir $logdir`;}
-my $norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
+my $norm_dir = "$normdir/EXON_INTRON_JUNCTION/";
 if ($gnorm eq "true"){
-    $norm_dir = $study_dir . "NORMALIZED_DATA/GENE/";
+    $norm_dir = "$normdir/GENE/";
 }
 my $finalsam_dir = "$norm_dir/FINAL_SAM";
 my $final_M_dir = "$finalsam_dir/merged";

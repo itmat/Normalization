@@ -10,7 +10,9 @@ my $USAGE = "\nUsage: runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov>
 
 ***Sam files produced by aligners other than STAR, RUM, GSNAP are currently not supported***
 
-option:  
+option:   
+ -normdir <s>
+
  -str_f : if forward read is in the same orientation as the transcripts/genes
 
  -str_r : if reverse read is in the same orientation as the transcripts/genes
@@ -64,6 +66,8 @@ my $jobname_option = "";
 my $request_memory_option = "";
 my $mem = "";
 my $new_mem;
+my $normdir = "";
+my $ncnt = 0;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -100,6 +104,12 @@ for (my $i=4; $i<@ARGV; $i++){
         $rum = "true";
         $numargs_a++;
         $option_found = "true";
+    }
+    if ($ARGV[$i] eq '-normdir'){
+        $option_found = "true";
+	$normdir = $ARGV[$i+1];
+	$i++;
+	$ncnt++;
     }
     if ($ARGV[$i] eq '-lsf'){
         $numargs++;
@@ -168,7 +178,9 @@ if($stranded eq "true"){
         die "You can only use one of the options \"-str_f\" or \"-str_r\".\n";
     }
 }
-
+if ($ncnt ne '1'){
+    die "please specify -normdir path\n";
+}
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 my @fields = split("/", $LOC);
@@ -178,7 +190,7 @@ my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
-my $norm_dir = $study_dir . "NORMALIZED_DATA/EXON_INTRON_JUNCTION/";
+my $norm_dir = "$normdir/EXON_INTRON_JUNCTION/";
 my $cov_dir = $norm_dir . "/COV";
 unless (-d $cov_dir){
     `mkdir $cov_dir`;

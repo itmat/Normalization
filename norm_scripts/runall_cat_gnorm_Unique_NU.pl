@@ -9,6 +9,10 @@ my $USAGE = "perl runall_cat_gnorm_Unique_NU.pl <sample dirs> <loc> <samfilename
 <samfilename>
 
 options:
+ -filter_highexp
+
+ -normdir <s> 
+
  -bam <samtools> : bam input
 
  -stranded : set this if the data are strand-specific.
@@ -65,6 +69,9 @@ my $new_mem = "";
 my $status;
 my $numargs_c = 0;
 my $b_option = "";
+my $normdir = "";
+my $ncnt=0;
+my $filter = "";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -76,6 +83,16 @@ for (my $i=3; $i<@ARGV; $i++){
 	$type = "-nu";
 	$numargs++;
         $option_found = "true";
+    }
+    if ($ARGV[$i] eq '-filter_highexp'){
+	$filter = "-filter_highexp";
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-normdir'){
+	$normdir = $ARGV[$i+1];
+	$option_found = "true";
+	$i++;
+	$ncnt++;
     }
     if ($ARGV[$i] eq '-bam'){
 	$b_option = "-bam $ARGV[$i+1]";
@@ -153,6 +170,9 @@ if($numargs > 1) {
     die "you cannot use both -u and -nu\n.
 ";
 }
+if ($ncnt ne '1'){
+    die "please specify -normdir path\n";
+}
 if($numargs_c ne '1'){
     die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit> ,<jobname_option>, <request_memory_option>, <queue_name_for_3G>, <status>\".\n";
 }
@@ -177,7 +197,7 @@ while(my $line = <IN>){
     my $jobname = "$study.cat_gnorm_Unique_NU";
     my $logname = "$logdir/cat_gnorm_Unique_NU.$id";
     open(OUTFILE, ">$shfile");
-    print OUTFILE "perl $path/cat_gnorm_Unique_NU.pl $id $LOC $samfilename $type $stranded $b_option\n";
+    print OUTFILE "perl $path/cat_gnorm_Unique_NU.pl $id $LOC $samfilename $type $stranded $b_option -normdir $normdir $filter\n";
     close(OUTFILE);
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);

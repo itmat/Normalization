@@ -228,7 +228,17 @@ if ($stranded eq "true"){
     }
     close(IN);
 }
-
+my $cntE = keys %HIGH_EX;
+my $cntI = keys %HIGH_INT;
+my $cntEA = keys %HIGH_EX_A;
+my $cntIA = keys %HIGH_INT_A;
+if (($cntE eq 0) && ($cntI eq 0) && ($cntEA eq 0) && ($cntIA eq 0)){
+    my $lntemp = "$logdir/run_shuf_highexp_u.temp";
+    my $lntemp_nu = "$logdir/run_shuf_highexp_nu.temp";
+    `touch $lntemp.err $lntemp_nu.err`;
+    `echo "got here" > $lntemp.out`;
+    `echo "got here" > $lntemp_nu.out`;
+}
 my $LINECOUNTS_U_E = 0;
 my $LINECOUNTS_NU_E = 0;
 my $LINECOUNTS_U_A_E = 0;

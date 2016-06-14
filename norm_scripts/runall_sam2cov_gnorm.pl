@@ -11,6 +11,8 @@ my $USAGE = "\nUsage: runall_sam2cov_gnorm.pl <sample dirs> <loc> <fai file> <sa
 ***Sam files produced by aligners other than STAR, RUM, GSNAP are currently not supported***
 
 option:  
+ -normdir <s>
+
  -se : set this if the data are single end, otherwise by default it will assume it's a paired end data.
 
  -str_f : if forward read is in the same orientation as the transcripts/genes
@@ -74,6 +76,8 @@ my $request_memory_option = "";
 my $mem = "";
 my $se = "false";
 my ($status, $new_mem);
+my $normdir = "";
+my $ncnt=0;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -92,6 +96,12 @@ for (my $i=4; $i<@ARGV; $i++){
     if ($ARGV[$i] eq "-se"){
 	$option_found = "true";
 	$se = "true";
+    }
+    if ($ARGV[$i] eq "-normdir"){
+        $option_found = "true";
+        $normdir = $ARGV[$i+1];
+	$i++;
+	$ncnt++;
     }
     if($ARGV[$i] eq '-str_f') {
         $FWD = "true";
@@ -182,7 +192,9 @@ if($numargs ne '1'){
 if ($replace_mem eq "true"){
     $mem = $new_mem;
 }
-
+if ($ncnt ne '1'){
+    die "please specify -normdir path\n";
+}
 if($numargs_u_nu > 1) {
     die "you cannot specify both -u and -nu\n.
 ";
@@ -206,7 +218,7 @@ my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
-my $norm_dir = $study_dir . "NORMALIZED_DATA/GENE/";
+my $norm_dir = "$normdir/GENE/";
 my $cov_dir = $norm_dir . "/COV";
 unless (-d $cov_dir){
     `mkdir $cov_dir`;

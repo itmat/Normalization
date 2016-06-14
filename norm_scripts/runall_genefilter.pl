@@ -7,7 +7,7 @@ my $USAGE = "\nUsage: perl runall_genefilter.pl <sample dirs> <loc>
 <loc> is where the sample directories are
 
 option:
- -norm : set this if you're using normalized files.
+ -norm <s>: set this if you're using normalized files.
 
  -stranded : set this if your data are strand-specific.
 
@@ -74,6 +74,7 @@ my $stranded = "";
 my $str = "false";
 my $norm = "false";
 my $index = 0;
+my $normdir = "";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -109,6 +110,8 @@ for (my $i=2; $i<@ARGV; $i++){
     if ($ARGV[$i] eq '-norm'){
         $norm = "true";
         $option_found = "true";
+	$normdir = $ARGV[$i+1];
+	$i++;
     }
     if ($ARGV[$i] eq '-se'){
 	$pe = "false";
@@ -195,7 +198,7 @@ my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
-my $normdir = $study_dir . "/NORMALIZED_DATA/GENE/FINAL_SAM/";
+$normdir = "$normdir/GENE/FINAL_SAM/";
 
 open(IN, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; # dirnames;
 while(my $line = <IN>){
