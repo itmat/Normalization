@@ -63,7 +63,7 @@ my $outfile = $gtf_file;
 $outfile =~ s/.gtf$/.PORT_geneinfo.txt/;
 
 open(OUT, ">$outfile") or die "cannot open $outfile\n";
-print OUT "#$name.chrom\t$name.strand\t$name.txStart\t$name.txEnd\t$name.exonCount\t$name.exonStarts\t$name.exonEnds\t$name.name\t$name.name2\t$name.ensemblToGeneName.value\n\t$name.geneSymbol";
+print OUT "#$name.chrom\t$name.strand\t$name.txStart\t$name.txEnd\t$name.exonCount\t$name.exonStarts\t$name.exonEnds\t$name.name\t$name.name2\t$name.ensemblToGeneName.value\t$name.geneSymbol\n";
 
 #my $line = ""; #Current line of input
 my @line_data; #Array of line fields
