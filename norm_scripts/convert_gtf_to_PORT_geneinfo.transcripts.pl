@@ -113,6 +113,9 @@ $line_data[8] =~ m/gene_id "([^"]+)";/;
 $gene = $1;
 $line_data[8] =~ m/gene_name "([^"]+)";/;
 $genesym = $1;
+if ($genesym =~ /^$/){
+    $genesym = $gene;
+}
 #Load data from first transcript into appropriate variables
 $chr = $line_data[0];
 if ($convert eq "true"){
@@ -157,7 +160,7 @@ while($line = <INFILE>) {
             foreach my $coord (@stops) {
                 print OUT "$coord,";
             }
-            print OUT "\t$tx_id\t$gene\t$genesym\n";
+            print OUT "\t$tx_id\t$gene\t$genesym\t$genesym\n";
             
             #Load data from new transcript into appropriate variables
             $tx_id = $curr_tx;
@@ -165,6 +168,9 @@ while($line = <INFILE>) {
             $gene = $1;
 	    $line_data[8] =~ m/gene_name "([^"]+)";/;
 	    $genesym = $1;
+            if ($genesym =~ /^$/){
+                $genesym = $gene;
+            }
             $chr = $line_data[0];
 	    if ($convert eq "true"){
 		if (exists $CHR{$chr}){
