@@ -1,5 +1,5 @@
 # PORT 
-## Preprocessor for Optimal RNA-Seq Transformation
+## Pipeline Of RNA-Seq Transformations
 **#RNA-Seq** **#Normalization** **#Quantification**<br><br>
 **PORT** offers two types of normalization: <br>__GENE Normalization__ and __EXON-INTRON-JUNCTION Normalization__.<br>
 
