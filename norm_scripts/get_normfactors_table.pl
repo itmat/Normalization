@@ -147,15 +147,15 @@ if ($gnorm eq "true"){
 	    $footer .= "# %geneU-sense : # %unique genemappers-sense out of total unique mappers\n";
             $geneU = "true";
         }
-        if (-e "$study_dir/STATS/GENE/percent_genemappers_NU_sense.txt"){
-            print OUT "%geneNU-sense\t";
-	    $footer .= "# %geneNU-sense : %non-unique genemappers-sense out of total non-unique mappers\n";
-            $geneNU = "true";
-        }
 	if (-e "$study_dir/STATS/GENE/percent_genemappers_Unique_antisense.txt"){
             print OUT "%geneU-anti\t";
 	    $footer .= "# %geneU-anti : %unique genemappers-antisense out of total unique mappers\n";
             $geneU_A = "true";
+        }
+        if (-e "$study_dir/STATS/GENE/percent_genemappers_NU_sense.txt"){
+            print OUT "%geneNU-sense\t";
+	    $footer .= "# %geneNU-sense : %non-unique genemappers-sense out of total non-unique mappers\n";
+            $geneNU = "true";
         }
         if (-e "$study_dir/STATS/GENE/percent_genemappers_NU_antisense.txt"){
             print OUT "%geneNU-anti\t";
