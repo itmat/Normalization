@@ -37,7 +37,7 @@ If not, use OTHER_CLUSTER option and specify the required parameters.
 ========================================================================================================
 
 ###2. GENE INFO
-Gene information file with required suffixes need to be provided.
+Gene information file with required suffixes need to be provided. If running both GENE and EXON-INTRON-JUNCTION mode, you should use the same gene info file for [1] and [2]. 
 ####[1] Gene information file for [Gene Normalization]
 Gene normalization requires an **ensembl** gene info file. The gene info file must contain column names with these suffixes: __name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value.__ 
 
@@ -53,6 +53,7 @@ ensembl gene info files for mm9, mm10, hg19, hg38, dm3 and danRer7 are available
 You can download the gene information file from the [UCSC table browser](http://genome.ucsc.edu/cgi-bin/hgTables). Alternatively, you can use a perl script (**/path/to/Normalization/norm_scripts/convert_gtf_to_PORT_geneinfo.transcripts.pl**) to convert an ENSEMBL gtf file to a gene information file. 
 
 ####[2] Gene information file for [Exon-Intron-Junction Normalization]
+If only running Exon-Intron-Junction Normalization, you may choose to use a non-ensembl annotation file.
 Gene info file must contain column names with these suffixes: __chrom, strand, txStart, txEnd, exonStarts, exonEnds and geneSymbol.__
 (optional suffix for annotation: description)
 
