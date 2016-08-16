@@ -3279,11 +3279,11 @@ if ($run_norm eq "true"){
 	    $err_name = "unique_merge_gnorm.*.err";
 
 	    if ($other eq "true"){
-		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
+		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_30G, $stat\\\"";
 		$new_queue = "";
 	    }
 	    else{
-		$new_queue = "-mem $queue_6G";
+		$new_queue = "-mem $queue_30G";
 	    }
 
 	    while(qx{$stat | wc -l} > $maxjobs){
