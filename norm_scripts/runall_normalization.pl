@@ -3279,11 +3279,11 @@ if ($run_norm eq "true"){
 	    $err_name = "unique_merge_gnorm.*.err";
 
 	    if ($other eq "true"){
-		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_30G, $stat\\\"";
+		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
 		$new_queue = "";
 	    }
 	    else{
-		$new_queue = "-mem $queue_30G";
+		$new_queue = "-mem $queue_15G";
 	    }
 
 	    while(qx{$stat | wc -l} > $maxjobs){
@@ -3993,11 +3993,11 @@ if ($run_norm eq "true"){
 	$err_name = "unique_merge_samfiles.*.err";
 
 	if ($other eq "true"){
-	    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
+	    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
 	    $new_queue = "";
 	}
 	else{
-	    $new_queue = "-mem $queue_6G";
+	    $new_queue = "-mem $queue_15G";
 	}
         my $linecounts = "$study_dir/STATS/lineCounts/exon.unique.lc.1.txt";
 	if ($STRANDED =~ /^true/i){
