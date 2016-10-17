@@ -27,7 +27,7 @@ Provide a full path to file of standard chromosomes (CHRNAMES) if your chromosom
 
 #####ii. Name of mitochondrial chromosome [required]
 Provide a name of mitochondrial chromosome (e.g. chrM, M). If there are multiple mitochondrial chromosomes, provide a comma separated list of chromosome names.
-You may use a dummy name if you do not want to filter them out.
+You may use a dummy name if you do not wish to filter them out.
 
 ========================================================================================================
 
@@ -38,7 +38,7 @@ If not, use OTHER_CLUSTER option and specify the required parameters.
 ========================================================================================================
 
 ###2. GENE INFO
-Gene information file with required suffixes need to be provided.<br>**Gene level normalization requires an ensembl gene info file.**<br>The gene info file must contain column names with these suffixes: __name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value.__ 
+Gene information file with required suffixes need to be provided.**Gene level normalization requires an ensembl gene info file.**<br>The gene info file must contain column names with these suffixes: __name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, geneSymbol, ensemblToGeneName.value.__ 
 
 ensembl gene info files for mm9, mm10, hg19, hg38, dm3 and danRer7 are available in Normalization/norm_scripts directory:
 
