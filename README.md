@@ -182,10 +182,13 @@ STUDY
 │   │   ├── JUNCTIONS
 │   │   └── SPREADSHEETS
 │   └── GENE
-│       ├── COV
-│       ├── FINAL_SAM
-│       ├── JUNCTIONS
-│       └── SPREADSHEETS
+│   │   ├── COV
+│   │   ├── FINAL_SAM
+│   │   ├── JUNCTIONS
+│   │   └── SPREADSHEETS
+│   └── STATS ('-alt_out' option)
+│       ├── EXON_INTRON_JUNCTION
+│       └── GENE
 │── logs
 └── shell_scripts
 </pre>
