@@ -22,6 +22,8 @@ options:
  -depthI <n> : This is the number of intronmappers file used for normalization.
                By default, <n> = 10.
 
+ -alt_stats <s>
+
  -h : print usage
 
 ";
@@ -35,6 +37,17 @@ my $numargs_u_nu = 0;
 my $i_exon = 20;
 my $i_intron = 10;
 my $stranded = "false";
+my $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+unless (-d $LOC){
+    die "directory $LOC does not exist. please check your input <loc>. \n";
+}
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+my $stats_dir = $study_dir . "STATS";
+
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
 	die $USAGE;
@@ -49,6 +62,11 @@ for (my $i=2; $i<@ARGV; $i++){
 	}
 	$i++;
 	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-alt_stats'){
+	$option_found = "true";
+	$stats_dir = $ARGV[$i+1];
+	$i++;
     }
     if ($ARGV[$i] eq '-depthI'){
 	$i_intron = $ARGV[$i+1];
@@ -83,16 +101,6 @@ and non-unique by default so if that's what you want don't use either arg
 ";
 }
 
-my $LOC = $ARGV[1];
-$LOC =~ s/\/$//;
-unless (-d $LOC){
-    die "directory $LOC does not exist. please check your input <loc>. \n";
-}
-my @fields = split("/", $LOC);
-my $last_dir = $fields[@fields-1];
-my $study_dir = $LOC;
-$study_dir =~ s/$last_dir//;
-my $stats_dir = $study_dir . "STATS";
 unless (-d "$stats_dir"){
     `mkdir $stats_dir`;
 }

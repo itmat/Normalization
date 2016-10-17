@@ -29,13 +29,13 @@ option:
         <jobname_option> : is option for setting jobname for batch job submission command (e.g. -J, -N)
         <request_memory_option> : is option for requesting resources for batch job submission command
                                   (e.g. -M, -l h_vmem=)
-        <queue_name_for_15G> : is queue name for 15G (e.g. 15360, 15G)
+        <queue_name_for_15G> : is queue name for 6G (e.g. 6144, 6G)
 
         <status> : command for checking batch job status (e.g. bjobs, qstat)
 
  -mem <s> : set this if your job requires more memory.
             <s> is the queue name for required mem.
-            Default: 15G
+            Default: 6G
 
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                    by default, <n> = 200.
@@ -60,6 +60,9 @@ my $fafq = "";
 my $req_unaligned=0;
 my $status = "";
 my $sepe = "";
+my $c_option = "";
+my $mem_option = "";
+my $max_option = "";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -73,8 +76,9 @@ for (my $i=5; $i<@ARGV; $i++){
         $submit = "bsub";
         $jobname_option = "-J";
         $request_memory_option = "-M";
-        $mem = "15360";
+        $mem = "6144";
 	$status = "bjobs";
+	$c_option = "-lsf";
     }
     if ($ARGV[$i] eq '-sge'){
         $numargs++;
@@ -82,13 +86,15 @@ for (my $i=5; $i<@ARGV; $i++){
         $submit = "qsub -cwd";
         $jobname_option = "-N";
         $request_memory_option = "-l h_vmem=";
-        $mem = "15G";
+        $mem = "6G";
 	$status = "qstat";
+	$c_option = "-sge";
     }
     if ($ARGV[$i] eq '-other'){
         $numargs++;
         $option_found = "true";
 	my $argv_all = $ARGV[$i+1];
+	$c_option = "-other $argv_all";
         my @a = split(",", $argv_all);
         $submit = $a[0];
         $jobname_option = $a[1];
@@ -97,15 +103,16 @@ for (my $i=5; $i<@ARGV; $i++){
 	$status = $a[4];
         $i++;
         if ($submit eq "-mem" | $submit eq "" | $jobname_option eq "" | $request_memory_option eq "" | $mem eq "" | $status eq ""){
-            die "please provide \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_15G>, <status>\"\n";
+            die "please provide \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_6G>, <status>\"\n";
         }
         if ($submit eq "-lsf" | $submit eq "-sge"){
-            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit> ,<jobname_option>, <request_memory_option> ,<queue_name_for_15G>, <status>\".\n";
+            die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit> ,<jobname_option>, <request_memory_option> ,<queue_name_for_6G>, <status>\".\n";
         }
     }
     if ($ARGV[$i] eq '-mem'){
         $option_found = "true";
         $new_mem = $ARGV[$i+1];
+	$mem_option = "-mem $new_mem";
         $replace_mem = "true";
         $i++;
         if ($new_mem eq ""){
@@ -115,6 +122,7 @@ for (my $i=5; $i<@ARGV; $i++){
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];
+	$max_option = "-max_jobs $njobs";
         if ($njobs !~ /(\d+$)/ ){
             die "-max_jobs <n> : <n> needs to be a number\n";
         }
@@ -139,7 +147,7 @@ for (my $i=5; $i<@ARGV; $i++){
     }
 }
 if($numargs ne '1'){
-    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_15G>, <status>\".\n";
+    die "you have to specify how you want to submit batch jobs. choose -lsf, -sge, or -other \"<submit>, <jobname_option>, <request_memory_option>, <queue_name_for_6G>, <status>\".\n";
 }
 if ($req_unaligned ne '1'){
     die "please specify the type of the unaligned files : '-fa' or '-fq'\n";
@@ -185,7 +193,7 @@ while(my $line = <INFILE>) {
 	$sepe = "-se";
 	my $fwd = $u[0];
 	open(OUTFILE, ">$shfile");
-	print OUTFILE "perl $path/runblast.pl $id $LOC $blastdir $query $gz $fafq $sepe $fwd\n";
+	print OUTFILE "perl $path/runblast.pl $id $LOC $blastdir $query $gz $fafq $sepe $fwd $c_option $mem_option $max_option\n";
 	close(OUTFILE);
     }
     elsif ($size == 2){
@@ -193,7 +201,7 @@ while(my $line = <INFILE>) {
 	my $rev = $u[1];
 	$sepe = "-pe";
 	open(OUTFILE, ">$shfile");
-        print OUTFILE "perl $path/runblast.pl $id $LOC $blastdir $query $gz $fafq $sepe \"$fwd,$rev\"\n";	
+        print OUTFILE "perl $path/runblast.pl $id $LOC $blastdir $query $gz $fafq $sepe \"$fwd,$rev\" $c_option $mem_option $max_option\n";	
 	close(OUTFILE);
     }
     else{

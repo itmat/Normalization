@@ -47,6 +47,8 @@ option:
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                    by default, <n> = 200.
 
+ -alt_stats <s>
+
  -h : print usage
 
 ";
@@ -68,6 +70,17 @@ my $total_reads_file = $ARGV[3];
 my $b_option = "";
 my $status = "";
 my $new_mem = "";
+my $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study = $fields[@fields-2];
+my $study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+my $shdir = $study_dir . "shell_scripts";
+my $logdir = $study_dir . "logs";
+my $stats_dir = $study_dir . "STATS";
+
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -82,6 +95,11 @@ for (my $i=4; $i<@ARGV; $i++){
             die "-max_jobs <n> : <n> needs to be a number\n";
         }
         $i++;
+    }
+    if ($ARGV[$i] eq '-alt_stats'){
+	$option_found = "true";
+	$stats_dir = $ARGV[$i+1];
+	$i++;
     }
     if ($ARGV[$i] eq '-bam'){
 	$option_found = "true";
@@ -165,16 +183,6 @@ use Cwd 'abs_path';
 my $path = abs_path($0);
 $path =~ s/runall_//;
 my $sampledirs = $ARGV[0];
-my $LOC = $ARGV[1];
-$LOC =~ s/\/$//;
-my @fields = split("/", $LOC);
-my $last_dir = $fields[@fields-1];
-my $study = $fields[@fields-2];
-my $study_dir = $LOC;
-$study_dir =~ s/$last_dir//;
-my $shdir = $study_dir . "shell_scripts";
-my $logdir = $study_dir . "logs";
-my $stats_dir = $study_dir . "STATS";
 unless (-d $stats_dir){
     `mkdir $stats_dir`;}
 unless (-d $shdir){
@@ -193,6 +201,9 @@ close(D);
 
 if ($total_reads_file eq "true"){
     my $dirs_reads = "$stats_dir/total_num_reads.txt";
+    unless (-e $dirs_reads){
+	`cp $study_dir/STATS/total_num_reads.txt $stats_dir/`;
+    }
     open(INFILE, $dirs_reads) or die "cannot find file '$dirs_reads'\n";
     while(my $line = <INFILE>){
 	chomp($line);

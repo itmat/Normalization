@@ -18,6 +18,8 @@ options:
  -u  :  set this if you want to return number of unique reads only, otherwise by default it will return number of unique and non-unique reads
 
  -nu  :  set this if you want to return number of non-unique reads only, otherwise by default it will return number of unique and non-unique reads
+ 
+ -alt_stats <s>
 
  -h : print usage
 
@@ -30,6 +32,14 @@ my $NU = 'true';
 my $numargs_u_nu = 0;
 my $se = "false";
 my $stranded = "false";
+my $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+my $stats_dir = $study_dir . "STATS";
+
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -37,6 +47,11 @@ for (my $i=0;$i<@ARGV;$i++){
 }
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
+    if ($ARGV[$i] eq '-alt_stats'){
+	$option_found = "true";
+	$stats_dir = $ARGV[$i+1];
+	$i++;
+    }
     if ($ARGV[$i] eq '-u'){
 	$NU = "false";
 	$option_found = "true";
@@ -66,13 +81,6 @@ and non-unique by default so if that's what you want don't use either arg
 ";
 }
 
-my $LOC = $ARGV[1];
-$LOC =~ s/\/$//;
-my @fields = split("/", $LOC);
-my $last_dir = $fields[@fields-1];
-my $study_dir = $LOC;
-$study_dir =~ s/$last_dir//;
-my $stats_dir = $study_dir . "STATS";
 unless (-d "$stats_dir"){
     `mkdir $stats_dir`;
 }

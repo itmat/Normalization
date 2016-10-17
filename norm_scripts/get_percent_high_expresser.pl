@@ -11,21 +11,13 @@ if(@ARGV<3) {
 
 options:
  -stranded : set this if your data are strand-specific
+ -alt_stats <s>
+
 
 ";
 }
 my $stranded = "false";
 my $option_found = "false";
-for(my $i=3; $i<@ARGV; $i++) {
-    if($ARGV[$i] eq '-stranded') {
-        $stranded = "true";
-	$option_found = "true";
-    }
-    if($option_found eq "false") {
-        die "option \"$ARGV[$i]\" was not recognized.\n";
-    }
-}
-
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 my @fields = split("/", $LOC);
@@ -33,6 +25,22 @@ my $last_dir = $fields[@fields-1];
 my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $stats_dir = $study_dir . "STATS";
+
+for(my $i=3; $i<@ARGV; $i++) {
+    if($ARGV[$i] eq '-stranded') {
+        $stranded = "true";
+	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-alt_stats'){
+	$option_found = "true";
+	$stats_dir = $ARGV[$i+1];
+	$i++;
+    }
+    if($option_found eq "false") {
+        die "option \"$ARGV[$i]\" was not recognized.\n";
+    }
+}
+
 unless (-d "$stats_dir/EXON_INTRON_JUNCTION/"){
     `mkdir -p $stats_dir/EXON_INTRON_JUNCTION`;}
 

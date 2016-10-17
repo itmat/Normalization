@@ -456,8 +456,8 @@ for(my $i=0; $i<$rowcnt; $i++) {
 	}
     }
     if ($type =~ /^gene/i){
-	print OUT_MIN "gene:$id[$i]";
-	print OUT_MAX "gene:$id[$i]";
+	print OUT_MIN "$id[$i]";
+	print OUT_MAX "$id[$i]";
     }
     for(my $j=0; $j<$filecnt; $j++) {
 	print OUT_MIN "\t$DATA_MIN[$j][$i]";
@@ -657,8 +657,8 @@ if ($stranded eq "true"){
 	    }
 	}
 	if ($type =~ /^gene/i){
-	    print OUT_MIN_A "gene:$id[$i]";
-	    print OUT_MAX_A "gene:$id[$i]";
+	    print OUT_MIN_A "$id[$i]";
+	    print OUT_MAX_A "$id[$i]";
 	}
 	for(my $j=0; $j<$filecnt; $j++) {
 	    print OUT_MIN_A "\t$DATA_MIN[$j][$i]";

@@ -63,7 +63,7 @@ my $outfile = $gtf_file;
 $outfile =~ s/.gtf$/.PORT_geneinfo.txt/;
 
 open(OUT, ">$outfile") or die "cannot open $outfile\n";
-print OUT "#$name.chrom\t$name.strand\t$name.txStart\t$name.txEnd\t$name.exonCount\t$name.exonStarts\t$name.exonEnds\t$name.name\t$name.name2\t$name.ensemblToGeneName.value\t$name.geneSymbol\n";
+print OUT "#$name.chrom\t$name.strand\t$name.txStart\t$name.txEnd\t$name.exonCount\t$name.exonStarts\t$name.exonEnds\t$name.name\t$name.name2\t$name.ensemblToGeneName.value\t$name.geneSymbol\t$name.source\n";
 
 #my $line = ""; #Current line of input
 my @line_data; #Array of line fields
@@ -76,6 +76,7 @@ my $strand = ""; #Strand for current transcript
 my @starts; #List of exon start coordinates for current transcript
 my @stops; #List of exon stop coordinates for current transcript
 my $ex_count = 1; #Number of exons in current transcript
+my $source = "";
 
 #count header lines
 open(INFILE, $gtf_file) or die "Cannot open the file $gtf_file: $!";
@@ -129,6 +130,8 @@ $strand = $line_data[6];
 @starts = ($line_data[3] - 1);
 @stops = ($line_data[4]);
 
+#source
+$source = $line_data[1];
 
 while($line = <INFILE>) {
     
@@ -160,7 +163,7 @@ while($line = <INFILE>) {
             foreach my $coord (@stops) {
                 print OUT "$coord,";
             }
-            print OUT "\t$tx_id\t$gene\t$genesym\t$genesym\n";
+            print OUT "\t$tx_id\t$gene\t$genesym\t$genesym\t$source\n";
             
             #Load data from new transcript into appropriate variables
             $tx_id = $curr_tx;
@@ -168,6 +171,7 @@ while($line = <INFILE>) {
             $gene = $1;
 	    $line_data[8] =~ m/gene_name "([^"]+)";/;
 	    $genesym = $1;
+            $source = $line_data[1];
             if ($genesym =~ /^$/){
                 $genesym = $gene;
             }
@@ -207,6 +211,6 @@ print OUT "\t";
 foreach my $coord (@stops) {
     print OUT "$coord,";
 }
-print OUT "\t$tx_id\t$gene\t$genesym\t$genesym\n";
+print OUT "\t$tx_id\t$gene\t$genesym\t$genesym\t$source\n";
 
 close(INFILE);

@@ -34,6 +34,7 @@ option:
 
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                    by default, <n> = 200.
+ -alt_stats <s>
 
  -h : print usage
 
@@ -53,6 +54,15 @@ my $mem = "";
 my $new_mem = "";
 my $replace_mem = "false";
 my ($submit, $request_memory_option, $status);
+my $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study = $fields[@fields-2];
+my $study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+my $stats_dir = $study_dir . "STATS";
+
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -73,6 +83,11 @@ for (my $i=3; $i<@ARGV; $i++){
     if ($ARGV[$i] eq '-gz'){
 	$gz = "true";
 	$option_found = "true";
+    }
+    if ($ARGV[$i] eq '-alt_stats'){
+	$option_found = "true";
+	$stats_dir = $ARGV[$i+1];
+	$i++;
     }
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
@@ -143,14 +158,6 @@ if ($replace_mem eq "true"){
     $mem = $new_mem;
 }
 my $sample_dirs = $ARGV[0];
-my $LOC = $ARGV[1];
-$LOC =~ s/\/$//;
-my @fields = split("/", $LOC);
-my $last_dir = $fields[@fields-1];
-my $study = $fields[@fields-2];
-my $study_dir = $LOC;
-$study_dir =~ s/$last_dir//;
-my $stats_dir = $study_dir . "STATS";
 my $logdir = $study_dir . "logs";
 unless (-d $logdir){
     `mkdir $logdir`;}

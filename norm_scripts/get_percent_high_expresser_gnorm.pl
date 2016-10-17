@@ -10,21 +10,13 @@ if(@ARGV<2) {
 
 options:
  -stranded : set this if the data are strand-specific.
+ -alt_stats <s>
 
 ";
 }
 my $U = "true";
-my $option_found = "false";
+
 my $stranded = "false";
-for(my $i=2; $i<@ARGV; $i++) {
-    if ($ARGV[$i] eq '-stranded'){
-	$stranded = "true";
-	$option_found ="true";
-    }
-    if($option_found eq "false") {
-        die "option \"$ARGV[$i]\" was not recognized.\n";
-    }
-}
 my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
 my @fields = split("/", $LOC);
@@ -32,8 +24,25 @@ my $last_dir = $fields[@fields-1];
 my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $stats_dir = $study_dir . "STATS";
+
+for(my $i=2; $i<@ARGV; $i++) {
+    my $option_found = "false";
+    if ($ARGV[$i] eq '-stranded'){
+	$stranded = "true";
+	$option_found ="true";
+    }
+    if ($ARGV[$i] eq '-alt_stats'){
+	$option_found = "true";
+	$stats_dir = $ARGV[$i+1];
+	$i++;
+    }
+    if($option_found eq "false") {
+        die "option \"$ARGV[$i]\" was not recognized.\n";
+    }
+}
 unless (-d "$stats_dir/GENE/"){
-    `mkdir -p $stats_dir/GENE`;}
+    `mkdir -p $stats_dir/GENE`;
+}
 my $outfileU = "$stats_dir/GENE/percent_high_expresser_gene.txt";
 my $outfileU_A;
 if ($stranded eq "true"){

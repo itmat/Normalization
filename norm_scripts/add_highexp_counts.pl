@@ -156,7 +156,7 @@ if ($check eq "true"){
     my @k = split(/\t/, $header2);
     print NEW "$header2\thighExp\n";
     for (my $i=1;$i<@h;$i++){
-	print NEW "gene:$GENE{$i}\t";
+	print NEW "$GENE{$i}\t";
 	for (my $j=1;$j<@k-2;$j++){
 	    my $percent = $HASH{$k[$j]}[$i];
 	    my $value = int($num_unique * $percent / 100);
@@ -206,7 +206,7 @@ if ($check_a eq "true"){
     my @k = split(/\t/, $header2);
     print NEW_A "$header2\thighExp\n";
     for (my $i=1;$i<@h_a;$i++){
-        print NEW_A "gene:$GENE_A{$i}\t";
+        print NEW_A "$GENE_A{$i}\t";
         for (my $j=1;$j<@k-2;$j++){
             my $percent = $HASH_A{$k[$j]}[$i];
             my $value = int($num_unique_a * $percent / 100);

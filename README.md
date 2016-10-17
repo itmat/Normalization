@@ -29,7 +29,9 @@ Make sure you have the latest version of PORT:
  - Required tags: **IH (or NH) and HI**.
  - __Paired End data: mated alignments need to be in adjacent lines.__
 
-> If aligning with STAR v2.5.1a or higher, use "--outSAMunmapped Within KeepPairs" option.
+> aligner options to use for PORT compatibility: 
+> STAR v2.5.1a or newer: use "--outSAMunmapped Within KeepPairs" option (optional: "--outSAMtype BAM Unsorted" for bam output).
+> GSNAP 2015-12-31.v6 or newer: use "-A sam", "--ordered" and "--add-paired-nomappers" option.
  
 ##### ii. Input Directory Structure
 The input files need to be organized into a specific directory structure for PORT to run properly.
@@ -131,7 +133,7 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
      **[normalization parameters]**<br>
      **-cutoff_highexp &lt;n>** : <br>is cutoff % value to identify highly expressed genes/exons/introns.<br>
                            The script will consider individual features (genes/exons/introns) accounting for greater than n(%) of the total reads as high expressers. The pipeline will remove the reads mapping to those features.<br>
-                           (Default = 100; with the default cutoff, features (genes/exons/introns) expressed >5% will be reported, but will not remove any reads)<br>
+                           (Default = 100; with the default cutoff, features (genes/exons/introns) expressed >3% will be reported, but will not remove any reads)<br>
      **-cutoff_lowexp &lt;n>** : <br>is cutoff counts to identify low expressers in the final spreadsheets (exon, intron, junction and gene).<br>
                           The script will remove features with sum of counts less than the set value from all samples.<br>
                           (Default = 0; with the default cutoff, features with sum of counts = 0 will be removed from all samples)<br>
@@ -152,7 +154,7 @@ This creates the `runall_normalization.sh` file in the `STUDY/shell_scripts` dir
 
 ####C. Stop/Kill PORT
 
-All PORT job names begin with the unique `STUDY` name (e.g. "STUDY.get_total_num_reads). You can stop/kill a PORT run by killing jobs with the names that begin with `STUDY` (e.g. `bkill -J "STUDY*"`).
+All PORT job names begin with the unique `STUDY` name (e.g. "STUDY.get_total_num_reads"). You can stop/kill a PORT run by killing jobs with the names that begin with `STUDY` (e.g. `bkill -J "STUDY*"`).
 
 ========================================================================================================
 

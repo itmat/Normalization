@@ -14,6 +14,7 @@ options:
 -gnorm: default - both
 -depthExon <n> : default 20
 -depthIntron <n> : default 10
+-alt_stats <s> 
 
 ";
 
@@ -26,8 +27,22 @@ my $gnorm = "true";
 my $cnt = 0;
 my $i_exon = 20;
 my $i_intron = 10;
+my $LOC = $ARGV[1];
+unless (-d $LOC){
+    die "directory $LOC does not exist. please check your input <loc>. \n";
+}
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+my $stats_dir = $study_dir . "STATS";
 for(my $i=2;$i<@ARGV;$i++){
     my $option_found = "false";
+    if ($ARGV[$i] eq '-alt_stats'){
+	$option_found = "true";
+	$stats_dir = $ARGV[$i+1];
+	$i++;
+    }
     if ($ARGV[$i] eq '-stranded'){
 	$option_found = "true";
 	$stranded = "true";
@@ -60,21 +75,13 @@ if ($cnt eq 2){
     die "You cannot use both -eij and -gnorm.\n";
 }
 my $dirs = $ARGV[0];
-my $LOC = $ARGV[1];
-unless (-d $LOC){
-    die "directory $LOC does not exist. please check your input <loc>. \n";
-}
+
 unless (-e $dirs){
     die "cannot find file $dirs.\n";
 }
-my @fields = split("/", $LOC);
-my $last_dir = $fields[@fields-1];
-my $study_dir = $LOC;
-$study_dir =~ s/$last_dir//;
-my $stats_dir = $study_dir . "STATS";
 my $lcdir = "$stats_dir/lineCounts/";
 unless (-d $lcdir){
-    `mkdir $lcdir`;
+    `mkdir -p $lcdir`;
 }
 
 if ($gnorm eq "true"){

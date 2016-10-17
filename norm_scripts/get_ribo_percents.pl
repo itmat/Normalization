@@ -4,13 +4,17 @@ use strict;
 
 $|=1;
 
-if(@ARGV<2) {
-    die "Usage: perl get_ribo_percents.pl <sample dirs> <loc> 
+
+my $USAGE =  "Usage: perl get_ribo_percents.pl <sample dirs> <loc> 
 
 <sample dirs> is a file with the names of the sample directories
 <loc> is the location where the sample directories are
 
+-alt_stats <s>
+
 ";
+if(@ARGV<2) {
+    die $USAGE;
 }
 
 my $LOC = $ARGV[1];
@@ -20,6 +24,24 @@ my $last_dir = $fields[@fields-1];
 my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $stats_dir = $study_dir . "STATS";
+
+for(my $i=0;$i<@ARGV;$i++){
+    if ($ARGV[$i] eq '-h'){
+	die $USAGE;
+    }
+}
+for (my $i=2;$i<@ARGV;$i++){
+    my $option_found = "false";
+    if ($ARGV[$i] eq '-alt_stats'){
+	$option_found = "true";
+	$stats_dir = $ARGV[$i+1];
+	$i++;
+    }
+    if($option_found eq "false") {
+        die "option \"$ARGV[$i]\" was not recognized.\n";
+    }
+}
+
 unless (-d $stats_dir){
     `mkdir $stats_dir`;}
 
@@ -32,7 +54,7 @@ my $i=0;
 my @filename;
 while(my $dir = <IN>){
     chomp($dir);
-    my $a = `sort -u $LOC/$dir/*ribosomalids.txt | wc -l | grep -vw total >> $LOC/ribosomal_counts.txt`;
+    my $a = `grep -vwc total $LOC/$dir/*ribosomalids.txt >> $LOC/ribosomal_counts.txt`;
     my $X = $dir;
     $filename[$i] = $X;
     $i++;
@@ -40,6 +62,9 @@ while(my $dir = <IN>){
 
 
 my $total_num_file = "$stats_dir/total_num_reads.txt";
+unless (-e $total_num_file){
+    `cp $study_dir/STATS/total_num_reads.txt $stats_dir/`;
+}
 open(INFILE, "$LOC/ribosomal_counts.txt") or die "file '$LOC/ribosomal_counts.txt' cannot open for reading.\n";
 open(OUTFILE, ">$stats_dir/ribo_percents.txt") or die "file '$stats_dir/ribo_percents.txt' cannot open for writing.\n";
 print OUTFILE "#ribo\ttotal_num_reads\t\%ribo\tname\n";

@@ -9,6 +9,7 @@ where
 
 [option]
   -mito \"<name>, <name>, ... ,<name>\": name(s) of mitochondrial chromosomes
+  -alt_stats <s>
 
 This will parse the mapping_stats.txt files for all dirs
 and output a table with summary info across all samples.
@@ -20,6 +21,14 @@ if(@ARGV<2) {
 }
 my %MITO;
 my $count = 0;
+my $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+my $stats_dir = $study_dir . "STATS";
+
 for(my $i=2;$i<@ARGV;$i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-mito'){
@@ -38,6 +47,11 @@ for(my $i=2;$i<@ARGV;$i++){
         }
         $i++;
     }
+    if ($ARGV[$i] eq '-alt_stats'){
+        $option_found = "true";
+        $stats_dir = $ARGV[$i+1];
+        $i++;
+    }
     if($option_found eq "false") {
         die "option \"$ARGV[$i]\" was not recognized.\n";
     }
@@ -46,13 +60,6 @@ if($count == 0){
    die "please provide mitochondrial chromosome name using -mito \"<name>\" option.\n";
 }
 my $dirs = $ARGV[0];
-my $LOC = $ARGV[1];
-$LOC =~ s/\/$//;
-my @fields = split("/", $LOC);
-my $last_dir = $fields[@fields-1];
-my $study_dir = $LOC;
-$study_dir =~ s/$last_dir//;
-my $stats_dir = $study_dir . "STATS";
 unless (-d $stats_dir){
     `mkdir $stats_dir`;}
 my (%total, %uniqueandFRconsistently, %uniqueandAtLeastOneMapped, %NUandAtLeastOneMapped, %TotalMapped, %TotalMapped_cons, %NUandFRconsistently, %Overlap, %NOverlap, %Pover, %min_chrm, %max_chrm, %UchrM);

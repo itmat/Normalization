@@ -204,29 +204,25 @@ while(my $line = <INFILE>){
     if (-d "$LOC/$line/GNORM"){
 	`rm -r $LOC/$line/GNORM`;
     }
-    if (-e "$LOC/$line/blast.out.1"){
-	`rm $LOC/$line/blast.out.*`;
-	`rm $LOC/$line/temp.1`;
-    }
-    @g = glob("$LOC/$line/*.blastout");
+    @g = glob("$LOC/$line/blastdb*blastout*");
     if (@g > 0){
-	`rm $LOC/$line/*.blastout`;
+	`rm $LOC/$line/blastdb*blastout*`;
     }
-    @g = glob("$LOC/$line/db*$line*.nhr");
+    @g = glob("$LOC/$line/blastdb*$line*.nhr");
     if (@g>0){
-	`rm $LOC/$line/db*$line*.nhr`;
+	`rm $LOC/$line/blastdb*$line*.nhr`;
     }
-    @g = glob("$LOC/$line/db*$line*.nin");
+    @g = glob("$LOC/$line/blastdb*$line*.nin");
     if (@g>0){
-	`rm $LOC/$line/db*$line*.nin`;
+	`rm $LOC/$line/blastdb*$line*.nin`;
     }
-    @g = glob("$LOC/$line/db*$line*.nsq");
+    @g = glob("$LOC/$line/blastdb*$line*.nsq");
     if (@g>0){
-	`rm $LOC/$line/db*$line*.nsq`;
+	`rm $LOC/$line/blastdb*$line*.nsq`;
     }
-    @g = glob("$LOC/$line/db*$line.nal");
+    @g = glob("$LOC/$line/blastdb*$line.nal");
     if (@g>0){
-	`rm $LOC/$line/db*$line.nal`;
+	`rm $LOC/$line/blastdb*$line.nal`;
     }
     @g = glob("$LOC/$line/*_junctions_all.sorted.rum");
     if (@g>0){

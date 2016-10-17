@@ -30,9 +30,9 @@ for(my $i=2;$i<@ARGV;$i++){
 my $fq = $ARGV[0];
 my $fa = $ARGV[1];
 if ($gz eq "false"){
-    `awk 'BEGIN {id=1; seq=2;} NR==id{ sub(/^@/,">",\$0); print \$0; id += 4;} NR==seq{ print \$0; seq += 4}' $fq > $fa`;
+    `awk 'NR%4==1||NR%4==2' $fq | tr '^\@' '>' > $fa`;
 }
 else{
-    `zcat $fq | awk 'BEGIN {id=1; seq=2;} NR==id{ sub(/^@/,">",\$0); print \$0; id += 4;} NR==seq{ print \$0; seq += 4}' | gzip > $fa`;
+    `gunzip -c $fq | awk 'NR%4==1||NR%4==2' | tr '^\@' '>' | gzip > $fa`;
 }
 

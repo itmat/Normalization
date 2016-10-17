@@ -18,6 +18,9 @@ options:
  -nu :  set this if you want to return only non-unique stats, otherwise by default
          it will return both unique and non-unique stats.
 
+ -alt_stats <s>
+
+
 ";
 
 }
@@ -26,8 +29,20 @@ my $U = "true";
 my $NU = "true";
 my $numargs = 0;
 my $gnorm = "false";
+my $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+my $stats_dir = "$study_dir/STATS";
 for(my $i=2; $i<@ARGV; $i++) {
     my $option_found = "false";
+    if ($ARGV[$i] eq '-alt_stats'){
+	$option_found = "true";
+	$stats_dir = $ARGV[$i+1];
+	$i++;
+    }
     if($ARGV[$i] eq '-nu') {
         $U = "false";
         $option_found = "true";
@@ -54,20 +69,14 @@ and non-unique by default so if that's what you want don't use either arg
 ";
 }
 
-my $LOC = $ARGV[1];
-$LOC =~ s/\/$//;
-my @fields = split("/", $LOC);
-my $last_dir = $fields[@fields-1];
-my $study_dir = $LOC;
-$study_dir =~ s/$last_dir//;
 if ($gnorm eq "false"){
-    my $stats_dir = $study_dir . "STATS/EXON_INTRON_JUNCTION/";
-    unless (-d $stats_dir){
-	`mkdir -p $stats_dir`;}
-    my $outfileU_EX = "$stats_dir/sense_vs_antisense_exonmappers_Unique.txt";
-    my $outfileNU_EX = "$stats_dir/sense_vs_antisense_exonmappers_NU.txt";
-    my $outfileU_INT = "$stats_dir/sense_vs_antisense_intronmappers_Unique.txt";
-    my $outfileNU_INT = "$stats_dir/sense_vs_antisense_intronmappers_NU.txt";
+    my $estats_dir = "$stats_dir/EXON_INTRON_JUNCTION/";
+    unless (-d $estats_dir){
+	`mkdir -p $estats_dir`;}
+    my $outfileU_EX = "$estats_dir/sense_vs_antisense_exonmappers_Unique.txt";
+    my $outfileNU_EX = "$estats_dir/sense_vs_antisense_exonmappers_NU.txt";
+    my $outfileU_INT = "$estats_dir/sense_vs_antisense_intronmappers_Unique.txt";
+    my $outfileNU_INT = "$estats_dir/sense_vs_antisense_intronmappers_NU.txt";
     
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     if ($U eq "true"){
@@ -157,11 +166,11 @@ if ($gnorm eq "false"){
     close(OUTNU_INT);
 }
 if ($gnorm eq "true"){
-    my $stats_dir = $study_dir . "STATS/GENE/";
-    unless (-d $stats_dir){
-        `mkdir -p $stats_dir`;}
-    my $outfileU_G = "$stats_dir/sense_vs_antisense_genemappers_Unique.txt";
-    my $outfileNU_G = "$stats_dir/sense_vs_antisense_genemappers_NU.txt";
+    my $gstats_dir = "$stats_dir/GENE/";
+    unless (-d $gstats_dir){
+        `mkdir -p $gstats_dir`;}
+    my $outfileU_G = "$gstats_dir/sense_vs_antisense_genemappers_Unique.txt";
+    my $outfileNU_G = "$gstats_dir/sense_vs_antisense_genemappers_NU.txt";
 
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     if ($U eq "true"){

@@ -17,6 +17,9 @@ options:
  -nu :  set this if you want to return only non-unique stats, otherwise by default
          it will return both unique and non-unique stats.
 
+ -alt_stats <s>
+
+
 ";
 }
 #percent 1exonmapper/all exonmappers
@@ -24,6 +27,14 @@ my $U = "true";
 my $NU = "true";
 my $numargs = 0;
 my $stranded = "false";
+my $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+my $stats_dir = $study_dir . "STATS/EXON_INTRON_JUNCTION/";
+
 for(my $i=2; $i<@ARGV; $i++) {
     my $option_found = "false";
     if($ARGV[$i] eq '-nu') {
@@ -35,6 +46,11 @@ for(my $i=2; $i<@ARGV; $i++) {
         $NU = "false";
         $numargs++;
         $option_found = "true";
+    }
+    if ($ARGV[$i] eq '-alt_stats'){
+	 $option_found = "true";
+	 $stats_dir = "$ARGV[$i+1]/EXON_INTRON_JUNCTION/";
+	 $i++;
     }
     if($ARGV[$i] eq '-stranded') {
         $stranded = "true";
@@ -51,15 +67,9 @@ and non-unique by default so if that's what you want don't use either arg
 ";
 }
 
-my $LOC = $ARGV[1];
-$LOC =~ s/\/$//;
-my @fields = split("/", $LOC);
-my $last_dir = $fields[@fields-1];
-my $study_dir = $LOC;
-$study_dir =~ s/$last_dir//;
-my $stats_dir = $study_dir . "STATS/EXON_INTRON_JUNCTION/";
 unless (-d $stats_dir){
-    `mkdir -p $stats_dir`;}
+    `mkdir -p $stats_dir`;
+}
 my $outfileU = "$stats_dir/1exon_vs_multi_exon_stats_Unique.txt";
 my $outfileNU = "$stats_dir/1exon_vs_multi_exon_stats_NU.txt";
 my ($outfileU_A, $outfileNU_A);

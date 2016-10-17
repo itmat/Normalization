@@ -43,6 +43,8 @@ option:
             <s> is the queue name for required mem.
             Default: 6G
 
+ -alt_stats <s>
+
  -h : print usage
 
 ";
@@ -64,6 +66,15 @@ my $jobname_option = "";
 my $numargs = 0;
 my $i_exon = 20;
 my $i_intron = 10;
+my $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study = $fields[@fields-2];
+my $study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+my $stats_dir = "$study_dir/STATS";
+
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -72,6 +83,11 @@ for (my $i=0;$i<@ARGV;$i++){
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
     my $option_u_nu = "false";
+    if ($ARGV[$i] eq '-alt_stats'){
+	$option_found = "true";
+	$stats_dir = $ARGV[$i+1];
+	$i++;
+    }
     if ($ARGV[$i] eq '-depthExon'){
         $i_exon = $ARGV[$i+1];
         $i++;
@@ -173,20 +189,16 @@ use Cwd 'abs_path';
 my $path = abs_path($0);
 $path =~ s/\/runall_shuf_highexp.pl//;
 
-my $LOC = $ARGV[1];
-$LOC =~ s/\/$//;
-my @fields = split("/", $LOC);
-my $last_dir = $fields[@fields-1];
-my $study = $fields[@fields-2];
-my $study_dir = $LOC;
-$study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
-my $lcdir = $study_dir . "STATS/lineCounts";
+my $lcdir = "$stats_dir/lineCounts";
 unless (-d $shdir){
     `mkdir $shdir`;}
 unless (-d $logdir){
     `mkdir $logdir`;}
+unless(-d $lcdir){
+    `cp -r $study_dir/STATS/lineCounts $stats_dir/`;
+}
 
 my %HIGH_EX;
 my %HIGH_EX_A;

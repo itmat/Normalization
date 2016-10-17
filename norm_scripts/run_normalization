@@ -299,7 +299,7 @@ my $geneinfo;
 if ($EIJ eq "true"){
     $geneinfo = $GENE_INFO_FILE;
     unless (-e $geneinfo){
-	die "ERROR: cannot find file \"$geneinfo\"\nYou need to provide [2] gene information file for Exon-Intron-Junction Normalization (# 2. GENE INFO in your cfg file \"$cfg_file\")\n\n";
+	die "ERROR: cannot find file \"$geneinfo\"\nYou need to provide a gene information file (# 2. GENE INFO in your cfg file \"$cfg_file\")\n\n";
     }
 }
 my $chromname = "false";
@@ -344,9 +344,9 @@ if ($pref eq "false"){
 }
 my $ensGene;
 if ($GNORM eq "true"){
-    $ensGene = $ENSGENES_FILE;
+    $ensGene = $GENE_INFO_FILE;
     unless (-e $ensGene){
-	die "ERROR: cannot find file \"$ensGene\"\nYou need to provide [1] Gene information file for [Gene Normalization] (# 2. GENE INFO in your cfg file \"$cfg_file\")\n\n";
+	die "ERROR: cannot find file \"$ensGene\"\nYou need to provide a gene information file (# 2. GENE INFO in your cfg file \"$cfg_file\")\n\n";
     }
 }
 
@@ -647,7 +647,8 @@ if ((($fa eq "true") && ($fq eq "true")) || (($fa eq "false") && ($fq eq "false"
     die "ERROR: All input unaligned files need to be in the same format (fastq/fasta).\n\n";
 }
 
-#check input fa, gene info, ensgenes
+#check input fa, gene info
+my $hap = "false";
 my %CHR;
 if ($EIJ eq "true"){
     open(EIJ, $geneinfo) or die "ERROR: cannot find file \"$geneinfo\"\n";
@@ -686,6 +687,9 @@ if ($EIJ eq "true"){
         chomp($line);
         my @a = split(/\t/, $line);
         my $chr = $a[$chrcol];
+	if ($chr =~ /hap/i){
+	    $hap = "true";
+	}
         $CHR{$chr} = 1;
     }
     close(EIJ);
@@ -723,17 +727,30 @@ if ($GNORM eq "true"){
         }
     }
     if (!defined($genenamecol) || !defined($genesymbolcol) || !defined($txchrcol) || !defined($txstartcol)|| !defined($txendcol) || !defined($strandcol) || !defined($exonStcol) || !defined($exonEndcol)){
-        die "\nERROR: Input ENSGENES_FILE \"$ensGene\"\nmust contain column headers with the following suffixes: name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value\n\n";
+        die "\nERROR: Input GENE_INFO_FILE \"$ensGene\"\nmust contain column headers with the following suffixes: name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value\n\n";
     }
     while(my $line = <ENS>){
         chomp($line);
         my @a = split(/\t/, $line);
         my $chr = $a[$txchrcol];
+	if ($chr =~ /hap/i){
+	    $hap = "true";
+	}
         $CHR{$chr} = 1;
     }
     close(ENS);
 }
+if ($hap eq "true"){
+    open(LOG ,">>$logfile");
+    print LOG "\n========\nWARNING\n========\n";
+    print LOG "One or more chromosome names in the gene info file include \"hap\".\n";
+    print LOG "This can cause unique-mappers to be treated as multi-mappers.\n";
+    print LOG "We recommend removing these transcripts from the gene info file and restarting PORT.\n\n";
+    close(LOG);
+}
 
+my $hashsize0 = keys(%CHR); #all chr names in gene information file 
+my $hashsize_n0 = keys(%CNAMES); #user provided chr names (if provided)
 open(FA, $genome) or die "cannot open \"$genome\"\n\n";
 while(my $line = <FA>){
     chomp($line);
@@ -765,14 +782,29 @@ while(my $line = <FA>){
     }
 }
 close(FA);
-my $hashsize = keys(%CHR);
-if ($hashsize > 0){
+# $hashsize0  #all chr names in gene information file 
+# $hashsize_n0  #user provided chr names (if provided)
+my $hashsize1 = keys(%CHR); 
+open(LOG, ">>$logfile");
+
+if ($hashsize0 eq $hashsize1){ # none of chromosome names match
     die "\nERROR: Please check the input GENOME_FA \"$genome\".\nDescription line (\">\") must begin with a chromosome name that matches the chromosome names in GENE INFO (# 2. GENE INFO in your cfg file \"$cfg_file\").\nPlease check and modify the file(s) appropriately.\n\n";
 }
+else{
+    if ($hashsize1 > 0){
+	print LOG "\n========\nWARNING\n========\n";
+	print LOG "The following chromosome names are in the provided GENE INFO file but not in the GENOME_FA file:\n";
+	foreach my $chrom  (keys %CHR){
+	    print LOG "$chrom\n";
+	}
+	print LOG "\n";
+    }
+}
+
 if ($chromname eq "true"){
-    my $hashsize2 = keys(%CNAMES);
-    if ($hashsize2 > 0){
-	die "\nERROR: Please check the input \"$chrom\".\nDescription line (\">\") must begin with a chromosome name that matches the chromosome names in [D-i] File of standard chromosome (# 0. NORMALIZATION AND DATA TYPE in your cfg file \"$cfg_file\").\nPlease check and modify the file(s) appropriately.\n\n";
+    my $hashsize_n1 = keys(%CNAMES);
+    if ($hashsize_n0 eq $hashsize_n1){
+	die "\nERROR: Please check the input \"$chrom\".\nNone of the chromosome names match the chromosome names in the input GENOME_FA \"$genome\".\nPlease check and modify the file(s) appropriately.\n\n";
     }
 }
 #if resume option used, check if the log file exists

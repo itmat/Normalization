@@ -12,17 +12,34 @@ options:
 
  -EIJ: set this if you're running EXON-INTRON-JUNCTION normalization
 
+ -alt_stats <s>
+
 ";
 
 if (@ARGV < 2){
     die $USAGE;
 }
+my $LOC = $ARGV[1];
+$LOC =~ s/\/$//;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study = $fields[@fields-2];
+my $study_dir = $LOC;
+$study_dir =~ s/$last_dir//;
+my $shdir = $study_dir . "shell_scripts";
+my $logdir = $study_dir . "logs";
+my $statsdir = $study_dir . "/STATS/";
 
 my $gnorm = "false";
 my $eij = "false";
 my $numargs = 0;
 for(my $i=2;$i<@ARGV;$i++){
     my $option_found = "false";
+    if ($ARGV[$i] eq '-alt_stats'){
+	$statsdir = $ARGV[$i+1];
+	$i++;
+	$option_found = "true";
+    }
     if ($ARGV[$i] eq '-GENE'){
 	$gnorm = "true";
 	$numargs++;
@@ -39,21 +56,10 @@ if ($numargs ne '1'){
 
 
 my $samples = $ARGV[0];
-my $LOC = $ARGV[1];
-$LOC =~ s/\/$//;
-my @fields = split("/", $LOC);
-my $last_dir = $fields[@fields-1];
-my $study = $fields[@fields-2];
-my $study_dir = $LOC;
-$study_dir =~ s/$last_dir//;
-my $shdir = $study_dir . "shell_scripts";
-my $logdir = $study_dir . "logs";
-my $statsdir = $study_dir . "/STATS/";
-my $gstatsdir = $study_dir . "/STATS/GENE";
 my $outfile;
 if ($gnorm eq "true"){
-    unless (-d $gstatsdir){
-	my $make = `mkdir -p $gstatsdir`;
+    unless (-d $statsdir){
+	my $make = `mkdir -p $statsdir`;
     }
 
     $outfile = $statsdir . "/percent_reads_chr_gene.txt";

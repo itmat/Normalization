@@ -1,6 +1,8 @@
 #!/usr/bin/env perl
+use warnings;
+use strict;
 
-$USAGE = "\nUsage: perl runall_get_ribo_percents.pl <sample dirs> <loc> [option]
+my $USAGE = "\nUsage: perl runall_get_ribo_percents.pl <sample dirs> <loc> [option]
 
 <sample dirs> is a file with the names of the sample directories
 <loc> is the location where the sample directories are
@@ -29,26 +31,36 @@ option:
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                    by default, <n> = 200.
 
+ -alt_stats <s>
+
  -h : print usage
 
 ";
 if(@ARGV<2) {
     die $USAGE;
 }
-$replace_mem = "false";
-$numargs = 0;
-$submit = "";
-$jobname_option = "";
-$request_memory_option = "";
-$mem = "";
-$njobs = 200;
+my $replace_mem = "false";
+my $numargs = 0;
+my $submit = "";
+my $jobname_option = "";
+my $request_memory_option = "";
+my $mem = "";
+my $new_mem = "";
+my $njobs = 200;
+my $altstats = "";
+my $status;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
     }
 }
-for ($i=2; $i<@ARGV; $i++){
-    $option_found = "false";
+for (my $i=2; $i<@ARGV; $i++){
+    my $option_found = "false";
+    if ($ARGV[$i] eq '-alt_stats'){
+	$option_found = "true";
+	$altstats = "-alt_stats $ARGV[$i+1]";
+	$i++;
+    }
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];
@@ -78,8 +90,8 @@ for ($i=2; $i<@ARGV; $i++){
     if ($ARGV[$i] eq '-other'){
         $numargs++;
         $option_found = "true";
-	$argv_all = $ARGV[$i+1];
-        @a = split(",", $argv_all);
+	my $argv_all = $ARGV[$i+1];
+        my @a = split(",", $argv_all);
         $submit = $a[0];
         $jobname_option = $a[1];
         $request_memory_option = $a[2];
@@ -115,28 +127,28 @@ if ($replace_mem eq "true"){
 
 
 use Cwd 'abs_path';
-$path = abs_path($0);
+my $path = abs_path($0);
 $path =~ s/runall_//;
-$sampledirs = $ARGV[0];
-$LOC = $ARGV[1];
+my $sampledirs = $ARGV[0];
+my $LOC = $ARGV[1];
 $LOC =~ s/\/$//;
-@fields = split("/", $LOC);
-$last_dir = $fields[@fields-1];
-$study = $fields[@fields-2];
-$study_dir = $LOC;
+my @fields = split("/", $LOC);
+my $last_dir = $fields[@fields-1];
+my $study = $fields[@fields-2];
+my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
-$shdir = $study_dir . "shell_scripts";
-$logdir = $study_dir . "logs";
+my $shdir = $study_dir . "shell_scripts";
+my $logdir = $study_dir . "logs";
 unless (-d $shdir){
     `mkdir $shdir`;}
 unless (-d $logdir){
     `mkdir $logdir`;}
 
-$shfile = "$shdir/$study.get_ribo_percents.sh";
-$jobname = "$study.getribopercents";
-$logname = "$logdir/$study.getribopercents";
+my $shfile = "$shdir/$study.get_ribo_percents.sh";
+my $jobname = "$study.getribopercents";
+my $logname = "$logdir/$study.getribopercents";
 open(OUT, ">$shfile");
-print OUT "perl $path $sampledirs $LOC\n";
+print OUT "perl $path $sampledirs $LOC $altstats\n";
 close(OUT);
 while (qx{$status | wc -l} > $njobs){
     sleep(10);
