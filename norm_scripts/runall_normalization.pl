@@ -944,6 +944,9 @@ if ($run_prepause eq "true"){
 	    }
 	    $job = "echo \"perl $norm_script_dir/runall_get_ribo_percents.pl $sample_dir $LOC $altstats $c_option $new_queue $cluster_max \" | $batchjobs $mem $jobname \"$study.runall_getribopercents\" -o $logdir/$study.runall_getribopercents.out -e $logdir/$study.runall_getribopercents.err";
 	    &clear_log($name_of_alljob, $err_name);
+	    if ($resume eq "true"){
+		$resume = "false";
+	    }
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    &check_exit_alljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    &check_err ($name_of_alljob, $err_name, $job_num);
@@ -1011,10 +1014,17 @@ if ($run_prepause eq "true"){
         else{
             $new_queue = "-mem $queue_3G";
         }
+	my $numr = `wc -l $LOC/*/*ribosomalids.txt | sort -nrk 1 | head -2 | tail -1`;
+	chomp($numr);
+	my @xnumr = split(" " , $numr);
+	my $maxribo = $xnumr[0];
+	if ($maxribo > 15000000){
+	    $new_queue = "-mem $queue_6G";
+	}
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
-        $job = "echo \"perl $norm_script_dir/runall_filter_gnorm.pl $sample_dir $LOC $alignedfilename $se $c_option $new_queue $cluster_max $use_chr_name -mito \\\"$mito\\\" $UONLY $b_option\" | $batchjobs $mem $jobname \"$study.runall_filtersam\" -o $logdir/$study.runall_filtersam_gnorm.out -e $logdir/$study.runall_filtersam_gnorm.err";
+        $job = "echo \"perl $norm_script_dir/runall_filter_gnorm.pl $sample_dir $LOC $alignedfilename $se $c_option $new_queue $cluster_max $use_chr_name -mito \\\"$mito\\\" $UONLY $b_option\" | $batchjobs $mem $jobname \"$study.runall_filtersam_gnorm\" -o $logdir/$study.runall_filtersam_gnorm.out -e $logdir/$study.runall_filtersam_gnorm.err";
         if ($resume eq "false"){
             &clear_log($name_of_alljob, $err_name);
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
@@ -1037,7 +1047,6 @@ if ($run_prepause eq "true"){
         &check_err ($name_of_alljob, $err_name, $job_num);
         $job_num++;
     }
-    
     #runall_get_percent_numchr_gnorm
     $name_of_alljob = "$study.runall_get_percent_numchr_gnorm";
     if (($resume eq "true")&&($run_job eq "false")){
@@ -1736,6 +1745,13 @@ if ($run_prepause eq "true"){
 	else{
 	    $new_queue = "-mem $queue_3G";
 	}
+        my $numr = `wc -l $LOC/*/*ribosomalids.txt | sort -nrk 1 | head -2 | tail -1`;
+	chomp($numr);
+        my @xnumr = split(" " , $numr);
+        my $maxribo = $xnumr[0];
+        if ($maxribo > 15000000){
+            $new_queue = "-mem $queue_6G";
+        }
 	while(qx{$stat | wc -l} > $maxjobs){
 	    sleep(10);
 	}
