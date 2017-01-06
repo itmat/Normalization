@@ -228,5 +228,15 @@ while(my $line = <INFILE>){
     if (@g>0){
 	`rm $LOC/$line/*junctions_*`;
     }
+    #rm tempheader
+    @g = glob("$LOC/$line/tempheader");
+    if (@g>0){
+	`rm $LOC/$line/tempheader`;
+    }
+    #rm temp query files
+    @g = glob("$LOC/$line/query.temp.*");
+    if (@g>0){
+	`rm $LOC/$line/query.temp.*`;
+    }
 }
 print "got here\n";

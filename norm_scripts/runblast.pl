@@ -370,4 +370,8 @@ foreach my $db2 (keys %DBS2){
 if ($type eq "-fq"){
     `rm $file1 $file2`;
 }
+my @tqfiles = glob("$tempq*");
+if (@tqfiles > 0){
+    `rm $tempq*`;
+}
 print "got here\n";
