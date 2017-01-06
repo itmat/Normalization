@@ -49,8 +49,8 @@ while(my $line = <IN>){
 }
 close(IN);
 
-open(INFILE2, $input) or die "cannot find file \"$input\"\n";
-my $header = <INFILE2>;
+my $pipecmd = "zcat $input";
+open(INFILE2, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 while(my $forward = <INFILE2>){
     if ($pe eq "true"){
 	chomp($forward);
@@ -234,6 +234,7 @@ while(my $forward = <INFILE2>){
 	}
     }
 }
+close(INFILE2);
 
 open(OUT, ">$outfile");
 print OUT "ensGeneID\tmin\tmax\tgeneSymbol\tgeneCoordinates\n";

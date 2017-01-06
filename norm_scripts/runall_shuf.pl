@@ -211,16 +211,15 @@ if ($U eq 'true'){
 	    chomp($dirname);
 	    $id = $dirname;
 	    if ($stranded eq "false"){
-		if(-e "$LOC/$dirname/EIJ/Unique/$id.filtered_u_exonmappers.$i.sam") {
-		    $N = `tail -1 $LOC/$dirname/EIJ/Unique/$id.filtered_u_exonmappers.$i.sam`;
-		} 
-		else {
-		    die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to exist...\n";
+		my $lcfile = "$LOC/$dirname/EIJ/Unique/linecounts.txt";
+		unless (-e $lcfile){
+		    die "ERROR: The file '$lcfile' does not seem to exist...\n";
 		}
-		if($N !~ /line count/) {
-		    die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_exonmappers.$i.sam' does not seem to have the proper last line...\n";
-		}
-		$N =~ s/[^\d]//g;
+                my $x = `sed -i 's/\\/\\//\\//g' $lcfile`;
+		my $cnt = `grep "$LOC/$dirname/EIJ/Unique/$id.filtered_u_exonmappers.$i.sam.gz" $lcfile`;
+		chomp($cnt);
+		my @c = split(" ", $cnt);
+		my $N = $c[1];
 		$LINECOUNTS{"EU.$id.$i"} = $N;
 		if($N < $minEU[$i]) {
 		    $minEU[$i] = $N;
@@ -228,34 +227,33 @@ if ($U eq 'true'){
 	    }
 	    if ($stranded eq "true"){
 		#sense
-		if (-e "$LOC/$dirname/EIJ/Unique/sense/$id.filtered_u_exonmappers.$i.sam"){
-		    $N = `tail -1 $LOC/$dirname/EIJ/Unique/sense/$id.filtered_u_exonmappers.$i.sam`;
-		}
-		else{
-		    die "ERROR: The file '$LOC/$dirname/EIJ/Unique/sense/$id.filtered_u_exonmappers.$i.sam' does not seem to exist...\n";
-		}
-		if ($N !~ /line count/){
-		    die "ERROR: The file '$LOC/$dirname/EIJ/Unique/sense/$id.filtered_u_exonmappers.$i.sam' does not seem to have the proper last line...\n";
-		}
-		$N =~ s/[^\d]//g;
+		my $lcfile_s = "$LOC/$dirname/EIJ/Unique/sense/linecounts.txt";
+                unless (-e $lcfile_s){
+                    die "ERROR: The file '$lcfile_s' does not seem to exist...\n";
+                }
+		my $x = `sed -i 's/\\/\\//\\//g' $lcfile_s`;
+                my $cnt = `grep "$LOC/$dirname/EIJ/Unique/sense/$id.filtered_u_exonmappers.$i.sam.gz" $lcfile_s`;
+                chomp($cnt);
+                my @c = split(" ", $cnt);
+                my $N = $c[1];
                 $LINECOUNTS{"EU_S.$id.$i"} = $N;
                 if($N < $minEU_S[$i]) {
                     $minEU_S[$i] = $N;
                 }
 		#antisense
-		if (-e "$LOC/$dirname/EIJ/Unique/antisense/$id.filtered_u_exonmappers.$i.sam"){
-                    $N = `tail -1 $LOC/$dirname/EIJ/Unique/antisense/$id.filtered_u_exonmappers.$i.sam`;
-		}
-		else{
-                    die"ERROR: The file '$LOC/$dirname/EIJ/Unique/antisense/$id.filtered_u_exonmappers.$i.sam' does not seem to exist...\n";
-		}
-		if ($N !~ /line count/){
-                    die"ERROR: The file '$LOC/$dirname/EIJ/Unique/antisense/$id.filtered_u_exonmappers.$i.sam' does not seem to have the proper last line...\n";
-		}
-		$N =~ s/[^\d]//g;
-                $LINECOUNTS{"EU_A.$id.$i"} = $N;
-                if($N < $minEU_A[$i]) {
-                    $minEU_A[$i] = $N;
+		my $lcfile_a = "$LOC/$dirname/EIJ/Unique/antisense/linecounts.txt";
+                unless (-e $lcfile_a){
+                    die "ERROR: The file '$lcfile_a' does not seem to exist...\n";
+                }
+                my $y = `sed -i 's/\\/\\//\\//g' $lcfile_a`;
+		my $cnta = `grep "$LOC/$dirname/EIJ/Unique/antisense/$id.filtered_u_exonmappers.$i.sam.gz" $lcfile_a`;
+                chomp($cnta);
+                my @ca = split(" ", $cnta);
+                my $Na = $ca[1];
+
+                $LINECOUNTS{"EU_A.$id.$i"} = $Na;
+                if($Na < $minEU_A[$i]) {
+                    $minEU_A[$i] = $Na;
                 }
 	    }	
 	}    
@@ -273,16 +271,16 @@ if ($U eq 'true'){
 		chomp($dirname);
 		$id = $dirname;
 		if ($stranded eq "false"){
-		    if(-e "$LOC/$dirname/EIJ/Unique/$id.filtered_u_intronmappers.$i.sam") {
-			$N = `tail -1 $LOC/$dirname/EIJ/Unique/$id.filtered_u_intronmappers.$i.sam`;
-		    } 
-		    else {
-			die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_intronmappers.$i.sam' does not seem to exist...\n";
+		    my $lcfile = "$LOC/$dirname/EIJ/Unique/linecounts.txt";
+		    unless (-e $lcfile){
+			die "ERROR: The file '$lcfile' does not seem to exist...\n";
 		    }
-		    if($N !~ /line count/) {
-			die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_intronmappers.$i.sam' does not seem to have the proper last line...\n";
-		    }
-		    $N =~ s/[^\d]//g;
+		    my $x = `sed -i 's/\\/\\//\\//g' $lcfile`;
+		    my $cnt = `grep "$LOC/$dirname/EIJ/Unique/$id.filtered_u_intronmappers.$i.sam.gz" $lcfile`;
+		    chomp($cnt);
+		    my @c = split(" ", $cnt);
+		    my $N = $c[1];
+
 		    $LINECOUNTS{"IU.$id.$i"} = $N;
 		    if($N < $minIU[$i]) {
 			$minIU[$i] = $N;
@@ -290,34 +288,32 @@ if ($U eq 'true'){
 		}
 		if ($stranded eq "true"){
 		    #sense
-                    if (-e "$LOC/$dirname/EIJ/Unique/sense/$id.filtered_u_intronmappers.$i.sam"){
-                        $N = `tail -1 $LOC/$dirname/EIJ/Unique/sense/$id.filtered_u_intronmappers.$i.sam`;
-                    }
-                    else{
-                        die"ERROR: The file '$LOC/$dirname/EIJ/Unique/sense/$id.filtered_u_intronmappers.$i.sam' does not seem to exist...\n";
-                    }
-                    if ($N !~ /line count/){
-                        die"ERROR: The file '$LOC/$dirname/EIJ/Unique/sense/$id.filtered_u_intronmappers.$i.sam' does not seem to have the proper last line...\n";
-                    }
-		    $N =~ s/[^\d]//g;
+                    my $lcfile_s = "$LOC/$dirname/EIJ/Unique/sense/linecounts.txt";
+                    unless (-e $lcfile_s){
+                        die "ERROR: The file '$lcfile_s' does not seem to exist...\n";
+		    }
+		    my $x = `sed -i 's/\\/\\//\\//g' $lcfile_s`;
+                    my $cnt = `grep "$LOC/$dirname/EIJ/Unique/sense/$id.filtered_u_intronmappers.$i.sam.gz" $lcfile_s`;
+                    chomp($cnt);
+                    my @c = split(" ", $cnt);
+                    my $N = $c[1];
                     $LINECOUNTS{"IU_S.$id.$i"} = $N;
                     if($N < $minIU_S[$i]) {
                         $minIU_S[$i] = $N;
                     }
 		    #antisense
-		    if (-e "$LOC/$dirname/EIJ/Unique/antisense/$id.filtered_u_intronmappers.$i.sam"){
-			$N = `tail -1 $LOC/$dirname/EIJ/Unique/antisense/$id.filtered_u_intronmappers.$i.sam`;
+                    my $lcfile_a = "$LOC/$dirname/EIJ/Unique/antisense/linecounts.txt";
+                    unless (-e $lcfile_a){
+                        die "ERROR: The file '$lcfile_a' does not seem to exist...\n";
 		    }
-		    else{
-			die"ERROR: The file '$LOC/$dirname/EIJ/Unique/antisense/$id.filtered_u_intronmappers.$i.sam' does not seem to exist...\n";
-		    }
-		    if ($N !~ /line count/){
-			die"ERROR: The file '$LOC/$dirname/EIJ/Unique/antisense/$id.filtered_u_intronmappers.$i.sam' does not seem to have the proper last line...\n";
-		    }
-		    $N =~ s/[^\d]//g;
-		    $LINECOUNTS{"IU_A.$id.$i"} = $N;
-		    if($N < $minIU_A[$i]) {
-			$minIU_A[$i] = $N;
+		    my $y = `sed -i 's/\\/\\//\\//g' $lcfile_a`;
+                    my $cnta = `grep "$LOC/$dirname/EIJ/Unique/antisense/$id.filtered_u_intronmappers.$i.sam.gz" $lcfile_a`;
+                    chomp($cnta);
+                    my @ca = split(" ", $cnta);
+                    my $Na = $ca[1];
+		    $LINECOUNTS{"IU_A.$id.$i"} = $Na;
+		    if($Na < $minIU_A[$i]) {
+			$minIU_A[$i] = $Na;
 		    }
 		}
 	    }
@@ -331,16 +327,18 @@ if ($U eq 'true'){
 	while($dirname = <INFILE>) {
 	    chomp($dirname);
 	    $id = $dirname;
-	    if(-e "$LOC/$dirname/EIJ/Unique/$id.filtered_u_intergenicmappers.sam") {
-		$N = `tail -1 $LOC/$dirname/EIJ/Unique/$id.filtered_u_intergenicmappers.sam`;
-	    } 
-	    else {
-		die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_intergenicmappers.sam' does not seem to exist...\n";
+	    my $lcfile = "$LOC/$dirname/EIJ/Unique/linecounts.txt";
+	    if ($stranded eq 'true'){
+		$lcfile = "$LOC/$dirname/EIJ/Unique/sense/linecounts.txt";
 	    }
-	    if($N !~ /line count/) {
-		die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_intergenicmappers.sam' does not seem to have the proper last line...\n";
+	    unless (-e $lcfile){
+		die "ERROR: The file '$lcfile' does not seem to exist...\n";
 	    }
-	    $N =~ s/[^\d]//g;
+	    my $x = `sed -i 's/\\/\\//\\//g' $lcfile`;
+	    my $cnt = `grep "$LOC/$dirname/EIJ/Unique/$id.filtered_u_intergenicmappers.sam.gz" $lcfile`;
+	    chomp($cnt);
+	    my @c = split(" ", $cnt);
+	    my $N = $c[1];
 	    $LINECOUNTS{"IGU.$id"} = $N;
 	    if($N < $minIGU) {
 		$minIGU = $N;
@@ -353,16 +351,18 @@ if ($U eq 'true'){
 	while($dirname = <INFILE>) {
             chomp($dirname);
             $id = $dirname;
-            if(-e "$LOC/$dirname/EIJ/Unique/$id.filtered_u_exon_inconsistent_reads.sam"){
-		$N = `tail -1 $LOC/$dirname/EIJ/Unique/$id.filtered_u_exon_inconsistent_reads.sam`;
-	    }
-	    else {
-                die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_exon_inconsistent_reads.sam' does not seem to exist...\n";
-	    }
-	    if($N !~ /line count/) {
-                die "ERROR: The file '$LOC/$dirname/EIJ/Unique/$id.filtered_u_exon_inconsistent_reads.sam' does not seem to have the proper last line...\n";
+            my $lcfile = "$LOC/$dirname/EIJ/Unique/linecounts.txt";
+	    if ($stranded eq 'true'){
+		$lcfile = "$LOC/$dirname/EIJ/Unique/sense/linecounts.txt";
             }
-            $N =~ s/[^\d]//g;
+            unless (-e $lcfile){
+                die "ERROR: The file '$lcfile' does not seem to exist...\n";
+            }
+	    my $x = `sed -i 's/\\/\\//\\//g' $lcfile`;
+            my $cnt = `grep "$LOC/$dirname/EIJ/Unique/$id.filtered_u_exon_inconsistent_reads.sam.gz" $lcfile`;
+            chomp($cnt);
+            my @c = split(" ", $cnt);
+            my $N = $c[1];
             $LINECOUNTS{"UND_U.$id"} = $N;
             if($N < $minUND_U) {
                 $minUND_U = $N;
@@ -382,16 +382,15 @@ if ($NU eq 'true'){
 	    chomp($dirname);
 	    $id = $dirname;
 	    if ($stranded eq "false"){
-		if(-e "$LOC/$dirname/EIJ/NU/$id.filtered_nu_exonmappers.$i.sam") {
-		    $N = `tail -1 $LOC/$dirname/EIJ/NU/$id.filtered_nu_exonmappers.$i.sam`;
-		} 
-		else {
-		    die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to exist...\n";
-		}
-		if($N !~ /line count/) {
-		    die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_exonmappers.$i.sam' does not seem to have the proper last line...\n";
-		}
-		$N =~ s/[^\d]//g;
+                my $lcfile = "$LOC/$dirname/EIJ/NU/linecounts.txt";
+                unless (-e $lcfile){
+                    die "ERROR: The file '$lcfile' does not seem to exist...\n";
+                }
+                my $x = `sed -i 's/\\/\\//\\//g' $lcfile`;
+                my $cnt = `grep "$LOC/$dirname/EIJ/NU/$id.filtered_nu_exonmappers.$i.sam.gz" $lcfile`;
+                chomp($cnt);
+                my @c = split(" ", $cnt);
+                my $N = $c[1];
 		$LINECOUNTS{"ENU.$id.$i"} = $N;
 		if($N < $minENU[$i]) {
 		    $minENU[$i] = $N;
@@ -400,34 +399,32 @@ if ($NU eq 'true'){
 	    if ($stranded eq "true"){
 		if ($stranded eq "true"){
 		    #sense
-		    if (-e "$LOC/$dirname/EIJ/NU/sense/$id.filtered_nu_exonmappers.$i.sam"){
-			$N = `tail -1 $LOC/$dirname/EIJ/NU/sense/$id.filtered_nu_exonmappers.$i.sam`;
+		    my $lcfile_s = "$LOC/$dirname/EIJ/NU/sense/linecounts.txt";
+		    unless (-e $lcfile_s){
+			die "ERROR: The file '$lcfile_s' does not seem to exist...\n";
 		    }
-		    else{
-			die "ERROR: The file '$LOC/$dirname/EIJ/NU/sense/$id.filtered_nu_exonmappers.$i.sam' does not seem to exist...\n";
-		    }
-		    if ($N !~ /line count/){
-			die "ERROR: The file '$LOC/$dirname/EIJ/NU/sense/$id.filtered_nu_exonmappers.$i.sam' does not seem to have the proper last line...\n";
-		    }
-		    $N =~ s/[^\d]//g;
+		    my $x = `sed -i 's/\\/\\//\\//g' $lcfile_s`;
+		    my $cnt = `grep "$LOC/$dirname/EIJ/NU/sense/$id.filtered_nu_exonmappers.$i.sam.gz" $lcfile_s`;
+		    chomp($cnt);
+		    my @c = split(" ", $cnt);
+		    my $N = $c[1];
 		    $LINECOUNTS{"ENU_S.$id.$i"} = $N;
 		    if($N < $minENU_S[$i]) {
 			$minENU_S[$i] = $N;
 		    }
 		    #antisense
-		    if (-e "$LOC/$dirname/EIJ/NU/antisense/$id.filtered_nu_exonmappers.$i.sam"){
-			$N = `tail -1 $LOC/$dirname/EIJ/NU/antisense/$id.filtered_nu_exonmappers.$i.sam`;
+		    my $lcfile_a = "$LOC/$dirname/EIJ/NU/antisense/linecounts.txt";
+		    unless (-e $lcfile_a){
+			die "ERROR: The file '$lcfile_a' does not seem to exist...\n";
 		    }
-		    else{
-			die"ERROR: The file '$LOC/$dirname/EIJ/NU/antisense/$id.filtered_nu_exonmappers.$i.sam' does not seem to exist...\n";
-		    }
-		    if ($N !~ /line count/){
-			die"ERROR: The file '$LOC/$dirname/EIJ/NU/antisense/$id.filtered_nu_exonmappers.$i.sam' does not seem to have the proper last line...\n";
-		    }
-		    $N =~ s/[^\d]//g;
-		    $LINECOUNTS{"ENU_A.$id.$i"} = $N;
-		    if($N < $minENU_A[$i]) {
-			$minENU_A[$i] = $N;
+		    my $y = `sed -i 's/\\/\\//\\//g' $lcfile_a`;
+		    my $cnta = `grep "$LOC/$dirname/EIJ/NU/antisense/$id.filtered_nu_exonmappers.$i.sam.gz" $lcfile_a`;
+		    chomp($cnta);
+		    my @ca = split(" ", $cnta);
+		    my $Na = $ca[1];
+		    $LINECOUNTS{"ENU_A.$id.$i"} = $Na;
+		    if($Na < $minENU_A[$i]) {
+			$minENU_A[$i] = $Na;
 		    }
 		}
 	    }
@@ -447,16 +444,15 @@ if ($NU eq 'true'){
 		chomp($dirname);
 		$id = $dirname;
 		if ($stranded eq "false"){
-		    if(-e "$LOC/$dirname/EIJ/NU/$id.filtered_nu_intronmappers.$i.sam") {
-			$N = `tail -1 $LOC/$dirname/EIJ/NU/$id.filtered_nu_intronmappers.$i.sam`;
-		    } 
-		    else {
-			die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_intronmappers.$i.sam' does not seem to exist...\n";
+		    my $lcfile = "$LOC/$dirname/EIJ/NU/linecounts.txt";
+		    unless (-e $lcfile){
+			die "ERROR: The file '$lcfile' does not seem to exist...\n";
 		    }
-		    if($N !~ /line count/) {
-			die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_intronmappers.$i.sam' does not seem to have the proper last line...\n";
-		    }
-		    $N =~ s/[^\d]//g;
+		    my $x = `sed -i 's/\\/\\//\\//g' $lcfile`;
+		    my $cnt = `grep "$LOC/$dirname/EIJ/NU/$id.filtered_nu_intronmappers.$i.sam.gz" $lcfile`;
+		    chomp($cnt);
+		    my @c = split(" ", $cnt);
+		    my $N = $c[1];
 		    $LINECOUNTS{"INU.$id.$i"} = $N;
 		    if($N < $minINU[$i]) {
 			$minINU[$i] = $N;
@@ -464,34 +460,32 @@ if ($NU eq 'true'){
 		}
 		if ($stranded eq "true"){
 		    #sense
-                    if (-e "$LOC/$dirname/EIJ/NU/sense/$id.filtered_nu_intronmappers.$i.sam"){
-                        $N = `tail -1 $LOC/$dirname/EIJ/NU/sense/$id.filtered_nu_intronmappers.$i.sam`;
+                    my $lcfile_s = "$LOC/$dirname/EIJ/NU/sense/linecounts.txt";
+                    unless (-e $lcfile_s){
+                        die "ERROR: The file '$lcfile_s' does not seem to exist...\n";
                     }
-                    else{
-                        die"ERROR: The file '$LOC/$dirname/EIJ/NU/sense/$id.filtered_nu_intronmappers.$i.sam' does not seem to exist...\n";
-                    }
-                    if ($N !~ /line count/){
-                        die"ERROR: The file '$LOC/$dirname/EIJ/NU/sense/$id.filtered_nu_intronmappers.$i.sam' does not seem to have the proper last line...\n";
-                    }
-                    $N =~ s/[^\d]//g;
+		    my $x = `sed -i 's/\\/\\//\\//g' $lcfile_s`;
+                    my $cnt = `grep "$LOC/$dirname/EIJ/NU/sense/$id.filtered_nu_intronmappers.$i.sam.gz" $lcfile_s`;
+                    chomp($cnt);
+                    my @c = split(" ", $cnt);
+                    my $N = $c[1];
                     $LINECOUNTS{"INU_S.$id.$i"} = $N;
                     if($N < $minINU_S[$i]) {
                         $minINU_S[$i] = $N;
                     }
                     #antisense
-                    if (-e "$LOC/$dirname/EIJ/NU/antisense/$id.filtered_nu_intronmappers.$i.sam"){
-                        $N = `tail -1 $LOC/$dirname/EIJ/NU/antisense/$id.filtered_nu_intronmappers.$i.sam`;
+                    my $lcfile_a = "$LOC/$dirname/EIJ/NU/antisense/linecounts.txt";
+                    unless (-e $lcfile_a){
+                        die "ERROR: The file '$lcfile_a' does not seem to exist...\n";
                     }
-                    else{
-                        die"ERROR: The file '$LOC/$dirname/EIJ/NU/antisense/$id.filtered_nu_intronmappers.$i.sam' does not seem to exist...\n";
-                    }
-                    if ($N !~ /line count/){
-                        die"ERROR: The file '$LOC/$dirname/EIJ/NU/antisense/$id.filtered_nu_intronmappers.$i.sam' does not seem to have the proper last line...\n";
-                    }
-		    $N =~ s/[^\d]//g;
-                    $LINECOUNTS{"INU_A.$id.$i"} = $N;
-                    if($N < $minINU_A[$i]) {
-                        $minINU_A[$i] = $N;
+		    my $y = `sed -i 's/\\/\\//\\//g' $lcfile_a`;
+                    my $cnta = `grep "$LOC/$dirname/EIJ/NU/antisense/$id.filtered_nu_intronmappers.$i.sam.gz" $lcfile_a`;
+                    chomp($cnta);
+                    my @ca = split(" ", $cnta);
+                    my $Na = $ca[1];
+                    $LINECOUNTS{"INU_A.$id.$i"} = $Na;
+                    if($Na < $minINU_A[$i]) {
+                        $minINU_A[$i] = $Na;
                     }
 		}
 	    }
@@ -505,15 +499,18 @@ if ($NU eq 'true'){
 	while($dirname = <INFILE>) {
 	    chomp($dirname);
 	    $id = $dirname;
-	    if(-e "$LOC/$dirname/EIJ/NU/$id.filtered_nu_intergenicmappers.sam") {
-		$N = `tail -1 $LOC/$dirname/EIJ/NU/$id.filtered_nu_intergenicmappers.sam`;
-	    } else {
-		die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_intergenicmappers.sam' does not seem to exist...\n";
-	    }
-	    if($N !~ /line count/) {
-		die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_intergenicmappers.sam' does not seem to have the proper last line...\n";
-	    }
-	    $N =~ s/[^\d]//g;
+            my $lcfile = "$LOC/$dirname/EIJ/NU/linecounts.txt";
+            if ($stranded eq 'true'){
+                $lcfile = "$LOC/$dirname/EIJ/NU/sense/linecounts.txt";
+            }
+            unless (-e $lcfile){
+                die "ERROR: The file '$lcfile' does not seem to exist...\n";
+            }
+	    my $x = `sed -i 's/\\/\\//\\//g' $lcfile`;
+            my $cnt = `grep "$LOC/$dirname/EIJ/NU/$id.filtered_nu_intergenicmappers.sam.gz" $lcfile`;
+            chomp($cnt);
+            my @c = split(" ", $cnt);
+            my $N = $c[1];
 	    $LINECOUNTS{"IGNU.$id"} = $N;
 	    if($N < $minIGNU) {
 		$minIGNU = $N;
@@ -528,16 +525,18 @@ if ($NU eq 'true'){
 	while($dirname = <INFILE>) {
             chomp($dirname);
             $id = $dirname;
-            if(-e "$LOC/$dirname/EIJ/NU/$id.filtered_nu_exon_inconsistent_reads.sam"){
-		$N = `tail -1 $LOC/$dirname/EIJ/NU/$id.filtered_nu_exon_inconsistent_reads.sam`;
+            my $lcfile = "$LOC/$dirname/EIJ/NU/linecounts.txt";
+            if ($stranded eq 'true'){
+                $lcfile = "$LOC/$dirname/EIJ/NU/sense/linecounts.txt";
             }
-            else {
-                die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_exon_inconsistent_reads.sam' does not seem to exist...\n";
+            unless (-e $lcfile){
+                die "ERROR: The file '$lcfile' does not seem to exist...\n";
             }
-            if($N !~ /line count/) {
-                die "ERROR: The file '$LOC/$dirname/EIJ/NU/$id.filtered_nu_exon_inconsistent_reads.sam' does not seem to have the proper last line...\n";
-            }
-            $N =~ s/[^\d]//g;
+	    my $x = `sed -i 's/\\/\\//\\//g' $lcfile`;
+            my $cnt = `grep "$LOC/$dirname/EIJ/NU/$id.filtered_nu_exon_inconsistent_reads.sam.gz" $lcfile`;
+            chomp($cnt);
+            my @c = split(" ", $cnt);
+            my $N = $c[1];
             $LINECOUNTS{"UND_NU.$id"} = $N;
             if($N < $minUND_NU) {
                 $minUND_NU = $N;
@@ -547,6 +546,9 @@ if ($NU eq 'true'){
     }
 }
 
+foreach my $min (keys %minEU_S){
+    print "$min\t$minEU_S{$min}\n";
+}
 
 ##run shuf
 $jobname = "$study.shuf";
@@ -560,21 +562,21 @@ for($i=1; $i<=$i_exon; $i++) {
 	$dirNU = $dirname . "/EIJ/NU";
 	
 	#unique
-	$filenameU = "$id.filtered_u_exonmappers.$i.sam";
+	$filenameU = "$id.filtered_u_exonmappers.$i.sam.gz";
 	$outfileU = $filenameU;
 	$outfileU_S = $filenameU;
 	$outfileU_A = $filenameU;
 	$checkU = $filenameU;
-	$checkU =~ s/.sam$//g;
-	$checkU = $checkU . "_shuf_*.sam";
+	$checkU =~ s/.sam.gz$//g;
+	$checkU = $checkU . "_shuf_*.sam.gz";
 	#nu
-	$filenameNU = "$id.filtered_nu_exonmappers.$i.sam";
+	$filenameNU = "$id.filtered_nu_exonmappers.$i.sam.gz";
 	$outfileNU = $filenameNU;
 	$outfileNU_S = $filenameNU;
 	$outfileNU_A = $filenameNU;
 	$checkNU = $filenameNU;
-	$checkNU =~ s/.sam$//g;
-	$checkNU = $checkNU . "_shuf_*.sam";
+	$checkNU =~ s/.sam.gz$//g;
+	$checkNU = $checkNU . "_shuf_*.sam.gz";
 
 	if ($stranded eq "true"){
 	    $for_lc_s = "EU_S.$id.$i";
@@ -601,10 +603,10 @@ for($i=1; $i<=$i_exon; $i++) {
             if (@g ne '0'){
                 `rm $LOC/$dirNU/antisense/$checkNU`;
 	    }
-	    $outfileU_S =~ s/.sam$/_shuf_$numU_S.sam/i;
-	    $outfileU_A =~ s/.sam$/_shuf_$numU_A.sam/i;
-	    $outfileNU_S =~ s/.sam$/_shuf_$numNU_S.sam/i;
-	    $outfileNU_A =~ s/.sam$/_shuf_$numNU_A.sam/i;
+	    $outfileU_S =~ s/.sam.gz$/_shuf_$numU_S.sam.gz/i;
+	    $outfileU_A =~ s/.sam.gz$/_shuf_$numU_A.sam.gz/i;
+	    $outfileNU_S =~ s/.sam.gz$/_shuf_$numNU_S.sam.gz/i;
+	    $outfileNU_A =~ s/.sam.gz$/_shuf_$numNU_A.sam.gz/i;
             $shfileU_S[$i] = "$shdir/a" . $id . "exonmappers.u_runshuf.$i.sense.sh";
             $shfileU_A[$i] = "$shdir/a" . $id . "exonmappers.u_runshuf.$i.antisense.sh";
             $shfileNU_S[$i] = "$shdir/a" . $id . "exonmappers.nu_runshuf.$i.sense.sh";
@@ -617,7 +619,7 @@ for($i=1; $i<=$i_exon; $i++) {
 	    if($U eq 'true') {
                 if (($total_lc_s ne '0') && ($numU_S ne '0')){
                     open(OUTFILEU, ">$shfileU_S[$i]");
-                    print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/sense/$filenameU $total_lc_s $numU_S > $LOC/$dirU/sense/$outfileU_S\n";
+                    print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/sense/$filenameU $total_lc_s $numU_S $LOC/$dirU/sense/$outfileU_S\n";
                     print OUTFILEU "echo \"got here\"\n";
                     close(OUTFILEU);
                     while(qx{$status | wc -l} > $njobs){
@@ -627,7 +629,7 @@ for($i=1; $i<=$i_exon; $i++) {
                 }
 		if (($total_lc_a ne '0') && ($numU_A ne '0')){
 		    open(OUTFILEU, ">$shfileU_A[$i]");
-                    print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/antisense/$filenameU $total_lc_a $numU_A > $LOC/$dirU/antisense/$outfileU_A\n";
+                    print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/antisense/$filenameU $total_lc_a $numU_A $LOC/$dirU/antisense/$outfileU_A\n";
                     print OUTFILEU "echo \"got here\"\n";
                     close(OUTFILEU);
                     while(qx{$status | wc -l} > $njobs){
@@ -643,7 +645,7 @@ for($i=1; $i<=$i_exon; $i++) {
                 $total_lc_a = $LINECOUNTS{$for_lc_a};
                 if (($total_lc_s ne '0') && ($numNU_S ne '0')){
                     open(OUTFILENU, ">$shfileNU_S[$i]");
-                    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/sense/$filenameNU $total_lc_s $numNU_S > $LOC/$dirNU/sense/$outfileNU_S\n";
+                    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/sense/$filenameNU $total_lc_s $numNU_S $LOC/$dirNU/sense/$outfileNU_S\n";
                     print OUTFILENU "echo \"got here\"\n";;
                     close(OUTFILENU);
                     while(qx{$status | wc -l} > $njobs){
@@ -653,7 +655,7 @@ for($i=1; $i<=$i_exon; $i++) {
                 }
 		if (($total_lc_a ne '0') && ($numNU_A ne '0')){
                     open(OUTFILENU, ">$shfileNU_A[$i]");
-                    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/antisense/$filenameNU $total_lc_a $numNU_A > $LOC/$dirNU/antisense/$outfileNU_A\n";
+                    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/antisense/$filenameNU $total_lc_a $numNU_A $LOC/$dirNU/antisense/$outfileNU_A\n";
                     print OUTFILENU "echo \"got here\"\n";;
                     close(OUTFILENU);
                     while(qx{$status | wc -l} > $njobs){
@@ -669,8 +671,8 @@ for($i=1; $i<=$i_exon; $i++) {
 	    $total_lc = $LINECOUNTS{$for_lc};
 	    $numU = $minEU[$i];
 	    $numNU = $minENU[$i];
-	    $outfileU =~ s/.sam$/_shuf_$numU.sam/i;
-	    $outfileNU =~ s/.sam$/_shuf_$numNU.sam/i;
+	    $outfileU =~ s/.sam.gz$/_shuf_$numU.sam.gz/i;
+	    $outfileNU =~ s/.sam.gz$/_shuf_$numNU.sam.gz/i;
 	    @g = glob("$LOC/$dirU/$checkU");
 	    if (@g ne '0'){
 		`rm $LOC/$dirU/$checkU`;
@@ -686,7 +688,7 @@ for($i=1; $i<=$i_exon; $i++) {
 	    if($U eq 'true') {
 		if (($total_lc ne '0') && ($numU ne '0')){
 		    open(OUTFILEU, ">$shfileU[$i]");
-		    print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/$filenameU $total_lc $numU > $LOC/$dirU/$outfileU\n";
+		    print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/$filenameU $total_lc $numU $LOC/$dirU/$outfileU\n";
 		    print OUTFILEU "echo \"got here\"\n";
 		    close(OUTFILEU);
 		    while(qx{$status | wc -l} > $njobs){
@@ -700,7 +702,7 @@ for($i=1; $i<=$i_exon; $i++) {
 		$total_lc = $LINECOUNTS{$for_lc};
 		if (($total_lc ne '0') && ($numNU ne '0')){
 		    open(OUTFILENU, ">$shfileNU[$i]");
-		    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/$filenameNU $total_lc $numNU > $LOC/$dirNU/$outfileNU\n";
+		    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/$filenameNU $total_lc $numNU $LOC/$dirNU/$outfileNU\n";
 		    print OUTFILENU "echo \"got here\"\n";;
 		    close(OUTFILENU);
 		    while(qx{$status | wc -l} > $njobs){
@@ -722,16 +724,16 @@ for($i=1; $i<=$i_intron; $i++) {
 	$id = $dirname;
 	$dirU = $dirname . "/EIJ/Unique";
 	$dirNU = $dirname . "/EIJ/NU";
-	$filenameU = "$id.filtered_u_intronmappers.$i.sam";
-	$filenameNU = "$id.filtered_nu_intronmappers.$i.sam";
+	$filenameU = "$id.filtered_u_intronmappers.$i.sam.gz";
+	$filenameNU = "$id.filtered_nu_intronmappers.$i.sam.gz";
 	#unique
         $checkU = $filenameU;
-        $checkU =~ s/.sam$//g;
-        $checkU = $checkU . "_shuf_*.sam";
+        $checkU =~ s/.sam.gz$//g;
+        $checkU = $checkU . "_shuf_*.sam.gz";
 	#nu
         $checkNU = $filenameNU;
-        $checkNU =~ s/.sam$//g;
-        $checkNU = $checkNU . "_shuf_*.sam";
+        $checkNU =~ s/.sam.gz$//g;
+        $checkNU = $checkNU . "_shuf_*.sam.gz";
 	if ($stranded eq "true"){
 	    $for_lc_s = "IU_S.$id.$i";
             $total_lc_s = $LINECOUNTS{$for_lc_s};
@@ -746,27 +748,27 @@ for($i=1; $i<=$i_intron; $i++) {
                 `rm $LOC/$dirU/sense/$checkU`;
             }
             $outfileU_S = $filenameU;
-	    $outfileU_S =~ s/.sam$/_shuf_$numU_S.sam/i;
+	    $outfileU_S =~ s/.sam.gz$/_shuf_$numU_S.sam.gz/i;
 	    @g = glob("$LOC/$dirU/antisense/$checkU");
 	    if (@g ne '0'){
                 `rm $LOC/$dirU/antisense/$checkU`;
             }
             $outfileU_A = $filenameU;
-	    $outfileU_A =~ s/.sam$/_shuf_$numU_A.sam/i;
+	    $outfileU_A =~ s/.sam.gz$/_shuf_$numU_A.sam.gz/i;
 
 	    @g = glob("$LOC/$dirNU/sense/$checkNU");
             if (@g ne '0'){
                 `rm $LOC/$dirNU/sense/$checkNU`;
             }
             $outfileNU_S = $filenameNU;
-            $outfileNU_S =~ s/.sam$/_shuf_$numNU_S.sam/i;
+            $outfileNU_S =~ s/.sam.gz$/_shuf_$numNU_S.sam.gz/i;
 
 	    @g = glob("$LOC/$dirNU/antisense/$checkNU");
             if (@g ne '0'){
                 `rm $LOC/$dirNU/antisense/$checkNU`;
             }
             $outfileNU_A = $filenameNU;
-            $outfileNU_A =~ s/.sam$/_shuf_$numNU_A.sam/i;
+            $outfileNU_A =~ s/.sam.gz$/_shuf_$numNU_A.sam.gz/i;
 
 	    $shfileU_S[$i] = "$shdir/a" . $id . "intronmappers.u_runshuf.$i.sense.sh";
             $shfileNU_S[$i] = "$shdir/a" . $id . "intronmappers.nu_runshuf.$i.sense.sh";
@@ -781,7 +783,7 @@ for($i=1; $i<=$i_intron; $i++) {
 	    if($U eq 'true') {
                 if (($total_lc_s ne '0') && ($numU_S ne '0')){
                     open(OUTFILEU, ">$shfileU_S[$i]");
-                    print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/sense/$filenameU $total_lc_s $numU_S > $LOC/$dirU/sense/$outfileU_S\n";
+                    print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/sense/$filenameU $total_lc_s $numU_S $LOC/$dirU/sense/$outfileU_S\n";
                     print OUTFILEU "echo \"got here\"\n";;
                     close(OUTFILEU);
                     while(qx{$status | wc -l} > $njobs){
@@ -791,7 +793,7 @@ for($i=1; $i<=$i_intron; $i++) {
                 }
                 if (($total_lc_a ne '0') && ($numU_A ne '0')){
                     open(OUTFILEU, ">$shfileU_A[$i]");
-                    print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/antisense/$filenameU $total_lc_a $numU_A > $LOC/$dirU/antisense/$outfileU_A\n";
+                    print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/antisense/$filenameU $total_lc_a $numU_A $LOC/$dirU/antisense/$outfileU_A\n";
                     print OUTFILEU "echo \"got here\"\n";;
                     close(OUTFILEU);
                     while(qx{$status | wc -l} > $njobs){
@@ -807,7 +809,7 @@ for($i=1; $i<=$i_intron; $i++) {
 		$total_lc_a = $LINECOUNTS{$for_lc_a};
 		if (($total_lc_s ne '0') && ($numNU_S ne '0')){
                     open(OUTFILENU, ">$shfileNU_S[$i]");
-                    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/sense/$filenameNU $total_lc_s $numNU_S > $LOC/$dirNU/sense/$outfileNU_S\n";
+                    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/sense/$filenameNU $total_lc_s $numNU_S $LOC/$dirNU/sense/$outfileNU_S\n";
                     print OUTFILENU "echo \"got here\"\n";;
                     close(OUTFILENU);
                     while(qx{$status | wc -l} > $njobs){
@@ -817,7 +819,7 @@ for($i=1; $i<=$i_intron; $i++) {
 		}
 		if (($total_lc_a ne '0') && ($numNU_A ne '0')){
                     open(OUTFILENU, ">$shfileNU_A[$i]");
-                    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/antisense/$filenameNU $total_lc_a $numNU_A > $LOC/$dirNU/antisense/$outfileNU_A\n";
+                    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/antisense/$filenameNU $total_lc_a $numNU_A $LOC/$dirNU/antisense/$outfileNU_A\n";
                     print OUTFILENU "echo \"got here\"\n";;
                     close(OUTFILENU);
                     while(qx{$status | wc -l} > $njobs){
@@ -838,13 +840,13 @@ for($i=1; $i<=$i_intron; $i++) {
 		`rm $LOC/$dirU/$checkU`;
 	    }
 	    $outfileU = $filenameU;
-	    $outfileU =~ s/.sam$/_shuf_$numU.sam/i;
+	    $outfileU =~ s/.sam.gz$/_shuf_$numU.sam.gz/i;
 	    @g = glob("$LOC/$dirNU/$checkNU");
 	    if (@g ne '0'){
 		`rm $LOC/$dirNU/$checkNU`;
 	    }
 	    $outfileNU = $filenameNU;
-	    $outfileNU =~ s/.sam$/_shuf_$numNU.sam/i;
+	    $outfileNU =~ s/.sam.gz$/_shuf_$numNU.sam.gz/i;
 
 	    $shfileU[$i] = "$shdir/a" . $id . "intronmappers.u_runshuf.$i.sh";
 	    $shfileNU[$i] = "$shdir/a" . $id . "intronmappers.nu_runshuf.$i.sh";
@@ -853,7 +855,7 @@ for($i=1; $i<=$i_intron; $i++) {
 	    if($U eq 'true') {
 		if (($total_lc ne '0') && ($numU ne '0')){
 		    open(OUTFILEU, ">$shfileU[$i]");
-		    print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/$filenameU $total_lc $numU > $LOC/$dirU/$outfileU\n";
+		    print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/$filenameU $total_lc $numU $LOC/$dirU/$outfileU\n";
 		    print OUTFILEU "echo \"got here\"\n";;
 		    close(OUTFILEU);
 		    while(qx{$status | wc -l} > $njobs){
@@ -867,7 +869,7 @@ for($i=1; $i<=$i_intron; $i++) {
 		$total_lc = $LINECOUNTS{$for_lc};
 		if (($total_lc ne '0') && ($numNU ne '0')){
 		    open(OUTFILENU, ">$shfileNU[$i]");
-		    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/$filenameNU $total_lc $numNU > $LOC/$dirNU/$outfileNU\n";
+		    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/$filenameNU $total_lc $numNU $LOC/$dirNU/$outfileNU\n";
 		    print OUTFILENU "echo \"got here\"\n";;
 		    close(OUTFILENU);
 		    while(qx{$status | wc -l} > $njobs){
@@ -890,10 +892,10 @@ while($dirname = <INFILE>) {
     $total_lc = $LINECOUNTS{$for_lc};
     $numU = $minIGU;
     $numNU = $minIGNU;
-    $filenameU = "$id.filtered_u_intergenicmappers.sam";
-    $outfileU = "$id.intergenicmappers.norm_u.sam";
-    $filenameNU = "$id.filtered_nu_intergenicmappers.sam";
-    $outfileNU = "$id.intergenicmappers.norm_nu.sam";
+    $filenameU = "$id.filtered_u_intergenicmappers.sam.gz";
+    $outfileU = "$id.intergenicmappers.norm_u.sam.gz";
+    $filenameNU = "$id.filtered_nu_intergenicmappers.sam.gz";
+    $outfileNU = "$id.intergenicmappers.norm_nu.sam.gz";
     $dirU = $dirname . "/EIJ/Unique";
     $dirNU = $dirname . "/EIJ/NU";
     if (-e "$LOC/$dirU/$outfileU"){
@@ -909,7 +911,7 @@ while($dirname = <INFILE>) {
     if($U eq 'true') {
 	if (($total_lc ne '0') && ($numU ne '0')){
 	    open(OUTFILEU, ">$shfileU");
-	    print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/$filenameU $total_lc $numU > $LOC/$dirU/$outfileU\n";
+	    print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/$filenameU $total_lc $numU $LOC/$dirU/$outfileU\n";
 	    print OUTFILEU "echo \"got here\"\n";;
 	    close(OUTFILEU);
 	    while(qx{$status | wc -l} > $njobs){
@@ -923,7 +925,7 @@ while($dirname = <INFILE>) {
 	$total_lc = $LINECOUNTS{$for_lc};
 	if (($total_lc ne '0') && ($numNU ne '0')){
 	    open(OUTFILENU, ">$shfileNU");
-	    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/$filenameNU $total_lc $numNU > $LOC/$dirNU/$outfileNU\n";
+	    print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/$filenameNU $total_lc $numNU $LOC/$dirNU/$outfileNU\n";
 	    print OUTFILENU "echo \"got here\"\n";
 	    close(OUTFILENU);
 	    while(qx{$status | wc -l} > $njobs){
@@ -944,10 +946,10 @@ while($dirname = <INFILE>) {
     $total_lc = $LINECOUNTS{$for_lc};
     $numU = $minUND_U;
     $numNU = $minUND_NU;
-    $filenameU = "$id.filtered_u_exon_inconsistent_reads.sam";
-    $outfileU = "$id.exon_inconsistent_reads.norm_u.sam";
-    $filenameNU = "$id.filtered_nu_exon_inconsistent_reads.sam";
-    $outfileNU = "$id.exon_inconsistent_reads.norm_nu.sam";
+    $filenameU = "$id.filtered_u_exon_inconsistent_reads.sam.gz";
+    $outfileU = "$id.exon_inconsistent_reads.norm_u.sam.gz";
+    $filenameNU = "$id.filtered_nu_exon_inconsistent_reads.sam.gz";
+    $outfileNU = "$id.exon_inconsistent_reads.norm_nu.sam.gz";
     $dirU = $dirname . "/EIJ/Unique";
     $dirNU = $dirname . "/EIJ/NU";
     if (-e "$LOC/$dirU/$outfileU"){
@@ -963,7 +965,7 @@ while($dirname = <INFILE>) {
     if($U eq 'true') {
         if (($total_lc ne '0') && ($numU ne '0')){
             open(OUTFILEU, ">$shfileU");
-            print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/$filenameU $total_lc $numU > $LOC/$dirU/$outfileU\n";
+            print OUTFILEU "perl $path/run_shuf.pl $LOC/$dirU/$filenameU $total_lc $numU $LOC/$dirU/$outfileU\n";
             print OUTFILEU "echo \"got here\"\n";;
             close(OUTFILEU);
             while(qx{$status | wc -l} > $njobs){
@@ -977,7 +979,7 @@ while($dirname = <INFILE>) {
         $total_lc = $LINECOUNTS{$for_lc};
         if (($total_lc ne '0') && ($numNU ne '0')){
             open(OUTFILENU, ">$shfileNU");
-            print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/$filenameNU $total_lc $numNU > $LOC/$dirNU/$outfileNU\n";
+            print OUTFILENU "perl $path/run_shuf.pl $LOC/$dirNU/$filenameNU $total_lc $numNU $LOC/$dirNU/$outfileNU\n";
             print OUTFILENU "echo \"got here\"\n";
             close(OUTFILENU);
             while(qx{$status | wc -l} > $njobs){

@@ -110,8 +110,8 @@ chomp($id);
 if ($U eq "true"){
     my ($outEx, $outInt, $dir, $outEx_a, $outInt_a, $dir_a);
     if ($stranded eq "false"){
-	$outEx = "$LOC/$id/EIJ/Unique/$id.filtered_u_exonmappers.highexp_shuf_norm.sam";
-	$outInt = "$LOC/$id/EIJ/Unique/$id.filtered_u_intronmappers.highexp_shuf_norm.sam";
+	$outEx = "$LOC/$id/EIJ/Unique/$id.filtered_u_exonmappers.highexp_shuf_norm.sam.gz";
+	$outInt = "$LOC/$id/EIJ/Unique/$id.filtered_u_intronmappers.highexp_shuf_norm.sam.gz";
 	$dir = "$LOC/$id/EIJ/Unique";
 	if (-e $outEx){
 	    `rm $outEx`;
@@ -121,11 +121,11 @@ if ($U eq "true"){
 	}
     }
     if ($stranded eq "true"){
-	$outEx = "$LOC/$id/EIJ/Unique/sense/$id.filtered_u_exonmappers.highexp_shuf_norm.sam";
-        $outInt = "$LOC/$id/EIJ/Unique/sense/$id.filtered_u_intronmappers.highexp_shuf_norm.sam";
+	$outEx = "$LOC/$id/EIJ/Unique/sense/$id.filtered_u_exonmappers.highexp_shuf_norm.sam.gz";
+        $outInt = "$LOC/$id/EIJ/Unique/sense/$id.filtered_u_intronmappers.highexp_shuf_norm.sam.gz";
         $dir = "$LOC/$id/EIJ/Unique/sense/";
-	$outEx_a = "$LOC/$id/EIJ/Unique/antisense/$id.filtered_u_exonmappers.highexp_shuf_norm.sam";
-        $outInt_a = "$LOC/$id/EIJ/Unique/antisense/$id.filtered_u_intronmappers.highexp_shuf_norm.sam";
+	$outEx_a = "$LOC/$id/EIJ/Unique/antisense/$id.filtered_u_exonmappers.highexp_shuf_norm.sam.gz";
+        $outInt_a = "$LOC/$id/EIJ/Unique/antisense/$id.filtered_u_intronmappers.highexp_shuf_norm.sam.gz";
         $dir_a = "$LOC/$id/EIJ/Unique/antisense/";
 	if (-e $outEx){
             `rm $outEx`;
@@ -143,12 +143,13 @@ if ($U eq "true"){
     }
     if ($cntE > 0){
 	foreach my $exon (keys %HIGHE){
-	    my @ex = glob("$dir/*exonmappers*$exon.highexp.sam");
+	    my @ex = glob("$dir/*exonmappers*$exon.highexp.sam.gz");
 	    if (@ex > 0){
-		open(OUT, ">$outEx") or die;
+		open(my $OUT, "| /bin/gzip -c >$outEx") or die;
 		%READ_HASH=();
 		foreach my $file (@ex){
-		    open(FILE, $file) or die "cannot find $file file\n";
+		    my $pipecmd = "zcat $file";
+		    open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 		    while(my $line = <FILE>){
 			chomp($line);
 			if ($line =~ /^@/){
@@ -172,24 +173,25 @@ if ($U eq "true"){
 			    next;
 			}
 			else{
-			    print OUT "$line\n";
+			    print $OUT "$line\n";
 			    $READ_HASH{$chr}{$for_hash} = 1;
 			}
 		    }
 		    close(FILE);
 		}
-		close(OUT);
+		close($OUT);
 	    }
 	}
     }
     if ($cntI > 0){
         foreach my $intron (keys %HIGHI){
-            my @int = glob("$dir/*intronmappers*$intron.highexp.sam");
+            my @int = glob("$dir/*intronmappers*$intron.highexp.sam.gz");
 	    if (@int > 0){
-		open(OUT, ">$outInt") or die;
+		open(my $OUT, "| /bin/gzip -c >$outInt") or die;
 		%READ_HASH=();
 		foreach my $file (@int){
-		    open(FILE, $file) or die "cannot find $file file\n";
+		    my $pipecmd = "zcat $file";
+		    open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 		    while(my $line = <FILE>){
 			chomp($line);
 			if ($line =~ /^@/){
@@ -213,25 +215,26 @@ if ($U eq "true"){
 			    next;
 			}
 			else{
-			    print OUT "$line\n";
+			    print $OUT "$line\n";
 			    $READ_HASH{$chr}{$for_hash} = 1;
 			}
 		    }
 		    close(FILE);
 		}
-		close(OUT);
+		close($OUT);
 	    }
 	}
     }
     if ($stranded eq "true"){
 	if ($cntEA > 0){
 	    foreach my $exon (keys %HIGHE_A){
-		my @ex = glob("$dir_a/*exonmappers*$exon.highexp.sam");
+		my @ex = glob("$dir_a/*exonmappers*$exon.highexp.sam.gz");
 		if (@ex > 0){
-		    open(OUT, ">$outEx_a") or die;
+		    open(my $OUT, "| /bin/gzip -c >$outEx_a") or die;
 		    %READ_HASH=();
 		    foreach my $file (@ex){
-			open(FILE, $file) or die "cannot find $file file\n";
+			my $pipecmd = "zcat $file";
+			open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 			while(my $line = <FILE>){
 			    chomp($line);
 			    if ($line =~ /^@/){
@@ -255,24 +258,25 @@ if ($U eq "true"){
 				next;
 			    }
 			    else{
-				print OUT "$line\n";
+				print $OUT "$line\n";
 				$READ_HASH{$chr}{$for_hash} = 1;
 			    }
 			}
 			close(FILE);
 		    }
-		    close(OUT);
+		    close($OUT);
 		}
 	    }
 	}
 	if ($cntIA > 0){
 	    foreach my $intron (keys %HIGHI_A){
-		my @int = glob("$dir_a/*intronmappers*$intron.highexp.sam");
+		my @int = glob("$dir_a/*intronmappers*$intron.highexp.sam.gz");
 		if (@int > 0){
-		    open(OUT, ">$outInt_a") or die;
+		    open(my $OUT, "| /bin/gzip -c >$outInt_a") or die;
 		    %READ_HASH=();
 		    foreach my $file (@int){
-			open(FILE, $file) or die "cannot find $file file\n";
+			my $pipecmd = "zcat $file";
+			open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 			while(my $line = <FILE>){
 			    chomp($line);
 			    if ($line =~ /^@/){
@@ -296,13 +300,13 @@ if ($U eq "true"){
 				next;
 			    }
 			    else{
-				print OUT "$line\n";
+				print $OUT "$line\n";
 				$READ_HASH{$chr}{$for_hash} = 1;
 			    }
 			}
 			close(FILE);
 		    }
-		    close(OUT);
+		    close($OUT);
 		}
 	    }
 	}
@@ -311,8 +315,8 @@ if ($U eq "true"){
 if ($NU eq "true"){
     my ($outEx, $outInt, $dir, $outEx_a, $outInt_a, $dir_a);
     if ($stranded eq "false"){
-	$outEx = "$LOC/$id/EIJ/NU/$id.filtered_nu_exonmappers.highexp_shuf_norm.sam";
-	$outInt = "$LOC/$id/EIJ/NU/$id.filtered_nu_intronmappers.highexp_shuf_norm.sam";
+	$outEx = "$LOC/$id/EIJ/NU/$id.filtered_nu_exonmappers.highexp_shuf_norm.sam.gz";
+	$outInt = "$LOC/$id/EIJ/NU/$id.filtered_nu_intronmappers.highexp_shuf_norm.sam.gz";
         $dir = "$LOC/$id/EIJ/NU";
 	if (-e $outEx){
 	    `rm $outEx`;
@@ -322,11 +326,11 @@ if ($NU eq "true"){
 	}
     }
     if ($stranded eq "true"){
-        $outEx = "$LOC/$id/EIJ/NU/sense/$id.filtered_nu_exonmappers.highexp_shuf_norm.sam";
-        $outInt = "$LOC/$id/EIJ/NU/sense/$id.filtered_nu_intronmappers.highexp_shuf_norm.sam";
+        $outEx = "$LOC/$id/EIJ/NU/sense/$id.filtered_nu_exonmappers.highexp_shuf_norm.sam.gz";
+        $outInt = "$LOC/$id/EIJ/NU/sense/$id.filtered_nu_intronmappers.highexp_shuf_norm.sam.gz";
         $dir = "$LOC/$id/EIJ/NU/sense/";
-        $outEx_a = "$LOC/$id/EIJ/NU/antisense/$id.filtered_nu_exonmappers.highexp_shuf_norm.sam";
-        $outInt_a = "$LOC/$id/EIJ/NU/antisense/$id.filtered_nu_intronmappers.highexp_shuf_norm.sam";
+        $outEx_a = "$LOC/$id/EIJ/NU/antisense/$id.filtered_nu_exonmappers.highexp_shuf_norm.sam.gz";
+        $outInt_a = "$LOC/$id/EIJ/NU/antisense/$id.filtered_nu_intronmappers.highexp_shuf_norm.sam.gz";
         $dir_a = "$LOC/$id/EIJ/NU/antisense/";
 	if (-e $outEx){
             `rm $outEx`;
@@ -343,12 +347,13 @@ if ($NU eq "true"){
     }
     if ($cntE > 0){
         foreach my $exon (keys %HIGHE){
-            my @ex = glob("$dir/*exonmappers*$exon.highexp.sam");
+            my @ex = glob("$dir/*exonmappers*$exon.highexp.sam.gz");
 	    if (@ex > 0){
-		open(OUT, ">$outEx") or die;
+		open(my $OUT, "| /bin/gzip -c >$outEx") or die;
 		%READ_HASH=();
 		foreach my $file (@ex){
-		    open(FILE, $file) or die "cannot find $file file\n";
+                    my $pipecmd = "zcat $file";
+                    open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 		    while(my $line = <FILE>){
 			chomp($line);
 			if ($line =~ /^@/){
@@ -372,24 +377,25 @@ if ($NU eq "true"){
 			    next;
 			}
 			else{
-			    print OUT "$line\n";
+			    print $OUT "$line\n";
 			    $READ_HASH{$chr}{$for_hash} = 1;
 			}
 		    }
 		    close(FILE);
 		}
-		close(OUT);
+		close($OUT);
 	    }
 	}
     }
     if ($cntI > 0){
         foreach my $intron (keys %HIGHI){
-            my @int = glob("$dir/*intronmappers*$intron.highexp.sam");
+            my @int = glob("$dir/*intronmappers*$intron.highexp.sam.gz");
 	    if (@int > 0){
-		open(OUT, ">$outInt") or die;
+		open(my $OUT, "| /bin/gzip -c >$outInt") or die;
 		%READ_HASH=();
 		foreach my $file (@int){
-		    open(FILE, $file) or die "cannot find $file file\n";
+                    my $pipecmd = "zcat $file";
+                    open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 		    while(my $line = <FILE>){
 			chomp($line);
 			if ($line =~ /^@/){
@@ -413,25 +419,26 @@ if ($NU eq "true"){
 			    next;
 			}
 			else{
-			    print OUT "$line\n";
+			    print $OUT "$line\n";
 			    $READ_HASH{$chr}{$for_hash} = 1;
 			}
 		    }
 		    close(FILE);
 		}
-		close(OUT);
+		close($OUT);
 	    }
 	}
     }
     if ($stranded eq "true"){
 	if ($cntEA > 0){
 	    foreach my $exon (keys %HIGHE_A){
-		my @ex = glob("$dir_a/*exonmappers*$exon.highexp.sam");
+		my @ex = glob("$dir_a/*exonmappers*$exon.highexp.sam.gz");
 		if (@ex > 0){
-		    open(OUT, ">$outEx_a") or die;
+		    open(my $OUT, "| /bin/gzip -c >$outEx_a") or die;
 		    %READ_HASH=();
 		    foreach my $file (@ex){
-			open(FILE, $file) or die "cannot find $file file\n";
+			my $pipecmd = "zcat $file";
+			open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 			while(my $line = <FILE>){
 			    chomp($line);
 			    if ($line =~ /^@/){
@@ -455,24 +462,25 @@ if ($NU eq "true"){
 				next;
 			    }
 			    else{
-				print OUT "$line\n";
+				print $OUT "$line\n";
 				$READ_HASH{$chr}{$for_hash} = 1;
 			    }
 			}
 			close(FILE);
 		    }
-		    close(OUT);
+		    close($OUT);
 		}
 	    }
 	}
 	if ($cntIA > 0){
 	    foreach my $intron (keys %HIGHI_A){
-		my @int = glob("$dir_a/*intronmappers*$intron.highexp.sam");
+		my @int = glob("$dir_a/*intronmappers*$intron.highexp.sam.gz");
 		if (@int > 0){
-		    open(OUT, ">$outInt_a") or die;
+		    open(my $OUT, "| /bin/gzip -c >$outInt_a") or die;
 		    %READ_HASH=();
 		    foreach my $file (@int){
-			open(FILE, $file) or die "cannot find $file file\n";
+			my $pipecmd = "zcat $file";
+			open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 			while(my $line = <FILE>){
 			    chomp($line);
 			    if ($line =~ /^@/){
@@ -496,13 +504,13 @@ if ($NU eq "true"){
 				next;
 			    }
 			    else{
-				print OUT "$line\n";
+				print $OUT "$line\n";
 				$READ_HASH{$chr}{$for_hash} = 1;
 			    }
 			}
 			close(FILE);
 		    }
-		    close(OUT);
+		    close($OUT);
 		}
 	    }
 	}

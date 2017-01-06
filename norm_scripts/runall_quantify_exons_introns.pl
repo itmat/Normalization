@@ -281,8 +281,8 @@ while(my $line = <IN>){
     my $eij_dir = "$LOC/$id/EIJ";
     my $jobname = "$study.quantify_exons_introns";
     if ($norm eq "false"){
-	$filename_u = "$eij_dir/Unique/$id.filtered_u.sam";
-	$filename_nu = "$eij_dir/NU/$id.filtered_nu.sam";
+	$filename_u = "$eij_dir/Unique/$id.filtered_u.sam.gz";
+	$filename_nu = "$eij_dir/NU/$id.filtered_nu.sam.gz";
 	$shfile_u = "$shdir/Q.$id.quantify_exons_introns_u.sh";
 	$logname_u = "$logdir/quantify_exons_introns_u";
 	$shfile_nu = "$shdir/Q.$id.quantify_exons_introns_nu.sh";

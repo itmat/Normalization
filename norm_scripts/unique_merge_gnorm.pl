@@ -93,7 +93,7 @@ elsif ($NU eq "true"){
 my $common_str = "";
 my @NAME;
 my %CHR = ();
-open(GENE, $genefile) or die "cannot find file \"$genefile\"\n";
+open(GENE, $genefile) or die "Cannot open $genefile\n";
 while (<GENE>){
     if (1..1000){
 	if ($_ =~ /^@/){
@@ -122,7 +122,7 @@ $common_str = &LCP(@NAME);
 my %READ_HASH;
 # READ IN FILES
 # genefile sense
-open(GENE, $genefile) or die "cannot find $genefile file\n";
+open(GENE, $genefile) or die "Cannot open $genefile\n";
 while(my $line = <GENE>){
     chomp($line);
     if ($line =~ /^@/){
@@ -188,7 +188,7 @@ while(my $line = <GENE>){
 }
 close(GENE);
 #antisense file
-open(GENE_A, $genefile_a) or die "cannot find $genefile_a file";
+open(GENE_A, $genefile_a) or die "Cannot open $genefile_a\n";
 while(my $line = <GENE_A>){
     chomp($line);
     if ($line =~ /^@/){
@@ -262,7 +262,7 @@ while(my $line = <GENE_A>){
     
 }
 close(GENE_A);
-
+close(OUTFILE);
 print "got here\n";
 
 sub LCP {

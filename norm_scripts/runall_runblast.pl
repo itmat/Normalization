@@ -40,6 +40,8 @@ option:
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                    by default, <n> = 200.
 
+ -headnode <name> : For clusters which only allows job submissions from the head node, use this option.
+
  -h : print usage
 
 ";
@@ -63,6 +65,7 @@ my $sepe = "";
 my $c_option = "";
 my $mem_option = "";
 my $max_option = "";
+my $hn_option = "";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -79,6 +82,11 @@ for (my $i=5; $i<@ARGV; $i++){
         $mem = "6144";
 	$status = "bjobs";
 	$c_option = "-lsf";
+    }
+    if ($ARGV[$i] eq '-headnode'){
+	$option_found = "true";
+	$hn_option = "-headnode $ARGV[$i+1]";
+	$i++;
     }
     if ($ARGV[$i] eq '-sge'){
         $numargs++;
@@ -193,7 +201,7 @@ while(my $line = <INFILE>) {
 	$sepe = "-se";
 	my $fwd = $u[0];
 	open(OUTFILE, ">$shfile");
-	print OUTFILE "perl $path/runblast.pl $id $LOC $blastdir $query $gz $fafq $sepe $fwd $c_option $mem_option $max_option\n";
+	print OUTFILE "perl $path/runblast.pl $id $LOC $blastdir $query $gz $fafq $sepe $fwd $c_option $mem_option $max_option $hn_option\n";
 	close(OUTFILE);
     }
     elsif ($size == 2){
@@ -201,7 +209,7 @@ while(my $line = <INFILE>) {
 	my $rev = $u[1];
 	$sepe = "-pe";
 	open(OUTFILE, ">$shfile");
-        print OUTFILE "perl $path/runblast.pl $id $LOC $blastdir $query $gz $fafq $sepe \"$fwd,$rev\" $c_option $mem_option $max_option\n";	
+        print OUTFILE "perl $path/runblast.pl $id $LOC $blastdir $query $gz $fafq $sepe \"$fwd,$rev\" $c_option $mem_option $max_option $hn_option\n";	
 	close(OUTFILE);
     }
     else{

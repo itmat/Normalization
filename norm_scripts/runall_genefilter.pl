@@ -206,17 +206,17 @@ while(my $line = <IN>){
     my $id = $line;
     if ($norm eq "false"){
 	my $genedir = "$LOC/$id/GNORM";
-	my $samname_u = "$genedir/Unique/$id.filtered_u.sam";
-	my $samname_nu = "$genedir/NU/$id.filtered_nu.sam";
+	my $samname_u = "$genedir/Unique/$id.filtered_u.sam.gz";
+	my $samname_nu = "$genedir/NU/$id.filtered_nu.sam.gz";
 	my $genefile_u = $samname_u;
 	my $outname_u = $samname_u;
-	$outname_u =~ s/.sam$/.genes.sam/;
+	$outname_u =~ s/.sam.gz$/.genes.sam.gz/;
 	my $genefile_nu = $samname_nu;
 	my $outname_nu = $samname_nu;
-	$outname_nu =~ s/.sam$/.genes.sam/;
+	$outname_nu =~ s/.sam.gz$/.genes.sam.gz/;
 	my ($shfile_u, $jobname, $logname_u, $shfile_nu, $logname_nu);
-	$genefile_u =~ s/.sam$/.txt/;
-	$genefile_nu =~ s/.sam$/.txt/;
+	$genefile_u =~ s/.sam.gz$/.txt.gz/;
+	$genefile_nu =~ s/.sam.gz$/.txt.gz/;
 	$shfile_u = "$shdir/F.$id.genefilter_u.$index.sh";
 	$jobname = "$study.genefilter_gnorm";
 	$logname_u = "$logdir/genefilter.$index.u.$id";
@@ -291,9 +291,9 @@ while(my $line = <IN>){
 	    }
 	}
 	$genefile = $samname;
-	$genefile =~ s/.sam$/.txt/;
+	$genefile =~ s/.sam$/.txt.gz/;
 	$outname = $samname;
-	$outname =~ s/.sam$/.genes.txt/;
+	$outname =~ s/.sam$/.genes.txt.gz/;
 	open(OUT, ">$shfile");
 	if ($pe eq "true"){
 	    print OUT "perl $path/genefilter.pl $samname $genefile $outname $stranded\n";
@@ -309,9 +309,9 @@ while(my $line = <IN>){
 	sleep(2);
 	if ($str eq "true"){
 	    $genefile_a = $samname_a;
-	    $genefile_a =~ s/.sam$/.txt/;
+	    $genefile_a =~ s/.sam$/.txt.gz/;
 	    $outname_a = $samname_a;
-	    $outname_a =~ s/.sam$/.genes.txt/;
+	    $outname_a =~ s/.sam$/.genes.txt.gz/;
 	    open(OUT, ">$shfile_a");
 	    if ($pe eq "true"){
 		print OUT "perl $path/genefilter.pl $samname_a $genefile_a $outname_a $stranded\n";

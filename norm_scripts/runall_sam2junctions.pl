@@ -234,12 +234,15 @@ while(my $line = <INFILE>) {
 	$logname = "$logdir/sam2junctions_gnorm.$id";
     }
     my $outfile1 = $filename;
+    $outfile1 =~ s/.sam.gz$/_junctions_all.rum/i;
     $outfile1 =~ s/.sam$/_junctions_all.rum/i;
     $outfile1 =~ s/.bam$/_junctions_all.rum/i;
     my $outfile2 = $filename;
+    $outfile2 =~ s/.sam.gz$/_junctions_all.bed/i;
     $outfile2 =~ s/.sam$/_junctions_all.bed/i;
     $outfile2 =~ s/.bam$/_junctions_all.bed/i;
     my $outfile3 = $filename;
+    $outfile3 =~ s/.sam.gz$/_junctions_hq.bed/i;
     $outfile3 =~ s/.sam$/_junctions_hq.bed/i;
     $outfile3 =~ s/.bam$/_junctions_hq.bed/i;
     open(OUTFILE, ">$shfile");

@@ -129,9 +129,8 @@ while(my $line = <ENS>){
 }
 close(ENS);
 
-open(SAM, $samfile) or die "cannot find file \"$samfile\"\n";
-open(OUT, ">$outfile");
-print OUT "readID\ttranscriptIDs\tgeneIDs\tgeneSymbols\t(N|I)H-HI\n";
+open(SAM, $samfile) or die "cannot open $samfile\n";
+open(my $OUT, "| /bin/gzip -c > $outfile") or die "error starting gzip $!";
 while(my $line = <SAM>){
     chomp($line);
     if ($line =~ /^@/){
@@ -357,10 +356,11 @@ while(my $line = <SAM>){
 	    }
 	}
     }
-    print OUT "$read_id\t$txID_list\t$geneID_list\t$symbol_list\t$ih_hi\n";
+    print $OUT "$read_id\t$txID_list\t$geneID_list\t$symbol_list\t$ih_hi\n";
 }
 close(SAM);
-close(OUT);
+close($OUT);
+`rm $samfile`;
 print "got here\n";
 
 sub uniq {

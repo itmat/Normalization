@@ -4,6 +4,7 @@
 use FindBin qw($Bin);
 use lib ("$Bin/lib", "$Bin/lib/perl5");
 use File::Type;
+use Net::SSH qw(ssh);
 
 my $USAGE =  "\nUsage: run_normalization --sample_dirs <file of sample_dirs> --loc <s> --unaligned <file of fa/fqfiles> --alignedfilename <s> --cfg <cfg file> [options]
 
@@ -69,7 +70,7 @@ OPTIONS:
 
 for(my $i=0; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq '-v'){
-	die "\nPORT v0.8.2a-beta\n\n";
+	die "\nPORT v0.8.3-beta\n\n";
     }
 }
 for(my $i=0; $i<@ARGV; $i++) {
@@ -740,13 +741,15 @@ if ($GNORM eq "true"){
     }
     close(ENS);
 }
-if ($hap eq "true"){
-    open(LOG ,">>$logfile");
-    print LOG "\n========\nWARNING\n========\n";
-    print LOG "One or more chromosome names in the gene info file include \"hap\".\n";
-    print LOG "This can cause unique-mappers to be treated as multi-mappers.\n";
-    print LOG "We recommend removing these transcripts from the gene info file and restarting PORT.\n\n";
-    close(LOG);
+if (($resume eq "false") && ($part2 eq "false")){
+    if ($hap eq "true"){
+	open(LOG ,">>$logfile");
+	print LOG "\n========\nWARNING\n========\n";
+	print LOG "One or more chromosome names in the gene info file include \"hap\".\n";
+	print LOG "This can cause unique-mappers to be treated as multi-mappers.\n";
+	print LOG "We recommend removing these transcripts from the gene info file and restarting PORT.\n\n";
+	close(LOG);
+    }
 }
 
 my $hashsize0 = keys(%CHR); #all chr names in gene information file 
@@ -791,13 +794,15 @@ if ($hashsize0 eq $hashsize1){ # none of chromosome names match
     die "\nERROR: Please check the input GENOME_FA \"$genome\".\nDescription line (\">\") must begin with a chromosome name that matches the chromosome names in GENE INFO (# 2. GENE INFO in your cfg file \"$cfg_file\").\nPlease check and modify the file(s) appropriately.\n\n";
 }
 else{
-    if ($hashsize1 > 0){
-	print LOG "\n========\nWARNING\n========\n";
-	print LOG "The following chromosome names are in the provided GENE INFO file but not in the GENOME_FA file:\n";
-	foreach my $chrom  (keys %CHR){
-	    print LOG "$chrom\n";
+    if (($resume eq "false") && ($part2 eq "false")){
+	if ($hashsize1 > 0){
+	    print LOG "\n========\nWARNING\n========\n";
+	    print LOG "The following chromosome names are in the provided GENE INFO file but not in the GENOME_FA file:\n";
+	    foreach my $chrom  (keys %CHR){
+		print LOG "$chrom\n";
+	    }
+	    print LOG "\n";
 	}
-	print LOG "\n";
     }
 }
 
@@ -903,7 +908,15 @@ if ($check_study_port == 1){
     die "\nERROR: PORT job with study name \"$study\" is already running.\n\n"
 }
 
-`$batchjobs $request$queue_3G $jobname "$study.RUNALL_NORMALIZATION" -o $logdir/$study.runall_normalization.out -e $logdir/$study.runall_normalization.err < $runall_shfile`;
+my $runport = "$batchjobs $request$queue_3G $jobname \"$study.RUNALL_NORMALIZATION\" -o $logdir/$study.runall_normalization.out -e $logdir/$study.runall_normalization.err < $runall_shfile";
+if ($HOST_NAME =~ /^$/){
+    `$runport`;
+}
+else{
+    ssh($HOST_NAME, $runport);
+}
+
+#`$batchjobs $request$queue_3G $jobname "$study.RUNALL_NORMALIZATION" -o $logdir/$study.runall_normalization.out -e $logdir/$study.runall_normalization.err < $runall_shfile`;
 
 sub args2shell{
     local (@argv) = @_;

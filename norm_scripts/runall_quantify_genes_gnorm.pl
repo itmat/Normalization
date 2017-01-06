@@ -192,7 +192,7 @@ while(my $line = <IN>){
 	    $shfile = "$shdir/GQ.$id.quantifygenes.gnorm2.sh";
 	    $jobname = "$study.quantifygenes.gnorm2";
 	    $logname = "$logdir/quantifygenes.gnorm2.$id";
-	    $filename = "$gnorm_dir/$id.gene.norm.txt";
+	    $filename = "$gnorm_dir/$id.gene.norm.txt.gz";
 	}
 	if ($stranded eq "true"){
 	    $shfile = "$shdir/GQ.$id.quantifygenes.gnorm2.sense.sh";
@@ -200,11 +200,11 @@ while(my $line = <IN>){
 	    $jobname = "$study.quantifygenes.gnorm2";
 	    $logname = "$logdir/quantifygenes.gnorm2.sense.$id";
 	    $logname_a = "$logdir/quantifygenes.gnorm2.antisense.$id";
-	    $filename = "$gnorm_dir/sense/$id.gene.norm.genefilter.sense.txt";
-	    $filename_a = "$gnorm_dir/antisense/$id.gene.norm.genefilter.antisense.txt";
+	    $filename = "$gnorm_dir/sense/$id.gene.norm.genefilter.sense.txt.gz";
+	    $filename_a = "$gnorm_dir/antisense/$id.gene.norm.genefilter.antisense.txt.gz";
 	}
 	$outname = $filename;
-	$outname =~ s/.txt$/.genequants/;
+	$outname =~ s/.txt.gz$/.genequants/;
 	open(OUT, ">$shfile");
 	print OUT "perl $path/quantify_genes.pl $filename $ensFile $outname $se\n";
 	close(OUT);
@@ -214,7 +214,7 @@ while(my $line = <IN>){
 	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
 	if ($stranded eq "true"){
 	    $outname_a = $filename_a;
-	    $outname_a =~ s/.txt$/.genequants/;
+	    $outname_a =~ s/.txt.gz$/.genequants/;
 	    open(OUT, ">$shfile_a");
 	    print OUT "perl $path/quantify_genes.pl $filename_a $ensFile $outname_a $se\n";
 	    close(OUT);
@@ -244,12 +244,12 @@ while(my $line = <IN>){
 	    $logname_nu_a = "$logdir/quantifygenes.gnorm_nu.antisense.$id";
 	}
 	if ($U eq "true"){
-	    $filename_u = "$LOC/$id/GNORM/Unique/$id.filtered_u.genefilter.txt";
+	    $filename_u = "$LOC/$id/GNORM/Unique/$id.filtered_u.genefilter.txt.gz";
 	    if ($stranded eq "true"){
-		$filename_u = "$LOC/$id/GNORM/Unique/$id.filtered_u.genefilter.sense.txt";
+		$filename_u = "$LOC/$id/GNORM/Unique/$id.filtered_u.genefilter.sense.txt.gz";
 	    }
 	    $outname_u = $filename_u;
-	    $outname_u =~ s/.txt$/.genequants/;
+	    $outname_u =~ s/.txt.gz$/.genequants/;
 	    open(OUT, ">$shfile_u");
 	    print OUT "perl $path/quantify_genes.pl $filename_u $ensFile $outname_u $se\n";
 	    close(OUT);
@@ -258,9 +258,9 @@ while(my $line = <IN>){
 	    }
 	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_u.out -e $logname_u.err < $shfile_u`;
 	    if ($stranded eq "true"){
-		$filename_u_a = "$LOC/$id/GNORM/Unique/$id.filtered_u.genefilter.antisense.txt";
+		$filename_u_a = "$LOC/$id/GNORM/Unique/$id.filtered_u.genefilter.antisense.txt.gz";
 		$outname_u_a = $filename_u_a;
-		$outname_u_a =~ s/.txt$/.genequants/;
+		$outname_u_a =~ s/.txt.gz$/.genequants/;
 		open(OUT, ">$shfile_u_a");
 		print OUT "perl $path/quantify_genes.pl $filename_u_a $ensFile $outname_u_a $se\n";
 		close(OUT);
@@ -271,12 +271,12 @@ while(my $line = <IN>){
 	    }
 	}
 	if ($NU eq "true"){
-	    $filename_nu = "$LOC/$id/GNORM/NU/$id.filtered_nu.genefilter.txt";
+	    $filename_nu = "$LOC/$id/GNORM/NU/$id.filtered_nu.genefilter.txt.gz";
 	    if ($stranded eq "true"){
-                $filename_nu = "$LOC/$id/GNORM/NU/$id.filtered_nu.genefilter.sense.txt";
+                $filename_nu = "$LOC/$id/GNORM/NU/$id.filtered_nu.genefilter.sense.txt.gz";
             }
             $outname_nu = $filename_nu;
-            $outname_nu =~ s/.txt$/.genequants/;
+            $outname_nu =~ s/.txt.gz$/.genequants/;
             open(OUT, ">$shfile_nu");
             print OUT "perl $path/quantify_genes.pl $filename_nu $ensFile $outname_nu $se\n";
             close(OUT);
@@ -285,9 +285,9 @@ while(my $line = <IN>){
             }
             `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_nu.out -e $logname_nu.err < $shfile_nu`;
 	    if ($stranded eq "true"){
-		$filename_nu_a = "$LOC/$id/GNORM/NU/$id.filtered_nu.genefilter.antisense.txt";
+		$filename_nu_a = "$LOC/$id/GNORM/NU/$id.filtered_nu.genefilter.antisense.txt.gz";
                 $outname_nu_a = $filename_nu_a;
-		$outname_nu_a =~ s/.txt$/.genequants/;
+		$outname_nu_a =~ s/.txt.gz$/.genequants/;
                 open(OUT, ">$shfile_nu_a");
                 print OUT "perl $path/quantify_genes.pl $filename_nu_a $ensFile $outname_nu_a $se\n";
                 close(OUT);

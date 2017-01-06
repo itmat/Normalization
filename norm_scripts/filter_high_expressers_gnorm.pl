@@ -75,7 +75,7 @@ while (my $line = <INFILE>){
     if ($stranded eq "true"){
         my $file_a = "$LOC/$dir/$id.high_expressers_gene.antisense.txt";
         open(IN, "$file_a") or die "cannot find file '$file_a'\n";
-        my $header = <IN>;
+        my $header_a = <IN>;
         while (my $line2 = <IN>){
             chomp($line2);
             my @a = split(/\t/, $line2);
@@ -89,22 +89,20 @@ close(INFILE);
 my %FILENAMES = ();
 my $sampleid = $ARGV[3];
 if ($U eq "true"){
-    my $geneu = "$LOC/$sampleid/GNORM/Unique/$sampleid.filtered_u.genefilter.txt";
+    my $geneu = "$LOC/$sampleid/GNORM/Unique/$sampleid.filtered_u.genefilter.txt.gz";
     if ($stranded eq "true"){
-        $geneu = "$LOC/$sampleid/GNORM/Unique/$sampleid.filtered_u.genefilter.sense.txt";
+        $geneu = "$LOC/$sampleid/GNORM/Unique/$sampleid.filtered_u.genefilter.sense.txt.gz";
     }
     foreach my $key (keys %HIGH_GENE){
         my $highfile = $geneu;
-        $highfile =~ s/.txt$/.$key.txt/;
-        open $FILENAMES{$highfile}, ">", $highfile or die "Can't open $highfile for output: $!";
-        print {$FILENAMES{$highfile}} "header\n";
+        $highfile =~ s/.txt.gz$/.$key.txt.gz/;
+        open ($FILENAMES{$highfile}, "| /bin/gzip -c > $highfile") or die "Can't open $highfile for output: $!";
     }
     my $filteredu = $geneu;
-    $filteredu =~ s/.txt$/.filter_highexp.txt/;
-    open(IN, $geneu);
-    my $header = <IN>;
-    open(OUT, ">$filteredu");
-    print OUT $header;
+    $filteredu =~ s/.txt.gz$/.filter_highexp.txt.gz/;
+    my $pipecmd = "zcat $geneu";
+    open(IN, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
+    open(my $OUT, "| /bin/gzip -c > $filteredu") or die "Can't open $filteredu for output: $!";
     while(my $forward = <IN>){
         my $flag = 0;
         chomp($forward);
@@ -113,50 +111,48 @@ if ($U eq "true"){
             chomp($reverse);
             foreach my $key (keys %HIGH_GENE){
                 my $highfile = $geneu;
-                $highfile =~ s/.txt$/.$key.txt/;
+                $highfile =~ s/.txt.gz$/.$key.txt.gz/;
                 if (($forward =~ /$key/) || ($reverse =~ /$key/)){
                     $flag = 1;
                     print {$FILENAMES{$highfile}} "$forward\n$reverse\n";
                 }
             }
             if ($flag eq '0'){
-                print OUT "$forward\n$reverse\n";
+                print $OUT "$forward\n$reverse\n";
             }
         }
         if ($se eq "true"){
             foreach my $key (keys %HIGH_GENE){
                 my $highfile = $geneu;
-                $highfile =~ s/.txt$/.$key.txt/;
+                $highfile =~ s/.txt.gz$/.$key.txt.gz/;
                 if ($forward =~ /$key/){
                     $flag = 1;
                     print {$FILENAMES{$highfile}} "$forward\n";
                 }
             } 
             if ($flag eq '0'){
-                print OUT "$forward\n";
+                print $OUT "$forward\n";
             }
         }
     }
-    close(OUT);
+    close($OUT);
     close(IN);
     foreach my $filename (keys %FILENAMES){
         close($FILENAMES{$filename});
     }
     if ($stranded eq "true"){
         %FILENAMES = ();
-        my $geneu_a = "$LOC/$sampleid/GNORM/Unique/$sampleid.filtered_u.genefilter.antisense.txt";
+        my $geneu_a = "$LOC/$sampleid/GNORM/Unique/$sampleid.filtered_u.genefilter.antisense.txt.gz";
         foreach my $key (keys %HIGH_GENE_A){
             my $highfile = $geneu_a;
-            $highfile =~ s/.txt$/.$key.txt/;
-            open $FILENAMES{$highfile}, ">", $highfile or die "Can't open $highfile for output: $!";
-            print {$FILENAMES{$highfile}} "header\n";
+            $highfile =~ s/.txt.gz$/.$key.txt.gz/;
+            open ($FILENAMES{$highfile}, "| /bin/gzip -c > $highfile") or die "Can't open $highfile for output: $!";
         }
         my $filteredu_a = $geneu_a;
-        $filteredu_a =~ s/.txt$/.filter_highexp.txt/;
-        open(IN, $geneu_a);
-        my $header = <IN>;
-        open(OUT, ">$filteredu_a");
-        print OUT $header;
+        $filteredu_a =~ s/.txt.gz$/.filter_highexp.txt.gz/;
+        my $pipecmd = "zcat $geneu_a";
+        open(IN, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
+        open($OUT, "| /bin/gzip -c >$filteredu_a") or die "Can't open $filteredu_a for output: $!";
         while(my $forward = <IN>){
             my $flag = 0;
             chomp($forward);
@@ -165,31 +161,31 @@ if ($U eq "true"){
                 chomp($reverse);
                 foreach my $key (keys %HIGH_GENE_A){
                     my $highfile = $geneu_a;
-                    $highfile =~ s/.txt$/.$key.txt/;
+                    $highfile =~ s/.txt.gz$/.$key.txt.gz/;
                     if (($forward =~ /$key/) || ($reverse =~ /$key/)){
                         $flag = 1;
                         print {$FILENAMES{$highfile}} "$forward\n$reverse\n";
                     }
                 }
                 if ($flag eq '0'){
-                    print OUT "$forward\n$reverse\n";
+                    print $OUT "$forward\n$reverse\n";
                 }
             }
             if ($se eq "true"){
                 foreach my $key (keys %HIGH_GENE_A){
                     my $highfile = $geneu_a;
-                    $highfile =~ s/.txt$/.$key.txt/;
+                    $highfile =~ s/.txt.gz$/.$key.txt.gz/;
                     if ($forward =~ /$key/){
                         $flag = 1;
                         print {$FILENAMES{$highfile}} "$forward\n";
                     }
                 }
                 if ($flag eq '0'){
-                    print OUT "$forward\n";
+                    print $OUT "$forward\n";
                 }
             }
         }
-        close(OUT);
+        close($OUT);
         close(IN);
         foreach my $filename (keys %FILENAMES){
             close($FILENAMES{$filename});
@@ -198,22 +194,20 @@ if ($U eq "true"){
 }
 if ($NU eq "true"){
     %FILENAMES = ();
-    my $genenu = "$LOC/$sampleid/GNORM/NU/$sampleid.filtered_nu.genefilter.txt";
+    my $genenu = "$LOC/$sampleid/GNORM/NU/$sampleid.filtered_nu.genefilter.txt.gz";
     if ($stranded eq "true"){
-        $genenu = "$LOC/$sampleid/GNORM/NU/$sampleid.filtered_nu.genefilter.sense.txt";
+        $genenu = "$LOC/$sampleid/GNORM/NU/$sampleid.filtered_nu.genefilter.sense.txt.gz";
     }
     foreach my $key (keys %HIGH_GENE){
         my $highfile = $genenu;
-        $highfile =~ s/.txt$/.$key.txt/;
-        open $FILENAMES{$highfile}, ">", $highfile or die "Can't open $highfile for output: $!";
-        print {$FILENAMES{$highfile}} "header\n";
+        $highfile =~ s/.txt.gz$/.$key.txt.gz/;
+        open ($FILENAMES{$highfile}, "| /bin/gzip -c > $highfile") or die "Can't open $highfile for output: $!";
     }
     my $filterednu = $genenu;
-    $filterednu =~ s/.txt$/.filter_highexp.txt/;
-    open(IN, $genenu);
-    my $header = <IN>;
-    open(OUT, ">$filterednu");
-    print OUT $header;
+    $filterednu =~ s/.txt.gz$/.filter_highexp.txt.gz/;
+    my $pipecmd = "zcat $genenu";
+    open(IN, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
+    open(my $OUT, "| /bin/gzip -c > $filterednu") or die "Can't open $filterednu for output: $!";
     while(my $forward = <IN>){
         my $flag = 0;
         chomp($forward);
@@ -222,50 +216,48 @@ if ($NU eq "true"){
             chomp($reverse);
             foreach my $key (keys %HIGH_GENE){
                 my $highfile = $genenu;
-                $highfile =~ s/.txt$/.$key.txt/;
+                $highfile =~ s/.txt.gz$/.$key.txt.gz/;
                 if (($forward =~ /$key/) || ($reverse =~ /$key/)){
                     $flag = 1;
                     print {$FILENAMES{$highfile}} "$forward\n$reverse\n";
                 }
             }
             if ($flag eq '0'){
-                print OUT "$forward\n$reverse\n";
+                print $OUT "$forward\n$reverse\n";
             }
         }
         if ($se eq "true"){
             foreach my $key (keys %HIGH_GENE){
                 my $highfile = $genenu;
-                $highfile =~ s/.txt$/.$key.txt/;
+                $highfile =~ s/.txt.gz$/.$key.txt.gz/;
                 if ($forward =~ /$key/){
                     $flag = 1;
                     print {$FILENAMES{$highfile}} "$forward\n";
                 }
             }
             if ($flag eq '0'){
-                print OUT "$forward\n";
+                print $OUT "$forward\n";
             }
         }
     }
     close(IN);
-    close(OUT);
+    close($OUT);
     foreach my $filename (keys %FILENAMES){
         close($FILENAMES{$filename});
     }
     if ($stranded eq "true"){
         %FILENAMES = ();
-        my $genenu_a = "$LOC/$sampleid/GNORM/NU/$sampleid.filtered_nu.genefilter.antisense.txt";
+        my $genenu_a = "$LOC/$sampleid/GNORM/NU/$sampleid.filtered_nu.genefilter.antisense.txt.gz";
         foreach my $key (keys %HIGH_GENE_A){
             my $highfile = $genenu_a;
-            $highfile =~ s/.txt$/.$key.txt/;
-            open $FILENAMES{$highfile}, ">", $highfile or die "Can't open $highfile for output: $!";
-            print {$FILENAMES{$highfile}} "header\n";
+            $highfile =~ s/.txt.gz$/.$key.txt.gz/;
+            open ($FILENAMES{$highfile}, "| /bin/gzip -c > $highfile") or die "Can't open $highfile for output: $!";
         }
         my $filterednu_a = $genenu_a;
-        $filterednu_a =~ s/.txt$/.filter_highexp.txt/;
-        open(IN, $genenu_a);
-        my $header = <IN>;
-        open(OUT, ">$filterednu_a");
-        print OUT $header;
+        $filterednu_a =~ s/.txt.gz$/.filter_highexp.txt.gz/;
+        my $pipecmd = "zcat $genenu_a";
+        open(IN, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
+        open($OUT, "| /bin/gzip -c > $filterednu_a") or die "cannot open $filterednu_a for output: $!";
         while(my $forward = <IN>){
             my $flag = 0;
             chomp($forward);
@@ -274,31 +266,31 @@ if ($NU eq "true"){
                 chomp($reverse);
                 foreach my $key (keys %HIGH_GENE_A){
                     my $highfile = $genenu_a;
-                    $highfile =~ s/.txt$/.$key.txt/;
+                    $highfile =~ s/.txt.gz$/.$key.txt.gz/;
                     if (($forward =~ /$key/) || ($reverse =~ /$key/)){
                         $flag = 1;
                         print {$FILENAMES{$highfile}} "$forward\n$reverse\n";
                     }
                 }
                 if ($flag eq '0'){
-                    print OUT "$forward\n$reverse\n";
+                    print $OUT "$forward\n$reverse\n";
                 }
             }
             if ($se eq "true"){
                 foreach my $key (keys %HIGH_GENE_A){
                     my $highfile = $genenu_a;
-                    $highfile =~ s/.txt$/.$key.txt/;
+                    $highfile =~ s/.txt.gz$/.$key.txt.gz/;
                     if ($forward =~ /$key/){
                         $flag = 1;
                         print {$FILENAMES{$highfile}} "$forward\n";
                     }
                 }
                 if ($flag eq '0'){
-                    print OUT "$forward\n";
+                    print $OUT "$forward\n";
                 }
             }
         }
-        close(OUT);
+        close($OUT);
         close(IN);
         foreach my $filename (keys %FILENAMES){
             close($FILENAMES{$filename});

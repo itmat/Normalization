@@ -32,8 +32,8 @@ my $genesfile = $ARGV[1];
 my $output = $ARGV[2];
 
 my %ID;
-open(GENE, $genesfile) or die "cannot find '$genesfile'\n";
-my $header = <GENE>;
+my $pipecmd = "zcat $genesfile";
+open(GENE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 while (my $forward = <GENE>){
     if ($pe eq "true"){
 	chomp($forward);
@@ -68,11 +68,11 @@ while (my $forward = <GENE>){
     }
 }
 close(GENE);
-
-open(IN, $samfile) or die "cannot find '$samfile'\n";
+$pipecmd = "zcat $samfile";
+open(IN, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 my $linecount = $output;
 my $lc = 0;
-open(OUT, ">$output");
+open(my $OUT, "| /bin/gzip -c >$output") or die "error starting gzip $!";
 while(my $read = <IN>){
     chomp($read);
     if ($read =~ /^@/){
@@ -88,15 +88,15 @@ while(my $read = <IN>){
     if (exists $ID{$id}){
 	for (my $i=0; $i<@{$ID{$id}};$i++){
 	    if ("$ID{$id}[$i]" eq "$ih_hi"){
-		print OUT "$read\n";
+		print $OUT "$read\n";
 		$lc++;
 	    }
 	}
     }
 }
 close(IN);
-close(OUT);
-$linecount =~ s/sam$/linecount.txt/;
+close($OUT);
+$linecount =~ s/sam.gz$/linecount.txt/;
 open(LC, ">$linecount");
 print LC "$output\t$lc\n";
 close(LC);

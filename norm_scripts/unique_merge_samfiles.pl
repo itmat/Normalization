@@ -124,7 +124,7 @@ elsif ($NU eq "true"){
 my $common_str = "";
 my @NAME;
 my %CHR = ();
-open(EX, $exonfile) or die "cannot find file \"$exonfile\"\n";
+open(EX, $exonfile) or die "Cannot open $exonfile\n";
 while (<EX>){
     if (1..1000){
 	if ($_ =~ /^@/){
@@ -148,7 +148,7 @@ for my $seq (@tail){
 	push(@NAME, $seqname);
     }
 }
-open(IG, $igfile);# or die "cannot find file \"$igfile\"\n";
+open(IG, $igfile) or die "Cannot open $igfile\n";
 while (<IG>){
     if (1..1000){
 	if ($_ =~ /^@/){
@@ -177,7 +177,7 @@ $common_str = &LCP(@NAME);
 my %READ_HASH;
 # READ IN FILES
 # exonmapper file
-open(EX, $exonfile) or die "cannot find $exonfile file\n";
+open(EX, $exonfile) or die "Cannot open $exonfile\n";
 while(my $line = <EX>){
     chomp($line);
     if ($line =~ /^@/){
@@ -210,7 +210,7 @@ while(my $line = <EX>){
 close(EX);
 if ($stranded eq "true"){
     # exonmapper file
-    open(EX_A, $exonfile_a) or die "cannot find $exonfile_a file\n";
+    open(EX_A, $exonfile_a) or die "Cannot open $exonfile_a\n";
     while(my $line = <EX_A>){
 	chomp($line);
 	if ($line =~ /^@/){
@@ -242,7 +242,7 @@ if ($stranded eq "true"){
     close(EX_A);
 }
 # intronmapper file
-open(INT, $intronfile) or die "cannot find $intronfile file\n";
+open(INT, $intronfile) or die "Cannot open $intronfile\n";
 while(my $line = <INT>){
     chomp($line);
     if ($line =~ /^@/){
@@ -274,7 +274,7 @@ while(my $line = <INT>){
 }
 close(INT);
 if ($stranded eq "true"){
-    open(INT_A, $intronfile_a) or die "cannot find $intronfile_a file\n";
+    open(INT_A, $intronfile_a) or die "Cannot open $intronfile_a\n";
     while(my $line = <INT_A>){
 	chomp($line);
 	if ($line =~ /^@/){
@@ -307,7 +307,7 @@ if ($stranded eq "true"){
     close(INT_A);
 }
 #intergenic file
-open(IG, $igfile) or die "cannot find $igfile file\n";
+open(IG, $igfile) or die "Cannot open $igfile\n";
 while(my $line = <IG>){
     chomp($line);
     if ($line =~ /^@/){
@@ -339,7 +339,7 @@ while(my $line = <IG>){
 }
 close(IG);
 #exon_inconsistent 
-open(UND, $undfile) or die "cannot find $undfile file\n";
+open(UND, $undfile) or die "Cannot open $undfile\n";
 while(my $line = <UND>){
     chomp($line);
     if ($line =~ /^@/){
@@ -370,6 +370,7 @@ while(my $line = <UND>){
     }
 }
 close(UND);
+close(OUTFILE);
 
 
 print "got here\n";

@@ -115,44 +115,57 @@ $LOC =~ s/\/$//;
 my $directory = $samfile;
 $directory =~ s/$samname$//g;
 my $exonquants = $directory . "/$samname";
+$exonquants =~ s/.sam.gz$/.exonquants/;
 $exonquants =~ s/.sam$/.exonquants/;
 my $intronquants = $directory . "/$samname";
+$intronquants =~ s/.sam.gz$/.intronquants/;
 $intronquants =~ s/.sam$/.intronquants/;
 my $linecountfile = "$directory/linecounts.txt";
 my ($exonquants_anti, $intronquants_anti, $sensedir, $antisensedir, $linecountfile_exon_anti, $linecountfile_intron_anti);
 my $exon_sam_out = $samfile;
+$exon_sam_out =~ s/.sam.gz$/_exonmappers.sam.gz/g;
 $exon_sam_out =~ s/.sam$/_exonmappers.sam/g;
 my $intron_sam_out = $samfile;
+$intron_sam_out =~ s/.sam.gz$/_intronmappers.sam.gz/g;
 $intron_sam_out =~ s/.sam$/_intronmappers.sam/g;
 my $intergenic_sam_out = $samfile;
+$intergenic_sam_out =~ s/.sam.gz$/_intergenicmappers.sam.gz/;
 $intergenic_sam_out =~ s/.sam$/_intergenicmappers.sam/;
 my $exon_inconsistent_sam_out = $samfile;
+$exon_inconsistent_sam_out =~ s/.sam.gz$/_exon_inconsistent_reads.sam.gz/;
 $exon_inconsistent_sam_out =~ s/.sam$/_exon_inconsistent_reads.sam/;
 my ($exon_sam_out_anti, $intron_sam_out_anti, $linecountfile_anti);
 if ($stranded eq "true"){
     if ($print eq "false"){
 	$exonquants = "$directory/$samname";
+        $exonquants =~ s/.sam.gz$/.sense.exonquants/;
         $exonquants =~ s/.sam$/.sense.exonquants/;
         $intronquants = "$directory/$samname";
+        $intronquants =~ s/.sam.gz$/.sense.intronquants/;
         $intronquants =~ s/.sam$/.sense.intronquants/;
-
 	$exonquants_anti = "$directory/$samname";
+        $exonquants_anti =~ s/.sam.gz$/.antisense.exonquants/;
         $exonquants_anti =~ s/.sam$/.antisense.exonquants/;
         $intronquants_anti = "$directory/$samname";
+        $intronquants_anti =~ s/.sam.gz$/.antisense.intronquants/;
         $intronquants_anti =~ s/.sam$/.antisense.intronquants/;
 
         $linecountfile = "$directory/linecounts.txt";
         $linecountfile_anti = "$directory/linecounts.txt";
 
         $exon_sam_out = "$directory/$samname";
-        $exon_sam_out =~ s/.sam$/_exonmappers.sam/g;
+        $exon_sam_out =~ s/.sam.gz$/_exonmappers.sam.gz/g;
+        $exon_sam_out =~ s/.sam$/_exonmappers.sam.gz/g;
         $intron_sam_out = "$directory/$samname";
-        $intron_sam_out =~ s/.sam$/_intronmappers.sam/g;
+        $intron_sam_out =~ s/.sam.gz$/_intronmappers.sam.gz/g;
+        $intron_sam_out =~ s/.sam$/_intronmappers.sam.gz/g;
 
         $exon_sam_out_anti = "$directory/$samname";
-        $exon_sam_out_anti =~ s/.sam$/_exonmappers.sam/g;
+        $exon_sam_out_anti =~ s/.sam.gz$/_exonmappers.sam.gz/g;
+        $exon_sam_out_anti =~ s/.sam$/_exonmappers.sam.gz/g;
         $intron_sam_out_anti = "$directory/$samname";
-        $intron_sam_out_anti =~ s/.sam$/_intronmappers.sam/g;
+        $intron_sam_out_anti =~ s/.sam.gz$/_intronmappers.sam.gz/g;
+        $intron_sam_out_anti =~ s/.sam$/_intronmappers.sam.gz/g;
     }
     if ($print eq "true"){
 	$sensedir = "$directory/sense";
@@ -164,27 +177,35 @@ if ($stranded eq "true"){
 	    `mkdir $antisensedir`;
 	}
 	$exonquants = "$sensedir/$samname";
+	$exonquants =~ s/.sam.gz$/.sense.exonquants/;
 	$exonquants =~ s/.sam$/.sense.exonquants/;
 	$intronquants = "$sensedir/$samname";
+	$intronquants =~ s/.sam.gz$/.sense.intronquants/;
 	$intronquants =~ s/.sam$/.sense.intronquants/;
 
 	$exonquants_anti = "$antisensedir/$samname";
+	$exonquants_anti =~ s/.sam.gz$/.antisense.exonquants/;
 	$exonquants_anti =~ s/.sam$/.antisense.exonquants/;
 	$intronquants_anti = "$antisensedir/$samname";
+	$intronquants_anti =~ s/.sam.gz$/.antisense.intronquants/;
 	$intronquants_anti =~ s/.sam$/.antisense.intronquants/;
 	
 	$linecountfile = "$sensedir/linecounts.txt";
 	$linecountfile_anti = "$antisensedir/linecounts.txt";
 
 	$exon_sam_out = "$sensedir/$samname";
-	$exon_sam_out =~ s/.sam$/_exonmappers.sam/g;
+	$exon_sam_out =~ s/.sam.gz$/_exonmappers.sam.gz/g;
+	$exon_sam_out =~ s/.sam$/_exonmappers.sam.gz/g;
 	$intron_sam_out = "$sensedir/$samname";
-	$intron_sam_out =~ s/.sam$/_intronmappers.sam/g;
+	$intron_sam_out =~ s/.sam.gz$/_intronmappers.sam.gz/g;
+	$intron_sam_out =~ s/.sam$/_intronmappers.sam.gz/g;
 	
 	$exon_sam_out_anti = "$antisensedir/$samname";
-	$exon_sam_out_anti =~ s/.sam$/_exonmappers.sam/g;
+	$exon_sam_out_anti =~ s/.sam.gz$/_exonmappers.sam.gz/g;
+	$exon_sam_out_anti =~ s/.sam$/_exonmappers.sam.gz/g;
 	$intron_sam_out_anti = "$antisensedir/$samname";
-	$intron_sam_out_anti =~ s/.sam$/_intronmappers.sam/g;
+	$intron_sam_out_anti =~ s/.sam.gz$/_intronmappers.sam.gz/g;
+	$intron_sam_out_anti =~ s/.sam$/_intronmappers.sam.gz/g;
     }
 }
 my (@exon_sam_outfile, @anti_exon_sam_outfile,  @OUTFILE_EXON, @OUTFILE_EXON_A);
@@ -203,36 +224,36 @@ unless ($i_exon eq $max_exon){
 unless ($i_intron eq $max_intron){
     $max_intron = $i_intron;
 }
-
+my ($EXONSAMOUT,$INTRONSAMOUT,$INTERGENIC,$EXON_INCONSISTENT, $ANTIEXONSAMOUT, $ANTIINTRONSAMOUT);
 if ($print eq "true"){
-    open(EXONSAMOUT, ">$exon_sam_out");
+    open($EXONSAMOUT, "| /bin/gzip -c > $exon_sam_out") or die "error starting gzip $!";
     open(LC, ">$linecountfile");
-    open(INTRONSAMOUT, ">$intron_sam_out");
-    open(INTERGENIC, ">$intergenic_sam_out");
-    open(EXON_INCONSISTENT, ">$exon_inconsistent_sam_out");
+    open($INTRONSAMOUT, "| /bin/gzip -c >$intron_sam_out") or die "error starting gzip $!";
+    open($INTERGENIC, "| /bin/gzip -c >$intergenic_sam_out") or die "error starting gzip $!";
+    open($EXON_INCONSISTENT, "| /bin/gzip -c >$exon_inconsistent_sam_out") or die "error starting gzip $!";
     for (my $i=1; $i<=$max_exon;$i++){
         $exon_sam_outfile[$i] = $exon_sam_out;
-        $exon_sam_outfile[$i] =~ s/.sam$/.$i.sam/;
-        open($OUTFILE_EXON[$i], ">$exon_sam_outfile[$i]");
+        $exon_sam_outfile[$i] =~ s/.sam.gz$/.$i.sam.gz/;
+        open($OUTFILE_EXON[$i], "| /bin/gzip -c >$exon_sam_outfile[$i]") or die "error starting gzip $!";
     }
     for (my $i=1; $i<=$max_intron;$i++){
         $intron_sam_outfile[$i] = $intron_sam_out;
-        $intron_sam_outfile[$i] =~ s/.sam$/.$i.sam/;
-        open($OUTFILE_INTRON[$i], ">$intron_sam_outfile[$i]");
+        $intron_sam_outfile[$i] =~ s/.sam.gz$/.$i.sam.gz/;
+        open($OUTFILE_INTRON[$i], "| /bin/gzip -c >$intron_sam_outfile[$i]") or die "error starting gzip $!";
     }
     if ($stranded eq "true"){
         open(LC_A, ">$linecountfile_anti");
-        open(ANTIEXONSAMOUT, ">$exon_sam_out_anti");
-        open(ANTIINTRONSAMOUT, ">$intron_sam_out_anti");
+        open($ANTIEXONSAMOUT, "| /bin/gzip -c >$exon_sam_out_anti") or die "error starting gzip $!";
+        open($ANTIINTRONSAMOUT, "| /bin/gzip -c >$intron_sam_out_anti") or die "error starting gzip $!";
         for (my $i=1; $i<=$max_exon;$i++){
             $anti_exon_sam_outfile[$i] = $exon_sam_out_anti;
-            $anti_exon_sam_outfile[$i] =~ s/.sam$/.$i.sam/;
-            open($OUTFILE_EXON_A[$i], ">$anti_exon_sam_outfile[$i]");
+            $anti_exon_sam_outfile[$i] =~ s/.sam.gz$/.$i.sam.gz/;
+            open($OUTFILE_EXON_A[$i], "| /bin/gzip -c >$anti_exon_sam_outfile[$i]") or die "error starting gzip $!";
         }
         for (my $i=1; $i<=$max_intron;$i++){
             $anti_intron_sam_outfile[$i] = $intron_sam_out_anti;
-            $anti_intron_sam_outfile[$i] =~ s/.sam$/.$i.sam/;
-            open($OUTFILE_INTRON_A[$i], ">$anti_intron_sam_outfile[$i]");
+            $anti_intron_sam_outfile[$i] =~ s/.sam.gz$/.$i.sam.gz/;
+            open($OUTFILE_INTRON_A[$i], "| /bin/gzip -c >$anti_intron_sam_outfile[$i]") or die "error starting gzip $!";
         }
     }
 }
@@ -294,16 +315,16 @@ if ($filter eq "true"){
 	    my $highexp = $exon_sam_out;
 	    my $tmp = $exon;
 	    $tmp =~ s/:/./;
-	    $highexp =~ s/.sam$/.$tmp.sam/;
-	    open($OUT_HIGH_E{$exon}, ">$highexp");
+	    $highexp =~ s/.sam.gz$/.$tmp.sam.gz/;
+	    open($OUT_HIGH_E{$exon}, "| /bin/gzip -c >$highexp") or die "error starting gzip $!";
 	    $CNT_HIGH_E{$exon} = 0;
 	}
 	foreach my $exon (keys %HIGHEXP_E_A){
 	    my $highexp = $exon_sam_out_anti;
 	    my $tmp = $exon;
 	    $tmp =~ s/:/./;
-	    $highexp =~ s/.sam$/.$tmp.sam/;
-	    open($OUT_HIGH_E_A{$exon}, ">$highexp");
+	    $highexp =~ s/.sam.gz$/.$tmp.sam.gz/;
+	    open($OUT_HIGH_E_A{$exon}, "| /bin/gzip -c >$highexp") or die "error starting gzip $!";
 	    $CNT_HIGH_E_A{$exon} = 0;
 	}
     }
@@ -356,16 +377,16 @@ if ($filter eq "true"){
 	    my $highexp = $intron_sam_out;
 	    my $tmp = $intron;
 	    $tmp =~ s/:/./;
-	    $highexp =~ s/.sam$/.$tmp.sam/;
-	    open($OUT_HIGH_I{$intron}, ">$highexp");
+	    $highexp =~ s/.sam.gz$/.$tmp.sam.gz/;
+	    open($OUT_HIGH_I{$intron}, "| /bin/gzip -c >$highexp") or die "error starting gzip $!";
 	    $CNT_HIGH_I{$intron} = 0;
 	}
 	foreach my $intron (keys %HIGHEXP_I_A){
 	    my $highexp = $intron_sam_out_anti;
 	    my $tmp = $intron;
 	    $tmp =~ s/:/./;
-	    $highexp =~ s/.sam$/.$tmp.sam/;
-	    open($OUT_HIGH_I_A{$intron}, ">$highexp");
+	    $highexp =~ s/.sam.gz$/.$tmp.sam.gz/;
+	    open($OUT_HIGH_I_A{$intron}, "| /bin/gzip -c >$highexp") or die "error starting gzip $!";
 	    $CNT_HIGH_I_A{$intron} = 0;
 	}
     }
@@ -516,8 +537,13 @@ for (my $i=0;$i<=$max_intron;$i++){
 	$INTRON_FLAG_DIST_ANTI[$i] = 0;
     }
 }
-
-open(SAM, $samfile) or die "cannot find file \"$samfile\"\n";
+if ($samfile =~ /.gz$/){
+    my $pipecmd = "zcat $samfile";
+    open(SAM, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
+}
+else{
+    open(SAM, $samfile) or die "cannot open $samfile\n";
+}
 while(my $line = <SAM>){
     chomp($line);
     $total_lc++;
@@ -1011,7 +1037,7 @@ while(my $line = <SAM>){
     #exon
     if (($print eq "true") && ($print_exon eq "true")){
 	if ($exonFlag >= 1){
-	    print EXONSAMOUT "$line\n";
+	    print $EXONSAMOUT "$line\n";
 	    for (my $i=1; $i<$max_exon;$i++){
 		if ($exonFlag == $i){
 		    $exon_outfile_cnt[$i]++;
@@ -1033,7 +1059,7 @@ while(my $line = <SAM>){
     #antisense-exon
     if (($print eq "true") && ($print_exon_A eq "true")){
 	if ($AexonFlag >= 1){
-	    print ANTIEXONSAMOUT "$line\n";
+	    print $ANTIEXONSAMOUT "$line\n";
 	    for (my $i=1; $i<$max_exon;$i++){
                 if ($AexonFlag == $i){
                     $A_exon_outfile_cnt[$i]++;
@@ -1055,7 +1081,7 @@ while(my $line = <SAM>){
     #intron
     if (($print eq "true") && ($print_intron eq "true")){
         if ($intronFlag >= 1){
-            print INTRONSAMOUT "$line\n";
+            print $INTRONSAMOUT "$line\n";
             for (my $i=1; $i<$max_intron;$i++){
                 if ($intronFlag == $i){
 		    $intron_outfile_cnt[$i]++;
@@ -1074,7 +1100,7 @@ while(my $line = <SAM>){
     #antisense-intron
     if (($print eq "true") && ($print_intron_A eq "true")){
         if ($AintronFlag >= 1){
-            print ANTIINTRONSAMOUT "$line\n";
+            print $ANTIINTRONSAMOUT "$line\n";
             for (my $i=1; $i<$max_intron;$i++){
                 if ($AintronFlag == $i){
                     $A_intron_outfile_cnt[$i]++;
@@ -1094,14 +1120,14 @@ while(my $line = <SAM>){
 	if (($print_exon eq "true") && ($print_intron eq "true")&& ($print_exon_A eq "true")&& ($print_intron_A eq "true")){ # read doesn't map to high expressers
 	    #exon_inconsistent reads
 	    if (($intronFlag eq '0') && ($exonFlag eq '0') && ($igFlag eq '0') && ($AexonFlag eq '0') && ($AintronFlag eq "0")){
-		print EXON_INCONSISTENT "$line\n";
+		print $EXON_INCONSISTENT "$line\n";
 		$eiFlag++;
 		$exon_inconsistent_outfile_cnt++;
 		$ex_inc_only++; #exon-inconsistent-only
 	    }
 	    #intergenic region
 	    if ($igFlag >= 1){           
-		print INTERGENIC "$line\n";
+		print $INTERGENIC "$line\n";
 		$ig_outfile_cnt++;
 		$ig_only++; #intergenic only
 	    }
@@ -1195,10 +1221,10 @@ if ($print eq "true"){
         }
     }
     print LC "$intergenic_sam_out\t$ig_outfile_cnt\n";
-    print INTERGENIC "line count = $ig_outfile_cnt\n";
+    print $INTERGENIC "line count = $ig_outfile_cnt\n";
 
     print LC "$exon_inconsistent_sam_out\t$exon_inconsistent_outfile_cnt\n";
-    print EXON_INCONSISTENT "line count = $exon_inconsistent_outfile_cnt\n";
+    print $EXON_INCONSISTENT "line count = $exon_inconsistent_outfile_cnt\n";
 
     foreach my $exon (keys %HIGHEXP_E){
 	print {$OUT_HIGH_E{$exon}} "line count = $CNT_HIGH_E{$exon}\n";
@@ -1289,14 +1315,14 @@ if ($stranded eq "true"){
     }
 }
 if ($print eq "true"){
-    close(EXONSAMOUT);
+    close($EXONSAMOUT);
     close(LC);
-    close(INTRONSAMOUT);
-    close(INTERGENIC);
+    close($INTRONSAMOUT);
+    close($INTERGENIC);
     if ($stranded eq "true"){
-	close(ANTIEXONSAMOUT);
+	close($ANTIEXONSAMOUT);
 	close(LC_A);
-	close(ANTIINTRONSAMOUT);
+	close($ANTIINTRONSAMOUT);
     }
 }
 print "got here\n";

@@ -111,9 +111,9 @@ while(my $line = <INFILE>){
     my $dirU = $dir . "/GNORM/Unique";
     my $dirNU = $dir . "/GNORM/NU";
     my $id = $line;
-    my $fileU = "$LOC/$dirU/$id.filtered_u.sam";
+    my $fileU = "$LOC/$dirU/$id.filtered_u.sam.gz";
     my $fileU2 = "$LOC/$dirU/$id.filtered_u.genes.linecount.txt";
-    my $fileNU = "$LOC/$dirNU/$id.filtered_nu.sam";
+    my $fileNU = "$LOC/$dirNU/$id.filtered_nu.sam.gz";
     my $fileNU2 = "$LOC/$dirNU/$id.filtered_nu.genes.linecount.txt";
     my ($fileU2_A, $fileNU2_A);
     if ($stranded eq "true"){
@@ -123,7 +123,7 @@ while(my $line = <INFILE>){
 	$fileNU2_A = "$LOC/$dirNU/$id.filtered_nu.genes.antisense.linecount.txt";
     }
     if($U eq "true") {
-	my $xU = `wc -l $fileU`;
+	my $xU = `zcat $fileU|wc -l`;
 	chomp($xU);
 	my @x = split(" ", $xU);
 	my $totalU = $x[0];
@@ -143,7 +143,7 @@ while(my $line = <INFILE>){
 	}
     }
     if ($NU eq "true"){
-	my $xNU = `wc -l $fileNU`;
+	my $xNU = `zcat $fileNU | wc -l`;
 	chomp($xNU);
 	my @x = split(" ", $xNU);
 	my $totalNU = $x[0];

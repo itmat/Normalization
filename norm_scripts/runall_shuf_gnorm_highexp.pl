@@ -402,9 +402,9 @@ while(my $id = <INFILE>) {
 		    my $N = $c[1];
 		    chomp($N);
 		    $total_lc = $N;
-		    my $filename_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.$gene.sam";
+		    my $filename_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.$gene.sam.gz";
 		    my $outfile_U = $filename_U;
-		    $outfile_U =~ s/.sam$/.norm.sam/i;
+		    $outfile_U =~ s/.sam.gz$/.norm.sam.gz/i;
 		    if (-e "$outfile_U"){
 			`rm $outfile_U`;
 		    }
@@ -416,10 +416,10 @@ while(my $id = <INFILE>) {
 			}
 			open(OUTU, ">$shfile");
 			if ($se eq "false"){
-			    print OUTU "perl $path/run_shuf_gnorm.pl $filename_U $total_lc $toshuf > $outfile_U\n";
+			    print OUTU "perl $path/run_shuf_gnorm.pl $filename_U $total_lc $toshuf $outfile_U\n";
 			}
 			if ($se eq "true"){
-			    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $toshuf > $outfile_U\n";
+			    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $toshuf $outfile_U\n";
 			}
 			print OUTU "echo \"got here\"\n";
 			close(OUTU);
@@ -485,9 +485,9 @@ while(my $id = <INFILE>) {
 		    my $N = $c[1];
 		    chomp($N);
 		    $total_lc = $N;
-		    my $filename_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.$gene.sense.sam";
+		    my $filename_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.$gene.sense.sam.gz";
 		    my $outfile_U = $filename_U;
-		    $outfile_U =~ s/.sam$/.norm.sam/i;
+		    $outfile_U =~ s/.sam.gz$/.norm.sam.gz/i;
 		    if (-e "$outfile_U"){
 			`rm $outfile_U`;
 		    }
@@ -499,10 +499,10 @@ while(my $id = <INFILE>) {
 			}
 			open(OUTU, ">$shfile");
 			if ($se eq "false"){
-			    print OUTU "perl $path/run_shuf_gnorm.pl $filename_U $total_lc $toshuf > $outfile_U\n";
+			    print OUTU "perl $path/run_shuf_gnorm.pl $filename_U $total_lc $toshuf $outfile_U\n";
 			}
 			if ($se eq "true"){
-			    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $toshuf > $outfile_U\n";
+			    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $toshuf $outfile_U\n";
 			}
 			print OUTU "echo \"got here\"\n";
 			close(OUTU);
@@ -566,9 +566,9 @@ while(my $id = <INFILE>) {
 			my $N = $c[1];
 			chomp($N);
 			$total_lc = $N;
-			my $filename_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.$gene.antisense.sam";
+			my $filename_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.$gene.antisense.sam.gz";
 			my $outfile_U = $filename_U;
-			$outfile_U =~ s/.sam$/.norm.sam/i;
+			$outfile_U =~ s/.sam.gz$/.norm.sam.gz/i;
 			if (-e "$outfile_U"){
 			    `rm $outfile_U`;
 			}
@@ -580,10 +580,10 @@ while(my $id = <INFILE>) {
 			    }
 			    open(OUTU, ">$shfile");
 			    if ($se eq "false"){
-				print OUTU "perl $path/run_shuf_gnorm.pl $filename_U $total_lc $toshuf > $outfile_U\n";
+				print OUTU "perl $path/run_shuf_gnorm.pl $filename_U $total_lc $toshuf $outfile_U\n";
 			    }
 			    if ($se eq "true"){
-				print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $toshuf > $outfile_U\n";
+				print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $toshuf $outfile_U\n";
 			    }
 			    print OUTU "echo \"got here\"\n";
 			    close(OUTU);
@@ -650,9 +650,9 @@ while(my $id = <INFILE>) {
 		    my $N = $c[1];
 		    chomp($N);
 		    $total_lc = $N;
-		    my $filename_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.$gene.sam";
+		    my $filename_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.$gene.sam.gz";
 		    my $outfile_NU = $filename_NU;
-		    $outfile_NU =~ s/.sam$/.norm.sam/i;
+		    $outfile_NU =~ s/.sam.gz$/.norm.sam.gz/i;
 		    if (-e "$outfile_NU"){
 			`rm $outfile_NU`;
 		    }
@@ -664,10 +664,10 @@ while(my $id = <INFILE>) {
 			}
 			open(OUTNU, ">$shfile");
 			if ($se eq "false"){
-			    print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU $total_lc $toshuf > $outfile_NU\n";
+			    print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU $total_lc $toshuf $outfile_NU\n";
 			}
 			if ($se eq "true"){
-			    print OUTNU "perl $path/run_shuf.pl $filename_NU $total_lc $toshuf > $outfile_NU\n";
+			    print OUTNU "perl $path/run_shuf.pl $filename_NU $total_lc $toshuf $outfile_NU\n";
 			}
 			print OUTNU "echo \"got here\"\n";
 			close(OUTNU);
@@ -733,9 +733,9 @@ while(my $id = <INFILE>) {
 		    my $N = $c[1];
 		    chomp($N);
 		    $total_lc = $N;
-		    my $filename_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.$gene.sense.sam";
+		    my $filename_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.$gene.sense.sam.gz";
 		    my $outfile_NU = $filename_NU;
-		    $outfile_NU =~ s/.sam$/.norm.sam/i;
+		    $outfile_NU =~ s/.sam.gz$/.norm.sam.gz/i;
 		    if (-e "$outfile_NU"){
 			`rm $outfile_NU`;
 		    }
@@ -747,10 +747,10 @@ while(my $id = <INFILE>) {
 			}
 			open(OUTNU, ">$shfile");
 			if ($se eq "false"){
-			    print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU $total_lc $toshuf > $outfile_NU\n";
+			    print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU $total_lc $toshuf $outfile_NU\n";
 			}
 			if ($se eq "true"){
-			    print OUTNU "perl $path/run_shuf.pl $filename_NU $total_lc $toshuf > $outfile_NU\n";
+			    print OUTNU "perl $path/run_shuf.pl $filename_NU $total_lc $toshuf $outfile_NU\n";
 			}
 			print OUTNU "echo \"got here\"\n";
 			close(OUTNU);
@@ -815,9 +815,9 @@ while(my $id = <INFILE>) {
 		    my $N = $c[1];
 		    chomp($N);
 		    $total_lc = $N;
-		    my $filename_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.$gene.antisense.sam";
+		    my $filename_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.$gene.antisense.sam.gz";
 		    my $outfile_NU = $filename_NU;
-		    $outfile_NU =~ s/.sam$/.norm.sam/i;
+		    $outfile_NU =~ s/.sam.gz$/.norm.sam.gz/i;
 		    if (-e "$outfile_NU"){
 			`rm $outfile_NU`;
 		    }
@@ -829,10 +829,10 @@ while(my $id = <INFILE>) {
 			}
 			open(OUTNU, ">$shfile");
 			if ($se eq "false"){
-			    print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU $total_lc $toshuf > $outfile_NU\n";
+			    print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU $total_lc $toshuf $outfile_NU\n";
 			}
 			if ($se eq "true"){
-			    print OUTNU "perl $path/run_shuf.pl $filename_NU $total_lc $toshuf > $outfile_NU\n";
+			    print OUTNU "perl $path/run_shuf.pl $filename_NU $total_lc $toshuf $outfile_NU\n";
 			}
 			print OUTNU "echo \"got here\"\n";
 			close(OUTNU);

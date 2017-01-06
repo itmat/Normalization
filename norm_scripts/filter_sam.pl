@@ -111,18 +111,18 @@ and non-unique by default so if that's what you want don't use either arg
 -u or -nu.
 ";
 }
-
+my ($OUTFILEU, $OUTFILENU);
 if ($U eq "true"){
     unless(-d "$outdir/Unique"){
 	`mkdir -p $outdir/Unique`;
     }
-    open(OUTFILEU, ">$outfileU") or die "file '$outfileU' cannot open for writing\n"; # the output file
+    open($OUTFILEU, "| /bin/gzip -c >$outfileU.gz") or die "file '$outfileU.gz' cannot open for writing\n"; # the output file
 }
 if ($NU eq "true"){
     unless(-d "$outdir/NU"){
         `mkdir -p $outdir/NU`;
     }
-    open(OUTFILENU, ">$outfileNU") or die "file '$outfileNU' cannot open for writing\n";
+    open($OUTFILENU, "| /bin/gzip -c >$outfileNU.gz") or die "file '$outfileNU.gz' cannot open for writing\n";
 }
 
 my $ribofile = $ARGV[2]; # file with id's that have the ribo reads
@@ -254,13 +254,13 @@ while(my $forward = <INFILE>) {
 
 	if($U eq "true") {
 	    if($Nf == 1 && $Nr == 1 && $F[5] ne '*' && $R[5] ne '*') {
-		print OUTFILEU "$forward\n";
+		print $OUTFILEU "$forward\n";
 		$cntU++;
 	    }
 	} 
 	if($NU eq "true") {
 	    if($Nf != 1 && $Nr != 1 && $F[5] ne '*' && $R[5] ne '*') {
-		print OUTFILENU "$forward\n";
+		print $OUTFILENU "$forward\n";
 		$cntNU++;
 	    }
 	}
@@ -295,20 +295,20 @@ while(my $forward = <INFILE>) {
         $Nf = $2;
 	if($U eq "true") {
             if($Nf == 1  && $F[5] ne '*') {
-                print OUTFILEU "$forward\n";
+                print $OUTFILEU "$forward\n";
 		$cntU++;
             }
         }
 	if($NU eq "true") {
             if($Nf != 1 && $F[5] ne '*') {
-                print OUTFILENU "$forward\n";
+                print $OUTFILENU "$forward\n";
                 $cntNU++;
             }
 	}
     }
 }
 close(INFILE);
-close(OUTFILEU);
-close(OUTFILENU);
+close($OUTFILEU);
+close($OUTFILENU);
 
 print "got here\n";

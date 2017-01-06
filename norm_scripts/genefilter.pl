@@ -52,25 +52,22 @@ my %ID_A;
 my ($genesfile_s, $genesfile_a, $genesfile_ns);
 
 
-
+my ($OUT_S, $OUT_A, $OUT_NS);
 if ($filter eq "false"){
-    open(GENE, $genesfile) or die "cannot find '$genesfile'\n";
-    my $header = <GENE>;
+    my $pipecmd = "zcat $genesfile";
+    open(GENE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
     if ($stranded eq "true"){
 	$genesfile_s = $genesfile;
-	$genesfile_s =~ s/.txt$/.genefilter.sense.txt/;
+	$genesfile_s =~ s/.txt.gz$/.genefilter.sense.txt.gz/;
 	$genesfile_a = $genesfile;
-	$genesfile_a =~ s/.txt$/.genefilter.antisense.txt/;
-	open(OUT_S, ">$genesfile_s");
-	print OUT_S "$header";
-	open(OUT_A, ">$genesfile_a");
-	print OUT_A "$header";
+	$genesfile_a =~ s/.txt.gz$/.genefilter.antisense.txt.gz/;
+	open($OUT_S, "| /bin/gzip -c >$genesfile_s") or die "error starting gzip $!";
+	open($OUT_A, "| /bin/gzip -c >$genesfile_a") or die "error starting gzip $!";
     }
     else{
 	$genesfile_ns = $genesfile;
-	$genesfile_ns =~ s/.txt$/.genefilter.txt/;
-	open(OUT_NS, ">$genesfile_ns");
-	print OUT_NS "$header";
+	$genesfile_ns =~ s/.txt.gz$/.genefilter.txt.gz/;
+	open($OUT_NS, "| /bin/gzip -c > $genesfile_ns") or die "error starting gzip $!" ;
     }
     while (my $forward = <GENE>){
 	if ($pe eq "true"){
@@ -109,17 +106,17 @@ if ($filter eq "false"){
 		}
 		if ($mapped eq "true"){
                     my @f = split(/\t/, $forward);
-                    print OUT_NS "$f[0]\t$f[1]\t$new_geneid_ns\t";
+                    print $OUT_NS "$f[0]\t$f[1]\t$new_geneid_ns\t";
                     for(my $i=3;$i<@f;$i++){
-                        print OUT_NS "$f[$i]\t";
+                        print $OUT_NS "$f[$i]\t";
                     }
-                    print OUT_NS "\n";
+                    print $OUT_NS "\n";
                     my @r = split(/\t/, $reverse);
-                    print OUT_NS "$r[0]\t$r[1]\t$new_geneid_ns\t";
+                    print $OUT_NS "$r[0]\t$r[1]\t$new_geneid_ns\t";
                     for(my $i=3;$i<@r;$i++){
-                        print OUT_NS "$r[$i]\t";
+                        print $OUT_NS "$r[$i]\t";
                     }
-                    print OUT_NS "\n";
+                    print $OUT_NS "\n";
 		    push (@{$ID{$id_f}}, $ih_hi_f);
 		}
 	    }
@@ -168,32 +165,32 @@ if ($filter eq "false"){
 		}
 		if ($sense eq "true"){
 		    my @f = split(/\t/, $forward);
-		    print OUT_S "$f[0]\t$f[1]\t$new_geneid_s\t";
+		    print $OUT_S "$f[0]\t$f[1]\t$new_geneid_s\t";
 		    for(my $i=3;$i<@f;$i++){
-			print OUT_S "$f[$i]\t";
+			print $OUT_S "$f[$i]\t";
 		    }
-		    print OUT_S "\n";
+		    print $OUT_S "\n";
 		    my @r = split(/\t/, $reverse);
-                    print OUT_S "$r[0]\t$r[1]\t$new_geneid_s\t";
+                    print $OUT_S "$r[0]\t$r[1]\t$new_geneid_s\t";
 		    for(my $i=3;$i<@r;$i++){
-			print OUT_S "$r[$i]\t";
+			print $OUT_S "$r[$i]\t";
                     }
-                    print OUT_S "\n";
+                    print $OUT_S "\n";
 		    push (@{$ID{$id_f}}, $ih_hi_f);
 		}
 		elsif ($anti eq "true"){
                     my @f = split(/\t/, $forward);
-                    print OUT_A "$f[0]\t$f[1]\t$new_geneid_a\t";
+                    print $OUT_A "$f[0]\t$f[1]\t$new_geneid_a\t";
                     for(my $i=3;$i<@f;$i++){
-                        print OUT_A "$f[$i]\t";
+                        print $OUT_A "$f[$i]\t";
                     }
-                    print OUT_A "\n";
+                    print $OUT_A "\n";
                     my @r = split(/\t/, $reverse);
-                    print OUT_A "$r[0]\t$r[1]\t$new_geneid_a\t";
+                    print $OUT_A "$r[0]\t$r[1]\t$new_geneid_a\t";
                     for(my $i=3;$i<@r;$i++){
-                        print OUT_A "$r[$i]\t";
+                        print $OUT_A "$r[$i]\t";
                     }
-                    print OUT_A "\n";
+                    print $OUT_A "\n";
 		    push (@{$ID_A{$id_f}}, $ih_hi_f);
 		}
 
@@ -209,7 +206,7 @@ if ($filter eq "false"){
 		next;
 	    }
 	    if ($stranded eq "false"){
-		print OUT_NS "$forward\n";
+		print $OUT_NS "$forward\n";
 		push (@{$ID{$id_f}}, $ih_hi_f);
 	    }
 	    if ($stranded eq "true"){
@@ -243,36 +240,40 @@ if ($filter eq "false"){
 		}
 		if ($sense eq "true"){
                     my @f = split(/\t/, $forward);
-                    print OUT_S "$f[0]\t$f[1]\t$new_geneid_s\t";
+                    print $OUT_S "$f[0]\t$f[1]\t$new_geneid_s\t";
                     for(my $i=3;$i<@f;$i++){
-                        print OUT_S "$f[$i]\t";
+                        print $OUT_S "$f[$i]\t";
                     }
-                    print OUT_S "\n";
+                    print $OUT_S "\n";
 		    push (@{$ID{$id_f}}, $ih_hi_f);
 		}
 		elsif ($anti eq "true"){
                     my @f = split(/\t/, $forward);
-                    print OUT_A "$f[0]\t$f[1]\t$new_geneid_a\t";
+                    print $OUT_A "$f[0]\t$f[1]\t$new_geneid_a\t";
                     for(my $i=3;$i<@f;$i++){
-			print OUT_A "$f[$i]\t";
+			print $OUT_A "$f[$i]\t";
                     }
-                    print OUT_A "\n";
+                    print $OUT_A "\n";
 		    push (@{$ID_A{$id_f}}, $ih_hi_f);
 		}
 	    }
 	}
     }
     close(GENE);
-    close(OUT_A);
-    close(OUT_S);
-    close(OUT_NS);
+    if ($stranded eq "true"){
+	close($OUT_A);
+	close($OUT_S);
+    }
+    else{
+	close($OUT_NS);
+    }
 }
 if ($filter eq "true"){
     if ($stranded eq "false"){
 	$genesfile_ns = $genesfile;
-	$genesfile_ns =~ s/.txt$/.genefilter.filter_highexp.txt/;
-	open(GENE, $genesfile_ns);
-	my $header = <GENE>;
+	$genesfile_ns =~ s/.txt.gz$/.genefilter.filter_highexp.txt.gz/;
+	my $pipecmd = "zcat $genesfile_ns";
+	open(GENE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 	while (my $forward = <GENE>){
 	    if ($pe eq "true"){
 		chomp($forward);
@@ -310,11 +311,11 @@ if ($filter eq "true"){
     }
     if ($stranded eq "true"){
 	$genesfile_s = $genesfile;
-	$genesfile_s =~ s/.txt$/.genefilter.sense.filter_highexp.txt/;
+	$genesfile_s =~ s/.txt.gz$/.genefilter.sense.filter_highexp.txt.gz/;
 	$genesfile_a = $genesfile;
-	$genesfile_a =~ s/.txt$/.genefilter.antisense.filter_highexp.txt/;
-	open(GENE, $genesfile_s);
-        my $header = <GENE>;
+	$genesfile_a =~ s/.txt.gz$/.genefilter.antisense.filter_highexp.txt.gz/;
+	my $pipecmd = "zcat $genesfile_s";
+	open(GENE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
         while (my $forward = <GENE>){
             if ($pe eq "true"){
                 chomp($forward);
@@ -349,8 +350,8 @@ if ($filter eq "true"){
             }
         }
         close(GENE);
-        open(GENE, $genesfile_a);
-        $header = <GENE>;
+	my $pipecmd2 = "zcat $genesfile_a";
+	open(GENE, '-|', $pipecmd2) or die "Opening pipe [$pipecmd2]: $!\n+";
         while (my $forward = <GENE>){
             if ($pe eq "true"){
                 chomp($forward);
@@ -387,21 +388,30 @@ if ($filter eq "true"){
         close(GENE);
     }
 }
-open(IN, $samfile) or die "cannot find '$samfile'\n";
+if ($samfile =~ /.gz$/){
+    my $pipecmd = "zcat $samfile";
+    open(IN, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
+}
+else{
+    open(IN, $samfile) or die "cannot open $samfile\n";
+}
 my $linecount = $output;
 my $lc = 0;
 my ($output_a, $linecount_a, $lc_a);
 if ($stranded eq "true"){
     $output_a = $output;
+    $output_a =~ s/.sam.gz$/.antisense.sam.gz/i;
+    $output =~ s/.sam.gz$/.sense.sam.gz/i;
     $output_a =~ s/.sam$/.antisense.sam/i;
     $output =~ s/.sam$/.sense.sam/i;
     $linecount = $output;
     $linecount_a = $output_a;
     $lc_a = 0;
 }
-open(OUT, ">$output");
+open(my $OUT, "| /bin/gzip -c >$output") or die "error starting gzip $!";
+my $OUT_AA;
 if ($stranded eq "true"){
-    open(OUT_A, ">$output_a");
+    open($OUT_AA, "| /bin/gzip -c > $output_a")or die "error starting gzip $!";
 }
 while(my $read = <IN>){
     chomp($read);
@@ -418,7 +428,7 @@ while(my $read = <IN>){
     if (exists $ID{$id}){
 	for (my $i=0; $i<@{$ID{$id}};$i++){
 	    if ("$ID{$id}[$i]" eq "$ih_hi"){
-		print OUT "$read\n";
+		print $OUT "$read\n";
 		$lc++;
 	    }
 	}
@@ -427,7 +437,7 @@ while(my $read = <IN>){
 	if (exists $ID_A{$id}){
 	    for (my $i=0; $i<@{$ID_A{$id}};$i++){
 		if ("$ID_A{$id}[$i]" eq "$ih_hi"){
-		    print OUT_A "$read\n";
+		    print $OUT_AA "$read\n";
 		    $lc_a++;
 		}
 	    }
@@ -435,17 +445,19 @@ while(my $read = <IN>){
     }
 }
 close(IN);
-close(OUT);
-close(OUT_A);
-$linecount =~ s/sam$/linecount.txt/;
+close($OUT);
+if ($stranded eq "true"){
+    close($OUT_AA);
+}
+$linecount =~ s/sam.gz$/linecount.txt/;
 open(LC, ">$linecount");
 print LC "$output\t$lc\n";
 close(LC);
 if ($stranded eq "true"){
-    $linecount_a =~ s/sam$/linecount.txt/;
+    $linecount_a =~ s/sam.gz$/linecount.txt/;
     open(LC_A, ">$linecount_a");
     print LC_A "$output_a\t$lc_a\n";
     close(LC_A);
 }
-#`rm $genesfile`;
+
 print "got here\n";

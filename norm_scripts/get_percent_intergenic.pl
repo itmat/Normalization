@@ -70,7 +70,8 @@ unless (-d $stats_dir){
     `mkdir -p $stats_dir`;}
 my $outfileU = "$stats_dir/percent_intergenic_Unique.txt";
 my $outfileNU = "$stats_dir/percent_intergenic_NU.txt";
-
+my $ig_lc_U = "$study_dir/STATS/lineCounts/intergenic.unique.lc.txt";
+my $ig_lc_NU = "$study_dir/STATS/lineCounts/intergenic.nu.lc.txt";
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; 
 if ($U eq "true"){
@@ -86,20 +87,19 @@ while(my $line = <INFILE>){
     my $dir = $line;
     my $dirU = $dir . "/EIJ/Unique";
     my $dirNU = $dir . "/EIJ/NU";
+    $dir = "/" . $dir . "/";
     my $id = $line;
     my $fileU = "$LOC/$dirU/$id.filtered_u.exonquants";
     if ($stranded eq "true"){
 	$fileU = "$LOC/$dirU/sense/$id.filtered_u.sense.exonquants";
     }
-    my $interU = "$LOC/$dirU/$id.filtered_u_intergenicmappers.sam";
     my $fileNU = "$LOC/$dirNU/$id.filtered_nu.exonquants";
     if ($stranded eq "true"){
 	$fileNU = "$LOC/$dirNU/sense/$id.filtered_nu.sense.exonquants";
     }
-    my $interNU = "$LOC/$dirNU/$id.filtered_nu_intergenicmappers.sam";
     if ($U eq "true"){
 	my ($xU, $tot_interU, $tot_nonexonU, $tot_exonU, $ratioU);
-	$xU = `tail -1 $interU`;
+	$xU = `grep -F $dir $ig_lc_U`;
 	$xU =~ /(\d+)$/;
 	$tot_interU = $1;
 	$xU = `head -4 $fileU | tail -1`;
@@ -108,13 +108,14 @@ while(my $line = <INFILE>){
 	$xU = `head -1 $fileU`;
 	$xU =~ /(\d+)$/;
 	$tot_exonU = $1;
+#	print "$dir\ntotexonU:$tot_exonU\ttotnonexonU:$tot_nonexonU\ntotinterg:$tot_interU\n";
 	$ratioU = int($tot_interU / ($tot_exonU + $tot_nonexonU) * 10000) / 100;
 	$ratioU = sprintf("%.2f", $ratioU);
-	print OUTU "$dir\t$ratioU\n";
+	print OUTU "$id\t$ratioU\n";
     }
     if ($NU eq "true"){
 	my ($xNU, $tot_interNU, $tot_nonexonNU, $tot_exonNU, $ratioNU);
-        $xNU = `tail -1 $interNU`;
+        $xNU = `grep -F $dir $ig_lc_NU`;
         $xNU =~ /(\d+)$/;
         $tot_interNU = $1;
 	$xNU = `head -4 $fileNU | tail -1`;
@@ -125,7 +126,7 @@ while(my $line = <INFILE>){
         $tot_exonNU = $1;
         $ratioNU = int($tot_interNU / ($tot_exonNU + $tot_nonexonNU) * 10000) / 100;
 	$ratioNU = sprintf("%.2f", $ratioNU);
-	print OUTNU "$dir\t$ratioNU\n";
+	print OUTNU "$id\t$ratioNU\n";
     }
 }
 close(INFILE);

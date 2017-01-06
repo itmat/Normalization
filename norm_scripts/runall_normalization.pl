@@ -1,5 +1,8 @@
 #!/usr/bin/env perl
 #use warnings;
+use FindBin qw($Bin);
+use lib ("$Bin/lib", "$Bin/lib/perl5");
+use Net::SSH qw(ssh);
 
 my $USAGE =  "\nUsage: perl runall_normalization.pl --sample_dirs <file of sample_dirs> --loc <s> --unaligned <file of fa/fqfiles> --alignedfilename <s> --cfg <cfg file> [options]
 
@@ -538,6 +541,13 @@ if ($num_cluster ne '1'){
     die "ERROR: please specify which cluster you're using in your $cfg_file file\n";
 }
 
+#HEADNODE CHECK
+my $hn_only = "false";
+my $hn_option = "";
+unless ($HOST_NAME =~ /^$/){
+    $hn_only = "true";
+    $hn_option = "-headnode $HOST_NAME";
+}
 my $exon_list = "$LOC/master_list_of_exons.txt";
 my $novel_list = "$LOC/master_list_of_exons.$study.txt";
 my $gene_list = "$LOC/master_list_of_genes.txt";
@@ -582,7 +592,7 @@ if (-e $statsfile){
     }
 }
 open(LOG, ">>$logfile");
-print LOG "\nPORT v0.8.2a-beta\n";
+print LOG "\nPORT v0.8.3-beta\n";
 print LOG "\n*************\n$input\n*************\n";
 if (-e "$logdir/$study.runall_normalization.out"){
     `rm $logdir/$study.runall_normalization.out`;
@@ -616,6 +626,22 @@ if ($resume eq "true"){
 	my @b = split(" ", $get_name);
 	$name = $b[@b-1];
     }
+    # if resumed at runall_cat_genes_files (or runall_cat_genes_files_norm step), go back one step and start from 
+    # runall_sam2genes (or runall_sam2genes_2)
+    if ($name =~  /runall_cat_genes_files$/){
+	$cat_flag++;
+	my $tempname = $name;
+	$tempname =~ s/runall_cat_genes_files$/runall_sam2genes_gnorm/;
+	$name = $tempname;
+	
+    }
+    if ($name =~ /runall_cat_genes_files_norm$/){
+	$cat_flag++;
+	my $tempname = $name;
+	$tempname =~ s/runall_cat_genes_files_norm$/runall_sam2genes_gnorm_2/;
+	$name = $tempname;
+    }
+
     my @a = split(/\./, $name);
     $name_to_check = $a[@a-1];
     my $get_num = $last_step;
@@ -624,6 +650,17 @@ if ($resume eq "true"){
     if ($res_num =~ /^$/){
 	$res_num = 1;
 	print LOG "\nJob number not provided. Setting it to 1.\n";
+    }
+    else{
+	if ($cat_flag == 1){
+	    $res_num--;
+	    if ($name =~ /_2$/){
+		print LOG "\nCannot resume at runall_cat_genes_files_norm.\nResuming at the previous step...\n";
+	    }
+	    else{
+		print LOG "\nCannot resume at runall_cat_genes_files.\nResuming at the previous step...\n";
+	    }
+	}
     }
     $length = length($res_num) + length($name) + 3;
     print LOG "\nRESUME at $res_num \"$name\"\n==========";
@@ -854,7 +891,7 @@ if ($run_prepause eq "true"){
 	    while(qx{$stat | wc -l} > $maxjobs){
 		sleep(10);
 	    }
-	    $job = "echo \"perl $norm_script_dir/runall_runblast.pl $sample_dir $LOC $unaligned_file $norm_script_dir/ncbi-blast-2.2.30+ $rRNA $unaligned_type $unaligned_z $c_option $new_queue $cluster_max\" | $batchjobs $mem $jobname \"$study.runall_runblast\" -o $logdir/$study.runall_runblast.out -e $logdir/$study.runall_runblast.err";
+	    $job = "echo \"perl $norm_script_dir/runall_runblast.pl $sample_dir $LOC $unaligned_file $norm_script_dir/ncbi-blast-2.2.30+ $rRNA $unaligned_type $unaligned_z $c_option $new_queue $cluster_max $hn_option\" | $batchjobs $mem $jobname \"$study.runall_runblast\" -o $logdir/$study.runall_runblast.out -e $logdir/$study.runall_runblast.err";
 	    if ($resume eq "false"){
 		&clear_log($name_of_alljob, $err_name);
 		&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
@@ -933,11 +970,11 @@ if ($run_prepause eq "true"){
 	    $name_of_job = "$study.getribopercents";
 	    $err_name = "$name_of_job.err";
 	    if ($other eq "true"){
-		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_10G, $stat\\\"";
+		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_3G, $stat\\\"";
 		$new_queue = "";
 	    }
 	    else{
-		$new_queue = "-mem $queue_10G";
+		$new_queue = "-mem $queue_3G";
 	    }
 	    while(qx{$stat | wc -l} > $maxjobs){
 		sleep(10);
@@ -1014,12 +1051,16 @@ if ($run_prepause eq "true"){
         else{
             $new_queue = "-mem $queue_3G";
         }
-	my $numr = `wc -l $LOC/*/*ribosomalids.txt | sort -nrk 1 | head -2 | tail -1`;
+	my $numr = `sort -nrk 1 $study_dir/STATS/ribo_percents.txt | head -1`;
 	chomp($numr);
 	my @xnumr = split(" " , $numr);
 	my $maxribo = $xnumr[0];
+	$maxribo =~ s/\,//;
 	if ($maxribo > 15000000){
 	    $new_queue = "-mem $queue_6G";
+	    if ($maxribo > 30000000){
+		$new_queue = "-mem $queue_10G";
+	    }
 	}
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
@@ -1260,7 +1301,7 @@ if ($run_prepause eq "true"){
             if ($max_map > 100000000){
                 $new_queue = "-mem $queue_45G";
             }
-	    if ($max_map > 200000000){
+	    if ($max_map > 150000000){
 		$new_queue = "-mem $queue_60G";
 	    }
         }
@@ -1356,17 +1397,6 @@ if ($run_prepause eq "true"){
         else{
             $new_queue = "-mem $queue_10G";
         }
-
-        $number = `cut -f 2 $study_dir/STATS/total_num_reads.txt | sort -nr | head -1`;
-	chomp($number);
-        $number =~ s/,//g;
-        if ($number > 50000000){
-            $new_queue = "-mem $queue_15G";
-            if ($number > 100000000){
-                $new_queue = "-mem $queue_45G";
-            }
-        }
-
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
@@ -1575,7 +1605,7 @@ if ($run_prepause eq "true"){
 		if ($max_map > 100000000){
 		    $new_queue = "-mem $queue_45G";
 		}
-		if ($max_map > 200000000){
+		if ($max_map > 150000000){
 		    $new_queue = "-mem $queue_60G";
 		}
 	    }
@@ -1745,16 +1775,21 @@ if ($run_prepause eq "true"){
 	else{
 	    $new_queue = "-mem $queue_3G";
 	}
-        my $numr = `wc -l $LOC/*/*ribosomalids.txt | sort -nrk 1 | head -2 | tail -1`;
-	chomp($numr);
+        my $numr = `sort -nrk 1 $studydir/STATS/ribo_percents.txt | head -1`;
+        chomp($numr);
         my @xnumr = split(" " , $numr);
-        my $maxribo = $xnumr[0];
+	my $maxribo = $xnumr[0];
+	$maxribo =~ s/\,//;
         if ($maxribo > 15000000){
             $new_queue = "-mem $queue_6G";
+            if ($maxribo > 30000000){
+		$new_queue = "-mem $queue_10G";
+            }
         }
-	while(qx{$stat | wc -l} > $maxjobs){
-	    sleep(10);
-	}
+        while(qx{$stat | wc -l} > $maxjobs){
+            sleep(10);
+        }
+
 	$job = "echo \"perl $norm_script_dir/runall_filter.pl $sample_dir $LOC $alignedfilename $se $c_option $new_queue $cluster_max $use_chr_name -mito \\\"$mito\\\" $UONLY $b_option\" | $batchjobs $mem $jobname \"$study.runall_filtersam\" -o $logdir/$study.runall_filtersam.out -e $logdir/$study.runall_filtersam.err";
         if ($resume eq "false"){
             &clear_log($name_of_alljob, $err_name);
@@ -2552,8 +2587,24 @@ if ($run_prepause eq "true"){
                 print LOG "$exp_num_reads\n";
                 print LOG "See \"$study_dir/STATS/GENE/expected_num_reads_gnorm.txt\" \nand modify the list of sample directories (\"$sample_dir\") accordingly to get more reads.\n\n";
                 print LOG "(2) High Expressers\n";
-                print LOG "See \"$study_dir/STATS/GENE/percent_high_expresser_gene*txt\" \nIf the files do not exist, that means there were no high expressers.\nUse \"-cutoff_highexp <n>\" option to set/change the highexpresser cutoff value.\n(You may use -cutoff_highexp 100 to unfilter/keep the highexpressers.)\n\n";
-
+		my @highfiles = glob("$study_dir/STATS/GENE/percent_high_expresser_gene*txt");
+		my $highcnt = 0;
+		foreach my $highfile (@highfiles){
+		    my $x = `head -1 $highfile | awk wc -w`;
+		    chomp($x);
+		    if ($x > 1){
+			$highcnt++;
+		    }
+		}
+		if ($highcnt eq 0){
+		    if ($cutoff_he == 100){
+			$cutoff_he = 3;
+		    }
+		    print LOG "PORT did not find any highly expressed genes ($cutoff_he% used as cutoff).\n\n";
+		}
+		else{
+		    print LOG "See \"$study_dir/STATS/GENE/percent_high_expresser_gene*txt\" \nUse \"-cutoff_highexp <n>\" option to set/change the highexpresser cutoff value.\n(You may use -cutoff_highexp 100 to unfilter/keep the highexpressers.)\n\n";
+		}
 	    }
 	    if ($EIJ eq "true"){
 		$exp_num_reads = `grep -A 3 Expected $study_dir/STATS/EXON_INTRON_JUNCTION/expected_num_reads.txt | grep -A 3 estimate`;
@@ -2563,7 +2614,24 @@ if ($run_prepause eq "true"){
 		print LOG "$exp_num_reads\n";
 		print LOG "See \"$study_dir/STATS/EXON_INTRON_JUNCTION/expected_num_reads.txt\" \nand modify the list of sample directories (\"$sample_dir\") accordingly to get more reads.\n\n";
 		print LOG "(2) High Expressers\n";
-		print LOG "Check \"$study_dir/STATS/EXON_INTRON_JUNCTION/percent_high_expresser_*.txt\" \nIf the files do not exist, that means there were no high expressers.\nUse \"-cutoff_highexp <n>\" option to set/change the highexpresser cutoff value.\n(You may use -cutoff_highexp 100 to unfilter/keep the highexpressers.)\n\n";
+                my @highfiles = glob("$study_dir/STATS/EXON_INTRON_JUNCTION/percent_high_expresser_*txt");
+		my $highcnt = 0;
+		foreach my $highfile (@highfiles){
+                    my $x = `head -1 $highfile | wc -w`;
+                    chomp($x);
+                    if ($x > 1){
+			$highcnt++;
+                    }
+		}
+		if ($highcnt eq 0){
+		    if ($cutoff_he == 100){
+			$cutoff_he = 3;
+		    }
+                    print LOG "PORT did not find any highly expressed exons/introns ($cutoff_he% used as cutoff).\n\n";
+                }
+		else{
+		    print LOG "Check \"$study_dir/STATS/EXON_INTRON_JUNCTION/percent_high_expresser_*.txt\" \nUse \"-cutoff_highexp <n>\" option to set/change the highexpresser cutoff value.\n(You may use -cutoff_highexp 100 to unfilter/keep the highexpressers.)\n\n";
+		}
 	    }
 
 	    $default_input = `cat $shdir/runall_normalization.sh`;
@@ -2770,7 +2838,7 @@ if ($run_norm eq "true"){
 			if ($max_map > 100000000){
 			    $new_queue = "-mem $queue_45G";
 			}
-			if ($max_map > 200000000){
+			if ($max_map > 150000000){
 			    $new_queue = "-mem $queue_60G";
 			}
 		    }
@@ -2948,7 +3016,7 @@ if ($run_norm eq "true"){
             $max_lc = `cut -f 2 $LOC/*/GNORM/*/*linecount*txt | sort -nr | head -1`;
             if ($max_lc > 40000000){
                 $new_queue = "-mem $queue_30G";
-                if (100000000 > $max_lc){
+                if ($max_lc > 100000000){
 		    if ($max_lc <= 450000000){
 			$new_queue = "-mem $queue_45G";
 		    }
@@ -2995,7 +3063,7 @@ if ($run_norm eq "true"){
 		$max_lc = `cut -f 2 $LOC/*/GNORM/*/*linecount*txt | sort -nr | head -1`;
 		if ($max_lc > 40000000){
 		    $new_queue = "-mem $queue_10G";
-		    if (100000000 < $max_lc){
+		    if ($max_lc > 100000000){
 			if ($max_lc <= 300000000){
 			    $new_queue = "-mem $queue_30G";
 			}
@@ -3086,7 +3154,7 @@ if ($run_norm eq "true"){
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
-        $job = "echo \"perl $norm_script_dir/runall_sam2genes_gnorm.pl $sample_dir $LOC $ensGene $c_option $new_queue $cluster_max $strand_info $se -norm $normdir\" | $batchjobs $mem $jobname \"$study.runall_sam2genes_gnorm_2\" -o $logdir/$study.runall_sam2genes_gnorm_2.out -e $logdir/$study.runall_sam2genes_gnorm_2.err";
+        $job = "echo \"perl $norm_script_dir/runall_sam2genes_gnorm.pl $sample_dir $LOC $ensGene $c_option $new_queue $cluster_max $strand_info $se -norm $normdir -samtools $samtools\" | $batchjobs $mem $jobname \"$study.runall_sam2genes_gnorm_2\" -o $logdir/$study.runall_sam2genes_gnorm_2.out -e $logdir/$study.runall_sam2genes_gnorm_2.err";
         if ($resume eq "false"){
             &clear_log($name_of_alljob, $err_name);
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
@@ -3187,7 +3255,7 @@ if ($run_norm eq "true"){
 		if ($min_map > 100000000){
 		    $new_queue = "-mem $queue_45G";
 		}
-		if ($min_map > 200000000){
+		if ($min_map > 150000000){
 		    $new_queue = "-mem $queue_60G";
 		}
 	    }
@@ -3233,19 +3301,6 @@ if ($run_norm eq "true"){
         }
         else{
             $new_queue = "-mem $queue_10G";
-        }
-
-        $estimate = `grep Expected $study_dir/STATS/GENE/expected_num_reads_gnorm.txt | head -1`;
-        @a = split(":", $estimate);
-        $num = $a[1];
-        @b = split(" ", $num);
-        $number = $b[0];
-        $number =~ s/,//g;
-        if ($number > 50000000){
-            $new_queue = "-mem $queue_15G";
-            if ($number > 100000000){
-                $new_queue = "-mem $queue_45G";
-            }
         }
 
         while(qx{$stat | wc -l} > $maxjobs){
@@ -3817,14 +3872,14 @@ if ($run_norm eq "true"){
 	}
 	my $linecounts = "$LOC/*/EIJ/Unique/linecounts.txt";
 	if ($STRANDED =~ /^true/i){
-	    $linecounts = "$LOC/*/EIJ/Unique/linecounts.txt";
+	    $linecounts = "$LOC/*/EIJ/Unique/sense/linecounts.txt";
 	}
 	@g = glob("$linecounts");
 	if (@g ne '0'){
 	    $max_lc = `cut -f 2 $linecounts | sort -nr | head -1`;
 	    if ($max_lc > 30000000){
 		$new_queue = "-mem $queue_30G";
-                if (100000000 < $max_lc){
+                if ($max_lc > 100000000){
 		    if ($max_lc <= 450000000){
 			$new_queue = "-mem $queue_45G";
 		    }
@@ -3869,14 +3924,14 @@ if ($run_norm eq "true"){
 	    }
 	    my $linecounts = "$LOC/*/EIJ/Unique/linecounts.txt";
 	    if ($STRANDED =~ /^true/i){
-		$linecounts = "$LOC/*/EIJ/Unique/linecounts.txt";
+		$linecounts = "$LOC/*/EIJ/Unique/sense/linecounts.txt";
 	    }
 	    @g = glob("$linecounts");
 	    if (@g ne '0'){
 		$max_lc = `cut -f 2 $linecounts | sort -nr | head -1`;
 		if ($max_lc > 45000000){
 		    $new_queue = "-mem $queue_10G";
-		    if (100000000 < $max_lc){
+		    if ($max_lc > 100000000){
 			if ($max_lc <= 300000000){
 			    $new_queue = "-mem $queue_30G";
 			}
@@ -4169,7 +4224,9 @@ if ($run_norm eq "true"){
 	else{
 	    $new_queue = "-mem $queue_10G";
 	}
-	
+	if ($num_samples > 100){
+	    $new_queue = "-mem $queue_30G";
+	}
 	if ($num_samples > 500){
 	    $new_queue = "-mem $queue_60G";
 	}
@@ -4535,7 +4592,12 @@ sub parse_config_file () {
 
 sub onejob {
     my ($job, $name_of_job, $job_num) = @_;
-    `$job`;
+    if ($hn_only eq "true"){
+	ssh($HOST_NAME, $job);
+    }
+    else{
+	`$job`;
+    }
     my $date = `date`;
     print LOG "$job_num  \"$name_of_job\"\n\tSTARTED: $date";
 
@@ -4554,7 +4616,12 @@ sub runalljob{
     my ($job, $name_of_alljob, $name_of_job, $job_num, $err_name) =@_;
     my $out_name = $err_name;
     $out_name =~ s/err$/out/g;
-    `$job`;
+    if ($hn_only eq "true"){
+	ssh($HOST_NAME,$job);
+    }
+    else{
+        `$job`;
+    }
     my $date = `date`;
     print LOG "$job_num  \"$name_of_alljob\"\n\tSTARTED: $date";
 

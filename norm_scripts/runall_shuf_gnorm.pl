@@ -304,9 +304,9 @@ while(my $id = <INFILE>) {
     if ($U eq "true"){
 	if ($stranded eq "false"){
 	    my $total_lc = $LINECOUNTS_U{$id};
-	    my $filename_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.sam";
+	    my $filename_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.sam.gz";
 	    my $outfile_U = $filename_U;
-	    $outfile_U =~ s/.sam$/.norm.sam/i;
+	    $outfile_U =~ s/.sam.gz$/.norm.sam.gz/i;
 	    if (-e "$outfile_U"){
 		`rm $outfile_U`;
 	    }
@@ -315,10 +315,10 @@ while(my $id = <INFILE>) {
 	    if (($total_lc ne '0') && ($MIN_U ne '0')){
 		open(OUTU, ">$shfile");
 		if ($se eq "false"){
-		    print OUTU "perl $path/run_shuf_gnorm.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
+		    print OUTU "perl $path/run_shuf_gnorm.pl $filename_U $total_lc $MIN_U $outfile_U\n";
 		}
 		if ($se eq "true"){
-		    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
+		    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U $outfile_U\n";
 		}
 		print OUTU "echo \"got here\"\n";
 		close(OUTU);
@@ -331,9 +331,9 @@ while(my $id = <INFILE>) {
 	}
 	if ($stranded eq "true"){
 	    my $total_lc = $LINECOUNTS_U{$id};
-            my $filename_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.sense.sam";
+            my $filename_U = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.sense.sam.gz";
             my $outfile_U = $filename_U;
-	    $outfile_U =~ s/.sam$/.norm.sam/i;
+	    $outfile_U =~ s/.sam.gz$/.norm.sam.gz/i;
             if (-e "$outfile_U"){
                 `rm $outfile_U`;
             }
@@ -342,10 +342,10 @@ while(my $id = <INFILE>) {
             if (($total_lc ne '0') && ($MIN_U ne '0')){
                 open(OUTU, ">$shfile");
                 if ($se eq "false"){
-                    print OUTU "perl $path/run_shuf_gnorm.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
+                    print OUTU "perl $path/run_shuf_gnorm.pl $filename_U $total_lc $MIN_U $outfile_U\n";
 		}
                 if ($se eq "true"){
-                    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
+                    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U $outfile_U\n";
 		}
 		print OUTU "echo \"got here\"\n";
                 close(OUTU);
@@ -357,9 +357,9 @@ while(my $id = <INFILE>) {
             }
 	    #antisense
 	    my $total_lc_a = $LINECOUNTS_U_A{$id};
-            my $filename_U_A = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.antisense.sam";
+            my $filename_U_A = "$LOC/$id/GNORM/Unique/$id.filtered_u.genes.antisense.sam.gz";
             my $outfile_U_A = $filename_U_A;
-	    $outfile_U_A =~ s/.sam$/.norm.sam/i;
+	    $outfile_U_A =~ s/.sam.gz$/.norm.sam.gz/i;
             if (-e "$outfile_U_A"){
                 `rm $outfile_U_A`;
             }
@@ -368,10 +368,10 @@ while(my $id = <INFILE>) {
 	    if (($total_lc_a ne '0') && ($MIN_U_A ne '0')){
 		open(OUTU, ">$shfile_a");
                 if ($se eq "false"){
-                    print OUTU "perl $path/run_shuf_gnorm.pl $filename_U_A $total_lc_a $MIN_U_A > $outfile_U_A\n";
+                    print OUTU "perl $path/run_shuf_gnorm.pl $filename_U_A $total_lc_a $MIN_U_A $outfile_U_A\n";
                 }
                 if ($se eq "true"){
-                    print OUTU "perl $path/run_shuf.pl $filename_U_A $total_lc_a $MIN_U_A > $outfile_U_A\n";
+                    print OUTU "perl $path/run_shuf.pl $filename_U_A $total_lc_a $MIN_U_A $outfile_U_A\n";
                 }
                 print OUTU "echo \"got here\"\n";
                 close(OUTU);
@@ -386,9 +386,9 @@ while(my $id = <INFILE>) {
     if ($NU eq "true"){
 	if ($stranded eq "false"){
 	    my $total_lc = $LINECOUNTS_NU{$id};
-	    my $filename_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.sam";
+	    my $filename_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.sam.gz";
 	    my $outfile_NU = $filename_NU;
-	    $outfile_NU =~ s/.sam$/.norm.sam/i;
+	    $outfile_NU =~ s/.sam.gz$/.norm.sam.gz/i;
 	    if (-e "$outfile_NU"){
 		`rm $outfile_NU`;
 	    }
@@ -397,10 +397,10 @@ while(my $id = <INFILE>) {
 	    if (($total_lc ne '0') && ($MIN_NU ne '0')){
 		open(OUTNU, ">$shfile");
 		if ($se eq "false"){
-		    print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
+		    print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU $total_lc $MIN_NU $outfile_NU\n";
 		}
 		if ($se eq "true"){
-		    print OUTNU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
+		    print OUTNU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU $outfile_NU\n";
 		}
 		print OUTNU "echo \"got here\"\n";
 		close(OUTNU);
@@ -413,9 +413,9 @@ while(my $id = <INFILE>) {
 	}
 	if ($stranded eq "true"){
             my $total_lc = $LINECOUNTS_NU{$id};
-            my $filename_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.sense.sam";
+            my $filename_NU = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.sense.sam.gz";
             my $outfile_NU = $filename_NU;
-	    $outfile_NU =~ s/.sam$/.norm.sam/i;
+	    $outfile_NU =~ s/.sam.gz$/.norm.sam.gz/i;
 	    if (-e "$outfile_NU"){
 		`rm $outfile_NU`;
             }
@@ -424,10 +424,10 @@ while(my $id = <INFILE>) {
             if (($total_lc ne '0') && ($MIN_NU ne '0')){
                 open(OUTNU, ">$shfile");
                 if ($se eq "false"){
-                    print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
+                    print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU $total_lc $MIN_NU $outfile_NU\n";
 		}
                 if ($se eq "true"){
-                    print OUTNU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
+                    print OUTNU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU $outfile_NU\n";
 		}
                 print OUTNU "echo \"got here\"\n";
                 close(OUTNU);
@@ -439,9 +439,9 @@ while(my $id = <INFILE>) {
             }
 	    #antisense
 	    my $total_lc_a = $LINECOUNTS_NU_A{$id};
-            my $filename_NU_A = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.antisense.sam";
+            my $filename_NU_A = "$LOC/$id/GNORM/NU/$id.filtered_nu.genes.antisense.sam.gz";
             my $outfile_NU_A = $filename_NU_A;
-	    $outfile_NU_A =~ s/.sam$/.norm.sam/i;
+	    $outfile_NU_A =~ s/.sam.gz$/.norm.sam.gz/i;
             if (-e "$outfile_NU_A"){
                 `rm $outfile_NU_A`;
             }
@@ -450,10 +450,10 @@ while(my $id = <INFILE>) {
             if (($total_lc_a ne '0') && ($MIN_NU_A ne '0')){
 		open(OUTNU, ">$shfile_a");
 		if ($se eq "false"){
-                    print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU_A $total_lc_a $MIN_NU_A > $outfile_NU_A\n";
+                    print OUTNU "perl $path/run_shuf_gnorm.pl $filename_NU_A $total_lc_a $MIN_NU_A $outfile_NU_A\n";
 		}
                 if ($se eq "true"){
-                    print OUTNU "perl $path/run_shuf.pl $filename_NU_A $total_lc_a $MIN_NU_A > $outfile_NU_A\n";
+                    print OUTNU "perl $path/run_shuf.pl $filename_NU_A $total_lc_a $MIN_NU_A $outfile_NU_A\n";
 		}
                 print OUTNU "echo \"got here\"\n";
 		close(OUTNU);

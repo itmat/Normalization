@@ -94,75 +94,91 @@ if ($U eq "true"){
     unless (-d $filedir_u){
 	die "In/output directory $filedir_u does not exist\n";
     }
-    my $temp_prefix = "$filedir_u/sam2genes_temp.0";
+    my $temp_prefix = "$filedir_u/sam2genes_temp.";
     my $outfile = $filename_u;
-    $outfile =~ s/.sam$/.txt/;
+    $outfile =~ s/.sam$/.txt.gz/;
     if (-e $outfile){
 	`rm $outfile`;
     }
-    my $infile0 = $temp_prefix . "0.txt";
-    my $x = `cat $infile0 > $outfile`;
-    for (my $i=1;$i<=5;$i++){
-	my $infile = $temp_prefix . "$i.txt";
-	if (-e $infile){
-	    $x = `cat $infile | grep -v readID >> $outfile`;
-	}
+    my @list = glob("$temp_prefix*");
+    if (@list < 1){
+	die "ERROR: Cannot find sam2genes output files $temp_prefix*\n";
     }
+    my $string = "";
+    foreach my $infile(@list){
+	$string .= "$infile ";
+    }
+    my $x = `cat $string > $outfile`;
+    foreach my $infile(@list){
+	$x = `rm $infile`;
+   }
 }
 if ($NU eq "true"){
     unless (-d $filedir_nu){
 	die "In/output directory $filedir_nu does not exist\n";
     }
-    my $temp_prefix = "$filedir_nu/sam2genes_temp.0";
+    my $temp_prefix = "$filedir_nu/sam2genes_temp.";
     my $outfile = $filename_nu;
-    $outfile =~ s/.sam$/.txt/;
+    $outfile =~ s/.sam$/.txt.gz/;
     if (-e $outfile){
-	`rm $outfile`;
+        `rm $outfile`;
     }
-    my $infile0 = $temp_prefix . "0.txt";
-    my $x = `cat $infile0 > $outfile`;
-    for (my $i=1;$i<=5;$i++){
-	my $infile = $temp_prefix . "$i.txt";
-	if (-e $infile){
-	    $x = `cat $infile | grep -v readID >> $outfile`;
-	}
+    my @list = glob("$temp_prefix*");
+    if (@list <1){
+	die "ERROR: Cannot find sam2genes output files $temp_prefix*\n";
+    }
+    my $string = "";
+    foreach my $infile(@list){
+        $string.= "$infile ";
+    }
+    my $x = `cat $string > $outfile`;
+    foreach my $infile(@list){
+        $x = `rm $infile`;
     }
 }
 if ($norm eq "true"){
     unless (-d $filedir){
 	die "In/output directory $filedir does not exist\n";
     }
-    my $temp_prefix = "$filedir/$id.sam2genes_temp.0";
+    my $temp_prefix = "$filedir/$id.sam2genes_temp.";
     my $outfile = $filename;
-    $outfile =~ s/.sam$/.txt/;
+    $outfile =~ s/.sam$/.txt.gz/;
     if (-e $outfile){
-	`rm $outfile`;
+        `rm $outfile`;
     }
-    my $infile0 = $temp_prefix . "0.txt";
-    my $x = `cat $infile0 > $outfile`;
-    for (my $i=1;$i<=5;$i++){
-	my $infile = $temp_prefix . "$i.txt";
-	if (-e $infile){
-	    $x = `cat $infile | grep -v readID >> $outfile`;
-	}
+    my @list = glob("$temp_prefix*");
+    if (@list <1){
+	die "ERROR: Cannot find sam2genes output files $temp_prefix*\n";
+    }
+    my $string = "";
+    foreach my $infile(@list){
+        $string.= "$infile ";
+    }
+    my $x = `cat $string > $outfile`;
+    foreach my $infile(@list){
+        $x = `rm $infile`;
     }
     if ($stranded eq "true"){
 	unless (-d $filedir_a){
 	    die "In/output directory $filedir_a does not exist\n";
 	}
-	my $temp_prefix = "$filedir_a/$id.sam2genes_temp.0";
+	my $temp_prefix = "$filedir_a/$id.sam2genes_temp.";
 	my $outfile = $filename_a;
-	$outfile =~ s/.sam$/.txt/;
+	$outfile =~ s/.sam$/.txt.gz/;
 	if (-e $outfile){
 	    `rm $outfile`;
 	}
-	my $infile0 = $temp_prefix . "0.txt";
-	my $x = `cat $infile0 > $outfile`;
-	for (my $i=1;$i<=5;$i++){
-	    my $infile = $temp_prefix . "$i.txt";
-	    if (-e $infile){
-		$x = `cat $infile | grep -v readID >> $outfile`;
-	    }
+	my @list = glob("$temp_prefix*");
+	if (@list <1){
+	    die "ERROR: Cannot find sam2genes output files $temp_prefix*\n";
+	}
+	my $string = "";
+	foreach my $infile(@list){
+	    $string.= "$infile ";
+	}
+	my $x = `cat $string > $outfile`;
+	foreach my $infile(@list){
+	    $x = `rm $infile`;
 	}
     }
 }

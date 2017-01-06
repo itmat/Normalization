@@ -17,7 +17,8 @@ my $outfile = $ARGV[1];
 
 my %CHR;
 my $TOTAL = 0;
-open(IN, $samfile) or die "cannot find $samfile\n";
+my $pipecmd = "/bin/zcat $samfile";
+open(IN, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 while(my $line = <IN>){
     chomp($line);
     if ($line =~ /^@/){

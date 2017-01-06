@@ -96,6 +96,7 @@ sub main {
         "all-bed-out=s" => \(my $outfile2),
         "high-bed-out=s" => \(my $outfile3),
         "faok" => \(my $faok),
+        "gz" => \(my $gz),
         "strand=s" => \(my $userstrand),
         "signal=s" => \(my $signal),
         "minintron=s" => \(my $minintron = 15),
@@ -401,6 +402,10 @@ sub main {
         undef %goodoverlapNU;
 	if ($samtools){
 	    my $pipecmd = "$samtools view -h $sam";
+	    open(INFILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
+	}
+	elsif ($gz){
+	    my $pipecmd = "zcat $sam";
 	    open(INFILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 	}
 	else{

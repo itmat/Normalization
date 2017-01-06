@@ -158,19 +158,19 @@ while(my $line = <IN>){
     chomp($line);
     my ($sam, $sh, $logname, $jobname, $out);
     if ($eij eq "true"){
-	$sam = "$LOC/$line/EIJ/Unique/$line.filtered_u.sam";
+	$sam = "$LOC/$line/EIJ/Unique/$line.filtered_u.sam.gz";
 	$sh = "$shdir/numchrcnt.$line.sh";
 	$logname = "numchrcnt.$line";
 	$jobname = "$study.numchrcnt";
     }
     if ($gnorm eq "true"){
-	$sam = "$LOC/$line/GNORM/Unique/$line.filtered_u.sam";
+	$sam = "$LOC/$line/GNORM/Unique/$line.filtered_u.sam.gz";
         $sh = "$shdir/numchrcnt_gnorm.$line.sh";
         $logname = "numchrcnt_gnorm.$line";
 	$jobname = "$study.numchrcnt_gnorm";
     }
     $out = $sam;
-    $out =~ s/.sam$/.numchr_count.txt/;
+    $out =~ s/.sam.gz$/.numchr_count.txt/;
     open(OUT, ">$sh");
     print OUT "perl $path/get_percent_numchr.pl $sam $out\n";
     close(OUT);

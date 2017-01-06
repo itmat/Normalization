@@ -1,7 +1,9 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
-
+use FindBin qw($Bin);
+use lib ("$Bin/lib", "$Bin/lib/perl5");
+use Net::SSH qw(ssh);
 
 my $USAGE =  "usage: perl runblast.pl <dir> <loc> <blastdir> <query> [option]
 
@@ -40,6 +42,8 @@ options:
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                    by default, <n> = 200.
 
+ -headnode <name> : For clusters which only allows job submissions from the head node, use this option.
+
  -h : help message
 
 ";
@@ -64,6 +68,8 @@ my $mem = "";
 my $new_mem = "";
 my $njobs = 200;
 my $status = "";
+my $hn_only = "false";
+my $hn_name = "";
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -71,6 +77,12 @@ for (my $i=0;$i<@ARGV;$i++){
 }
 for(my $i=4;$i<@ARGV;$i++){
     my $option_found = "false";
+    if ($ARGV[$i] eq '-headnode'){
+	$option_found = "true";
+	$hn_only = "true";
+	$hn_name = $ARGV[$i+1];
+	$i++;
+    }
     if ($ARGV[$i] eq '-gz'){
 	$option_found ="true";
 	$gz = "true";
@@ -283,7 +295,14 @@ while(my $line = <QU>){
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
 		}
-		my $x = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db1 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
+#		my $x = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db1 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
+		my $x = "echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db1 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err";
+		if ($hn_only eq "true"){
+		    ssh($hn_name,$x);
+		}
+		else{
+		    `$x`;
+		}
 		sleep(2);
 	    }
 	    foreach my $db2 (keys %DBS2){
@@ -292,7 +311,14 @@ while(my $line = <QU>){
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
 		}
-		my $y = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db2 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
+#		my $y = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db2 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
+		my $y = "echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db2 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err";
+                if ($hn_only eq "true"){
+                    ssh($hn_name,$y);
+                }
+                else{
+                    `$y`;
+                }
 		sleep(2);
 	    }
 	}
@@ -315,7 +341,14 @@ foreach my $db1 (keys %DBS1){
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);
     }
-    my $x = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db1 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
+#    my $x = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db1 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
+    my $x = "echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db1 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err";
+    if ($hn_only eq "true"){
+	ssh($hn_name,$x);
+    }
+    else{
+	`$x`;
+    }
     sleep(2);
 }
 foreach my $db2 (keys %DBS2){
@@ -324,7 +357,17 @@ foreach my $db2 (keys %DBS2){
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);
     }
-    my $y = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db2 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
+#    my $y = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db2 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
+    my $y = "echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db2 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err";
+    if ($hn_only eq "true"){
+	ssh($hn_name,$y);
+    }
+    else{
+	`$y`;
+    }
     sleep(2);
+}
+if ($type eq "-fq"){
+    `rm $file1 $file2`;
 }
 print "got here\n";

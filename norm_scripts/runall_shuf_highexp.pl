@@ -456,9 +456,9 @@ while(my $id = <INFILE>) {
 		$N = $c[1];
 		chomp($N);
 		$total_lc = $N;
-		my $filename_U = "$LOC/$id/EIJ/Unique/$id.filtered_u_exonmappers.$tmpname.sam";
+		my $filename_U = "$LOC/$id/EIJ/Unique/$id.filtered_u_exonmappers.$tmpname.sam.gz";
 		my $outfile_U = $filename_U;
-		$outfile_U =~ s/.sam$/.highexp.sam/i;
+		$outfile_U =~ s/.sam.gz$/.highexp.sam.gz/i;
 		if (-e "$outfile_U"){
 		    `rm $outfile_U`;
 		}
@@ -466,7 +466,7 @@ while(my $id = <INFILE>) {
 		my $logname = "$logdir/run_shuf_highexp_u.$id.$tmpname";
 		if (($total_lc ne '0') && ($MIN_U ne '0')){
 		    open(OUTU, ">$shfile");
-		    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
+		    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U $outfile_U\n";
 		    print OUTU "echo \"got here\"\n";
 		    close(OUTU);
 		    while(qx{$status | wc -l} > $njobs){
@@ -492,9 +492,9 @@ while(my $id = <INFILE>) {
                 $N = $c[1];
                 chomp($N);
                 $total_lc = $N;
-                my $filename_U = "$LOC/$id/EIJ/Unique/$id.filtered_u_intronmappers.$tmpname.sam";
+                my $filename_U = "$LOC/$id/EIJ/Unique/$id.filtered_u_intronmappers.$tmpname.sam.gz";
                 my $outfile_U = $filename_U;
-                $outfile_U =~ s/.sam$/.highexp.sam/i;
+                $outfile_U =~ s/.sam.gz$/.highexp.sam.gz/i;
                 if (-e "$outfile_U"){
                     `rm $outfile_U`;
                 }
@@ -502,7 +502,7 @@ while(my $id = <INFILE>) {
                 my $logname = "$logdir/run_shuf_highexp_u.$id.$tmpname";
                 if (($total_lc ne '0') && ($MIN_U ne '0')){
                     open(OUTU, ">$shfile");
-                    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
+                    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U $outfile_U\n";
                     print OUTU "echo \"got here\"\n";
                     close(OUTU);
                     while(qx{$status | wc -l} > $njobs){
@@ -534,9 +534,9 @@ while(my $id = <INFILE>) {
                 $N = $c[1];
                 chomp($N);
                 $total_lc = $N;
-                my $filename_U = "$LOC/$id/EIJ/Unique/sense/$id.filtered_u_exonmappers.$tmpname.sam";
+                my $filename_U = "$LOC/$id/EIJ/Unique/sense/$id.filtered_u_exonmappers.$tmpname.sam.gz";
                 my $outfile_U = $filename_U;
-                $outfile_U =~ s/.sam$/.highexp.sam/i;
+                $outfile_U =~ s/.sam.gz$/.highexp.sam.gz/i;
                 if (-e "$outfile_U"){
                     `rm $outfile_U`;
                 }
@@ -544,7 +544,7 @@ while(my $id = <INFILE>) {
                 my $logname = "$logdir/run_shuf_highexp_u.sense.$id.$tmpname";
                 if (($total_lc ne '0') && ($MIN_U ne '0')){
                     open(OUTU, ">$shfile");
-                    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
+                    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U $outfile_U\n";
                     print OUTU "echo \"got here\"\n";
                     close(OUTU);
                     while(qx{$status | wc -l} > $njobs){
@@ -571,9 +571,9 @@ while(my $id = <INFILE>) {
                 $N = $c[1];
                 chomp($N);
                 $total_lc = $N;
-                my $filename_U = "$LOC/$id/EIJ/Unique/antisense/$id.filtered_u_exonmappers.$tmpname.sam";
+                my $filename_U = "$LOC/$id/EIJ/Unique/antisense/$id.filtered_u_exonmappers.$tmpname.sam.gz";
                 my $outfile_U = $filename_U;
-                $outfile_U =~ s/.sam$/.highexp.sam/i;
+                $outfile_U =~ s/.sam.gz$/.highexp.sam.gz/i;
                 if (-e "$outfile_U"){
                     `rm $outfile_U`;
                 }
@@ -581,7 +581,7 @@ while(my $id = <INFILE>) {
                 my $logname = "$logdir/run_shuf_highexp_u.antisense.$id.$tmpname";
                 if (($total_lc ne '0') && ($MIN_U ne '0')){
                     open(OUTU, ">$shfile");
-                    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
+                    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U $outfile_U\n";
                     print OUTU "echo \"got here\"\n";
                     close(OUTU);
 		    while(qx{$status | wc -l} > $njobs){
@@ -610,9 +610,9 @@ while(my $id = <INFILE>) {
                 $N = $c[1];
                 chomp($N);
                 $total_lc = $N;
-                my $filename_U = "$LOC/$id/EIJ/Unique/sense/$id.filtered_u_intronmappers.$tmpname.sam";
+                my $filename_U = "$LOC/$id/EIJ/Unique/sense/$id.filtered_u_intronmappers.$tmpname.sam.gz";
                 my $outfile_U = $filename_U;
-                $outfile_U =~ s/.sam$/.highexp.sam/i;
+                $outfile_U =~ s/.sam.gz$/.highexp.sam.gz/i;
                 if (-e "$outfile_U"){
                     `rm $outfile_U`;
                 }
@@ -620,7 +620,7 @@ while(my $id = <INFILE>) {
                 my $logname = "$logdir/run_shuf_highexp_u.sense.$id.$tmpname";
                 if (($total_lc ne '0') && ($MIN_U ne '0')){
                     open(OUTU, ">$shfile");
-                    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
+                    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U $outfile_U\n";
                     print OUTU "echo \"got here\"\n";
                     close(OUTU);
                     while(qx{$status | wc -l} > $njobs){
@@ -647,9 +647,9 @@ while(my $id = <INFILE>) {
                 $N = $c[1];
                 chomp($N);
                 $total_lc = $N;
-                my $filename_U = "$LOC/$id/EIJ/Unique/antisense/$id.filtered_u_intronmappers.$tmpname.sam";
+                my $filename_U = "$LOC/$id/EIJ/Unique/antisense/$id.filtered_u_intronmappers.$tmpname.sam.gz";
                 my $outfile_U = $filename_U;
-                $outfile_U =~ s/.sam$/.highexp.sam/i;
+                $outfile_U =~ s/.sam.gz$/.highexp.sam.gz/i;
                 if (-e "$outfile_U"){
                     `rm $outfile_U`;
                 }
@@ -657,7 +657,7 @@ while(my $id = <INFILE>) {
                 my $logname = "$logdir/run_shuf_highexp_u.antisense.$id.$tmpname";
                 if (($total_lc ne '0') && ($MIN_U ne '0')){
                     open(OUTU, ">$shfile");
-                    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U > $outfile_U\n";
+                    print OUTU "perl $path/run_shuf.pl $filename_U $total_lc $MIN_U $outfile_U\n";
                     print OUTU "echo \"got here\"\n";
                     close(OUTU);
                     while(qx{$status | wc -l} > $njobs){
@@ -690,9 +690,9 @@ while(my $id = <INFILE>) {
 		$N = $c[1];
 		chomp($N);
 		$total_lc = $N;
-		my $filename_NU = "$LOC/$id/EIJ/NU/$id.filtered_nu_exonmappers.$tmpname.sam";
+		my $filename_NU = "$LOC/$id/EIJ/NU/$id.filtered_nu_exonmappers.$tmpname.sam.gz";
 		my $outfile_NU = $filename_NU;
-		$outfile_NU =~ s/.sam$/.highexp.sam/i;
+		$outfile_NU =~ s/.sam.gz$/.highexp.sam.gz/i;
 		if (-e "$outfile_NU"){
 			`rm $outfile_NU`;
 		}
@@ -700,7 +700,7 @@ while(my $id = <INFILE>) {
                 my $logname = "$logdir/run_shuf_highexp_nu.$id.$tmpname";
                 if (($total_lc ne '0') && ($MIN_NU ne '0')){
                     open(OUTU, ">$shfile");
-                    print OUTU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
+                    print OUTU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU $outfile_NU\n";
                     print OUTU "echo \"got here\"\n";
                     close(OUTU);
                     while(qx{$status | wc -l} > $njobs){
@@ -726,9 +726,9 @@ while(my $id = <INFILE>) {
                 $N = $c[1];
                 chomp($N);
 		$total_lc = $N;
-                my $filename_NU = "$LOC/$id/EIJ/NU/$id.filtered_nu_intronmappers.$tmpname.sam";
+                my $filename_NU = "$LOC/$id/EIJ/NU/$id.filtered_nu_intronmappers.$tmpname.sam.gz";
                 my $outfile_NU = $filename_NU;
-                $outfile_NU =~ s/.sam$/.highexp.sam/i;
+                $outfile_NU =~ s/.sam.gz$/.highexp.sam.gz/i;
                 if (-e "$outfile_NU"){
                     `rm $outfile_NU`;
                 }
@@ -736,7 +736,7 @@ while(my $id = <INFILE>) {
                 my $logname = "$logdir/run_shuf_highexp_nu.$id.$tmpname";
                 if (($total_lc ne '0') && ($MIN_NU ne '0')){
                     open(OUTU, ">$shfile");
-                    print OUTU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
+                    print OUTU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU $outfile_NU\n";
                     print OUTU "echo \"got here\"\n";
                     close(OUTU);
                     while(qx{$status | wc -l} > $njobs){
@@ -770,9 +770,9 @@ while(my $id = <INFILE>) {
                 $N = $c[1];
                 chomp($N);
                 $total_lc = $N;
-                my $filename_NU = "$LOC/$id/EIJ/NU/sense/$id.filtered_nu_exonmappers.$tmpname.sam";
+                my $filename_NU = "$LOC/$id/EIJ/NU/sense/$id.filtered_nu_exonmappers.$tmpname.sam.gz";
                 my $outfile_NU = $filename_NU;
-                $outfile_NU =~ s/.sam$/.highexp.sam/i;
+                $outfile_NU =~ s/.sam.gz$/.highexp.sam.gz/i;
                 if (-e "$outfile_NU"){
 		    `rm $outfile_NU`;
                 }
@@ -780,7 +780,7 @@ while(my $id = <INFILE>) {
                 my $logname = "$logdir/run_shuf_highexp_nu.sense.$id.$tmpname";
                 if (($total_lc ne '0') && ($MIN_NU ne '0')){
                     open(OUTU, ">$shfile");
-                    print OUTU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
+                    print OUTU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU $outfile_NU\n";
                     print OUTU "echo \"got here\"\n";
                     close(OUTU);
                     while(qx{$status | wc -l} > $njobs){
@@ -807,9 +807,9 @@ while(my $id = <INFILE>) {
                 $N = $c[1];
                 chomp($N);
                 $total_lc = $N;
-                my $filename_NU = "$LOC/$id/EIJ/NU/antisense/$id.filtered_nu_exonmappers.$tmpname.sam";
+                my $filename_NU = "$LOC/$id/EIJ/NU/antisense/$id.filtered_nu_exonmappers.$tmpname.sam.gz";
                 my $outfile_NU = $filename_NU;
-                $outfile_NU =~ s/.sam$/.highexp.sam/i;
+                $outfile_NU =~ s/.sam.gz$/.highexp.sam.gz/i;
                 if (-e "$outfile_NU"){
                     `rm $outfile_NU`;
                 }
@@ -817,7 +817,7 @@ while(my $id = <INFILE>) {
                 my $logname = "$logdir/run_shuf_highexp_nu.antisense.$id.$tmpname";
                 if (($total_lc ne '0') && ($MIN_NU ne '0')){
                     open(OUTU, ">$shfile");
-                    print OUTU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
+                    print OUTU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU $outfile_NU\n";
                     print OUTU "echo \"got here\"\n";
                     close(OUTU);
                     while(qx{$status | wc -l} > $njobs){
@@ -844,9 +844,9 @@ while(my $id = <INFILE>) {
                 $N = $c[1];
                 chomp($N);
                 $total_lc = $N;
-                my $filename_NU = "$LOC/$id/EIJ/NU/sense/$id.filtered_nu_intronmappers.$tmpname.sam";
+                my $filename_NU = "$LOC/$id/EIJ/NU/sense/$id.filtered_nu_intronmappers.$tmpname.sam.gz";
                 my $outfile_NU = $filename_NU;
-                $outfile_NU =~ s/.sam$/.highexp.sam/i;
+                $outfile_NU =~ s/.sam.gz$/.highexp.sam.gz/i;
                 if (-e "$outfile_NU"){
                     `rm $outfile_NU`;
                 }
@@ -854,7 +854,7 @@ while(my $id = <INFILE>) {
                 my $logname = "$logdir/run_shuf_highexp_nu.sense.$id.$tmpname";
                 if (($total_lc ne '0') && ($MIN_NU ne '0')){
                     open(OUTU, ">$shfile");
-                    print OUTU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
+                    print OUTU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU $outfile_NU\n";
                     print OUTU "echo \"got here\"\n";
                     close(OUTU);
                     while(qx{$status | wc -l} > $njobs){
@@ -881,9 +881,9 @@ while(my $id = <INFILE>) {
                 $N = $c[1];
                 chomp($N);
                 $total_lc = $N;
-                my $filename_NU = "$LOC/$id/EIJ/NU/antisense/$id.filtered_nu_intronmappers.$tmpname.sam";
+                my $filename_NU = "$LOC/$id/EIJ/NU/antisense/$id.filtered_nu_intronmappers.$tmpname.sam.gz";
                 my $outfile_NU = $filename_NU;
-                $outfile_NU =~ s/.sam$/.highexp.sam/i;
+                $outfile_NU =~ s/.sam.gz$/.highexp.sam.gz/i;
                 if (-e "$outfile_NU"){
                     `rm $outfile_NU`;
                 }
@@ -891,7 +891,7 @@ while(my $id = <INFILE>) {
                 my $logname = "$logdir/run_shuf_highexp_nu.antisense.$id.$tmpname";
                 if (($total_lc ne '0') && ($MIN_NU ne '0')){
                     open(OUTU, ">$shfile");
-                    print OUTU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU > $outfile_NU\n";
+                    print OUTU "perl $path/run_shuf.pl $filename_NU $total_lc $MIN_NU $outfile_NU\n";
                     print OUTU "echo \"got here\"\n";
                     close(OUTU);
                     while(qx{$status | wc -l} > $njobs){

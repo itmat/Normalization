@@ -228,17 +228,17 @@ while(my $line = <IN>){
     chomp($line);
     my $id = $line;
     my $genedir = "$LOC/$id/GNORM";
-    my $samname_u = "$genedir/Unique/$id.filtered_u.sam";
-    my $samname_nu = "$genedir/NU/$id.filtered_nu.sam";
+    my $samname_u = "$genedir/Unique/$id.filtered_u.sam.gz";
+    my $samname_nu = "$genedir/NU/$id.filtered_nu.sam.gz";
     my ($shfile_u, $jobname, $logname_u, $shfile_nu, $logname_nu);
     $jobname = "$study.genefilter_highexp";
     foreach my $gene (keys %HIGH_GENE){
 	my $outname_u = $samname_u;
 	my $outname_nu = $samname_nu;
-	my $genefile_u = "$genedir/Unique/$id.filtered_u.genefilter.$gene.txt";
-	my $genefile_nu = "$genedir/NU/$id.filtered_nu.genefilter.$gene.txt";
-	$outname_u =~ s/.sam$/.$gene.sam/;
-	$outname_nu =~ s/.sam$/.$gene.sam/;
+	my $genefile_u = "$genedir/Unique/$id.filtered_u.genefilter.$gene.txt.gz";
+	my $genefile_nu = "$genedir/NU/$id.filtered_nu.genefilter.$gene.txt.gz";
+	$outname_u =~ s/.sam.gz$/.$gene.sam.gz/;
+	$outname_nu =~ s/.sam.gz$/.$gene.sam.gz/;
 	$shfile_u = "$shdir/F.$id.genefilter_highexp_u.$gene.$index.sh";
 	$logname_u = "$logdir/genefilter_highexp_u.$gene.$index.$id";
 	$shfile_nu = "$shdir/F.$id.genefilter_highexp_nu.$gene.$index.sh";
@@ -246,8 +246,8 @@ while(my $line = <IN>){
 	if ($stranded eq "true"){
 	    $genefile_u =~ s/.genefilter./.genefilter.sense./;
 	    $genefile_nu =~ s/.genefilter./.genefilter.sense./;
-	    $outname_u =~ s/.sam$/.sense.sam/;
-	    $outname_nu =~ s/.sam$/.sense.sam/;
+	    $outname_u =~ s/.sam.gz$/.sense.sam.gz/;
+	    $outname_nu =~ s/.sam.gz$/.sense.sam.gz/;
 	    $shfile_u =~ s/.sh$/.sense.sh/;
 	    $shfile_nu =~ s/.sh$/.sense.sh/;
 	    $logname_u =~ s/genefilter_highexp_u./genefilter_highexp_u.sense./;
@@ -288,10 +288,10 @@ while(my $line = <IN>){
 	foreach my $gene (keys %HIGH_GENE_A){
 	    my $outname_u = $samname_u;
 	    my $outname_nu = $samname_nu;
-	    my $genefile_u = "$genedir/Unique/$id.filtered_u.genefilter.antisense.$gene.txt";
-	    my $genefile_nu = "$genedir/NU/$id.filtered_nu.genefilter.antisense.$gene.txt";
-	    $outname_u =~ s/.sam$/.$gene.antisense.sam/;
-	    $outname_nu =~ s/.sam$/.$gene.antisense.sam/;
+	    my $genefile_u = "$genedir/Unique/$id.filtered_u.genefilter.antisense.$gene.txt.gz";
+	    my $genefile_nu = "$genedir/NU/$id.filtered_nu.genefilter.antisense.$gene.txt.gz";
+	    $outname_u =~ s/.sam.gz$/.$gene.antisense.sam.gz/;
+	    $outname_nu =~ s/.sam.gz$/.$gene.antisense.sam.gz/;
 	    $shfile_u = "$shdir/F.$id.genefilter_highexp_u.$gene.$index.antisense.sh";
 	    $logname_u = "$logdir/genefilter_highexp_u.antisense.$gene.$index.$id";
 	    $shfile_nu = "$shdir/F.$id.genefilter_highexp_nu.$gene.$index.antisense.sh";

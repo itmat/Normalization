@@ -173,7 +173,7 @@ if ($ncnt ne '1'){
     die "please specify -normdir path\n";
 }
 if ($replace_mem eq "true"){
-    $mem6 = $new_mem;
+#    $mem6 = $new_mem;
     $mem10 = $new_mem;
 }
 

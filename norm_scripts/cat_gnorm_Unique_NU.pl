@@ -129,63 +129,59 @@ if ($filter eq "true"){
 my $id = $ARGV[0];
 chomp($id);
 my $original = "$LOC/$id/$samfilename";
-my $header = "";
+my $headerfile = "$LOC/$id/tempheader";
 if ($bam eq "true"){
-    $header = `$samtools view -H $original`;
+    my $x = `$samtools view -H $original > $headerfile`;
 }
 else{
-    $header = `grep ^@ $original`;
+    my $x = `grep ^@ $original > $headerfile`;
 }
 if ($stranded eq "false"){
-    my @a = glob("$LOC/$id/GNORM/*/*.filtered_*u.genes.norm.sam");
+    my $outfile = "$gnorm_dir/$id.gene.norm.sam";
+    my @a = glob("$LOC/$id/GNORM/*/*.filtered_*u.genes.norm.sam.gz");
+    `cat $headerfile > $outfile`;
     my $string = "";
     foreach my $file (@a){
 	$string .= "$file\t";
     }
     foreach my $key (keys %HE){
-	my @b = glob("$LOC/$id/GNORM/*/*$key.norm.sam");
+	my @b = glob("$LOC/$id/GNORM/*/*$key.norm.sam.gz");
 	foreach my $file (@b){
 	    $string .= "$file\t";
 	}
     }
-    my $outfile = "$gnorm_dir/$id.gene.norm.sam";
-    open (OUT, ">$outfile");
-    print OUT $header;
-    close(OUT);
-    my $x = `cat $string >> $outfile`;
+    my $x = `zcat $string >> $outfile`;
 }
 if ($stranded eq "true"){
-    my @s = glob("$LOC/$id/GNORM/*/*.filtered_*u.genes.sense.norm.sam");
+    my $outfile = "$sense_dir/$id.gene.norm.sam";
+    my $outfile_a = "$antisense_dir/$id.gene.norm.sam";
+    `cat $headerfile > $outfile`;
+    `cat $headerfile > $outfile_a`;
+    my @s = glob("$LOC/$id/GNORM/*/*.filtered_*u.genes.sense.norm.sam.gz");
     my $string_s = "";
     foreach my $file (@s){
         $string_s .= "$file\t";
     }
     foreach my $key (keys %HE){
-        my @b = glob("$LOC/$id/GNORM/*/*$key.sense.norm.sam");
+        my @b = glob("$LOC/$id/GNORM/*/*$key.sense.norm.sam.gz");
 	foreach my $file (@b){
             $string_s .= "$file\t";
         }
     }
-    my @a = glob("$LOC/$id/GNORM/*/*.filtered_*u.genes.antisense.norm.sam");
+    my @a = glob("$LOC/$id/GNORM/*/*.filtered_*u.genes.antisense.norm.sam.gz");
+
     my $string_a = "";
     foreach my $file (@a){
         $string_a .= "$file\t";
     }
     foreach my $key (keys %HE_A){
-        my @b = glob("$LOC/$id/GNORM/*/*$key.antisense.norm.sam");
+        my @b = glob("$LOC/$id/GNORM/*/*$key.antisense.norm.sam.gz");
         foreach my $file (@b){
             $string_a .= "$file\t";
 	}
     }
-    my $outfile = "$sense_dir/$id.gene.norm.sam";
-    my $outfile_a = "$antisense_dir/$id.gene.norm.sam";
-    open (OUT, ">$outfile");
-    print OUT $header;
-    close(OUT);
-    open (OUT_A, ">$outfile_a");
-    print OUT_A $header;
-    close(OUT_A);
-    `cat $string_s >> $outfile`;
-    `cat $string_a >> $outfile_a`;
+    `zcat $string_s >> $outfile`;
+    `zcat $string_a >> $outfile_a`;
 }
+#`rm $headerfile`;
 print "got here\n";

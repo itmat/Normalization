@@ -55,18 +55,18 @@ my $dirname = $a[@a-1];
 my $id = $dirname;
 my $quantsfile_u = "$sampledir/GNORM/Unique/$id.filtered_u.genefilter.genequants";
 my $quantsfile_nu = "$sampledir/GNORM/NU/$id.filtered_nu.genefilter.genequants";
-my $filter_u = "$sampledir/GNORM/Unique/$id.filtered_u.genefilter.txt";
-my $filter_nu = "$sampledir/GNORM/NU/$id.filtered_nu.genefilter.txt";
+my $filter_u = "$sampledir/GNORM/Unique/$id.filtered_u.genefilter.txt.gz";
+my $filter_nu = "$sampledir/GNORM/NU/$id.filtered_nu.genefilter.txt.gz";
 my ($quantsfile_u_a, $quantsfile_nu_a, $filter_u_a, $filter_nu_a);
 if ($stranded eq "true"){
     $quantsfile_u = "$sampledir/GNORM/Unique/$id.filtered_u.genefilter.sense.genequants";
     $quantsfile_u_a = "$sampledir/GNORM/Unique/$id.filtered_u.genefilter.antisense.genequants";
     $quantsfile_nu = "$sampledir/GNORM/NU/$id.filtered_nu.genefilter.sense.genequants";
     $quantsfile_nu_a = "$sampledir/GNORM/NU/$id.filtered_nu.genefilter.antisense.genequants";
-    $filter_u = "$sampledir/GNORM/Unique/$id.filtered_u.genefilter.sense.txt";
-    $filter_u_a = "$sampledir/GNORM/Unique/$id.filtered_u.genefilter.antisense.txt";
-    $filter_nu = "$sampledir/GNORM/NU/$id.filtered_nu.genefilter.sense.txt";
-    $filter_nu_a = "$sampledir/GNORM/NU/$id.filtered_nu.genefilter.antisense.txt";
+    $filter_u = "$sampledir/GNORM/Unique/$id.filtered_u.genefilter.sense.txt.gz";
+    $filter_u_a = "$sampledir/GNORM/Unique/$id.filtered_u.genefilter.antisense.txt.gz";
+    $filter_nu = "$sampledir/GNORM/NU/$id.filtered_nu.genefilter.sense.txt.gz";
+    $filter_nu_a = "$sampledir/GNORM/NU/$id.filtered_nu.genefilter.antisense.txt.gz";
 }
 my $temp_u = $quantsfile_u . ".temp";
 my $temp_nu = $quantsfile_nu . ".temp";
@@ -103,7 +103,7 @@ if ($U eq "true"){
 }
 if ($U eq "true"){
     if (-e $filter_u){
-	my $x = `wc -l $filter_u`;
+	my $x = `zcat $filter_u | wc -l`;
 	chomp($x);
 	my @a = split(" ", $x);
 	$total_u = $a[0];
@@ -133,7 +133,7 @@ if ($U eq "true"){
     close(temp_u);
     if ($stranded eq "true"){
 	if (-e $filter_u_a){
-	    my $x = `wc -l $filter_u_a`;
+	    my $x = `zcat $filter_u_a | wc -l`;
 	    chomp($x);
 	    my @a =split(" ", $x);
 	    $total_u_a = $a[0];
@@ -165,7 +165,7 @@ if ($U eq "true"){
 }
 if ($NU eq "true"){
     if (-e $filter_nu){
-        my $x = `wc -l $filter_nu`;
+        my $x = `zcat $filter_nu | wc -l`;
 	chomp($x);
 	my @a =split(" ", $x);
 	$total_nu = $a[0];
@@ -195,7 +195,7 @@ if ($NU eq "true"){
     close(temp_nu);
     if ($stranded eq "true"){
 	if (-e $filter_nu_a){
-	    my $x = `wc -l $filter_nu_a`;
+	    my $x = `zcat $filter_nu_a | wc -l`;
 	    chomp($x);
 	    my @a =split(" ", $x);
 	    $total_nu_a = $a[0];
