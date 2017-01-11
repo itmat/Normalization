@@ -27,7 +27,7 @@ Provide a full path to file of standard chromosomes (CHRNAMES) if your chromosom
 
 #####ii. Name of mitochondrial chromosome [required]
 Provide a name of mitochondrial chromosome (e.g. chrM, M). If there are multiple mitochondrial chromosomes, provide a comma separated list of chromosome names.
-You may provide a dummy name if you do not wish to filter reads mapping to mitochondrial chromosome (not recommended).
+
 
 ========================================================================================================
 

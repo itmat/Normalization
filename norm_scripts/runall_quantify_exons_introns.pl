@@ -276,6 +276,7 @@ open(IN, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; # dirnames;
 while(my $line = <IN>){
     my ($filename_u, $filename_nu, $shfile_u, $shfile_nu, $logname_u, $logname_nu);
     my ($filename_exon, $filename_intron, $shfile_exon, $shfile_intron, $logname_exon, $logname_intron);
+    my ($filename_ig, $shfile_ig, $logname_ig);
     chomp($line);
     my $id = $line;
     my $eij_dir = "$LOC/$id/EIJ";
@@ -393,6 +394,17 @@ while(my $line = <IN>){
             }
             `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_intron_a.out -e $logname_intron_a.err < $shfile_intron_a`;
 	}
+	#intergenicquants
+	$filename_ig = "$norm_dir/intergenicmappers/$id.intergenicmappers.norm.sam";
+	$shfile_ig = "$shdir/Q.$id.quantify_exons_introns.2.intergenic.sh";
+	$logname_ig = "$logdir/quantify_exons_introns.2.$id.intergenic";
+	open(OUT, ">$shfile_ig");
+	print OUT "perl $path/quantify_intergenic_regions.pl $filename_ig $igs\n";
+	close(OUT);
+	while(qx{$status | wc -l}>$njobs){
+	    sleep(10);
+	}
+	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_ig.out -e $logname_ig.err < $shfile_ig`;
     }
 }
 close(IN);

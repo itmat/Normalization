@@ -6,7 +6,7 @@ my $USAGE = "usage: perl quants2spreadsheet.1.pl <file names> <loc> <type of qua
 where:
 <sample dirs> is the name of a file with the names of the sample directories (no paths)
 <loc> is the path to the sample directories
-<type of quants file> is the type of quants file (e.g: exonquants, intronquants, genequants)
+<type of quants file> is the type of quants file (e.g: exonquants, intronquants, genequants, intergenicquants)
 
 option: 
  -normdir <s>
@@ -91,7 +91,7 @@ if ($stranded eq "true"){
     $HE_INTRON_A = "$LOC/high_expressers_intron_antisense.txt";
 }
 
-if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
+if (($type =~ /^exon/i) || ($type =~ /^intron/i) || ($type =~ /^intergenic/i)){
     $norm_dir = "$normdir/EXON_INTRON_JUNCTION";
 }
 if ($type =~ /^gene/i){
@@ -172,8 +172,16 @@ elsif ($type =~ /^intron/i){
         $sample_name_file_a =~ s/_u.antisense.txt/_nu.antisense.txt/;
     }
 }
+elsif ($type =~ /^intergenic/i){
+    $out = "$spread_dir/master_list_of_intergenic_counts_MIN.$study.txt";
+    $sample_name_file = "$norm_dir/file_intergenicquants.txt";
+    if ($nuonly eq "true"){
+        $out =~ s/_u.$study.txt/_nu.$study.txt/;
+        $sample_name_file =~ s/_u.txt/_nu.txt/;
+    }
+}
 else{
-    die "ERROR:Please check the type of quants file. It has to be either \"exonquants\", \"intronquants\", \"genequants\".\n\n";
+    die "ERROR:Please check the type of quants file. It has to be either \"exonquants\", \"intronquants\", \"intergenicquants\", \"genequants\".\n\n";
 }
 
 
@@ -242,7 +250,22 @@ if($type =~ /^intron/i){
     close(OUT_A);
     close(INFILE);
 }
-
+if($type =~ /^intergenic/i){
+    open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
+    open(OUT, ">$sample_name_file");
+    while (my $line = <INFILE>){
+        chomp($line);
+        my $id = $line;
+        if($nuonly eq "false"){
+	    print OUT "$ig_dir/$id.intergenicmappers.norm.intergenicquants\n";
+        }
+        if($nuonly eq "true"){
+	    print OUT "$ig_dir/$id.intergenicmappers.norm_nu.intergenicquants\n";
+        }
+    }
+    close(OUT);
+    close(INFILE);
+}
 
 if ($type =~ /^gene/i){
 
@@ -296,7 +319,7 @@ while(my $line = <INFILE>) {
 	    next;
 	}
     }
-    if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
+    if (($type =~ /^exon/i) || ($type =~ /^intron/i) || ($type =~ /intergenic/i)){
 	if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
 	    next;
 	}
@@ -321,6 +344,9 @@ while($file = <FILES>) {
     $id =~ s/.exonmappers.norm_nu.exonquants//;
     $id =~ s/.intronmappers.norm_u.intronquants//;
     $id =~ s/.intronmappers.norm_nu.intronquants//;
+    $id =~ s/.intergenicmappers.norm_u.intergenicquants//;
+    $id =~ s/.intergenicmappers.norm_nu.intergenicquants//;
+    $id =~ s/.intergenicmappers.norm.intergenicquants//;
     $id =~ s/.intronmappers.norm.intronquants//;
     $id =~ s/.exonmappers.norm.exonquants//;
     $id =~ s/.exonmappers.norm_u.sense.exonquants//;
@@ -339,7 +365,7 @@ while($file = <FILES>) {
     while(my $line = <INFILE>) {
 	chomp($line);
 	my @a = split(/\t/,$line);
-	if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
+	if (($type =~ /^exon/i) || ($type =~ /^intron/i) || ($type =~ /^intergenic/i)){
 	    if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
 		next;
 	    }
@@ -471,7 +497,7 @@ if ($filter eq "true"){
     }
 }
 
-if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
+if (($type =~ /^exon/i) || ($type =~ /^intron/i) || ($type =~ /^intergenic/i)){
     open(OUTFILE, ">$out");
     print OUTFILE "id";
     for(my $i=0; $i<@ID; $i++) {
@@ -505,6 +531,9 @@ if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
 	    else{
 		print OUTFILE "intron:$id[$i]";
 	    }
+	}
+	if ($type =~ /^intergenic/i){
+	    print OUTFILE "$id[$i]";
 	}
 	for(my $j=0; $j<$filecnt; $j++) {
 	    print OUTFILE "\t$DATA[$j][$i]";

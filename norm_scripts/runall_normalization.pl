@@ -1743,7 +1743,7 @@ if ($run_prepause eq "true"){
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
-        $job = "echo \"perl $norm_script_dir/predict_num_reads_gnorm.pl $sample_dir $LOC $se $data_stranded $UONLY $altstats\" | $batchjobs $mem $jobname \"$study.predict_num_reads_gnorm\" -o $logdir/$name_of_job.out -e $logdir/$name_of_job.err";
+        $job = "echo \"perl $norm_script_dir/predict_num_reads_gnorm.pl $sample_dir $LOC $se $data_stranded $filter_highexp $UONLY $altstats\" | $batchjobs $mem $jobname \"$study.predict_num_reads_gnorm\" -o $logdir/$name_of_job.out -e $logdir/$name_of_job.err";
 
         &onejob($job, $name_of_job, $job_num);
         &check_exit_onejob($job, $name_of_job, $job_num);
@@ -1775,7 +1775,7 @@ if ($run_prepause eq "true"){
 	else{
 	    $new_queue = "-mem $queue_3G";
 	}
-        my $numr = `sort -nrk 1 $studydir/STATS/ribo_percents.txt | head -1`;
+        my $numr = `sort -nrk 1 $study_dir/STATS/ribo_percents.txt | head -1`;
         chomp($numr);
         my @xnumr = split(" " , $numr);
 	my $maxribo = $xnumr[0];
@@ -2566,7 +2566,7 @@ if ($run_prepause eq "true"){
 	while(qx{$stat | wc -l} > $maxjobs){
 	    sleep(10);
 	}
-	$job = "echo \"perl $norm_script_dir/predict_num_reads.pl $sample_dir $LOC -depthE $i_exon -depthI $i_intron $data_stranded $UONLY $altstats\" | $batchjobs $mem $jobname \"$study.predict_num_reads\" -o $logdir/$name_of_job.out -e $logdir/$name_of_job.err";
+	$job = "echo \"perl $norm_script_dir/predict_num_reads.pl $sample_dir $LOC $filter_highexp -depthE $i_exon -depthI $i_intron $data_stranded $UONLY $altstats\" | $batchjobs $mem $jobname \"$study.predict_num_reads\" -o $logdir/$name_of_job.out -e $logdir/$name_of_job.err";
 
 	&onejob($job, $name_of_job, $job_num);
 	&check_exit_onejob($job, $name_of_job, $job_num);
@@ -2978,7 +2978,7 @@ if ($run_norm eq "true"){
 		    while(qx{$stat | wc -l} > $maxjobs){
 			sleep(10);
 		    }
-		    $job = "echo \"perl $norm_script_dir/predict_num_reads_gnorm.pl $sample_dir $LOC $data_stranded $se $UONLY $altstats\" | $batchjobs $mem $jobname \"$study.predict_num_reads_gnorm_p2\" -o $logdir/$study.predict_num_reads_gnorm_p2.out -e $logdir/$study.predict_num_reads_gnorm_p2.err";
+		    $job = "echo \"perl $norm_script_dir/predict_num_reads_gnorm.pl $sample_dir $LOC $filter_highexp $data_stranded $se $UONLY $altstats\" | $batchjobs $mem $jobname \"$study.predict_num_reads_gnorm_p2\" -o $logdir/$study.predict_num_reads_gnorm_p2.out -e $logdir/$study.predict_num_reads_gnorm_p2.err";
 		    
 		    &onejob($job, $name_of_job, $job_num);
 		    &check_exit_onejob($job, $name_of_job, $job_num);
@@ -3837,7 +3837,7 @@ if ($run_norm eq "true"){
 		    while(qx{$stat | wc -l} > $maxjobs){
 			sleep(10);
 		    }
-		    $job = "echo \"perl $norm_script_dir/predict_num_reads.pl $sample_dir $LOC -depthE $i_exon -depthI $i_intron $data_stranded $UONLY $altstats\" | $batchjobs $mem $jobname \"$study.predict_num_reads_p2\" -o $logdir/$name_of_job.out -e $logdir/$name_of_job.err";
+		    $job = "echo \"perl $norm_script_dir/predict_num_reads.pl $sample_dir $LOC $filter_highexp -depthE $i_exon -depthI $i_intron $data_stranded $UONLY $altstats\" | $batchjobs $mem $jobname \"$study.predict_num_reads_p2\" -o $logdir/$name_of_job.out -e $logdir/$name_of_job.err";
 
 		    &onejob($job, $name_of_job, $job_num);
 		    &check_exit_onejob($job, $name_of_job, $job_num);
@@ -4313,18 +4313,18 @@ if ($run_norm eq "true"){
 	open(OUT, ">$to_filter");
         if ($STRANDED =~ /^true/i){
 	    if ($UONLY eq '-u'){
-		print OUT "annotated_master_list_of_exon_counts_MIN.sense.$study.txt\nannotated_master_list_of_exon_counts_MIN.antisense.$study.txt\nannotated_master_list_of_intron_counts_MIN.sense.$study.txt\nannotated_master_list_of_intron_counts_MIN.antisense.$study.txt\nannotated_master_list_of_junction_counts_MIN.$study.txt\n";
+		print OUT "annotated_master_list_of_exon_counts_MIN.sense.$study.txt\nannotated_master_list_of_exon_counts_MIN.antisense.$study.txt\nannotated_master_list_of_intron_counts_MIN.sense.$study.txt\nannotated_master_list_of_intron_counts_MIN.antisense.$study.txt\nannotated_master_list_of_junction_counts_MIN.$study.txt\nmaster_list_of_intergenic_counts_MIN.$study.txt\n";
 	    }
 	    else{
-		print OUT "annotated_master_list_of_exon_counts_MIN.sense.$study.txt\nannotated_master_list_of_exon_counts_MIN.antisense.$study.txt\nannotated_master_list_of_exon_counts_MAX.sense.$study.txt\nannotated_master_list_of_exon_counts_MAX.antisense.$study.txt\nannotated_master_list_of_intron_counts_MIN.sense.$study.txt\nannotated_master_list_of_intron_counts_MIN.antisense.$study.txt\nannotated_master_list_of_intron_counts_MAX.sense.$study.txt\nannotated_master_list_of_intron_counts_MAX.antisense.$study.txt\nannotated_master_list_of_junction_counts_MIN.$study.txt\nannotated_master_list_of_junction_counts_MAX.$study.txt\n";
+		print OUT "annotated_master_list_of_exon_counts_MIN.sense.$study.txt\nannotated_master_list_of_exon_counts_MIN.antisense.$study.txt\nannotated_master_list_of_exon_counts_MAX.sense.$study.txt\nannotated_master_list_of_exon_counts_MAX.antisense.$study.txt\nannotated_master_list_of_intron_counts_MIN.sense.$study.txt\nannotated_master_list_of_intron_counts_MIN.antisense.$study.txt\nannotated_master_list_of_intron_counts_MAX.sense.$study.txt\nannotated_master_list_of_intron_counts_MAX.antisense.$study.txt\nannotated_master_list_of_junction_counts_MIN.$study.txt\nannotated_master_list_of_junction_counts_MAX.$study.txt\nmaster_list_of_intergenic_counts_MIN.$study.txt\nmaster_list_of_intergenic_counts_MAX.$study.txt\n";
 	    }
         }
 	else{
 	    if ($UONLY eq '-u'){
-		print OUT "annotated_master_list_of_exon_counts_MIN.$study.txt\nannotated_master_list_of_intron_counts_MIN.$study.txt\nannotated_master_list_of_junction_counts_MIN.$study.txt\n";
+		print OUT "annotated_master_list_of_exon_counts_MIN.$study.txt\nannotated_master_list_of_intron_counts_MIN.$study.txt\nannotated_master_list_of_junction_counts_MIN.$study.txt\nmaster_list_of_intergenic_counts_MIN.$study.txt\n";
 	    }
 	    else{
-		print OUT "annotated_master_list_of_exon_counts_MIN.$study.txt\nannotated_master_list_of_exon_counts_MAX.$study.txt\nannotated_master_list_of_intron_counts_MIN.$study.txt\nannotated_master_list_of_intron_counts_MAX.$study.txt\nannotated_master_list_of_junction_counts_MIN.$study.txt\nannotated_master_list_of_junction_counts_MAX.$study.txt\n";
+		print OUT "annotated_master_list_of_exon_counts_MIN.$study.txt\nannotated_master_list_of_exon_counts_MAX.$study.txt\nannotated_master_list_of_intron_counts_MIN.$study.txt\nannotated_master_list_of_intron_counts_MAX.$study.txt\nannotated_master_list_of_junction_counts_MIN.$study.txt\nannotated_master_list_of_junction_counts_MAX.$study.txt\nmaster_list_of_intergenic_counts_MIN.$study.txt\nmaster_list_of_intergenic_counts_MAX.$study.txt\n";
 	    }
 	}
 	close(OUT);

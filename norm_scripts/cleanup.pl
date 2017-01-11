@@ -103,6 +103,10 @@ if (-d $gene_dir){
     if (@g > 0){
 	`rm $gene_dir/*gene.norm.txt`;
     }
+    @g = glob("$gene_dir/*gene.norm.txt.gz");
+    if (@g > 0){
+	`rm $gene_dir/*gene.norm.txt.gz`;
+    }
     @g = glob("$gene_dir/*gene.norm.genes.txt");
     if (@g > 0){
 	`rm $gene_dir/*gene.norm.genes.txt`;
@@ -110,6 +114,10 @@ if (-d $gene_dir){
     @g = glob("$gene_dir/*/*gene.norm.txt");
     if (@g > 0){
 	`rm $gene_dir/*/*gene.norm.txt`;
+    }
+    @g = glob("$gene_dir/*/*gene.norm.txt.gz");
+    if (@g > 0){
+	`rm $gene_dir/*/*gene.norm.txt.gz`;
     }
     @g = glob("$gene_dir/*/*gene.norm.genes.txt");
     if (@g > 0){
@@ -184,10 +192,12 @@ if (-d $intron_dir){
 }
 
 if (-d $spread_dir){
+=comment
     @g = glob("$spread_dir/master_list_of_*_counts_*.txt");
     if (@g > 0){
         `rm $spread_dir/master_list_of_*_counts_*.txt`;
     }
+=cut
     @g = glob("$spread_dir/annotated_master_list_of_*_counts_*.txt");
     if (@g > 0){
         `rm $spread_dir/annotated_master_list_of_*_counts_*.txt`;
@@ -229,7 +239,7 @@ while(my $line = <INFILE>){
 	`rm $LOC/$line/*junctions_*`;
     }
     #rm tempheader
-    @g = glob("$LOC/$line/tempheader");
+    @g = glob("$LOC/$line/tempheader*");
     if (@g>0){
 	`rm $LOC/$line/tempheader`;
     }

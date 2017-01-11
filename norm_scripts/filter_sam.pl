@@ -29,8 +29,9 @@ This will remove all rows from <sam infile> except those that satisfy all of the
 1. Unique mapper / Non-Unique mapper
 2. Both forward and reverse map consistently
 3. id not in file <more ids>
-4. a) Default: chromosome is one of the numbered ones, or X, or Y (e.g. chr1, chr2, chrX, chrY OR 1, 2, X, Y)
-   b) with -chromnames and -mito option: chromosome is listed in -chromnames <file>, chromosome not in -mito list.
+4. a) Default: chromosome is one of the numbered ones, or X, or Y (e.g. chr1, chr2, chrX, chrY OR 1, 2, X, Y) 
+               and chromosome in -mito list.
+   b) with -chromnames option: chromosome is listed in -chromnames <file>, chromosome in -mito list.
 5. Is a forward mapper (script outputs forward mappers only)
  
 ";
@@ -201,9 +202,12 @@ while(my $forward = <INFILE>) {
 	my @R = split(/\t/,$reverse);
 	my $id2 = $F[0];
 	if($F[0] ne $R[0]) {
+            die "ERROR: Read two consecutive reads but the read ids were different.\nPaired End data -- mated alignments need to be in adjacent lines.\n$F[0]\n$R[0]\n\n";
+=comment
 	    $len = -1 * (1 + length($reverse));
 	    seek(INFILE, $len, 1);
 	    next;
+=cut
 	}
 	if($R[1] & 64) {
 	    my $temp = $forward;
@@ -228,18 +232,35 @@ while(my $forward = <INFILE>) {
 	}
 	if ($use_chr_names eq "false"){
 	    if(!($F[2] =~ /^chr\d+$/ || $F[2] =~ /^chrX$/ || $F[2] =~ /^chrY$/ || $F[2] =~ /^\d+$/ || $F[2] eq 'Y' || $F[2] eq 'X')) {
-		next;
+                my $flag = 0;
+                foreach my $mito (keys %MITO){
+                    if ($F[2] eq $mito){
+                        $flag++;
+                    }
+                }
+                if ($flag == 0){
+                    next;
+                }
 	    }
 	}
 	if ($use_chr_names eq "true"){
             unless (exists $CHR_NAMES{$F[2]}){
-                next;
+                my $flag = 0;
+                foreach my $mito (keys %MITO){
+                    if ($F[2] eq $mito){
+                        $flag++;
+                    }
+                }
+                if ($flag == 0){
+                    next;
+                }
             }
         }
+=comment
 	if (exists $MITO{$F[2]}){
 	    next;
 	}
-
+=cut
 	$id = $F[0];
 	
 	if(exists $RIBO_IDs{$id}) {
@@ -274,17 +295,35 @@ while(my $forward = <INFILE>) {
 	my @F = split(/\t/,$forward);
 	if ($use_chr_names eq "false"){
 	    if(!($F[2] =~ /^chr\d+$/ || $F[2] =~ /^chrX$/ || $F[2] =~ /^chrY$/ || $F[2] =~ /^\d+$/ || $F[2] eq 'Y' || $F[2] eq 'X')) {
-		next;
+                my $flag = 0;
+                foreach my $mito (keys %MITO){
+                    if ($F[2] eq $mito){
+                        $flag++;
+                    }
+                }
+                if ($flag == 0){
+                    next;
+                }
 	    }
 	}
 	if ($use_chr_names eq "true"){
             unless (exists $CHR_NAMES{$F[2]}){
-                next;
+                my $flag = 0;
+                foreach my $mito (keys %MITO){
+                    if ($F[2] eq $mito){
+                        $flag++;
+                    }
+                }
+                if ($flag == 0){
+                    next;
+                }
             }
         }
+=comment
 	if (exists $MITO{$F[2]}){
 	    next;
 	}
+=cut
 	$id = $F[0];
 	
 	if(exists $RIBO_IDs{$id}) {

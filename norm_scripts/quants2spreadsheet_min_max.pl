@@ -7,7 +7,7 @@ my $USAGE = "usage: perl quants2spreadsheet_min_max.pl <sample dirs> <loc> <type
 where:
 <sample dirs> is the name of a file with the names of the sample directories (no paths)
 <loc> is the path to the sample directories.
-<type of quants file> is the type of quants file. e.g: exonquants, intronquants, genequants
+<type of quants file> is the type of quants file. e.g: exonquants, intronquants, genequants, intergenicquants
 
 options:
  -normdir <s>
@@ -81,7 +81,7 @@ if ($stranded eq "true"){
 
 my $last_dir = $fields[@fields-1];
 my $norm_dir = "";
-if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
+if (($type =~ /^exon/i) || ($type =~ /^intron/i) || ($type =~ /^intergenic/i)){
     $norm_dir = "$normdir/EXON_INTRON_JUNCTION";
 }
 if ($type =~ /^gene/i){
@@ -90,6 +90,7 @@ if ($type =~ /^gene/i){
 my ($exon_dir_a, $intron_dir_a);
 my $exon_dir = $norm_dir . "/FINAL_SAM/exonmappers";
 my $intron_dir = $norm_dir . "/FINAL_SAM/intronmappers";
+my $ig_dir = $norm_dir . "/FINAL_SAM/intergenicmappers";
 if ($stranded eq "true"){
     $exon_dir = $norm_dir . "/FINAL_SAM/exonmappers/sense";
     $intron_dir = $norm_dir . "/FINAL_SAM/intronmappers/sense";
@@ -147,8 +148,13 @@ elsif ($type =~ /^intron/i){
 	$sample_name_file_a = "$norm_dir/file_intronquants_minmax.antisense.txt";
     }
 }
+elsif ($type =~ /^intergenic/i){
+    $out_MIN = "$spread_dir/master_list_of_intergenic_counts_MIN.$study.txt";
+    $out_MAX = "$spread_dir/master_list_of_intergenic_counts_MAX.$study.txt";
+    $sample_name_file = "$norm_dir/file_intergenicquants_minmax.txt";
+}
 else{
-    die "ERROR:Please check the type of quants file. It has to be either \"exonquants\" ,\"intronquants\", or \"genequants\".\n\n";
+    die "ERROR:Please check the type of quants file. It has to be either \"exonquants\" ,\"intronquants\", \"intergenicquants\" or \"genequants\".\n\n";
 }
 
 if ($type =~ /^exon/i){
@@ -194,6 +200,18 @@ close(INFILE);
 close(OUT);
 close(OUT_A);
 
+if ($type =~ /^intergenic/i){
+    open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
+    open(OUT, ">$sample_name_file");
+    while (my $line = <INFILE>){
+        chomp($line);
+        my $id = $line;
+	print OUT "$ig_dir/$id.intergenicmappers.norm.intergenicquants\n";
+    }
+}
+close(INFILE);
+close(OUT);
+
 if ($type =~ /^gene/i){
     open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";
     open(OUT, ">$sample_name_file");
@@ -227,7 +245,7 @@ my $rowcnt = 0;
 my (@id, @sym, @coord);
 while(my $line = <INFILE>) {
     chomp($line);
-    if (($type =~ /^exon/i) || ($type =~ /^intron/i)){
+    if (($type =~ /^exon/i) || ($type =~ /^intron/i) || ($type =~ /^intergenic/i)){
 	if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
 	    next;
 	}
@@ -260,6 +278,7 @@ while($file = <FILES>) {
     $id =~ s/.intronmappers.norm.sense.intronquants//;
     $id =~ s/.gene.norm.genequants//;
     $id =~ s/.gene.norm.genefilter.sense.genequants//;
+    $id =~ s/.intergenicmappers.norm.intergenicquants//;
     $ID[$filecnt] = $id;
     open(INFILE, $file);
     my $firstline = <INFILE>;
@@ -267,7 +286,7 @@ while($file = <FILES>) {
     while(my $line = <INFILE>) {
 	chomp($line);
 	my @a = split(/\t/,$line);
-	if (($type =~ /^exon/) || ($type =~ /^intron/)){
+	if (($type =~ /^exon/) || ($type =~ /^intron/) || ($type =~ /^intergenic/)){
 	    if ($line !~ /([^:\t\s]+):(\d+)-(\d+)/){
 		next;
 	    }
@@ -454,6 +473,10 @@ for(my $i=0; $i<$rowcnt; $i++) {
 	    print OUT_MIN "intron:$id[$i]";
 	    print OUT_MAX "intron:$id[$i]";
 	}
+    }
+    if ($type =~ /^intergenic/i){
+	print OUT_MIN "$id[$i]";
+	print OUT_MAX "$id[$i]";
     }
     if ($type =~ /^gene/i){
 	print OUT_MIN "$id[$i]";

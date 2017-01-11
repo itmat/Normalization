@@ -11,6 +11,8 @@ You can remove unwanted samples from your <sample dirs> file.
 <loc> is the location where the sample directories are
 
 options:
+ -filter_highexp
+
  -stranded : set this if data are strand-specific.
 
  -se : set this if the data are single end, otherwise by default it will assume it's a paired end data
@@ -45,12 +47,17 @@ for (my $i=0;$i<@ARGV;$i++){
         die $USAGE;
     }
 }
+my $filter = "false";
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-alt_stats'){
 	$option_found = "true";
 	$stats_dir = $ARGV[$i+1];
 	$i++;
+    }
+    if ($ARGV[$i] eq '-filter_highexp'){
+	$option_found = "true";
+	$filter = "true";
     }
     if ($ARGV[$i] eq '-u'){
 	$NU = "false";
@@ -88,9 +95,9 @@ unless (-d "$stats_dir/GENE/"){
     `mkdir $stats_dir/GENE/`;
 }
 my $outfile = "$stats_dir/GENE/expected_num_reads_gnorm.txt";
-if (-e "$outfile"){
+if ($filter eq "true"){
     my $temp = $outfile;
-    $temp =~ s/.txt$/.after_filter_high_expressers.txt/;
+    $temp =~ s/.txt$/.without_high_expressers.txt/;
     $outfile = $temp;
 }
 my $tempfile = "$stats_dir/GENE/expected_num_reads_gnorm.temp";

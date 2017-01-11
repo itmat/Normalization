@@ -202,10 +202,19 @@ my $outfile_final = "$stats_dir/total_num_reads.txt";
 while (qx{$status | grep -c $jobname} > 0){
     sleep(10);
 }
-if (qx{cat $logname.*.err | wc -l} > 0){
-    die "ERROR: wc -l step had errors\n";
+my @g = glob("$logname.*.err");
+if (@g > 0){
+    if (qx{cat $logname.*.err | wc -l} > 0){
+	die "ERROR: wc -l step had errors\n";
+    }
 }
-
+else{
+    die "ERROR: wc -l step did not run\n";
+}
+my @g2 = glob("$temp_file.*.$study");
+if (@g2 eq 0){
+    die "ERROR: wc -l step did not run\n";
+}
 open(DIRS, $sample_dirs) or die "cannot find file '$sample_dirs'\n";
 open(OUTFINAL, ">$outfile_final");
 while(my $dir = <DIRS>){

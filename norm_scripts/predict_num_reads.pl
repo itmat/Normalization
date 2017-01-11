@@ -10,6 +10,8 @@ You can remove unwanted samples from your <sample dirs> file.
 <loc> is the location where the sample directories are
 
 options:
+ -filter_highexp: to output expected number of reads without the high expressers.
+
  -stranded : set this if your data are strand-specific.
 
  -u  :  set this if you want to return number of unique reads only, otherwise by default it will return number of unique and non-unique reads
@@ -53,6 +55,7 @@ for (my $i=0;$i<@ARGV;$i++){
 	die $USAGE;
     }
 }
+my $filter = "false";
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-depthE'){
@@ -67,6 +70,10 @@ for (my $i=2; $i<@ARGV; $i++){
 	$option_found = "true";
 	$stats_dir = $ARGV[$i+1];
 	$i++;
+    }
+    if ($ARGV[$i] eq '-filter_highexp'){
+	$option_found = "true";
+	$filter = "true";
     }
     if ($ARGV[$i] eq '-depthI'){
 	$i_intron = $ARGV[$i+1];
@@ -108,9 +115,9 @@ unless (-d "$stats_dir/EXON_INTRON_JUNCTION/"){
     `mkdir $stats_dir/EXON_INTRON_JUNCTION/`;
 }
 my $outfile = "$stats_dir/EXON_INTRON_JUNCTION/expected_num_reads.txt";
-if (-e $outfile){
+if ($filter eq "true"){
     my $temp = $outfile;
-    $temp =~ s/.txt$/.after_filter_high_expressers.txt/;
+    $temp =~ s/.txt$/.without_high_expressers.txt/;
     $outfile = $temp;
 }
 my $tempfile = "$stats_dir/EXON_INTRON_JUNCTION/expected_num_reads.temp";
