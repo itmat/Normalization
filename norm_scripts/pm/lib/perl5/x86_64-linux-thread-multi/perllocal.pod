@@ -1,0 +1,66 @@
+=head2 Thu Jan 12 13:42:25 2017: C<Module> L<Net::OpenSSH|Net::OpenSSH>
+
+=over 4
+
+=item *
+
+C<installed into: /home/kimeunj/scripts/Normalization/norm_scripts/modules//lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.73>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Thu Jan 12 13:43:32 2017: C<Module> L<File::Type|File::Type>
+
+=over 4
+
+=item *
+
+C<installed into: /home/kimeunj/scripts/Normalization/norm_scripts/modules//lib/perl5>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 0.22>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+
+=head2 Thu Jan 12 13:44:42 2017: C<Module> L<Math::Matrix|Math::Matrix>
+
+=over 4
+
+=item *
+
+C<installed into: /home/kimeunj/scripts/Normalization/norm_scripts/modules//lib/perl5>
+
+=item *
+
+C<LINKTYPE: >
+
+=item *
+
+C<VERSION: 0.8>
+
+=item *
+
+C<EXE_FILES: >
+
+=back
+

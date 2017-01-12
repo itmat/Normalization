@@ -2,7 +2,7 @@
 use warnings;
 use strict;
 use FindBin qw($Bin);
-use lib ("$Bin/lib", "$Bin/lib/perl5");
+use lib ("$Bin/pm/lib/perl5");
 use Math::Matrix;
 
 my $USAGE =  "\nUsage: perl runall_shuf_gnorm_highexp.pl <sample_dirs> <loc> [options]

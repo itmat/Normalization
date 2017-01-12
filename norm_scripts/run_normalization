@@ -2,9 +2,10 @@
 #use warnings;
 #use strict;
 use FindBin qw($Bin);
-use lib ("$Bin/lib", "$Bin/lib/perl5");
+use lib ("$Bin/pm/lib/perl5");
 use File::Type;
-use Net::SSH qw(ssh);
+#use Net::SSH qw(ssh);
+use Net::OpenSSH;
 
 my $USAGE =  "\nUsage: run_normalization --sample_dirs <file of sample_dirs> --loc <s> --unaligned <file of fa/fqfiles> --alignedfilename <s> --cfg <cfg file> [options]
 
@@ -913,7 +914,11 @@ if ($HOST_NAME =~ /^$/){
     `$runport`;
 }
 else{
-    ssh($HOST_NAME, $runport);
+    my $ssh = Net::OpenSSH->new($HOST_NAME,
+				master_opts => [-o => "StrictHostKeyChecking=no", -o => "BatchMode=yes"]);
+    $ssh->system($runport) or
+	die "remote command failed: " . $ssh->error;
+#    ssh($HOST_NAME, $runport);
 }
 
 #`$batchjobs $request$queue_3G $jobname "$study.RUNALL_NORMALIZATION" -o $logdir/$study.runall_normalization.out -e $logdir/$study.runall_normalization.err < $runall_shfile`;

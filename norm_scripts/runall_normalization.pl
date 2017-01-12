@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 #use warnings;
 use FindBin qw($Bin);
-use lib ("$Bin/lib", "$Bin/lib/perl5");
-use Net::SSH qw(ssh);
+use lib ("$Bin/pm/lib/perl5");
+use Net::OpenSSH;
 
 my $USAGE =  "\nUsage: perl runall_normalization.pl --sample_dirs <file of sample_dirs> --loc <s> --unaligned <file of fa/fqfiles> --alignedfilename <s> --cfg <cfg file> [options]
 
@@ -544,9 +544,12 @@ if ($num_cluster ne '1'){
 #HEADNODE CHECK
 my $hn_only = "false";
 my $hn_option = "";
+my $ssh;
 unless ($HOST_NAME =~ /^$/){
     $hn_only = "true";
     $hn_option = "-headnode $HOST_NAME";
+    $ssh = Net::OpenSSH->new($HOST_NAME,
+				master_opts => [-o => "StrictHostKeyChecking=no", -o => "BatchMode=yes"]);
 }
 my $exon_list = "$LOC/master_list_of_exons.txt";
 my $novel_list = "$LOC/master_list_of_exons.$study.txt";
@@ -603,7 +606,7 @@ if (-e "$logdir/$study.runall_normalization.err"){
 }
 my $run_job = "true";
 my $mem = "$request$queue_3G";
-
+my $qlist = "$queue_3G,$queue_6G,$queue_10G,$queue_15G,$queue_30G,$queue_45G,$queue_60G";
 if ($resume eq "true"){
     my ($name, $length, $get_name);
     if ($resume_at eq "false"){
@@ -691,11 +694,8 @@ if ($run_prepause eq "true"){
 	}
 	if ($other eq "true"){
 	    $c_option = "$submit \\\"$batchjobs,$jobname,$request,$queue_3G,$stat\\\"";
-	    $new_queue = "";
 	}
-	else{
-	    $new_queue = "-mem $queue_3G";
-	}
+	$new_queue = "-mem $queue_3G";
     
 	while(qx{$stat | wc -l} > $maxjobs){
 	    sleep(10);
@@ -720,11 +720,8 @@ if ($run_prepause eq "true"){
 	$err_name = "check_samformat.*.err";
 	if ($other eq "true"){
 	    $c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_3G, $stat\\\"";
-	    $new_queue = "";
 	}
-	else{
-	    $new_queue = "-mem $queue_3G";
-	}
+	$new_queue = "-mem $queue_3G";
 	
 	while(qx{$stat | wc -l} > $maxjobs){
 	    sleep(10);
@@ -743,7 +740,8 @@ if ($run_prepause eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+	    $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -770,11 +768,8 @@ if ($run_prepause eq "true"){
 	$max_map = $a[@a-1];
 	if ($other eq "true"){
 	    $c_option = "$submit \\\"$batchjobs,$jobname,$request,$queue_30G,$stat\\\"";
-	    $new_queue = "";
 	}
-	else{
-	    $new_queue = "-mem $queue_30G";
-	}
+	$new_queue = "-mem $queue_30G";
 	if ($max_map > 150000000){
 	    $new_queue = "-mem $queue_45G";
 	    if ($max_map > 200000000){
@@ -798,7 +793,8 @@ if ($run_prepause eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -882,11 +878,8 @@ if ($run_prepause eq "true"){
 	    $err_name = "runblast.*.err";
 	    if ($other eq "true"){
 		$c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_6G, $stat\\\"";
-		$new_queue = "";
 	    }
-	    else{
-		$new_queue = "-mem $queue_6G";
-	    }
+	    $new_queue = "-mem $queue_6G";
 	    
 	    while(qx{$stat | wc -l} > $maxjobs){
 		sleep(10);
@@ -905,7 +898,8 @@ if ($run_prepause eq "true"){
 		if (-e "$logdir/$name_of_alljob.out"){
 		    `rm $logdir/$name_of_alljob.out`;
 		}
-		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+		$job =~ s/$new_queue/$r/;
 		$job =~ s/$sample_dir/$resume_file/;
 		&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 		$job =~ s/$resume_file/$sample_dir/;
@@ -927,11 +921,8 @@ if ($run_prepause eq "true"){
             $err_name = "parseblastout.*.err";
             if ($other eq "true"){
                 $c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_6G, $stat\\\"";
-                $new_queue = "";
             }
-            else{
-                $new_queue = "-mem $queue_6G";
-            }
+	    $new_queue = "-mem $queue_6G";
 	    while(qx{$stat | wc -l} > $maxjobs){
                 sleep(10);
             }
@@ -949,7 +940,8 @@ if ($run_prepause eq "true"){
                 if (-e "$logdir/$name_of_alljob.out"){
                     `rm $logdir/$name_of_alljob.out`;
                 }
-                $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+		$job =~ s/$new_queue/$r/;
                 $job =~ s/$sample_dir/$resume_file/;
                 &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
                 $job =~ s/$resume_file/$sample_dir/;
@@ -971,11 +963,8 @@ if ($run_prepause eq "true"){
 	    $err_name = "$name_of_job.err";
 	    if ($other eq "true"){
 		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_3G, $stat\\\"";
-		$new_queue = "";
 	    }
-	    else{
-		$new_queue = "-mem $queue_3G";
-	    }
+	    $new_queue = "-mem $queue_3G";
 	    while(qx{$stat | wc -l} > $maxjobs){
 		sleep(10);
 	    }
@@ -1046,19 +1035,16 @@ if ($run_prepause eq "true"){
         $err_name = "filtersam_gnorm.*.err";
         if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_3G, $stat\\\"";
-            $new_queue = "";
 	}
-        else{
-            $new_queue = "-mem $queue_3G";
-        }
+	$new_queue = "-mem $queue_3G";
 	my $numr = `sort -nrk 1 $study_dir/STATS/ribo_percents.txt | head -1`;
 	chomp($numr);
 	my @xnumr = split(" " , $numr);
 	my $maxribo = $xnumr[0];
 	$maxribo =~ s/\,//;
-	if ($maxribo > 15000000){
+	if ($maxribo > 10000000){
 	    $new_queue = "-mem $queue_6G";
-	    if ($maxribo > 30000000){
+	    if ($maxribo > 20000000){
 		$new_queue = "-mem $queue_10G";
 	    }
 	}
@@ -1079,7 +1065,8 @@ if ($run_prepause eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -1102,11 +1089,8 @@ if ($run_prepause eq "true"){
 
         if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname,  $request, $queue_3G, $stat\\\"";
-            $new_queue = "";
-        }
-        else{
-            $new_queue = "-mem $queue_3G";
-        }
+	}
+	$new_queue = "-mem $queue_3G";
 	while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
@@ -1124,7 +1108,8 @@ if ($run_prepause eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -1196,11 +1181,8 @@ if ($run_prepause eq "true"){
         $err_name = "sam2genes_gnorm_*.err";
 	if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname,$request,$queue_3G, $stat\\\"";
-            $new_queue = "";
         }
-        else{
-            $new_queue = "-mem $queue_3G";
-        }
+	$new_queue = "-mem $queue_3G";
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
@@ -1218,7 +1200,8 @@ if ($run_prepause eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -1241,11 +1224,9 @@ if ($run_prepause eq "true"){
         $err_name = "cat_genes.0.*.err";
         if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname,$request,$queue_3G, $stat\\\"";
-            $new_queue = "";
         }
-        else{
-            $new_queue = "-mem $queue_3G";
-        }
+	$new_queue = "-mem $queue_3G";
+
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
@@ -1263,7 +1244,8 @@ if ($run_prepause eq "true"){
             if (-e "$logdir/$name_of_alljob.out"){
                 `rm $logdir/$name_of_alljob.out`;
             }
-            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
             $job =~ s/$sample_dir/$resume_file/;
             &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
             $job =~ s/$resume_file/$sample_dir/;
@@ -1286,11 +1268,9 @@ if ($run_prepause eq "true"){
         $err_name = "genefilter.0.*.err";
 	if ($other eq "true"){
 	    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
-            $new_queue = "";
         }
-        else{
-            $new_queue = "-mem $queue_15G";
-        }
+	$new_queue = "-mem $queue_15G";
+
 	$total = "$study_dir/STATS/total_num_reads.txt";
         $sorted = `cut -f 2 $total | sort -n`;
         @a = split (/\n/, $sorted);
@@ -1322,7 +1302,8 @@ if ($run_prepause eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -1392,11 +1373,8 @@ if ($run_prepause eq "true"){
         $err_name = "quantifygenes.gnorm_u.*.err";
 	if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_10G, $stat\\\"";
-            $new_queue = "";
         }
-        else{
-            $new_queue = "-mem $queue_10G";
-        }
+	$new_queue = "-mem $queue_10G";
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
@@ -1414,7 +1392,8 @@ if ($run_prepause eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -1465,11 +1444,9 @@ if ($run_prepause eq "true"){
 	}
         if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
-            $new_queue = "";
         }
-        else{
-            $new_queue = "-mem $queue_6G";
-        }
+	$new_queue = "-mem $queue_6G";
+
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
@@ -1487,7 +1464,8 @@ if ($run_prepause eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -1513,11 +1491,9 @@ if ($run_prepause eq "true"){
 	    }
 	    if ($other eq "true"){
 		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
-		$new_queue = "";
 	    }
-	    else{
-		$new_queue = "-mem $queue_6G";
-	    }
+	    $new_queue = "-mem $queue_6G";
+
 	    while(qx{$stat | wc -l} > $maxjobs){
 		sleep(10);
 	    }
@@ -1535,7 +1511,8 @@ if ($run_prepause eq "true"){
 		if (-e "$logdir/$name_of_alljob.out"){
 		    `rm $logdir/$name_of_alljob.out`;
 		}
-		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+		$job =~ s/$new_queue/$r/;
 		$job =~ s/$sample_dir/$resume_file/;
 		&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 		$job =~ s/$resume_file/$sample_dir/;
@@ -1559,11 +1536,9 @@ if ($run_prepause eq "true"){
             $err_name = "filter_high_expressers_gnorm.0.*.err";
 	    if ($other eq "true"){
 		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_3G, $stat\\\"";
-		$new_queue = "";
 	    }
-	    else{
-		$new_queue = "-mem $queue_3G";
-	    }
+	    $new_queue = "-mem $queue_3G";
+
             $job = "echo \"perl $norm_script_dir/runall_filter_high_expressers_gnorm.pl $sample_dir $LOC $list_for_genequant $data_stranded $se $c_option $cluster_max $new_queue -i 0 $UONLY\" | $batchjobs $mem $jobname \"$study.runall_filter_high_expressers_gnorm\" -o $logdir/$study.runall_filter_high_expressers_gnorm.out -e $logdir/$study.runall_filter_high_expressers_gnorm.err";
 	    &clear_log($name_of_alljob, $err_name);
 	    if ($resume eq "true"){
@@ -1590,11 +1565,9 @@ if ($run_prepause eq "true"){
 	    $err_name = "genefilter2.1.*.err";
 	    if ($other eq "true"){
 		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
-		$new_queue = "";
 	    }
-	    else{
-		$new_queue = "-mem $queue_15G";
-	    }
+	    $new_queue = "-mem $queue_15G";
+
 	    $total = "$study_dir/STATS/total_num_reads.txt";
 	    $sorted = `cut -f 2 $total | sort -n`;
 	    @a = split (/\n/, $sorted);
@@ -1626,7 +1599,8 @@ if ($run_prepause eq "true"){
 		if (-e "$logdir/$name_of_alljob.out"){
 		    `rm $logdir/$name_of_alljob.out`;
 		}
-		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+		$job =~ s/$new_queue/$r/;
 		$job =~ s/$sample_dir/$resume_file/;
 		&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 		$job =~ s/$resume_file/$sample_dir/;
@@ -1669,11 +1643,9 @@ if ($run_prepause eq "true"){
             $err_name = "genefilter_highexp*.0.*err";
             if ($other eq "true"){
                 $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
-                $new_queue = "";
             }
-            else{
-                $new_queue = "-mem $queue_15G";
-            }
+	    $new_queue = "-mem $queue_15G";
+
             while(qx{$stat | wc -l} > $maxjobs){
                 sleep(10);
             }
@@ -1691,7 +1663,8 @@ if ($run_prepause eq "true"){
                 if (-e "$logdir/$name_of_alljob.out"){
                     `rm $logdir/$name_of_alljob.out`;
                 }
-                $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+		$job =~ s/$new_queue/$r/;
                 $job =~ s/$sample_dir/$resume_file/;
                 &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
                 $job =~ s/$resume_file/$sample_dir/;
@@ -1770,19 +1743,17 @@ if ($run_prepause eq "true"){
 	$err_name = "filtersam.*.err";
 	if ($other eq "true"){
 	    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_3G, $stat\\\"";
-	    $new_queue = "";
 	}
-	else{
-	    $new_queue = "-mem $queue_3G";
-	}
+	$new_queue = "-mem $queue_3G";
+
         my $numr = `sort -nrk 1 $study_dir/STATS/ribo_percents.txt | head -1`;
         chomp($numr);
         my @xnumr = split(" " , $numr);
 	my $maxribo = $xnumr[0];
 	$maxribo =~ s/\,//;
-        if ($maxribo > 15000000){
+        if ($maxribo > 10000000){
             $new_queue = "-mem $queue_6G";
-            if ($maxribo > 30000000){
+            if ($maxribo > 20000000){
 		$new_queue = "-mem $queue_10G";
             }
         }
@@ -1804,7 +1775,8 @@ if ($run_prepause eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -1827,11 +1799,9 @@ if ($run_prepause eq "true"){
         $err_name = "numchrcnt.*.err";
 	if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname,  $request, $queue_3G, $stat\\\"";
-            $new_queue = "";
         }
-        else{
-            $new_queue = "-mem $queue_3G";
-        }
+	$new_queue = "-mem $queue_3G";
+
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
@@ -1849,7 +1819,8 @@ if ($run_prepause eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -1971,11 +1942,9 @@ if ($run_prepause eq "true"){
 	    $err_name = "sam2junctions.1.*.err";
 	    if ($other eq "true"){
 		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
-		$new_queue = "";
 	    }
-	    else{
-		$new_queue = "-mem $queue_6G";
-	    }
+	    $new_queue = "-mem $queue_6G";
+
 	    while(qx{$stat | wc -l} > $maxjobs){
 		sleep(10);
 	    }	
@@ -1993,7 +1962,8 @@ if ($run_prepause eq "true"){
 		if (-e "$logdir/$name_of_alljob.out"){
 		    `rm $logdir/$name_of_alljob.out`;
 		}
-		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+		$job =~ s/$new_queue/$r/;
 		$job =~ s/$sample_dir/$resume_file/;
 		&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 		$job =~ s/$resume_file/$sample_dir/;
@@ -2024,11 +1994,9 @@ if ($run_prepause eq "true"){
 	    }
 	    if ($other eq "true"){
 		$c_option = "$submit \\\"$batchjobs, $jobname,$request,$queue_3G,$stat\\\"";
-		$new_queue = "";
 	    }
-	    else{
-		$new_queue = "-mem $queue_3G";
-	    }
+	    $new_queue = "-mem $queue_3G";
+
 	    while(qx{$stat | wc -l} > $maxjobs){
 		sleep(10);
 	    }
@@ -2046,7 +2014,8 @@ if ($run_prepause eq "true"){
 		if (-e "$logdir/$name_of_alljob.out"){
 		    `rm $logdir/$name_of_alljob.out`;
 		}
-		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+		$job =~ s/$new_queue/$r/;
 		$job =~ s/$sample_dir/$resume_file/;
 		&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 		$job =~ s/$resume_file/$sample_dir/;
@@ -2146,11 +2115,9 @@ if ($run_prepause eq "true"){
 		
 	if ($other eq "true"){
 	    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
-	    $new_queue = "";
 	}
-	else{
-	    $new_queue = "-mem $queue_6G";
-	}
+	$new_queue = "-mem $queue_6G";
+
 	while(qx{$stat | wc -l} > $maxjobs){
 	    sleep(10);
 	}
@@ -2168,7 +2135,8 @@ if ($run_prepause eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -2194,11 +2162,9 @@ if ($run_prepause eq "true"){
 	}
 	if ($other eq "true"){
 	    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
-	    $new_queue = "";
 	}
-	else{
-	    $new_queue = "-mem $queue_15G";
-	}
+	$new_queue = "-mem $queue_15G";
+
 	while(qx{$stat | wc -l} > $maxjobs){
 	    sleep(10);
 	}
@@ -2224,7 +2190,8 @@ if ($run_prepause eq "true"){
 		    `rm $logdir/annotate.0.master_exon.out`;
 		}
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -2246,11 +2213,9 @@ if ($run_prepause eq "true"){
 	$err_name = "get_exon_intron_percents.0.*.err";
 	if ($other eq "true"){
 	    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
-	    $new_queue = "";
 	}
-	else{
-	    $new_queue = "-mem $queue_6G";
-	}
+	$new_queue = "-mem $queue_6G";
+
 	while(qx{$stat | wc -l} > $maxjobs){
 	    sleep(10);
 	}
@@ -2276,7 +2241,8 @@ if ($run_prepause eq "true"){
 		    `rm $logdir/annotate.0.master_exon.out`;
 		}
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -2349,11 +2315,9 @@ if ($run_prepause eq "true"){
 	$err_name = "quantify_exons_introns.outputsam.0.*.err";
 	if ($other eq "true"){
 	    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
-	    $new_queue = "";
 	}
-	else{
-	    $new_queue = "-mem $queue_6G";
-	}
+	$new_queue = "-mem $queue_6G";
+
 	while(qx{$stat | wc -l} > $maxjobs){
 	    sleep(10);
 	}
@@ -2372,7 +2336,8 @@ if ($run_prepause eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -2590,7 +2555,7 @@ if ($run_prepause eq "true"){
 		my @highfiles = glob("$study_dir/STATS/GENE/percent_high_expresser_gene*txt");
 		my $highcnt = 0;
 		foreach my $highfile (@highfiles){
-		    my $x = `head -1 $highfile | awk wc -w`;
+		    my $x = `head -1 $highfile | wc -w`;
 		    chomp($x);
 		    if ($x > 1){
 			$highcnt++;
@@ -2748,11 +2713,9 @@ if ($run_norm eq "true"){
 		    $err_name = "get_genepercents.1.*.err";
 		    if ($other eq "true"){
 			$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
-			$new_queue = "";
 		    }
-		    else{
-			$new_queue = "-mem $queue_6G";
-		    }
+		    $new_queue = "-mem $queue_6G";
+
 		    while(qx{$stat | wc -l} > $maxjobs){
 			sleep(10);
 		    }
@@ -2770,7 +2733,8 @@ if ($run_norm eq "true"){
 			if (-e "$logdir/$name_of_alljob.out"){
 			    `rm $logdir/$name_of_alljob.out`;
 			}
-			$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+			$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+			$job =~ s/$new_queue/$r/;
 			$job =~ s/$sample_dir/$resume_file/;
 			&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 			$job =~ s/$resume_file/$sample_dir/;
@@ -2792,11 +2756,9 @@ if ($run_norm eq "true"){
 		    $err_name = "filter_high_expressers_gnorm.1.*.err";
 		    if ($other eq "true"){
 			$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_3G, $stat\\\"";
-			$new_queue = "";
 		    }
-		    else{
-			$new_queue = "-mem $queue_3G";
-		    }
+		    $new_queue = "-mem $queue_3G";
+
 		    $job = "echo \"perl $norm_script_dir/runall_filter_high_expressers_gnorm.pl $sample_dir $LOC $list_for_genequant $data_stranded $se $c_option $cluster_max $new_queue -i 1 $UONLY\" | $batchjobs $mem $jobname \"$study.runall_filter_high_expressers_gnorm_p2\" -o $logdir/$study.runall_filter_high_expressers_gnorm_p2.out -e $logdir/$study.runall_filter_high_expressers_gnorm_p2.err";
 		    &clear_log($name_of_alljob, $err_name);
 		    if ($resume eq "true"){
@@ -2823,11 +2785,9 @@ if ($run_norm eq "true"){
 		    $err_name = "genefilter2.2.*.err";
 		    if ($other eq "true"){
 			$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
-			$new_queue = "";
 		    }
-		    else{
-			$new_queue = "-mem $queue_15G";
-		    }
+		    $new_queue = "-mem $queue_15G";
+
 		    $total = "$study_dir/STATS/total_num_reads.txt";
 		    $sorted = `cut -f 2 $total | sort -n`;
 		    @a = split (/\n/, $sorted);
@@ -2859,7 +2819,8 @@ if ($run_norm eq "true"){
 			if (-e "$logdir/$name_of_alljob.out"){
 			    `rm $logdir/$name_of_alljob.out`;
 			}
-			$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+			$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+			$job =~ s/$new_queue/$r/;
 			$job =~ s/$sample_dir/$resume_file/;
 			&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 			$job =~ s/$resume_file/$sample_dir/;
@@ -2902,11 +2863,9 @@ if ($run_norm eq "true"){
 		    $err_name = "genefilter_highexp*.1.*err";
 		    if ($other eq "true"){
 			$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
-			$new_queue = "";
 		    }
-		    else{
-			$new_queue = "-mem $queue_15G";
-		    }
+		    $new_queue = "-mem $queue_15G";
+
 		    while(qx{$stat | wc -l} > $maxjobs){
 			sleep(10);
 		    }
@@ -2924,7 +2883,8 @@ if ($run_norm eq "true"){
 			if (-e "$logdir/$name_of_alljob.out"){
 			    `rm $logdir/$name_of_alljob.out`;
 			}
-			$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+			$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+			$job =~ s/$new_queue/$r/;
 			$job =~ s/$sample_dir/$resume_file/;
 			&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 			$job =~ s/$resume_file/$sample_dir/;
@@ -3006,11 +2966,9 @@ if ($run_norm eq "true"){
         }
 	if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_10G, $stat\\\"";
-            $new_queue = "";
         }
-        else{
-            $new_queue = "-mem $queue_10G";
-        }
+	$new_queue = "-mem $queue_10G";
+
         @g = glob("$LOC/*/GNORM/*/*linecount*txt");
         if (@g ne '0'){
             $max_lc = `cut -f 2 $LOC/*/GNORM/*/*linecount*txt | sort -nr | head -1`;
@@ -3053,11 +3011,9 @@ if ($run_norm eq "true"){
 	    }
 	    if ($other eq "true"){
 		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
-		$new_queue = "";
 	    }
-	    else{
-		$new_queue = "-mem $queue_6G";
-	    }
+	    $new_queue = "-mem $queue_6G";
+
 	    @g = glob("$LOC/*/GNORM/*/*linecount*txt");
 	    if (@g ne '0'){
 		$max_lc = `cut -f 2 $LOC/*/GNORM/*/*linecount*txt | sort -nr | head -1`;
@@ -3100,11 +3056,9 @@ if ($run_norm eq "true"){
         $err_name = "cat_gnorm_Unique_NU.*.err";
         if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname,$request,$queue_3G,$stat\\\"";
-            $new_queue = "";
-        }
-        else{
-            $new_queue = "-mem $queue_3G";
-        }
+	}
+	$new_queue = "-mem $queue_3G";
+
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
@@ -3122,7 +3076,8 @@ if ($run_norm eq "true"){
             if (-e "$logdir/$name_of_alljob.out"){
                 `rm $logdir/$name_of_alljob.out`;
             }
-            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
             $job =~ s/$sample_dir/$resume_file/;
             &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
             $job =~ s/$resume_file/$sample_dir/;
@@ -3146,11 +3101,9 @@ if ($run_norm eq "true"){
 
 	if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname,$request,$queue_3G,$stat\\\"";
-            $new_queue = "";
         }
-        else{
-            $new_queue = "-mem $queue_3G";
-        }
+	$new_queue = "-mem $queue_3G";
+
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
@@ -3168,7 +3121,8 @@ if ($run_norm eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -3191,11 +3145,9 @@ if ($run_norm eq "true"){
         $err_name = "cat_genes.1.*.err";
         if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname,$request,$queue_3G, $stat\\\"";
-            $new_queue = "";
         }
-        else{
-            $new_queue = "-mem $queue_3G";
-        }
+	$new_queue = "-mem $queue_3G";
+
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
@@ -3213,7 +3165,8 @@ if ($run_norm eq "true"){
             if (-e "$logdir/$name_of_alljob.out"){
                 `rm $logdir/$name_of_alljob.out`;
             }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
             $job =~ s/$sample_dir/$resume_file/;
             &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
             $job =~ s/$resume_file/$sample_dir/;
@@ -3237,11 +3190,9 @@ if ($run_norm eq "true"){
 	    $err_name = "genefilter.norm.*.err";
 	    if ($other eq "true"){
 		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
-		$new_queue = "";
 	    }
-	    else{
-		$new_queue = "-mem $queue_15G";
-	    }
+	    $new_queue = "-mem $queue_15G";
+
 	    while(qx{$stat | wc -l} > $maxjobs){
 		sleep(10);
 	    }
@@ -3273,7 +3224,8 @@ if ($run_norm eq "true"){
 		if (-e "$logdir/$name_of_alljob.out"){
 		    `rm $logdir/$name_of_alljob.out`;
 		}
-		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+		$job =~ s/$new_queue/$r/;
 		$job =~ s/$sample_dir/$resume_file/;
 		&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 		$job =~ s/$resume_file/$sample_dir/;
@@ -3297,11 +3249,8 @@ if ($run_norm eq "true"){
         $err_name = "quantifygenes.gnorm2*.err";
 	if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_10G, $stat\\\"";
-            $new_queue = "";
-        }
-        else{
-            $new_queue = "-mem $queue_10G";
-        }
+	}
+	$new_queue = "-mem $queue_10G";
 
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
@@ -3320,7 +3269,8 @@ if ($run_norm eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -3345,11 +3295,9 @@ if ($run_norm eq "true"){
 
 	    if ($other eq "true"){
 		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
-		$new_queue = "";
 	    }
-	    else{
-		$new_queue = "-mem $queue_15G";
-	    }
+	    $new_queue = "-mem $queue_15G";
+
 
 	    while(qx{$stat | wc -l} > $maxjobs){
 		sleep(10);
@@ -3370,7 +3318,8 @@ if ($run_norm eq "true"){
 		if (-e "$logdir/$name_of_alljob.out"){
 		    `rm $logdir/$name_of_alljob.out`;
 		}
-		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+		$job =~ s/$new_queue/$r/;
 		$job =~ s/$sample_dir/$resume_file/;
 		&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 		$job =~ s/$resume_file/$sample_dir/;
@@ -3394,11 +3343,9 @@ if ($run_norm eq "true"){
         $err_name = "sam2junctions_gnorm.*.err";
 	if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
-            $new_queue = "";
         }
-        else{
-            $new_queue = "-mem $queue_6G";
-        }
+	$new_queue = "-mem $queue_6G";
+
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
@@ -3416,7 +3363,8 @@ if ($run_norm eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -3531,11 +3479,8 @@ if ($run_norm eq "true"){
 		    $err_name = "annotate.1.*.err";
 		    if ($other eq "true"){
 			$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
-			$new_queue = "";
 		    }
-		    else{
-			$new_queue = "-mem $queue_15G";
-		    }
+		    $new_queue = "-mem $queue_15G";
 		    while(qx{$stat | wc -l} > $maxjobs){
 			sleep(10);
 		    }
@@ -3562,7 +3507,8 @@ if ($run_norm eq "true"){
 				`rm $logdir/annotate.1.master_exon.out`;
 			    }
 			}
-			$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+			$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+			$job =~ s/$new_queue/$r/;
 			$job =~ s/$sample_dir/$resume_file/;
 			&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 			$job =~ s/$resume_file/$sample_dir/;
@@ -3615,7 +3561,8 @@ if ($run_norm eq "true"){
 				`rm $logdir/annotate.0.master_exon.out`;
 			    }
 			}
-			$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 			$job =~ s/$sample_dir/$resume_file/;
 			&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 			$job =~ s/$resume_file/$sample_dir/;
@@ -3690,11 +3637,9 @@ if ($run_norm eq "true"){
 		    $err_name = "quantify_exons_introns.outputsam.1.*.err";
 		    if ($other eq "true"){
 			$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
-			$new_queue = "";
 		    }
-		    else{
-			$new_queue = "-mem $queue_6G";
-		    }
+		    $new_queue = "-mem $queue_6G";
+
 		    while(qx{$stat | wc -l} > $maxjobs){
 			sleep(10);
 		    }
@@ -3713,7 +3658,8 @@ if ($run_norm eq "true"){
 			if (-e "$logdir/$name_of_alljob.out"){
 			    `rm $logdir/$name_of_alljob.out`;
 			}
-			$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+			$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+			$job =~ s/$new_queue/$r/;
 			$job =~ s/$sample_dir/$resume_file/;
 			&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 			$job =~ s/$resume_file/$sample_dir/;
@@ -3865,11 +3811,9 @@ if ($run_norm eq "true"){
         }
 	if ($other eq "true"){
 	    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
-	    $new_queue = "";
 	}
-	else{
-	    $new_queue = "-mem $queue_6G";
-	}
+	$new_queue = "-mem $queue_6G";
+
 	my $linecounts = "$LOC/*/EIJ/Unique/linecounts.txt";
 	if ($STRANDED =~ /^true/i){
 	    $linecounts = "$LOC/*/EIJ/Unique/sense/linecounts.txt";
@@ -3917,11 +3861,9 @@ if ($run_norm eq "true"){
 	    }
 	    if ($other eq "true"){
 		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
-		$new_queue = "";
 	    }
-	    else{
-		$new_queue = "-mem $queue_6G";
-	    }
+	    $new_queue = "-mem $queue_6G";
+
 	    my $linecounts = "$LOC/*/EIJ/Unique/linecounts.txt";
 	    if ($STRANDED =~ /^true/i){
 		$linecounts = "$LOC/*/EIJ/Unique/sense/linecounts.txt";
@@ -3967,11 +3909,8 @@ if ($run_norm eq "true"){
 	    $err_name = "cat_highexp_files.*.err";
 	    if ($other eq "true"){
 		$c_option = "$submit \\\"$batchjobs, $jobname,$request,$queue_6G, $stat\\\"";
-		$new_queue = "";
 	    }
-	    else{
-		$new_queue = "-mem $queue_6G";
-	    }
+	    $new_queue = "-mem $queue_6G";
 	    while(qx{$stat | wc -l} > $maxjobs){
 		sleep(10);
 	    }
@@ -3989,7 +3928,8 @@ if ($run_norm eq "true"){
 		if (-e "$logdir/$name_of_alljob.out"){
 		    `rm $logdir/$name_of_alljob.out`;
 		}
-		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+		$job =~ s/$new_queue/$r/;
 		$job =~ s/$sample_dir/$resume_file/;
 		&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 		$job =~ s/$resume_file/$sample_dir/;
@@ -4012,11 +3952,9 @@ if ($run_norm eq "true"){
 	$err_name = "cat_shuffiles.*.err";
         if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname,$request,$queue_3G, $stat\\\"";
-            $new_queue = "";
         }
-        else{
-	    $new_queue = "-mem $queue_3G";
-        }
+	$new_queue = "-mem $queue_3G";
+
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
@@ -4034,7 +3972,8 @@ if ($run_norm eq "true"){
             if (-e "$logdir/$name_of_alljob.out"){
                 `rm $logdir/$name_of_alljob.out`;
             }
-            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
             $job =~ s/$sample_dir/$resume_file/;
             &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
             $job =~ s/$resume_file/$sample_dir/;
@@ -4059,11 +3998,9 @@ if ($run_norm eq "true"){
 
 	if ($other eq "true"){
 	    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
-	    $new_queue = "";
 	}
-	else{
-	    $new_queue = "-mem $queue_15G";
-	}
+	$new_queue = "-mem $queue_15G";
+
         my $linecounts = "$study_dir/STATS/lineCounts/exon.unique.lc.1.txt";
 	if ($STRANDED =~ /^true/i){
             $linecounts = "$study_dir/STATS/lineCounts/exon.unique.sense.lc.1.txt";
@@ -4101,7 +4038,8 @@ if ($run_norm eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -4124,11 +4062,9 @@ if ($run_norm eq "true"){
 	$err_name = "sam2junctions.0.*.err";
 	if ($other eq "true"){
 	    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
-	    $new_queue = "";
 	}
-	else{
-	    $new_queue = "-mem $queue_6G";
-	}
+	$new_queue = "-mem $queue_6G";
+
 	while(qx{$stat | wc -l} > $maxjobs){
 	    sleep(10);
 	}    
@@ -4146,7 +4082,8 @@ if ($run_norm eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -4170,11 +4107,9 @@ if ($run_norm eq "true"){
         
 	if ($other eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
-	    $new_queue = "";
         }
-        else{
-            $new_queue = "-mem $queue_6G";
-        }
+	$new_queue = "-mem $queue_6G";
+
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
@@ -4192,7 +4127,8 @@ if ($run_norm eq "true"){
 	    if (-e "$logdir/$name_of_alljob.out"){
 		`rm $logdir/$name_of_alljob.out`;
 	    }
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	    &runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 	    $job =~ s/$resume_file/$sample_dir/;
@@ -4219,11 +4155,9 @@ if ($run_norm eq "true"){
 	
 	if ($other eq "true"){
 	    $c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_6G, $queue_10G, $stat\\\"";
-	    $new_queue = "";
 	}
-	else{
-	    $new_queue = "-mem $queue_10G";
-	}
+	$new_queue = "-mem $queue_10G";
+
 	if ($num_samples > 100){
 	    $new_queue = "-mem $queue_30G";
 	}
@@ -4280,11 +4214,9 @@ if ($run_norm eq "true"){
 	close(OUT);
 	if ($other eq "true"){
 	    $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
-	    $new_queue = "";
 	}
-	else{
-	    $new_queue = "-mem $queue_15G";
-	}
+	$new_queue = "-mem $queue_15G";
+
 	while(qx{$stat | wc -l} > $maxjobs){
 	    sleep(10);
 	}
@@ -4381,11 +4313,9 @@ if ($run_norm eq "true"){
 	if ($sam2cov eq "true"){
             if ($other eq "true"){
                 $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
-                $new_queue = "";
             }
-            else{
-                $new_queue = "-mem $queue_15G";
-            }
+	    $new_queue = "-mem $queue_15G";
+
             while(qx{$stat | wc -l} > $maxjobs){
                 sleep(10);
             }
@@ -4403,7 +4333,8 @@ if ($run_norm eq "true"){
 		if (-e "$logdir/$name_of_alljob.out"){
 		    `rm $logdir/$name_of_alljob.out`;
 		}
-		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+		$job =~ s/$new_queue/$r/;
 		$job =~ s/$sample_dir/$resume_file/;
 		&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 		$job =~ s/$resume_file/$sample_dir/;
@@ -4427,11 +4358,9 @@ if ($run_norm eq "true"){
 	if ($sam2cov eq "true"){
 	    if ($other eq "true"){
 		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_15G, $stat\\\"";
-		$new_queue = "";
 	    }
-	    else{
-		$new_queue = "-mem $queue_15G";
-	    }
+	    $new_queue = "-mem $queue_15G";
+
 	    while(qx{$stat | wc -l} > $maxjobs){
 		sleep(10);
 	    }
@@ -4449,7 +4378,8 @@ if ($run_norm eq "true"){
 		if (-e "$logdir/$name_of_alljob.out"){
 		    `rm $logdir/$name_of_alljob.out`;
 		}
-		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+		$job =~ s/$new_queue/$r/;
 		$job =~ s/$sample_dir/$resume_file/;
 		&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 		$job =~ s/$resume_file/$sample_dir/;
@@ -4515,11 +4445,9 @@ if ($run_norm eq "true"){
 	    }
 	    if ($other eq "true"){
 		$c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_6G, $stat\\\"";
-		$new_queue = "";
 	    }
-	    else{
-		$new_queue = "-mem $queue_6G";
-	    }
+	    $new_queue = "-mem $queue_6G";
+
 	    while (qx{$status | wc -l} > $maxjobs){
 		sleep(10);
 	    }
@@ -4537,7 +4465,8 @@ if ($run_norm eq "true"){
 		if (-e "$logdir/$name_of_alljob.out"){
 		    `rm $logdir/$name_of_alljob.out`;
 		}
-		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+		$job =~ s/$new_queue/$r/;
 		$job =~ s/$sample_dir/$resume_file/;
 		&runalljob($job, $name_of_alljob, $name_of_job, $job_num, $err_name);
 		$job =~ s/$resume_file/$sample_dir/;
@@ -4593,7 +4522,9 @@ sub parse_config_file () {
 sub onejob {
     my ($job, $name_of_job, $job_num) = @_;
     if ($hn_only eq "true"){
-	ssh($HOST_NAME, $job);
+	$ssh->system($job) or
+	    die "remote command failed: " . $ssh->error;
+	#ssh($HOST_NAME, $job);
     }
     else{
 	`$job`;
@@ -4617,7 +4548,9 @@ sub runalljob{
     my $out_name = $err_name;
     $out_name =~ s/err$/out/g;
     if ($hn_only eq "true"){
-	ssh($HOST_NAME,$job);
+        $ssh->system($job) or
+            die "remote command failed: " . $ssh->error;
+#	ssh($HOST_NAME,$job);
     }
     else{
         `$job`;
@@ -4708,7 +4641,8 @@ sub check_exit_alljob{
 	    }
 	}
 	unless ($name_of_alljob =~ /runall_shuf/){
-	    $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+            $r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+            $job =~ s/$new_queue/$r/;
 	    $job =~ s/$sample_dir/$resume_file/;
 	}
 	my $jobnum_rep = "\t**Job exited before completing\n\tretrying...";
@@ -4753,7 +4687,8 @@ sub check_exit_alljob{
 		}
 	    }
 	    unless ($name_of_alljob =~ /runall_shuf/){
-		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\"`;
+		$r = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+		$job =~ s/$new_queue/$r/;
 		$job =~ s/$sample_dir/$resume_file/;
 	    }
 	    my $jobnum_rep = "\t**Job exited before completing\n\tretrying...";

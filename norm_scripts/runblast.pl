@@ -2,8 +2,9 @@
 use warnings;
 use strict;
 use FindBin qw($Bin);
-use lib ("$Bin/lib", "$Bin/lib/perl5");
-use Net::SSH qw(ssh);
+use lib ("$Bin/pm/lib/perl5");
+use Net::OpenSSH;
+#use Net::SSH qw(ssh);
 
 my $USAGE =  "usage: perl runblast.pl <dir> <loc> <blastdir> <query> [option]
 
@@ -70,6 +71,7 @@ my $njobs = 200;
 my $status = "";
 my $hn_only = "false";
 my $hn_name = "";
+my $ssh;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -82,6 +84,8 @@ for(my $i=4;$i<@ARGV;$i++){
 	$hn_only = "true";
 	$hn_name = $ARGV[$i+1];
 	$i++;
+	$ssh = Net::OpenSSH->new($hn_name,
+				 master_opts => [-o => "StrictHostKeyChecking=no", -o => "BatchMode=yes"]);
     }
     if ($ARGV[$i] eq '-gz'){
 	$option_found ="true";
@@ -298,7 +302,9 @@ while(my $line = <QU>){
 #		my $x = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db1 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
 		my $x = "echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db1 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err";
 		if ($hn_only eq "true"){
-		    ssh($hn_name,$x);
+		    $ssh->system($x) or
+			die "remote command failed: " . $ssh->error;
+#		    ssh($hn_name,$x);
 		}
 		else{
 		    `$x`;
@@ -314,7 +320,9 @@ while(my $line = <QU>){
 #		my $y = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db2 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
 		my $y = "echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db2 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err";
                 if ($hn_only eq "true"){
-                    ssh($hn_name,$y);
+		    $ssh->system($y) or
+			die "remote command failed: " . $ssh->error;
+                    #ssh($hn_name,$y);
                 }
                 else{
                     `$y`;
@@ -344,7 +352,9 @@ foreach my $db1 (keys %DBS1){
 #    my $x = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db1 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
     my $x = "echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db1 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err";
     if ($hn_only eq "true"){
-	ssh($hn_name,$x);
+        $ssh->system($x) or
+            die "remote command failed: " . $ssh->error;
+	#ssh($hn_name,$x);
     }
     else{
 	`$x`;
@@ -360,7 +370,9 @@ foreach my $db2 (keys %DBS2){
 #    my $y = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db2 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
     my $y = "echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db2 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err";
     if ($hn_only eq "true"){
-	ssh($hn_name,$y);
+        $ssh->system($y) or
+            die "remote command failed: " . $ssh->error;
+	#ssh($hn_name,$y);
     }
     else{
 	`$y`;

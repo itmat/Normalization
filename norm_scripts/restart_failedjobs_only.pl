@@ -2,23 +2,55 @@
 use warnings;
 use strict;
 
-my $USAGE = "perl restart_failedjobs_only.pl <sample dirs> <loc> <errname>
+my $USAGE = "perl restart_failedjobs_only.pl <sample dirs> <loc> <errname> <queuename>
 
 <sample dirs> is a file with the names of the sample directories
 <loc> is the directory with the sample directories
 <errname> is the name of error log files (e.g. \"sam2mappingstats*err\")
           **make sure the name argument is inside the quotes**
+<queuename> queue used 
+
+[option]
+-qlist '3G,6G,10G,15G,30G,45G,60G'
 
 \n";
 my $size = @ARGV;
-if (@ARGV < 3){
+if (@ARGV < 4){
     die $USAGE;
+}
+my @list;
+for(my $i=4;$i<@ARGV;$i++){
+    my $option_rec = "false";
+    if ($ARGV[$i] eq '-qlist'){
+        $option_rec = "true";
+        @list = split(",", $ARGV[$i+1]);
+        $i++;
+    }
+    if ($option_rec eq 'false'){
+        die "option \"$ARGV[$i]\" not recognized\n";
+    }
 }
 
 my $dirs = $ARGV[0];
 my $LOC = $ARGV[1];
 my $errname = $ARGV[2];
 $LOC =~ s/\/$//;
+my $qused = $ARGV[3];
+my $to_print = $qused;
+$qused =~ s/-mem//;
+$qused =~ s/^\s+|\s+$//g;
+my $nindex;
+for(my $i=0;$i<@list;$i++){
+    my $tmp = $list[$i];
+    $tmp =~ s/^\s+|\s+$//g;
+    if ($tmp eq $qused){
+        $nindex = $i+1;
+    }
+}
+if ($nindex >= @list){
+    $nindex--;
+}
+#die "$qused\n$list[$nindex]\n";
 
 my @fields = split("/", $LOC);
 my $last_dir = $fields[@fields-1];
@@ -68,7 +100,7 @@ while(my $line = <IN>){
 		next;
 	    }
 	    else{ # err - not empty
-#		print "4: restart\n";
+		print "4: restart\n";
 		$RESTART{$line} = 1;
 		my $x = `rm $ofile`;
 		my $y = `rm $efile`;
@@ -76,6 +108,15 @@ while(my $line = <IN>){
 	}
 	else{ # "got here" not in all .out files
 #	    print "5: restart\n";
+            my $w = `wc -l $efile`;
+            my @r = split(/\n/, $w);
+            my $lastrow = $r[@r-1];
+            my @c = split(" ", $lastrow);
+            my $cnt = $c[0];
+            if ($cnt == 0){ #check .err - empty
+                 #increase mem
+                 $to_print = "-mem $list[$nindex]";
+            }
 	    $RESTART{$line} = 1;
 	    my $x = `rm $ofile`;		
 	    my $y = `rm $efile`;
@@ -102,3 +143,4 @@ else{ # restart all
     }
     close(IN);
 }
+print $to_print;

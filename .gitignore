@@ -49,3 +49,5 @@ norm_scripts/get_exon_intron_percents.new.pl
 norm_scripts/test_cigar2spans.pl
 norm_scripts/filter_sam.chrM.pl
 norm_scripts/filter_sam_gnorm.chrM.pl
+norm_scripts/pm/src
+norm_scripts/testopenssh.pl
