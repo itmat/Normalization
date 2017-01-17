@@ -1,6 +1,10 @@
 #!/usr/bin/env perl
 use warnings;
 use strict;
+use FindBin qw($Bin);
+use lib ("$Bin/pm/lib/perl5");
+use Net::OpenSSH;
+
 my $USAGE = "\nUsage: runall_sam2cov.pl <sample dirs> <loc> <fai file> <sam2cov> [options]
 
 <sample dirs> is  a file of sample directories with alignment output without path
@@ -43,6 +47,8 @@ option:
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                    by default, <n> = 200.
 
+ -headnode <name> : For clusters which only allows job submissions from the head node, use this option.
+
  -h : print usage
 
 ";
@@ -68,6 +74,9 @@ my $mem = "";
 my $new_mem;
 my $normdir = "";
 my $ncnt = 0;
+my $hn_only = "false";
+my $hn_name = "";
+my $ssh;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -75,6 +84,14 @@ for (my $i=0;$i<@ARGV;$i++){
 }
 for (my $i=4; $i<@ARGV; $i++){
     my $option_found = "false";
+    if ($ARGV[$i] eq '-headnode'){
+        $option_found = "true";
+        $hn_only = "true";
+        $hn_name = $ARGV[$i+1];
+        $i++;
+        $ssh = Net::OpenSSH->new($hn_name,
+                                 master_opts => [-o => "StrictHostKeyChecking=no", -o => "BatchMode=yes"]);
+    }
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];
@@ -241,7 +258,14 @@ while(my $line =  <INFILE>){
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
-	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shdir/$shfile`;
+	my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shdir/$shfile";
+	if ($hn_only eq "true"){
+        $ssh->system($x) or
+            die "remote command failed: " . $ssh->error;
+	}
+	else{
+	    `$x`;
+	}
 	sleep(2);
     }
     if ($stranded eq "true"){
@@ -292,11 +316,25 @@ while(my $line =  <INFILE>){
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
-	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_forward.out -e $logname_forward.err < $shdir/$shfile_forward`;
+	my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $logname_forward.out -e $logname_forward.err < $shdir/$shfile_forward";
+	if ($hn_only eq "true"){
+	    $ssh->system($x) or
+		die "remote command failed: " . $ssh->error;
+	}
+	else{
+	    `$x`;
+	}
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
-	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_reverse.out -e $logname_reverse.err < $shdir/$shfile_reverse`;
+	$x = "$submit $jobname_option $jobname $request_memory_option$mem -o $logname_reverse.out -e $logname_reverse.err < $shdir/$shfile_reverse";
+	if ($hn_only eq "true"){
+	    $ssh->system($x) or
+		die "remote command failed: " . $ssh->error;
+	}
+	else{
+	    `$x`;
+	}
 	sleep(2);
     }
 }

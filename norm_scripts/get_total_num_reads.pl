@@ -1,6 +1,9 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
+use FindBin qw($Bin);
+use lib ("$Bin/pm/lib/perl5");
+use Net::OpenSSH;
 my $USAGE = "\nUsage: perl get_total_num_reads.pl <sample dirs> <loc> <file of input forward fa/fq files> [options]
 
 <sample dirs> is a file with the names of the sample directories (without path)
@@ -36,6 +39,8 @@ option:
                    by default, <n> = 200.
  -alt_stats <s>
 
+ -headnode <name> : For clusters which only allows job submissions from the head node, use this option.
+
  -h : print usage
 
 ";
@@ -62,7 +67,9 @@ my $study = $fields[@fields-2];
 my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $stats_dir = $study_dir . "STATS";
-
+my $hn_only = "false";
+my $hn_name = "";
+my $ssh;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -70,6 +77,15 @@ for (my $i=0;$i<@ARGV;$i++){
 }
 for (my $i=3; $i<@ARGV; $i++){
     my $option_found = "false";
+    if ($ARGV[$i] eq '-headnode'){
+        $option_found = "true";
+        $hn_only = "true";
+        $hn_name = $ARGV[$i+1];
+        $i++;
+        $ssh = Net::OpenSSH->new($hn_name,
+                                 master_opts => [-o => "StrictHostKeyChecking=no", -o => "BatchMode=yes"]);
+    }
+
     if ($ARGV[$i] eq '-fa'){
 	$fa = "true";
 	$numargs++;
@@ -187,11 +203,19 @@ while(my $line = <INFILE>){
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);
     }
+    my $x;
     if ($gz eq "true"){
-	`echo "zcat $line | wc -l | xargs echo -n >> $temp_file.$i.$study && echo -e '\t$line' >> $temp_file.$i.$study" | $submit $request_memory_option$mem $jobname_option $jobname -e $logname.$i.err -o $logname.$i.out`;
+	$x= "echo \"zcat $line | wc -l | xargs echo -n >> $temp_file.$i.$study && echo -e '\t$line' >> $temp_file.$i.$study\" | $submit $request_memory_option$mem $jobname_option $jobname -e $logname.$i.err -o $logname.$i.out";
     }
     else {
-	`echo "wc -l < $line | xargs echo -n >> $temp_file.$i.$study && echo -e '\t$line' >> $temp_file.$i.$study" | $submit $request_memory_option$mem $jobname_option $jobname -e $logname.$i.err -o $logname.$i.out`;
+	$x ="echo \"wc -l < $line | xargs echo -n >> $temp_file.$i.$study && echo -e '\t$line' >> $temp_file.$i.$study\" | $submit $request_memory_option$mem $jobname_option $jobname -e $logname.$i.err -o $logname.$i.out";
+    }
+    if ($hn_only eq "true"){
+	$ssh->system($x) or
+	    die "remote command failed: " . $ssh->error;
+    }
+    else{
+	`$x`;
     }
     sleep(2);
     $i++;

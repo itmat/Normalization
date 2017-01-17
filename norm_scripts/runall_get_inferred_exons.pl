@@ -1,6 +1,10 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
+use FindBin qw($Bin);
+use lib ("$Bin/pm/lib/perl5");
+use Net::OpenSSH;
+
 if(@ARGV<3){
     my $USAGE = "\nUsage: perl runall_get_inferred_exons.pl <sample dirs> <loc> <sam file name> [options]
 
@@ -36,6 +40,7 @@ options:
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted.
                    by default it will submit 200 jobs at a time.
 
+ -headnode <name> : For clusters which only allows job submissions from the head node, use this option.
 
 ";
     die $USAGE;
@@ -54,9 +59,19 @@ my $status;
 my $se = "";
 my $replace_mem = "false";
 my $new_mem = "";
-
+my $hn_only = "false";
+my $hn_name = "";
+my $ssh;
 for(my $i=3; $i<@ARGV; $i++) {
     my $argument_recognized = 0;
+    if ($ARGV[$i] eq '-headnode'){
+        $argument_recognized = 1;
+        $hn_only = "true";
+        $hn_name = $ARGV[$i+1];
+        $i++;
+        $ssh = Net::OpenSSH->new($hn_name,
+                                 master_opts => [-o => "StrictHostKeyChecking=no", -o => "BatchMode=yes"]);
+    }
     if($ARGV[$i] eq '-min') {
 	$min = $ARGV[$i+1];
 	$i++;
@@ -170,7 +185,14 @@ while (my $line = <INFILE>){
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);
     }
-    `$submit $request_memory_option$mem $jobname_option $jobname -o $logname.out -e $logname.err < $shfile`;
+    my $y = "$submit $request_memory_option$mem $jobname_option $jobname -o $logname.out -e $logname.err < $shfile";
+    if ($hn_only eq "true"){
+        $ssh->system($y) or
+            die "remote command failed: " . $ssh->error;
+    }
+    else{
+        `$y`;
+    }
     
 }
 close(INFILE);

@@ -1,6 +1,10 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
+use FindBin qw($Bin);
+use lib ("$Bin/pm/lib/perl5");
+use Net::OpenSSH;
+
 my $USAGE = "\nUsage: perl runall_genefilter.pl <sample dirs> <loc> 
  
 <sample dirs> is  a file of sample directories with alignment output without path
@@ -43,6 +47,8 @@ option:
   -max_jobs <n>  :  set this if you want to control the number of jobs submitted. 
                    by default it will submit 200 jobs at a time.
 
+  -headnode <name> : For clusters which only allows job submissions from the head node, use this option.
+
   -h : print usage
 
   -i <n> : index for logname (default: 0)
@@ -75,6 +81,9 @@ my $str = "false";
 my $norm = "false";
 my $index = 0;
 my $normdir = "";
+my $hn_only = "false";
+my $hn_name = "";
+my $ssh;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -82,6 +91,14 @@ for (my $i=0;$i<@ARGV;$i++){
 }
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
+    if ($ARGV[$i] eq '-headnode'){
+        $option_found = "true";
+        $hn_only = "true";
+        $hn_name = $ARGV[$i+1];
+        $i++;
+        $ssh = Net::OpenSSH->new($hn_name,
+                                 master_opts => [-o => "StrictHostKeyChecking=no", -o => "BatchMode=yes"]);
+    }
     if ($ARGV[$i] eq '-max_jobs'){
         $option_found = "true";
         $njobs = $ARGV[$i+1];
@@ -241,7 +258,14 @@ while(my $line = <IN>){
 	    while (qx{$status | wc -l} > $njobs){
 		sleep(10);
 	    }
-	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_u.out -e $logname_u.err < $shfile_u`;
+	    my $x="$submit $jobname_option $jobname $request_memory_option$mem -o $logname_u.out -e $logname_u.err < $shfile_u";
+	    if ($hn_only eq "true"){
+		$ssh->system($x) or
+		    die "remote command failed: " . $ssh->error;
+	    }
+	    else{
+		`$x`;
+	    }
 	    sleep(2);
 	}
 	if ($NU eq "true"){
@@ -256,7 +280,14 @@ while(my $line = <IN>){
 	    while (qx{$status | wc -l} > $njobs){
 		sleep(10);
 	    }
-	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_nu.out -e $logname_nu.err < $shfile_nu`;
+	    my $x="$submit $jobname_option $jobname $request_memory_option$mem -o $logname_nu.out -e $logname_nu.err < $shfile_nu";
+            if ($hn_only eq "true"){
+                $ssh->system($x) or
+                    die "remote command failed: " . $ssh->error;
+            }
+            else{
+                `$x`;
+            }
 	    sleep(2);
 	}
     }
@@ -305,7 +336,14 @@ while(my $line = <IN>){
 	while (qx{$status | wc -l} > $njobs){
 	    sleep(10);
 	}
-	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
+	my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile";
+	if ($hn_only eq "true"){
+	    $ssh->system($x) or
+		die "remote command failed: " . $ssh->error;
+	}
+	else{
+	    `$x`;
+	}
 	sleep(2);
 	if ($str eq "true"){
 	    $genefile_a = $samname_a;
@@ -323,7 +361,14 @@ while(my $line = <IN>){
 	    while (qx{$status | wc -l} > $njobs){
 		sleep(10);
 	    }
-	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_a.out -e $logname_a.err < $shfile_a`;
+	    my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $logname_a.out -e $logname_a.err < $shfile_a";
+            if ($hn_only eq "true"){
+                $ssh->system($x) or
+                    die "remote command failed: " . $ssh->error;
+            }
+            else{
+                `$x`;
+            }
 	    sleep(2);
 	}
     }

@@ -1,6 +1,10 @@
 #!/usr/bin/env perl
 use warnings;
 #use strict;
+use FindBin qw($Bin);
+use lib ("$Bin/pm/lib/perl5");
+use Net::OpenSSH;
+
 my $USAGE =  "\nUsage: perl runall_compress.pl <sample dirs> <loc> <sam file name> <fai file> [options]
 
 where:
@@ -46,6 +50,8 @@ option:
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                    by default, <n> = 200.
 
+ -headnode <name> : For clusters which only allows job submissions from the head node, use this option.
+
  -h : print usage
 
 ";
@@ -68,6 +74,9 @@ my $EIJ = "false";
 my $GNORM = "false";
 my $normdir = "";
 my $ncnt = 0;
+my $hn_only = "false";
+my $hn_name = "";
+my $ssh;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -75,6 +84,14 @@ for (my $i=0;$i<@ARGV;$i++){
 }
 for (my $i=4; $i<@ARGV; $i++){
     my $option_found = "false";
+    if ($ARGV[$i] eq '-headnode'){
+        $option_found = "true";
+        $hn_only = "true";
+        $hn_name = $ARGV[$i+1];
+        $i++;
+        $ssh = Net::OpenSSH->new($hn_name,
+                                 master_opts => [-o => "StrictHostKeyChecking=no", -o => "BatchMode=yes"]);
+    }
     if ($ARGV[$i] eq '-eij'){
 	$option_found = "true";
 	$EIJ = "true";
@@ -316,7 +333,14 @@ if ($sam2bam eq 'true'){
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
 		}
-		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+		my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh";
+		if ($hn_only eq "true"){
+		    $ssh->system($x) or
+			die "remote command failed: " . $ssh->error;
+		}
+		else{
+		    `$x`;
+		}
 	    }
 	    else{
 		print STDOUT "WARNING: file \"$LOC/$line/$sam_name\" doesn't exist. please check the input samfile name/path\n\n";
@@ -340,7 +364,14 @@ if ($sam2bam eq 'true'){
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
 		}
-		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+		my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh";
+		if ($hn_only eq "true"){
+		    $ssh->system($x) or
+			die "remote command failed: " . $ssh->error;
+		}
+		else{
+		    `$x`;
+		}
 	    }
 	    #exon
 	    if ((-e "$samname_ex") && ($EIJ eq "true")){
@@ -359,7 +390,14 @@ if ($sam2bam eq 'true'){
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
 		}
-		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+		my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh";
+		if ($hn_only eq "true"){
+		    $ssh->system($x) or
+			die "remote command failed: " . $ssh->error;
+		}
+		else{
+		    `$x`;
+		}
 	    }
 	    else{
 		print STDOUT "WARNING: file \"$samname_ex\" doesn't exist. please check the input samfile name/path\n\n";
@@ -381,7 +419,14 @@ if ($sam2bam eq 'true'){
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
 		}
-		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+		my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh";
+		if ($hn_only eq "true"){
+		    $ssh->system($x) or
+			die "remote command failed: " . $ssh->error;
+		}
+		else{
+		    `$x`;
+		}
 	    }
 	    #intron
 	    if (-e "$samname_int"){
@@ -400,7 +445,14 @@ if ($sam2bam eq 'true'){
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
 		}
-		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+		my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh";
+		if ($hn_only eq "true"){
+		    $ssh->system($x) or
+			die "remote command failed: " . $ssh->error;
+		}
+		else{
+		    `$x`;
+		}
 	    }
 	    else{
 		print STDOUT "WARNING: file \"$samname_int\" doesn't exist. please check the input samfile name/path\n\n";
@@ -422,7 +474,14 @@ if ($sam2bam eq 'true'){
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
 		}
-		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+		my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh";
+		if ($hn_only eq "true"){
+		    $ssh->system($x) or
+			die "remote command failed: " . $ssh->error;
+		}
+		else{
+		    `$x`;
+		}
 	    }
 	    #ig
 	    if (-e "$samname_ig"){
@@ -441,7 +500,14 @@ if ($sam2bam eq 'true'){
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
 		}
-		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+		my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh";
+		if ($hn_only eq "true"){
+		    $ssh->system($x) or
+			die "remote command failed: " . $ssh->error;
+		}
+		else{
+		    `$x`;
+		}
 	    }
 	    #und
 	    if (-e "$samname_und"){
@@ -460,7 +526,14 @@ if ($sam2bam eq 'true'){
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
 		}
-		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+		my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh";
+		if ($hn_only eq "true"){
+		    $ssh->system($x) or
+			die "remote command failed: " . $ssh->error;
+		}
+		else{
+		    `$x`;
+		}
 	    }
 	}
 	if ($GNORM eq "true"){
@@ -481,7 +554,14 @@ if ($sam2bam eq 'true'){
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
 		}
-		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+		my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh";
+		if ($hn_only eq "true"){
+		    $ssh->system($x) or
+			die "remote command failed: " . $ssh->error;
+		}
+		else{
+		    `$x`;
+		}
 	    }
 	    else{
 		print STDOUT "WARNING: file \"$samname_g\" doesn't exist. please check the input samfile name/path\n\n";
@@ -503,7 +583,14 @@ if ($sam2bam eq 'true'){
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
 		}
-		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+		my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh";
+		if ($hn_only eq "true"){
+		    $ssh->system($x) or
+			die "remote command failed: " . $ssh->error;
+		}
+		else{
+		    `$x`;
+		}
 	    }
 	    #gene_m
 	    if (-e "$samname_g_m"){
@@ -522,7 +609,14 @@ if ($sam2bam eq 'true'){
 		while (qx{$status | wc -l} > $njobs){
 		    sleep(10);
 		}
-		`$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh`;
+		my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $log.out -e $log.err < $sh";
+		if ($hn_only eq "true"){
+		    $ssh->system($x) or
+			die "remote command failed: " . $ssh->error;
+		}
+		else{
+		    `$x`;
+		}
 	    }
 	}
     }

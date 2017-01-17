@@ -1,4 +1,7 @@
 #!/usr/bin/env perl
+use FindBin qw($Bin);
+use lib ("$Bin/pm/lib/perl5");
+use Net::OpenSSH;
 
 $USAGE =  "\nUsage: perl runall_shuf.pl <sample_dirs> <loc> [options]
 
@@ -48,6 +51,8 @@ option:
             <s> is the queue name for required mem.
             Default: 6G
 
+ -headnode <name> : For clusters which only allows job submissions from the head node, use this option.
+
  -h : print usage
 
 ";
@@ -68,6 +73,9 @@ $mem = "";
 $jobname_option = "";
 $numargs = 0;
 $stranded = "false";
+my $hn_only = "false";
+my $hn_name = "";
+my $ssh;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -76,6 +84,14 @@ for (my $i=0;$i<@ARGV;$i++){
 for ($i=2; $i<@ARGV; $i++){
     $option_found = "false";
     $option_u_nu = "false";
+    if ($ARGV[$i] eq '-headnode'){
+        $option_found = "true";
+        $hn_only = "true";
+        $hn_name = $ARGV[$i+1];
+        $i++;
+        $ssh = Net::OpenSSH->new($hn_name,
+                                 master_opts => [-o => "StrictHostKeyChecking=no", -o => "BatchMode=yes"]);
+    }
     if ($ARGV[$i] eq '-max_jobs'){
 	$option_found = "true";
 	$njobs = $ARGV[$i+1];
@@ -625,7 +641,14 @@ for($i=1; $i<=$i_exon; $i++) {
                     while(qx{$status | wc -l} > $njobs){
                         sleep(10);
                     }
-                    `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU_S[$i].out -e $lognameU_S[$i].err < $shfileU_S[$i]`;
+                    my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU_S[$i].out -e $lognameU_S[$i].err < $shfileU_S[$i]";
+		    if ($hn_only eq "true"){
+			$ssh->system($x) or
+			    die "remote command failed: " . $ssh->error;
+		    }
+		    else{
+			`$x`;
+		    }
                 }
 		if (($total_lc_a ne '0') && ($numU_A ne '0')){
 		    open(OUTFILEU, ">$shfileU_A[$i]");
@@ -635,7 +658,14 @@ for($i=1; $i<=$i_exon; $i++) {
                     while(qx{$status | wc -l} > $njobs){
                         sleep(10);
                     }
-                    `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU_A[$i].out -e $lognameU_A[$i].err < $shfileU_A[$i]`;
+                    my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU_A[$i].out -e $lognameU_A[$i].err < $shfileU_A[$i]";
+                    if ($hn_only eq "true"){
+                        $ssh->system($x) or
+                            die "remote command failed: " . $ssh->error;
+                    }
+                    else{
+                        `$x`;
+                    }
                 }
             }
             if($NU eq 'true') {
@@ -651,7 +681,14 @@ for($i=1; $i<=$i_exon; $i++) {
                     while(qx{$status | wc -l} > $njobs){
                         sleep(10);
                     }
-                    `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU_S[$i].out -e $lognameNU_S[$i].err < $shfileNU_S[$i]`;
+                    my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU_S[$i].out -e $lognameNU_S[$i].err < $shfileNU_S[$i]";
+                    if ($hn_only eq "true"){
+                        $ssh->system($x) or
+                            die "remote command failed: " . $ssh->error;
+                    }
+                    else{
+                        `$x`;
+                    }
                 }
 		if (($total_lc_a ne '0') && ($numNU_A ne '0')){
                     open(OUTFILENU, ">$shfileNU_A[$i]");
@@ -661,7 +698,14 @@ for($i=1; $i<=$i_exon; $i++) {
                     while(qx{$status | wc -l} > $njobs){
                         sleep(10);
                     }
-                    `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU_A[$i].out -e $lognameNU_A[$i].err < $shfileNU_A[$i]`;
+                    my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU_A[$i].out -e $lognameNU_A[$i].err < $shfileNU_A[$i]";
+                    if ($hn_only eq "true"){
+                        $ssh->system($x) or
+                            die "remote command failed: " . $ssh->error;
+                    }
+                    else{
+                        `$x`;
+                    }
                 }
             }
 	}
@@ -694,7 +738,14 @@ for($i=1; $i<=$i_exon; $i++) {
 		    while(qx{$status | wc -l} > $njobs){
 			sleep(10);
 		    }
-		    `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU[$i].out -e $lognameU[$i].err < $shfileU[$i]`;
+		    my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU[$i].out -e $lognameU[$i].err < $shfileU[$i]";
+                    if ($hn_only eq "true"){
+                        $ssh->system($x) or
+                            die "remote command failed: " . $ssh->error;
+                    }
+                    else{
+                        `$x`;
+                    }
 		}
 	    }
 	    if($NU eq 'true') {
@@ -708,7 +759,14 @@ for($i=1; $i<=$i_exon; $i++) {
 		    while(qx{$status | wc -l} > $njobs){
 			sleep(10);
 		    }
-		    `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU[$i].out -e $lognameNU[$i].err < $shfileNU[$i]`;
+		    my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU[$i].out -e $lognameNU[$i].err < $shfileNU[$i]";
+                    if ($hn_only eq "true"){
+                        $ssh->system($x) or
+                            die "remote command failed: " . $ssh->error;
+                    }
+                    else{
+                        `$x`;
+                    }
 		}
 	    }
 	}
@@ -789,7 +847,14 @@ for($i=1; $i<=$i_intron; $i++) {
                     while(qx{$status | wc -l} > $njobs){
                         sleep(10);
                     }
-                    `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU_S[$i].out -e $lognameU_S[$i].err < $shfileU_S[$i]`;
+                    my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU_S[$i].out -e $lognameU_S[$i].err < $shfileU_S[$i]";
+                    if ($hn_only eq "true"){
+                        $ssh->system($x) or
+                            die "remote command failed: " . $ssh->error;
+                    }
+                    else{
+                        `$x`;
+                    }
                 }
                 if (($total_lc_a ne '0') && ($numU_A ne '0')){
                     open(OUTFILEU, ">$shfileU_A[$i]");
@@ -799,7 +864,14 @@ for($i=1; $i<=$i_intron; $i++) {
                     while(qx{$status | wc -l} > $njobs){
                         sleep(10);
                     }
-                    `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU_A[$i].out -e $lognameU_A[$i].err < $shfileU_A[$i]`;
+                    my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU_A[$i].out -e $lognameU_A[$i].err < $shfileU_A[$i]";
+                    if ($hn_only eq "true"){
+                        $ssh->system($x) or
+                            die "remote command failed: " . $ssh->error;
+                    }
+                    else{
+                        `$x`;
+                    }
                 }
             }
 	    if($NU eq 'true') {
@@ -815,7 +887,14 @@ for($i=1; $i<=$i_intron; $i++) {
                     while(qx{$status | wc -l} > $njobs){
 			sleep(10);
                     }
-                    `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU_S[$i].out -e $lognameNU_S[$i].err < $shfileNU_S[$i]`;
+                    my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU_S[$i].out -e $lognameNU_S[$i].err < $shfileNU_S[$i]";
+                    if ($hn_only eq "true"){
+                        $ssh->system($x) or
+                            die "remote command failed: " . $ssh->error;
+                    }
+                    else{
+                        `$x`;
+                    }
 		}
 		if (($total_lc_a ne '0') && ($numNU_A ne '0')){
                     open(OUTFILENU, ">$shfileNU_A[$i]");
@@ -825,7 +904,14 @@ for($i=1; $i<=$i_intron; $i++) {
                     while(qx{$status | wc -l} > $njobs){
 			sleep(10);
                     }
-                    `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU_A[$i].out -e $lognameNU_A[$i].err < $shfileNU_A[$i]`;
+                    my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU_A[$i].out -e $lognameNU_A[$i].err < $shfileNU_A[$i]";
+                    if ($hn_only eq "true"){
+                        $ssh->system($x) or
+                            die "remote command failed: " . $ssh->error;
+                    }
+                    else{
+                        `$x`;
+                    }
 		}
 	    }
 
@@ -861,7 +947,14 @@ for($i=1; $i<=$i_intron; $i++) {
 		    while(qx{$status | wc -l} > $njobs){
 			sleep(10);
 		    }
-		    `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU[$i].out -e $lognameU[$i].err < $shfileU[$i]`;
+		    my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU[$i].out -e $lognameU[$i].err < $shfileU[$i]";
+                    if ($hn_only eq "true"){
+                        $ssh->system($x) or
+                            die "remote command failed: " . $ssh->error;
+                    }
+                    else{
+                        `$x`;
+                    }
 		}
 	    }
 	    if($NU eq 'true') {
@@ -875,7 +968,14 @@ for($i=1; $i<=$i_intron; $i++) {
 		    while(qx{$status | wc -l} > $njobs){
 			sleep(10);
 		    }
-		    `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU[$i].out -e $lognameNU[$i].err < $shfileNU[$i]`;
+		    my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU[$i].out -e $lognameNU[$i].err < $shfileNU[$i]";
+                    if ($hn_only eq "true"){
+                        $ssh->system($x) or
+                            die "remote command failed: " . $ssh->error;
+                    }
+                    else{
+                        `$x`;
+                    }
 		}
 	    }
 	}
@@ -917,7 +1017,14 @@ while($dirname = <INFILE>) {
 	    while(qx{$status | wc -l} > $njobs){
 		sleep(10);
 	    }
-	    `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU.out -e $lognameU.err < $shfileU`;
+	    my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU.out -e $lognameU.err < $shfileU";
+	    if ($hn_only eq "true"){
+		$ssh->system($x) or
+		    die "remote command failed: " . $ssh->error;
+	    }
+	    else{
+		`$x`;
+	    }
 	}
     }
     if($NU eq 'true') {
@@ -931,7 +1038,14 @@ while($dirname = <INFILE>) {
 	    while(qx{$status | wc -l} > $njobs){
 		sleep(10);
 	    }
-	    `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU.out -e $lognameNU.err < $shfileNU`;
+	    my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU.out -e $lognameNU.err < $shfileNU";
+	    if ($hn_only eq "true"){
+                        $ssh->system($x) or
+                            die "remote command failed: " . $ssh->error;
+	    }
+	    else{
+		`$x`;
+	    }
 	}
     }
 }
@@ -971,7 +1085,14 @@ while($dirname = <INFILE>) {
             while(qx{$status | wc -l} > $njobs){
                 sleep(10);
             }
-            `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU.out -e $lognameU.err < $shfileU`;
+            my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameU.out -e $lognameU.err < $shfileU";
+	    if ($hn_only eq "true"){
+                        $ssh->system($x) or
+                            die "remote command failed: " . $ssh->error;
+	    }
+	    else{
+		`$x`;
+	    }
         }
     }
     if($NU eq 'true') {
@@ -985,7 +1106,14 @@ while($dirname = <INFILE>) {
             while(qx{$status | wc -l} > $njobs){
                 sleep(10);
             }
-            `$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU.out -e $lognameNU.err < $shfileNU`;
+            my $x = "$submit $request_memory_option$mem $jobname_option $jobname -o $lognameNU.out -e $lognameNU.err < $shfileNU";
+	    if ($hn_only eq "true"){
+                        $ssh->system($x) or
+                            die "remote command failed: " . $ssh->error;
+	    }
+	    else{
+		`$x`;
+	    }
         }
     }
 }

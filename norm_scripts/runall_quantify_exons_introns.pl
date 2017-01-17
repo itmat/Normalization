@@ -1,6 +1,9 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
+use FindBin qw($Bin);
+use lib ("$Bin/pm/lib/perl5");
+use Net::OpenSSH;
 
 my $USAGE = "\nUsage: perl runall_exons_introns.pl <sample dirs> <loc> <exons> <introns> <intergenic regions>
 
@@ -63,6 +66,8 @@ options:
 
  -i <n> : index for logname (default: 0)
 
+ -headnode <name> : For clusters which only allows job submissions from the head node, use this option.
+
  -h : print usage
 
 
@@ -101,6 +106,9 @@ my $qinfo = "";
 my $qcnt = 0;
 my $index = 0;
 my $normdir = "";
+my $hn_only = "false";
+my $hn_name = "";
+my $ssh;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -108,6 +116,14 @@ for (my $i=0;$i<@ARGV;$i++){
 }
 for (my $i=5; $i<@ARGV; $i++){
     my $option_found = "false";
+    if ($ARGV[$i] eq '-headnode'){
+        $option_found = "true";
+        $hn_only = "true";
+        $hn_name = $ARGV[$i+1];
+        $i++;
+        $ssh = Net::OpenSSH->new($hn_name,
+                                 master_opts => [-o => "StrictHostKeyChecking=no", -o => "BatchMode=yes"]);
+    }
     if ($ARGV[$i] eq '-i'){
         $option_found = "true";
         $index = $ARGV[$i+1];
@@ -304,7 +320,14 @@ while(my $line = <IN>){
 	    while(qx{$status | wc -l}>$njobs){
 		sleep(10);
 	    }
-	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_u.out -e $logname_u.err < $shfile_u`;
+	    my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $logname_u.out -e $logname_u.err < $shfile_u";
+	    if ($hn_only eq "true"){
+		$ssh->system($x) or
+		    die "remote command failed: " . $ssh->error;
+	    }
+	    else{
+		`$x`;
+	    }
 	}
 	if ($NU eq "true"){
 	    open(OUT, ">$shfile_nu");
@@ -313,7 +336,14 @@ while(my $line = <IN>){
 	    while(qx{$status | wc -l}>$njobs){
 		sleep(10);
 	    }
-	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_nu.out -e $logname_nu.err < $shfile_nu`;
+	    my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $logname_nu.out -e $logname_nu.err < $shfile_nu";
+            if ($hn_only eq "true"){
+                $ssh->system($x) or
+                    die "remote command failed: " . $ssh->error;
+            }
+            else{
+                `$x`;
+            }
 	}
     }
 
@@ -333,7 +363,14 @@ while(my $line = <IN>){
 	    while(qx{$status | wc -l}>$njobs){
 		sleep(10);
 	    }
-	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_exon.out -e $logname_exon.err < $shfile_exon`;
+	    my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $logname_exon.out -e $logname_exon.err < $shfile_exon";
+            if ($hn_only eq "true"){
+                $ssh->system($x) or
+                    die "remote command failed: " . $ssh->error;
+            }
+            else{
+                `$x`;
+            }
 	    #intronquants
 	    $qinfo = "-intron_only";
 	    open(OUT, ">$shfile_intron");
@@ -342,7 +379,14 @@ while(my $line = <IN>){
 	    while(qx{$status | wc -l}>$njobs){
 		sleep(10);
 	    }
-	    `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_intron.out -e $logname_intron.err < $shfile_intron`;
+	    my $y = "$submit $jobname_option $jobname $request_memory_option$mem -o $logname_intron.out -e $logname_intron.err < $shfile_intron";
+            if ($hn_only eq "true"){
+                $ssh->system($y) or
+                    die "remote command failed: " . $ssh->error;
+            }
+            else{
+                `$y`;
+            }
 	}
 	if ($stranded eq "true"){
 	    my $filename_exon_s = "$norm_dir/exonmappers/sense/$id.exonmappers.norm.sam";
@@ -366,7 +410,14 @@ while(my $line = <IN>){
             while(qx{$status | wc -l}>$njobs){
                 sleep(10);
             }
-            `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_exon_s.out -e $logname_exon_s.err < $shfile_exon_s`;
+            my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $logname_exon_s.out -e $logname_exon_s.err < $shfile_exon_s";
+            if ($hn_only eq "true"){
+                $ssh->system($x) or
+                    die "remote command failed: " . $ssh->error;
+            }
+            else{
+                `$x`;
+            }
 	    #antisense
 	    open(OUT, ">$shfile_exon_a");
             print OUT "perl $path/quantify_exons_introns.pl $filename_exon_a $exons $introns $igs $LOC $orientation $qinfo $filter\n";
@@ -374,7 +425,14 @@ while(my $line = <IN>){
             while(qx{$status | wc -l}>$njobs){
 		sleep(10);
             }
-            `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_exon_a.out -e $logname_exon_a.err < $shfile_exon_a`;
+            $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $logname_exon_a.out -e $logname_exon_a.err < $shfile_exon_a";
+            if ($hn_only eq "true"){
+                $ssh->system($x) or
+                    die "remote command failed: " . $ssh->error;
+            }
+            else{
+                `$x`;
+            }
             #intronquants
             $qinfo = "-intron_only";
 	    #sense
@@ -384,7 +442,14 @@ while(my $line = <IN>){
             while(qx{$status | wc -l}>$njobs){
                 sleep(10);
             }
-            `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_intron_s.out -e $logname_intron_s.err < $shfile_intron_s`;
+            $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $logname_intron_s.out -e $logname_intron_s.err < $shfile_intron_s";
+            if ($hn_only eq "true"){
+                $ssh->system($x) or
+                    die "remote command failed: " . $ssh->error;
+            }
+            else{
+                `$x`;
+            }
             #antisense
             open(OUT, ">$shfile_intron_a");
             print OUT "perl $path/quantify_exons_introns.pl $filename_intron_a $exons $introns $igs $LOC $orientation $qinfo $filter\n";
@@ -392,7 +457,14 @@ while(my $line = <IN>){
             while(qx{$status | wc -l}>$njobs){
 		sleep(10);
             }
-            `$submit $jobname_option $jobname $request_memory_option$mem -o $logname_intron_a.out -e $logname_intron_a.err < $shfile_intron_a`;
+            $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $logname_intron_a.out -e $logname_intron_a.err < $shfile_intron_a";
+            if ($hn_only eq "true"){
+                $ssh->system($x) or
+                    die "remote command failed: " . $ssh->error;
+            }
+            else{
+                `$x`;
+            }
 	}
 	#intergenicquants
 	$filename_ig = "$norm_dir/intergenicmappers/$id.intergenicmappers.norm.sam";
@@ -404,7 +476,14 @@ while(my $line = <IN>){
 	while(qx{$status | wc -l}>$njobs){
 	    sleep(10);
 	}
-	`$submit $jobname_option $jobname $request_memory_option$mem -o $logname_ig.out -e $logname_ig.err < $shfile_ig`;
+	my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $logname_ig.out -e $logname_ig.err < $shfile_ig";
+	if ($hn_only eq "true"){
+                $ssh->system($x) or
+                    die "remote command failed: " . $ssh->error;
+	}
+	else{
+	    `$x`;
+	}
     }
 }
 close(IN);

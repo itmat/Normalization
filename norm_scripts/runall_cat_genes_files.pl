@@ -1,6 +1,9 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
+use FindBin qw($Bin);
+use lib ("$Bin/pm/lib/perl5");
+use Net::OpenSSH;
 
 my $USAGE = "perl runall_cat_genes_files.pl <sample dirs> <loc> [options]
 
@@ -43,6 +46,8 @@ options:
  -max_jobs <n>  :  set this if you want to control the number of jobs submitted. by default it will submit 200 jobs at a time.
                    by default, <n> = 200.
 
+ -headnode <name> : For clusters which only allows job submissions from the head node, use this option.
+
  -h : print usage
 
 ";
@@ -69,6 +74,9 @@ my $status;
 my $index = 0;
 my $numargs_c = 0;
 my $normdir = "";
+my $hn_only = "false";
+my $hn_name = "";
+my $ssh;
 for (my $i=0;$i<@ARGV;$i++){
     if ($ARGV[$i] eq '-h'){
         die $USAGE;
@@ -76,6 +84,14 @@ for (my $i=0;$i<@ARGV;$i++){
 }
 for (my $i=2; $i<@ARGV; $i++){
     my $option_found = "false";
+    if ($ARGV[$i] eq '-headnode'){
+        $option_found = "true";
+        $hn_only = "true";
+        $hn_name = $ARGV[$i+1];
+        $i++;
+        $ssh = Net::OpenSSH->new($hn_name,
+                                 master_opts => [-o => "StrictHostKeyChecking=no", -o => "BatchMode=yes"]);
+    }
     if($ARGV[$i] eq '-nu') {
 	$type = "-nu";
 	$numargs++;
@@ -196,7 +212,14 @@ while(my $line = <IN>){
     while (qx{$status | wc -l} > $njobs){
 	sleep(10);
     }
-    my $x = `$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile`;
+    my $x = "$submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err < $shfile";
+    if ($hn_only eq "true"){
+        $ssh->system($x) or
+            die "remote command failed: " . $ssh->error;
+    }
+    else{
+        `$x`;
+    }
     sleep(2);
 }
 close(IN);
