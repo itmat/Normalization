@@ -33,7 +33,9 @@ Provide a name of mitochondrial chromosome (e.g. chrM, M). If there are multiple
 
 ###1. CLUSTER INFO
 If you're using SGE (Sun Grid Engine) or LSF (Load Sharing Facility), simply set the cluster name (SGE_CLUSTER or LSF_CLUSTER) to TRUE. You may edit the queue names and max_jobs.<br>
-If not, use OTHER_CLUSTER option and specify the required parameters.
+If not, use OTHER_CLUSTER option and specify the required parameters.<br><br>
+For clusters which only allows job submissions from the head node, specify the job submission host name (HOST_NAME)<br>
+
 
 ========================================================================================================
 
