@@ -142,11 +142,11 @@ if ($U eq "true"){
 
     }
     if ($cntE > 0){
+	open(my $OUT, "| /bin/gzip -c >$outEx") or die;
+	%READ_HASH=();
 	foreach my $exon (keys %HIGHE){
 	    my @ex = glob("$dir/*exonmappers*$exon.highexp.sam.gz");
 	    if (@ex > 0){
-		open(my $OUT, "| /bin/gzip -c >$outEx") or die;
-		%READ_HASH=();
 		foreach my $file (@ex){
 		    my $pipecmd = "zcat $file";
 		    open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
@@ -179,16 +179,16 @@ if ($U eq "true"){
 		    }
 		    close(FILE);
 		}
-		close($OUT);
 	    }
 	}
+	close($OUT);
     }
     if ($cntI > 0){
+	open(my $OUT, "| /bin/gzip -c >$outInt") or die;
+	%READ_HASH=();
         foreach my $intron (keys %HIGHI){
             my @int = glob("$dir/*intronmappers*$intron.highexp.sam.gz");
 	    if (@int > 0){
-		open(my $OUT, "| /bin/gzip -c >$outInt") or die;
-		%READ_HASH=();
 		foreach my $file (@int){
 		    my $pipecmd = "zcat $file";
 		    open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
@@ -221,17 +221,17 @@ if ($U eq "true"){
 		    }
 		    close(FILE);
 		}
-		close($OUT);
 	    }
 	}
+	close($OUT);
     }
     if ($stranded eq "true"){
 	if ($cntEA > 0){
+	    open(my $OUT, "| /bin/gzip -c >$outEx_a") or die;
+	    %READ_HASH=();
 	    foreach my $exon (keys %HIGHE_A){
 		my @ex = glob("$dir_a/*exonmappers*$exon.highexp.sam.gz");
 		if (@ex > 0){
-		    open(my $OUT, "| /bin/gzip -c >$outEx_a") or die;
-		    %READ_HASH=();
 		    foreach my $file (@ex){
 			my $pipecmd = "zcat $file";
 			open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
@@ -264,16 +264,16 @@ if ($U eq "true"){
 			}
 			close(FILE);
 		    }
-		    close($OUT);
 		}
 	    }
+	    close($OUT);
 	}
 	if ($cntIA > 0){
+	    open(my $OUT, "| /bin/gzip -c >$outInt_a") or die;
+	    %READ_HASH=();
 	    foreach my $intron (keys %HIGHI_A){
 		my @int = glob("$dir_a/*intronmappers*$intron.highexp.sam.gz");
 		if (@int > 0){
-		    open(my $OUT, "| /bin/gzip -c >$outInt_a") or die;
-		    %READ_HASH=();
 		    foreach my $file (@int){
 			my $pipecmd = "zcat $file";
 			open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
@@ -306,9 +306,9 @@ if ($U eq "true"){
 			}
 			close(FILE);
 		    }
-		    close($OUT);
 		}
 	    }
+	    close($OUT);
 	}
     }
 }
@@ -346,11 +346,11 @@ if ($NU eq "true"){
 	}
     }
     if ($cntE > 0){
+	open(my $OUT, "| /bin/gzip -c >$outEx") or die;
+	%READ_HASH=();
         foreach my $exon (keys %HIGHE){
             my @ex = glob("$dir/*exonmappers*$exon.highexp.sam.gz");
 	    if (@ex > 0){
-		open(my $OUT, "| /bin/gzip -c >$outEx") or die;
-		%READ_HASH=();
 		foreach my $file (@ex){
                     my $pipecmd = "zcat $file";
                     open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
@@ -383,16 +383,16 @@ if ($NU eq "true"){
 		    }
 		    close(FILE);
 		}
-		close($OUT);
 	    }
 	}
+	close($OUT);
     }
     if ($cntI > 0){
+	open(my $OUT, "| /bin/gzip -c >$outInt") or die;
+	%READ_HASH=();
         foreach my $intron (keys %HIGHI){
             my @int = glob("$dir/*intronmappers*$intron.highexp.sam.gz");
 	    if (@int > 0){
-		open(my $OUT, "| /bin/gzip -c >$outInt") or die;
-		%READ_HASH=();
 		foreach my $file (@int){
                     my $pipecmd = "zcat $file";
                     open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
@@ -425,17 +425,17 @@ if ($NU eq "true"){
 		    }
 		    close(FILE);
 		}
-		close($OUT);
 	    }
 	}
+	close($OUT);
     }
     if ($stranded eq "true"){
 	if ($cntEA > 0){
+	    open(my $OUT, "| /bin/gzip -c >$outEx_a") or die;
+	    %READ_HASH=();
 	    foreach my $exon (keys %HIGHE_A){
 		my @ex = glob("$dir_a/*exonmappers*$exon.highexp.sam.gz");
 		if (@ex > 0){
-		    open(my $OUT, "| /bin/gzip -c >$outEx_a") or die;
-		    %READ_HASH=();
 		    foreach my $file (@ex){
 			my $pipecmd = "zcat $file";
 			open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
@@ -468,16 +468,16 @@ if ($NU eq "true"){
 			}
 			close(FILE);
 		    }
-		    close($OUT);
 		}
 	    }
+	    close($OUT);
 	}
 	if ($cntIA > 0){
+	    open(my $OUT, "| /bin/gzip -c >$outInt_a") or die;
+	    %READ_HASH=();
 	    foreach my $intron (keys %HIGHI_A){
 		my @int = glob("$dir_a/*intronmappers*$intron.highexp.sam.gz");
 		if (@int > 0){
-		    open(my $OUT, "| /bin/gzip -c >$outInt_a") or die;
-		    %READ_HASH=();
 		    foreach my $file (@int){
 			my $pipecmd = "zcat $file";
 			open(FILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
@@ -510,9 +510,9 @@ if ($NU eq "true"){
 			}
 			close(FILE);
 		    }
-		    close($OUT);
 		}
 	    }
+	    close($OUT);
 	}
     }
 }
