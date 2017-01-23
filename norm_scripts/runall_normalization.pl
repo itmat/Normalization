@@ -317,6 +317,17 @@ if ($filter_low_expressers eq "true"){
     $cutoff_le = $cutoff_temp;
 }
 
+if ($new_norm eq "true"){
+    for(my $i=0; $i<@ARGV; $i++) {
+        if ($ARGV[$i] eq "-alt_out"){
+            $normdir = $ARGV[$i+1];
+	    $altstats = "-alt_stats $normdir/STATS/";
+	    unless (-d "$normdir/STATS/"){
+		`mkdir -p $normdir/STATS/`;
+	    }
+        }
+    }
+}
 #check for white spaces
 my $to_trim = "false";
 open(DIRS, $sample_dir);
@@ -596,7 +607,18 @@ if (-e $statsfile){
 }
 open(LOG, ">>$logfile");
 print LOG "\nPORT v0.8.3-beta\n";
-print LOG "\n*************\n$input\n*************\n";
+my $default_input = $input;
+#$default_input = `cat $shdir/runall_normalization.sh`;
+$default_input =~ s/perl\ //g;
+$default_input =~ s/runall_normalization.pl/run_normalization/g;
+$default_input =~ s/\-fa\n//;
+$default_input =~ s/\-fq\n//;
+$default_input =~ s/\-sam //;
+$default_input =~ s/\-bam //;
+$default_input =~ s/\-gz//;
+$default_input =~ s/\-se//;
+print LOG "\n*************\n$default_input\n*************\n";
+
 if (-e "$logdir/$study.runall_normalization.out"){
     `rm $logdir/$study.runall_normalization.out`;
 
@@ -629,22 +651,90 @@ if ($resume eq "true"){
 	my @b = split(" ", $get_name);
 	$name = $b[@b-1];
     }
-    # if resumed at runall_cat_genes_files (or runall_cat_genes_files_norm step), go back one step and start from 
-    # runall_sam2genes (or runall_sam2genes_2)
+    # if resumed at runall_cat_genes_files (or runall_cat_genes_files_norm step), unless temp files exist,
+    # go back one step and start from runall_sam2genes (or runall_sam2genes_2)
+    my $cat_flag = 0;
     if ($name =~  /runall_cat_genes_files$/){
-	$cat_flag++;
-	my $tempname = $name;
-	$tempname =~ s/runall_cat_genes_files$/runall_sam2genes_gnorm/;
-	$name = $tempname;
-	
+	my $TEflag = 0;
+        my $err_name = "cat_genes.0.*.err";
+        my $new_queue = "-mem $queue_3G";
+        my $res = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+	my $rtmp = `wc -l $resume_file`;
+	my ($res_cnt, $res_n) = split(" ", $rtmp);
+	open(IN, $resume_file);
+	while(my $line = <IN>){
+	    chomp($line);
+	    my @tcnt = glob("$LOC/$line/GNORM/*/*temp*");
+	    if (@tcnt > 0){
+		$TEflag++;
+	    }
+	}
+	close(IN);
+#	print "$TEflag\t$res_cnt\n";
+	if ($TEflag ne $res_cnt){ #temp files don't exist
+	    $cat_flag = 1;
+	    my $tempname = $name;
+	    $tempname =~ s/runall_cat_genes_files$/runall_sam2genes_gnorm/;
+	    $name = $tempname;
+	}
     }
     if ($name =~ /runall_cat_genes_files_norm$/){
-	$cat_flag++;
-	my $tempname = $name;
-	$tempname =~ s/runall_cat_genes_files_norm$/runall_sam2genes_gnorm_2/;
-	$name = $tempname;
+	my $TEflag = 0;
+        my $err_name = "cat_genes.1.*.err";
+        my $new_queue = "-mem $queue_3G";
+        my $res = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+        my $rtmp = `wc -l $resume_file`;
+	my ($res_cnt, $res_n) =split(" ", $rtmp);
+        open(IN, $resume_file);
+        while(my $line = <IN>){
+            chomp($line);
+	    my @tcnt;
+	    if ($STRANDED =~ /TRUE/i){
+		@tcnt = glob("$normdir/GENE/FINAL_SAM/*sense/$line.*temp*");
+	    }
+	    else{
+		@tcnt = glob("$normdir/GENE/FINAL_SAM/$line.*temp*");
+	    }
+	    if (@tcnt > 0){
+		$TEflag++;
+	    }
+	}
+	close(IN);
+#	print "$TEflag\t$res_cnt\n";
+	if ($TEflag ne $res_cnt){ #temp files don't exist
+	    $cat_flag = 1;
+	    my $tempname = $name;
+	    $tempname =~ s/runall_cat_genes_files_norm$/runall_sam2genes_gnorm_2/;
+	    $name = $tempname;
+	}
     }
-
+    # if resumed at runall_parseblastout, unless blastdb files exist,
+    # go back one step and start from runall_runblast
+    my $blast_flag = 0;
+    if ($name =~  /runall_parseblastout$/){
+        my $BDBflag = 0;
+	my $err_name = "parseblastout.*.err";
+	my $new_queue = "-mem $queue_3G";
+	my $res = `perl $norm_script_dir/restart_failedjobs_only.pl $sample_dir $LOC \"$err_name\" \"$new_queue\" -qlist \"$qlist\"`;
+        my $rtmp = `wc -l $resume_file`;
+        my ($res_cnt, $res_n) =split(" ", $rtmp);
+        open(IN, $resume_file);
+        while(my $line = <IN>){
+            chomp($line);
+            my @tcnt = glob("$LOC/$line/blastdb*");
+            if (@tcnt > 0){
+                $BDBflag++;
+            }
+        }
+	close(IN);
+#	print "$BDBflag\t$res_cnt\n";
+        if ($BDBflag ne $res_cnt){ #database files don't exist
+            $blast_flag = 1;
+            my $tempname = $name;
+            $tempname =~ s/runall_parseblastout$/runall_runblast/;
+            $name = $tempname;
+        }
+    }
     my @a = split(/\./, $name);
     $name_to_check = $a[@a-1];
     my $get_num = $last_step;
@@ -655,15 +745,20 @@ if ($resume eq "true"){
 	print LOG "\nJob number not provided. Setting it to 1.\n";
     }
     else{
-	if ($cat_flag == 1){
+	if (($cat_flag == 1) || ($blast_flag ==1)){
 	    $res_num--;
-	    if ($name =~ /_2$/){
-		print LOG "\nCannot resume at runall_cat_genes_files_norm.\nResuming at the previous step...\n";
-	    }
-	    else{
-		print LOG "\nCannot resume at runall_cat_genes_files.\nResuming at the previous step...\n";
-	    }
 	}
+    }
+    if ($cat_flag == 1){
+	if ($name =~ /_2$/){
+	    print LOG "\nCannot resume at runall_cat_genes_files_norm.\nResuming at the previous step...\n";
+	}
+	else{
+	    print LOG "\nCannot resume at runall_cat_genes_files.\nResuming at the previous step...\n";
+	}
+    }
+    if ($blast_flag == 1){
+	print LOG "Cannot resume at runall_parseblastout.\nResuming at the previous step...\n";
     }
     $length = length($res_num) + length($name) + 3;
     print LOG "\nRESUME at $res_num \"$name\"\n==========";
@@ -673,6 +768,7 @@ if ($resume eq "true"){
     print LOG "\n";
     $run_job = "false";
 }
+
 if ($run_prepause eq "true"){
     $job_num = 1;
     if ($run_job eq "true"){
@@ -923,6 +1019,7 @@ if ($run_prepause eq "true"){
                 $c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_6G, $stat\\\"";
             }
 	    $new_queue = "-mem $queue_6G";
+
 	    while(qx{$stat | wc -l} > $maxjobs){
                 sleep(10);
             }
@@ -1041,7 +1138,7 @@ if ($run_prepause eq "true"){
 	chomp($numr);
 	my @xnumr = split(" " , $numr);
 	my $maxribo = $xnumr[0];
-	$maxribo =~ s/\,//;
+	$maxribo =~ s/\,//g;
 	if ($maxribo > 10000000){
 	    $new_queue = "-mem $queue_6G";
 	    if ($maxribo > 20000000){
@@ -1750,7 +1847,7 @@ if ($run_prepause eq "true"){
         chomp($numr);
         my @xnumr = split(" " , $numr);
 	my $maxribo = $xnumr[0];
-	$maxribo =~ s/\,//;
+	$maxribo =~ s/\,//g;
         if ($maxribo > 10000000){
             $new_queue = "-mem $queue_6G";
             if ($maxribo > 20000000){
@@ -2598,7 +2695,7 @@ if ($run_prepause eq "true"){
 		    print LOG "Check \"$study_dir/STATS/EXON_INTRON_JUNCTION/percent_high_expresser_*.txt\" \nUse \"-cutoff_highexp <n>\" option to set/change the highexpresser cutoff value.\n(You may use -cutoff_highexp 100 to unfilter/keep the highexpressers.)\n\n";
 		}
 	    }
-
+=comment
 	    $default_input = `cat $shdir/runall_normalization.sh`;
 	    $default_input =~ s/perl\ //g;
 	    $default_input =~ s/runall_normalization.pl/run_normalization/g;
@@ -2610,6 +2707,7 @@ if ($run_prepause eq "true"){
 	    $default_input =~ s/\-se//;
 	    $default_input =~ s/\'-resume_at'\ .+\ //;
 	    $default_input =~ s/\-resume//;
+=cut
 	    print LOG "*************\nUse \"-part2\" option to continue:\n(do not change options other than the ones listed above)\n";
 	    #print LOG "e.g. $default_input -part2\n*************\n";
 	}
@@ -2617,14 +2715,6 @@ if ($run_prepause eq "true"){
 
     if (($run_job eq "false") && ($run_norm eq "false") && ($resume eq "true")){
 	print LOG "\nERROR: \"$study.$name_to_check\" step is not in [PART1].\n\tCannot resume at \"$study.$name_to_check\" step. Please check your pipeline option and -resume_at \"<step>\" option.\n\n";
-    }
-}
-if ($new_norm eq "true"){
-    for(my $i=0; $i<@ARGV; $i++) {
-        if ($ARGV[$i] eq "-alt_out"){
-            $normdir = $ARGV[$i+1];
-	    $altstats = "-alt_stats $normdir/STATS/";
-        }
     }
 }
 if ($run_norm eq "true"){
@@ -3395,7 +3485,7 @@ if ($run_norm eq "true"){
 	
 	my $mem_quants = $mem;
 	if ($num_samples > 200){
-	    $mem_quants = "$request$queue_6G";
+	    $mem_quants = "$request$queue_10G";
 	}
         $job = "echo \"perl $norm_script_dir/quants2spreadsheet_min_max.pl $sample_dir $LOC genequants $filter_highexp $data_stranded -normdir $normdir\" | $batchjobs $mem_quants $jobname \"$study.quants2spreadsheet_gnorm\" -o $logdir/$study.quants2spreadsheet_gnorm.out -e $logdir/$study.quants2spreadsheet_gnorm.err";
 	
@@ -3689,6 +3779,7 @@ if ($run_norm eq "true"){
 		    &check_err ($name_of_job, $err_name, $job_num);
 		    $job_num++;
 		}
+=comment
 		#exon2nonexon
 		$name_of_job = "$study.get_exon2nonexon_stats_p2";
 		if (($resume eq "true")&&($run_job eq "false")){
@@ -3765,7 +3856,7 @@ if ($run_norm eq "true"){
 			$job_num++;
 		    }
 		}
-
+=cut
 		#predict_num_reads EIJ p2
 		$name_of_job = "$study.predict_num_reads_p2";
 		if (($resume eq "true")&&($run_job eq "false")){

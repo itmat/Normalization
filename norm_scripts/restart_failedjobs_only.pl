@@ -19,18 +19,22 @@ if (@ARGV < 4){
     die $USAGE;
 }
 my @list;
+my $qopt=0;
 for(my $i=4;$i<@ARGV;$i++){
     my $option_rec = "false";
     if ($ARGV[$i] eq '-qlist'){
         $option_rec = "true";
         @list = split(",", $ARGV[$i+1]);
         $i++;
+        $qopt++;
     }
     if ($option_rec eq 'false'){
         die "option \"$ARGV[$i]\" not recognized\n";
     }
 }
-
+if ($qopt == 0){
+    die "Please provide -qlist '3G,6G,10G,15G,30G,45G,60G\n";
+}
 my $dirs = $ARGV[0];
 my $LOC = $ARGV[1];
 my $errname = $ARGV[2];
