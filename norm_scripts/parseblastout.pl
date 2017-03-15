@@ -74,4 +74,11 @@ my @t2 = glob("$LOC/$id/$database2*");
 if (@t2>0){
     `rm $LOC/$id/$database2*`;
 }
+my $tempq = "$LOC/$id/query.temp";
+my @tqfiles = glob("$tempq*");
+if (@tqfiles > 0){
+    `rm $tempq*`;
+}
+
 print "got here\n";
+

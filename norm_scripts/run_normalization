@@ -4,7 +4,6 @@
 use FindBin qw($Bin);
 use lib ("$Bin/pm/lib/perl5");
 use File::Type;
-#use Net::SSH qw(ssh);
 use Net::OpenSSH;
 
 my $USAGE =  "\nUsage: run_normalization --sample_dirs <file of sample_dirs> --loc <s> --unaligned <file of fa/fqfiles> --alignedfilename <s> --cfg <cfg file> [options]
@@ -47,7 +46,7 @@ OPTIONS:
      -cutoff_highexp <n> : is cutoff % value to identify highly expressed genes/exons/introns.
                            the script will consider genes/exons/introns with gene/exon/intronpercents greater than n(%) as high expressers,
                            report the list of highly expressed genes/exons and remove the reads that map to those genes/exons/introns.
-                           (Default = 100; with the default cutoff, genes/exons/introns expressed >5% will be reported)
+                           (Default = 100; with the default cutoff, genes/exons/introns expressed >3% will be reported)
      -cutoff_lowexp <n> : is cutoff counts to identify low expressers in the final spreadsheets (exon, intron and junc).
                           the script will consider features with sum of counts for all samples less than <n> as low expressers
                           and remove them from all samples for the final spreadsheets.
@@ -71,7 +70,7 @@ OPTIONS:
 
 for(my $i=0; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq '-v'){
-	die "\nPORT v0.8.3-beta\n\n";
+	die "\nPORT v0.8.4-beta\n\n";
     }
 }
 for(my $i=0; $i<@ARGV; $i++) {

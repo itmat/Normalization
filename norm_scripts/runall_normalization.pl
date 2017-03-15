@@ -51,7 +51,7 @@ OPTIONS:
      -cutoff_highexp <n> : is cutoff % value to identify highly expressed genes/exons/introns.
                            the script will consider genes/exons/introns with gene/exon/intronpercents greater than n(%) as high expressers,
                            report the list of highly expressed genes/exons and remove the reads that map to those genes/exons/introns.
-                           (Default = 100; with the default cutoff, exons/genes/introns expressed >5% will be reported)
+                           (Default = 100; with the default cutoff, exons/genes/introns expressed >3% will be reported)
 
      -cutoff_lowexp <n> : is cutoff counts to identify low expressers in the final spreadsheets (exon, intron and junc).
                           the script will consider features with sum of counts for all samples less than <n> as low expressers
@@ -606,7 +606,7 @@ if (-e $statsfile){
     }
 }
 open(LOG, ">>$logfile");
-print LOG "\nPORT v0.8.3-beta\n";
+print LOG "\nPORT v0.8.4-beta\n";
 my $default_input = $input;
 #$default_input = `cat $shdir/runall_normalization.sh`;
 $default_input =~ s/perl\ //g;
@@ -1015,11 +1015,25 @@ if ($run_prepause eq "true"){
         if ($run_job eq "true"){
             $name_of_job = "$study.parseblastout";
             $err_name = "parseblastout.*.err";
+
             if ($other eq "true"){
                 $c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_6G, $stat\\\"";
             }
 	    $new_queue = "-mem $queue_6G";
-
+	    $total = "$study_dir/STATS/total_num_reads.txt";
+	    $sorted = `cut -f 2 $total | sort -n`;
+	    @a = split (/\n/, $sorted);
+	    $min_map = $a[0];
+	    $max_map = $a[@a-1];
+            if ($min_map > 50000000){ #50,000,000
+		$new_queue = "-mem $queue_30G";
+                if ($min_map > 100000000){ #100,000,000
+                    $new_queue = "-mem $queue_45G";
+                }
+                if ($min_map > 150000000){
+                    $new_queue = "-mem $queue_60G";
+                }
+            }
 	    while(qx{$stat | wc -l} > $maxjobs){
                 sleep(10);
             }
@@ -1139,10 +1153,16 @@ if ($run_prepause eq "true"){
 	my @xnumr = split(" " , $numr);
 	my $maxribo = $xnumr[0];
 	$maxribo =~ s/\,//g;
-	if ($maxribo > 10000000){
+	if ($maxribo > 10000000){ #10,000,000
 	    $new_queue = "-mem $queue_6G";
-	    if ($maxribo > 20000000){
+	    if ($maxribo > 20000000){ #20,000,000
 		$new_queue = "-mem $queue_10G";
+	    }
+	    if ($maxribo > 30000000){ #30,000,000
+		$new_queue = "-mem $queue_15G";
+	    }
+	    if ($maxribo > 50000000){ #50,000,000
+		$new_queue = "-mem $queue_30G";
 	    }
 	}
         while(qx{$stat | wc -l} > $maxjobs){
@@ -1852,6 +1872,12 @@ if ($run_prepause eq "true"){
             $new_queue = "-mem $queue_6G";
             if ($maxribo > 20000000){
 		$new_queue = "-mem $queue_10G";
+            }
+            if ($maxribo > 30000000){ #30,000,000
+                $new_queue = "-mem $queue_15G";
+            }
+	    if ($maxribo > 50000000){ #50,000,000
+                $new_queue = "-mem $queue_30G";
             }
         }
         while(qx{$stat | wc -l} > $maxjobs){
