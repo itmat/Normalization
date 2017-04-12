@@ -22,12 +22,14 @@ Make sure you have the latest version of PORT:
 - Unaligned reads (fasta/fastq)
  - Raw sequence reads used to generate SAM/BAM.
  - Unaligned files can be gzipped.
+ - One file per sample (single-end data) or two files per sample (paired-end data)
 - [Gene info files](https://github.com/itmat/Normalization/blob/master/about_cfg.md#2-gene-info)
 - [Genome fa/fai](https://github.com/itmat/Normalization/blob/master/about_cfg.md#3-fa-and-fai)
 - Aligned reads (SAM/BAM) 
  - SAM/BAM files need to have unique read ids. 
  - Required tags: **IH (or NH) and HI**.
  - __Paired End data: mated alignments need to be in adjacent lines.__
+ - One SAM/BAM per sample.
 
 >aligner options to use for PORT compatibility: 
  - STAR v2.5.1a or newer: use "--outSAMunmapped Within KeepPairs" option (optional: "--outSAMtype BAM Unsorted" for bam output).
@@ -234,7 +236,7 @@ PORT outputs gene counts spreadsheets to `STUDY/NORMALIZED_DATA/GENE/SPREADSHEET
 - Sense vs. anti-sense transcription
 
 Percentage of reads mapping to each chromosome (`STUDY/STATS/percent_reads_chr*txt`) and percentage of highly expressed features (`STUDY/STATS/*/percent_high_expresser_*.txt`) are also provided (for both normalization types).
-#####iv. Coverage/Junction Files 
+##### iv. Coverage/Junction Files 
 Coverage (`STUDY/NORMALIZED_DATA/*/COV`) and Junctions (`STUDY/NORMALIZED_DATA/*/JUNCTION`) files are generated from uniquely merged sam files for each sample and can be used for data visualization.<br>
  
 

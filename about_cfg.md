@@ -13,10 +13,10 @@ If STRANDED is set to TRUE, strand information needs to be provided. Set FWD to 
 Note that when dUTP-based protocol (e.g. Illumina TruSeq stranded protocol) is used, strand information comes from reverse read.
 
 #### C. Chromosome Names
-By default, PORT **ONLY** uses numbered, X or Y (e.g. chr1,chr2,...,chrX,chrY OR 1,2,...,X,Y) as standard chromosome names.
+By default, PORT *ONLY* uses numbered, X or Y (e.g. chr1,chr2,...,chrX,chrY OR 1,2,...,X,Y) as standard chromosome names.
 
 ##### i. File of standard chromosome [optional]
-Provide a full path to file of standard chromosomes (CHRNAMES) **if your chromosome names do not follow the chromosome nomenclature described above**. The file should look like this (one name per line):
+Provide a full path to file of standard chromosomes (CHRNAMES) *if your chromosome names do not follow the chromosome nomenclature described above*. The file should look like this (one name per line):
 
     chr1
     chr2
@@ -53,7 +53,7 @@ ensembl gene info files for mm9, mm10, hg19, hg38, dm3 and danRer7 are available
 
 Alternatively, you can use a perl script (**/path/to/Normalization/norm_scripts/convert_gtf_to_PORT_geneinfo.transcripts.pl**) to convert an ENSEMBL gtf file to a gene information file. 
 
-========================================================================================================
+---------------
 
 ### 3. FA and FAI
 #### [1] genome fasta file
