@@ -32,8 +32,8 @@ Make sure you have the latest version of PORT:
   * One SAM/BAM per sample.
 
 >aligner options to use for PORT compatibility: 
- - STAR v2.5.1a or newer: use "--outSAMunmapped Within KeepPairs" option (optional: "--outSAMtype BAM Unsorted" for bam output).
- - GSNAP 2015-12-31.v6 or newer: use "-A sam", "--ordered" and "--add-paired-nomappers" option.
+  - STAR v2.5.1a or newer: use "--outSAMunmapped Within KeepPairs" option (optional: "--outSAMtype BAM Unsorted" for bam output).
+  - GSNAP 2015-12-31.v6 or newer: use "-A sam", "--ordered" and "--add-paired-nomappers" option.
  
 ##### ii. Input Directory Structure
 The input files need to be organized into a specific directory structure for PORT to run properly.
@@ -225,7 +225,7 @@ STUDY
 - Very highly expressed and variable exons/introns
 
 ###### -Gene Normalization:<br>
-   `STUDY/STATS/gene_normalization_factors.txt` file provides summary statistics	of the normalization factors used: 
+   `STUDY/STATS/gene_normalization_factors.txt` file provides summary statistics of the normalization factors used: 
 
 - Total read count
 - Ribosomal content
@@ -235,7 +235,7 @@ STUDY
 - Very highly expressed and variable genes
 - Sense vs. anti-sense transcription
 
-   Percentage of reads mapping to each chromosome (`STUDY/STATS/percent_reads_chr*txt`) and percentage of highly expressed features (`STUDY/STATS/*/percent_high_expresser_*.txt`) are also provided (for both normalization types).
+Percentage of reads mapping to each chromosome (`STUDY/STATS/percent_reads_chr*txt`) and percentage of highly expressed features (`STUDY/STATS/*/percent_high_expresser_*.txt`) are also provided (for both normalization types).
 ##### iv. Coverage/Junction Files 
    Coverage (`STUDY/NORMALIZED_DATA/*/COV`) and Junctions (`STUDY/NORMALIZED_DATA/*/JUNCTION`) files are generated from uniquely merged sam files for each sample and can be used for data visualization.<br>
  

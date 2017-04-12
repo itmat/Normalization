@@ -15,15 +15,19 @@ Note that when dUTP-based protocol (e.g. Illumina TruSeq stranded protocol) is u
 #### C. Chromosome Names
 By default, PORT *ONLY* uses numbered, X or Y (e.g. chr1,chr2,...,chrX,chrY OR 1,2,...,X,Y) as standard chromosome names.
 
-##### i. File of standard chromosome [optional]
-Provide a full path to file of standard chromosomes (CHRNAMES) *if your chromosome names do not follow the chromosome nomenclature described above*. The file should look like this (one name per line):
+##### i. File of chromosome names [optional]
+Provide a full path to file of chromosomes names (CHRNAMES) *if your chromosome names do not follow the chromosome nomenclature described above*. For example, for dm6, the CHRNAMES file should look like this (one name per line):
 
-    chr1
-    chr2
-    chr3
-    chr4
+    chr3R
+    chr3L
+    chr2R
     chrX
+    chr2L
     chrY
+    chr4
+    chrM
+
+>Note: Depending on genome assembly, list of chromosome names  may contain clone contigs that cannot be confidently placed on a specific chromosome (chrUn) and sequences that is not in a finished state (chrN_random). We recommend excluding those \"non-standard\" chromosomes.
 
 ##### ii. Name of mitochondrial chromosome [required]
 Provide a name of mitochondrial chromosome (e.g. chrM, M). If there are multiple mitochondrial chromosomes, provide a comma separated list of chromosome names.
