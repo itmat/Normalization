@@ -27,7 +27,7 @@ Provide a full path to file of chromosomes names (CHRNAMES) *if your chromosome 
     chr4
     chrM
 
->Note: Depending on genome assembly, list of chromosome names  may contain clone contigs that cannot be confidently placed on a specific chromosome (chrUn) and sequences that is not in a finished state (chrN_random). We recommend excluding those \"non-standard\" chromosomes.
+>Note: Depending on the genome, it may contain clone contigs that cannot be confidently placed on a specific chromosome (e.g. chrUn) and sequences that is not in a finished state (e.g. chrN_random). We recommend excluding those \"non-standard\" chromosomes.
 
 ##### ii. Name of mitochondrial chromosome [required]
 Provide a name of mitochondrial chromosome (e.g. chrM, M). If there are multiple mitochondrial chromosomes, provide a comma separated list of chromosome names.
