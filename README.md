@@ -20,16 +20,16 @@ Make sure you have the latest version of PORT:
 ##### i. Input Files
 
 - Unaligned reads (fasta/fastq)
- - Raw sequence reads used to generate SAM/BAM.
- - Unaligned files can be gzipped.
- - One file per sample (single-end data) or two files per sample (paired-end data)
+  * Raw sequence reads used to generate SAM/BAM.
+  * Unaligned files can be gzipped.
+  * One file per sample (single-end data) or two files per sample (paired-end data)
 - [Gene info files](https://github.com/itmat/Normalization/blob/master/about_cfg.md#2-gene-info)
 - [Genome fa/fai](https://github.com/itmat/Normalization/blob/master/about_cfg.md#3-fa-and-fai)
 - Aligned reads (SAM/BAM) 
- - SAM/BAM files need to have unique read ids. 
- - Required tags: **IH (or NH) and HI**.
- - __Paired End data: mated alignments need to be in adjacent lines.__
- - One SAM/BAM per sample.
+  * SAM/BAM files need to have unique read ids. 
+  * Required tags: **IH (or NH) and HI**.
+  * __Paired End data: mated alignments need to be in adjacent lines.__
+  * One SAM/BAM per sample.
 
 >aligner options to use for PORT compatibility: 
  - STAR v2.5.1a or newer: use "--outSAMunmapped Within KeepPairs" option (optional: "--outSAMtype BAM Unsorted" for bam output).
@@ -103,11 +103,11 @@ PORT has two parts: PART1 and PART2.<br>
 - In PART2, PORT performs normalization and quantification.
 
 ##### i. Run run_normalization with no pipeline option.<br>
-If you do not provide any pipeline options, PORT will pause when all steps in PART1 completes.<br>
+   If you do not provide any pipeline options, PORT will pause when all steps in PART1 completes.<br>
 ##### ii. Check expected number of reads and highly expressed features (exons, introns, and genes).<br>
-You will have a chance to check the expected number of reads after normalization and the list of highly expressed exons and introns for Exon-Intron-Junction Normalization and the list of highly expressed genes for Gene Normalization. Samples that lower the normalized read depth can be removed from &lt;file of sample dirs> at this point.<br>
+   You will have a chance to check the expected number of reads after normalization and the list of highly expressed exons and introns for Exon-Intron-Junction Normalization and the list of highly expressed genes for Gene Normalization. Samples that lower the normalized read depth can be removed from &lt;file of sample dirs> at this point.<br>
 ##### iii. Run run_normalization with -part2 option.<br>
-Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<br>
+   Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<br>
 
 #### B. Run PORT
 
@@ -127,10 +127,10 @@ Use -cutoff_highexp &lt;n> option if you choose to filter the high expressers.<b
      **-h** : print this usage<br>
      **-v** : print version of PORT
 
-      **[resume options]**<br>
-      You may not change the normalization parameters with resume option.<br>
-      **-resume** : Use this if you have a job that crashed or stopped. This runs a job that has already been initialized or partially run after the last completed step. It may repeat the last completed step if necessary.<br>
-      **-resume_at "&lt;step>"** : Use this if you have a job that crashed or stopped. This resumes a job at "&lt;step>". **make sure full step name (found in log file) is given in quotes.**<br>(e.g. -resume_at "1   "STUDY.get_total_num_reads"")<br>
+     **[resume options]**<br>
+     You may not change the normalization parameters with resume option.<br>
+     **-resume** : Use this if you have a job that crashed or stopped. This runs a job that has already been initialized or partially run after the last completed step. It may repeat the last completed step if necessary.<br>
+     **-resume_at "&lt;step>"** : Use this if you have a job that crashed or stopped. This resumes a job at "&lt;step>". **make sure full step name (found in log file) is given in quotes.**<br>(e.g. -resume_at "1   "STUDY.get_total_num_reads"")<br>
 
      **[normalization parameters]**<br>
      **-cutoff_highexp &lt;n>** : <br>is cutoff % value to identify highly expressed genes/exons/introns.<br>
@@ -156,13 +156,13 @@ This creates the `runall_normalization.sh` file in the `STUDY/shell_scripts` dir
 
 #### C. Stop/Kill PORT
 
-All PORT job names begin with the unique `STUDY` name (e.g. "STUDY.get_total_num_reads"). You can stop/kill a PORT run by killing jobs with the names that begin with `STUDY` (e.g. `bkill -J "STUDY*"`).
+   All PORT job names begin with the unique `STUDY` name (e.g. "STUDY.get_total_num_reads"). You can stop/kill a PORT run by killing jobs with the names that begin with `STUDY` (e.g. `bkill -J "STUDY*"`).
 
 ----------
 
 ### 2. Output
 #### A. Output Directory Structure
-You will find all log files and shell scripts in the `STUDY/logs` and `STUDY/shell_scripts` directory, respectively. Once you complete the normalization pipeline, your directory structure will look like this if you run both Gene and Exon-Intron-Junction Normalization (If your data are stranded, each FINAL_SAM directory will have sense and antisense directory inside). You may use '-alt_out' option to output NORMALIZED_DATA to an alternate location.:
+   You will find all log files and shell scripts in the `STUDY/logs` and `STUDY/shell_scripts` directory, respectively. Once you complete the normalization pipeline, your directory structure will look like this if you run both Gene and Exon-Intron-Junction Normalization (If your data are stranded, each FINAL_SAM directory will have sense and antisense directory inside). You may use '-alt_out' option to output NORMALIZED_DATA to an alternate location.:
 <pre>
 STUDY
 │── READS
@@ -196,22 +196,22 @@ STUDY
 </pre>
 
 #### B. Output Files
-This section describes the different output files generated by running Gene and/or Exon_Intron_Junction normalization (specified in the config file). Output files can be found in the `STUDY/STATS/*` and `STUDY/NORMALIZED_DATA/*` directories.
+   This section describes the different output files generated by running Gene and/or Exon_Intron_Junction normalization (specified in the config file). Output files can be found in the `STUDY/STATS/*` and `STUDY/NORMALIZED_DATA/*` directories.
 ##### i. Normalized SAM/BAM
 ###### -Exon-Intron-Junction Normalization:<br>
-PORT outputs normalized exonmappers, intronmappers, intergenicmappers and exon inconsistent (exonmappers with inconsistent junctions) files to `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM` directory. If the data are stranded, you will find sense and antisense exonmappers and intronmappers.<br>
+   PORT outputs normalized exonmappers, intronmappers, intergenicmappers and exon inconsistent (exonmappers with inconsistent junctions) files to `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/FINAL_SAM` directory. If the data are stranded, you will find sense and antisense exonmappers and intronmappers.<br>
 ###### -Gene Normalization:<br>
-PORT outputs normalized genemappers to `STUDY/NORMALIZED_DATA/GENE/FINAL_SAM` directory. If the data are stranded, you will find sense and antisense genemappers.<br>
+   PORT outputs normalized genemappers to `STUDY/NORMALIZED_DATA/GENE/FINAL_SAM` directory. If the data are stranded, you will find sense and antisense genemappers.<br>
 
 ##### ii. Feature Count Spreadsheets
 ###### -Exon-Intron-Junction Normalization:<br>
-PORT outputs feature (exon, intron, junctions) counts spreadsheets to `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/SPREADSHEETS`. FINAL MIN spreadsheet has counts from Unique reads and FINAL MAX spreadsheet has counts from Unique+Non-Unique reads. If the data are stranded, you will find sense and antisense spreadsheets for exon and intron counts.<br>
+   PORT outputs feature (exon, intron, junctions) counts spreadsheets to `STUDY/NORMALIZED_DATA/EXON_INTRON_JUNCTION/SPREADSHEETS`. FINAL MIN spreadsheet has counts from Unique reads and FINAL MAX spreadsheet has counts from Unique+Non-Unique reads. If the data are stranded, you will find sense and antisense spreadsheets for exon and intron counts.<br>
 ###### -Gene Normalization:<br>
-PORT outputs gene counts spreadsheets to `STUDY/NORMALIZED_DATA/GENE/SPREADSHEETS`. FINAL MIN spreadsheet has counts from Unique reads that only map to one gene and FINAL MAX spreadsheet has counts from Unique+Non-Unique reads/multiple gene mappers. If the data are stranded, you will find sense and antisense spreadsheets.<br><br>If you use -cutoff_highexp option, PORT will estimate and put the counts of the filtered highly expressed genes back into the FINAL MIN spreadsheet and output an extra spreadsheet (`FINAL_master_list_of_genes_counts_MIN.STUDY.highExp.txt`) <br>
+   PORT outputs gene counts spreadsheets to `STUDY/NORMALIZED_DATA/GENE/SPREADSHEETS`. FINAL MIN spreadsheet has counts from Unique reads that only map to one gene and FINAL MAX spreadsheet has counts from Unique+Non-Unique reads/multiple gene mappers. If the data are stranded, you will find sense and antisense spreadsheets.<br><br>If you use -cutoff_highexp option, PORT will estimate and put the counts of the filtered highly expressed genes back into the FINAL MIN spreadsheet and output an extra spreadsheet (`FINAL_master_list_of_genes_counts_MIN.STUDY.highExp.txt`) <br>
 
 ##### iii. Normalization Factors Statistics
 ###### -Exon-Intron-Junction Normalization:<br>
-`STUDY/STATS/exon-intron-junction_normalization_factors.txt` file provides summary statistics of the normalization factors used: 
+   `STUDY/STATS/exon-intron-junction_normalization_factors.txt` file provides summary statistics of the normalization factors used: 
 
 - Total read count
 - Ribosomal content
@@ -225,7 +225,7 @@ PORT outputs gene counts spreadsheets to `STUDY/NORMALIZED_DATA/GENE/SPREADSHEET
 - Very highly expressed and variable exons/introns
 
 ###### -Gene Normalization:<br>
-`STUDY/STATS/gene_normalization_factors.txt` file provides summary statistics	of the normalization factors used: 
+   `STUDY/STATS/gene_normalization_factors.txt` file provides summary statistics	of the normalization factors used: 
 
 - Total read count
 - Ribosomal content
@@ -235,9 +235,9 @@ PORT outputs gene counts spreadsheets to `STUDY/NORMALIZED_DATA/GENE/SPREADSHEET
 - Very highly expressed and variable genes
 - Sense vs. anti-sense transcription
 
-Percentage of reads mapping to each chromosome (`STUDY/STATS/percent_reads_chr*txt`) and percentage of highly expressed features (`STUDY/STATS/*/percent_high_expresser_*.txt`) are also provided (for both normalization types).
+   Percentage of reads mapping to each chromosome (`STUDY/STATS/percent_reads_chr*txt`) and percentage of highly expressed features (`STUDY/STATS/*/percent_high_expresser_*.txt`) are also provided (for both normalization types).
 ##### iv. Coverage/Junction Files 
-Coverage (`STUDY/NORMALIZED_DATA/*/COV`) and Junctions (`STUDY/NORMALIZED_DATA/*/JUNCTION`) files are generated from uniquely merged sam files for each sample and can be used for data visualization.<br>
+   Coverage (`STUDY/NORMALIZED_DATA/*/COV`) and Junctions (`STUDY/NORMALIZED_DATA/*/JUNCTION`) files are generated from uniquely merged sam files for each sample and can be used for data visualization.<br>
  
 
 ------------
