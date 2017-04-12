@@ -14,7 +14,7 @@ Note that when dUTP-based protocol (e.g. Illumina TruSeq stranded protocol) is u
 
 #### C. Chromosome Names
 #### :red_circle: __By default, PORT *ONLY* uses numbered, X or Y (e.g. chr1,chr2,...,chrX,chrY OR 1,2,...,X,Y) as standard chromosome names.__
-```
+
 
 ##### i. File of chromosome names [optional]
 Provide a full path to file of chromosomes names (CHRNAMES) *if your chromosome names do not follow the chromosome nomenclature described above*. For example, for dm6, the CHRNAMES file should look like this (one name per line):
