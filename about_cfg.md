@@ -13,8 +13,7 @@ If STRANDED is set to TRUE, strand information needs to be provided. Set FWD to 
 Note that when dUTP-based protocol (e.g. Illumina TruSeq stranded protocol) is used, strand information comes from reverse read.
 
 #### C. Chromosome Names
-```diff
-- __By default, PORT *ONLY* uses numbered, X or Y (e.g. chr1,chr2,...,chrX,chrY OR 1,2,...,X,Y) as standard chromosome names.__
+#### :red_circle: __By default, PORT *ONLY* uses numbered, X or Y (e.g. chr1,chr2,...,chrX,chrY OR 1,2,...,X,Y) as standard chromosome names.__
 ```
 
 ##### i. File of chromosome names [optional]
