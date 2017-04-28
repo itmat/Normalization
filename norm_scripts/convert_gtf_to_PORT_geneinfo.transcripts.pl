@@ -17,7 +17,7 @@ my $Usage =  "perl convert_gtf_to_PORT_geneinfo.transcripts.pl <gtffile>
 
 # This script derives the transcript info from the \"exon\" lines in the gtf file
 # and assumes the exons are listed in order numerically, as opposed to by plus-
-# strand coordinates. PORT geneinfo format requires the exons coordinates to me listed in
+# strand coordinates. PORT geneinfo format requires the exons coordinates to be listed in
 # order by plus-strand coordinates, so this script will reverse the order of
 # exons for all minus-strand transcripts.
 
@@ -119,6 +119,12 @@ if ($genesym =~ /^$/){
 }
 $line_data[8] =~ m/gene_biotype "([^"]+)";/;
 $biotype = $1;
+
+#check transcript id and gene id.
+if ($tx_id eq $gene){
+    print "\n\nWARNING: transcript_id '$tx_id' and gene_id '$gene' are the same.\n\n";
+}
+
 #Load data from first transcript into appropriate variables
 $chr = $line_data[0];
 if ($convert eq "true"){

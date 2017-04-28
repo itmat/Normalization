@@ -131,7 +131,7 @@ for(my $i=3; $i<@ARGV; $i++) {
 	    }
 	}
         $option_found = "true";
-	$use_mito_names = "-mito $mitonames";
+	$use_mito_names = "-mito \"$mitonames\"";
         $i++;
     }
     if ($ARGV[$i] eq '-max_jobs'){

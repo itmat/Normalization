@@ -605,6 +605,7 @@ my $gz_cnt=0;
 my $ua_option = "";
 my $fa = "false";
 my $fq = "false";
+my @UREAD = ();
 #check fq/fa format
 open(IN, $unaligned_file) or die "ERROR: cannot find file \"$unaligned_file\".\nPlease provide a file of unaligned reads.\n";
 while (my $line = <IN>){
@@ -626,6 +627,9 @@ while (my $line = <IN>){
     else{
 	$firstline = `head -1 $line`;
     }
+    my @s = split(" ",$firstline);
+    push(@UREAD, $s[0]); 
+	
     if ($firstline =~ /^@/){
 	$ua_option = "-fq";
 	$fq = "true";
@@ -641,6 +645,12 @@ while (my $line = <IN>){
     }
 }
 close(IN);
+my @ureads = &uniq(@UREAD);
+my $usize = @ureads;
+
+unless ($usize == $num_samples){
+    die "\nERROR: Paired-end unaligned files need to be in the same order and the read ids need to be the same.\n";
+}
 unless (($gz_cnt == 0) || ($gz_cnt == $num_samples * 2) || ($gz_cnt == $num_samples)){
     die "\nERROR: All input unaligned files need to be in the same format.\n\n";
 }
@@ -700,8 +710,11 @@ if ($GNORM eq "true"){
     my $header = <ENS>;
     chomp($header);
     my @ENSHEADER = split(/\t/, $header);
-    my ($genenamecol, $genesymbolcol, $txchrcol, $txstartcol, $txendcol, $strandcol, $exonStcol, $exonEndcol);
+    my ($txnamecol, $genenamecol, $genesymbolcol, $txchrcol, $txstartcol, $txendcol, $strandcol, $exonStcol, $exonEndcol);
     for(my $i=0; $i<@ENSHEADER; $i++){
+        if ($ENSHEADER[$i] =~ /name$/){
+            $txnamecol = $i;
+        }
         if ($ENSHEADER[$i] =~ /name2$/){
             $genenamecol = $i;
         }
@@ -738,6 +751,9 @@ if ($GNORM eq "true"){
 	    $hap = "true";
 	}
         $CHR{$chr} = 1;
+	if ($a[$txnamecol] eq $a[$genenamecol]){
+	    die "\nERROR:  transcript id (name) and gene id (name2) are the same in the GENE_INFO_FILE \"$ensGene\".\n\tPlease provide a valid GENE_INFO_FILE.\n\n";
+	}
     }
     close(ENS);
 }
@@ -949,4 +965,8 @@ sub parse_config_file () {
 	    $$Name = $Value;
 	}
     }
+}
+sub uniq {
+    my %seen;
+    grep !$seen{$_}++, @_;
 }

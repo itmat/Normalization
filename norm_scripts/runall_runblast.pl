@@ -113,7 +113,7 @@ for (my $i=5; $i<@ARGV; $i++){
         $numargs++;
         $option_found = "true";
 	my $argv_all = $ARGV[$i+1];
-	$c_option = "-other $argv_all";
+	$c_option = "-other \"$argv_all\"";
         my @a = split(",", $argv_all);
         $submit = $a[0];
         $jobname_option = $a[1];

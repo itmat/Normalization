@@ -216,7 +216,7 @@ while(my $dir = <DIRS>) {
     $min_pover = $Pover{$dir};
     $min_pover =~ s/,//g;
     foreach my $key (sort keys %MITO){
-        $x = `grep -w $key $filename | head -1`;
+        $x = `grep -w '$key' $filename | head -1`;
         if ($x eq ''){
 	    $x = '0';
         }

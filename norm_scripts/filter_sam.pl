@@ -347,7 +347,11 @@ while(my $forward = <INFILE>) {
     }
 }
 close(INFILE);
-close($OUTFILEU);
-close($OUTFILENU);
+if ($U eq "true"){
+    close($OUTFILEU);
+}
+if ($NU eq "true"){
+    close($OUTFILENU);
+}
 
 print "got here\n";
