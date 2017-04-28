@@ -135,7 +135,7 @@ PORT has two parts: PART1 and PART2.<br>
 
      **[normalization parameters]**<br>
      **-cutoff_highexp &lt;n>** : <br>is cutoff % value to identify highly expressed genes/exons/introns.<br>
-                           The script will consider individual features (genes/exons/introns) accounting for greater than n(%) of the total reads as high expressers. The pipeline will remove the reads mapping to those features.<br>
+                           The script will consider individual features (genes/exons/introns) accounting for greater than n(%) of the total reads as high expressers. The pipeline will normalize the reads mapping to those features separately.<br>
                            (Default = 100; with the default cutoff, features (genes/exons/introns) expressed >3% will be reported, but will not remove any reads)<br>
      **-cutoff_lowexp &lt;n>** : <br>is cutoff counts to identify low expressers in the final spreadsheets (exon, intron, junction and gene).<br>
                           The script will remove features with sum of counts less than the set value from all samples.<br>

@@ -45,7 +45,7 @@ OPTIONS:
      [normalization parameters]
      -cutoff_highexp <n> : is cutoff % value to identify highly expressed genes/exons/introns.
                            the script will consider genes/exons/introns with gene/exon/intronpercents greater than n(%) as high expressers,
-                           report the list of highly expressed genes/exons and remove the reads that map to those genes/exons/introns.
+                           report the list of highly expressed genes/exons and normalize the reads that map to those genes/exons/introns separately.
                            (Default = 100; with the default cutoff, genes/exons/introns expressed >3% will be reported)
      -cutoff_lowexp <n> : is cutoff counts to identify low expressers in the final spreadsheets (exon, intron and junc).
                           the script will consider features with sum of counts for all samples less than <n> as low expressers
@@ -752,7 +752,7 @@ if ($GNORM eq "true"){
 	}
         $CHR{$chr} = 1;
 	if ($a[$txnamecol] eq $a[$genenamecol]){
-	    die "\nERROR:  transcript id (name) and gene id (name2) are the same in the GENE_INFO_FILE \"$ensGene\".\n\tPlease provide a valid GENE_INFO_FILE.\n\n";
+	    die "\nERROR:  transcript id (name) and gene id (name2) are the same in the GENE_INFO_FILE \"$ensGene\".\n\tPORT uses the mapping of transcripts to genes Use -force_tx_gene_map flag to ";
 	}
     }
     close(ENS);

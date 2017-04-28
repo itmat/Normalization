@@ -50,7 +50,7 @@ OPTIONS:
      [normalization parameters]
      -cutoff_highexp <n> : is cutoff % value to identify highly expressed genes/exons/introns.
                            the script will consider genes/exons/introns with gene/exon/intronpercents greater than n(%) as high expressers,
-                           report the list of highly expressed genes/exons and remove the reads that map to those genes/exons/introns.
+                           report the list of highly expressed genes/exons and normazlize the reads that map to those genes/exons/introns separately.
                            (Default = 100; with the default cutoff, exons/genes/introns expressed >3% will be reported)
 
      -cutoff_lowexp <n> : is cutoff counts to identify low expressers in the final spreadsheets (exon, intron and junc).
