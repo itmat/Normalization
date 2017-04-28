@@ -10,7 +10,7 @@ PORT offers **Exon-Intron-Junction** level normalization and **Gene** level norm
 Set STRANDED to TRUE if the data are stranded.<br>
 ##### ii. FWD or REV
 If STRANDED is set to TRUE, strand information needs to be provided. Set FWD to TRUE if forward read is in the same orientation as the transcripts/genes (sense) and set REV to TRUE if reverse read is in the same orientation as the transcripts/genes (sense).<br>
-Note that when dUTP-based protocol (e.g. Illumina TruSeq stranded protocol) is used, strand information comes from reverse read.
+>Note: when dUTP-based protocol (e.g. Illumina TruSeq stranded protocol) is used, strand information comes from reverse read.
 
 #### C. Chromosome Names
 #### :red_circle: __By default, PORT *ONLY* uses numbered, X or Y (e.g. chr1,chr2,...,chrX,chrY OR 1,2,...,X,Y) as standard chromosome names.__
@@ -56,7 +56,8 @@ ensembl gene info files for mm9, mm10, hg19, hg38, dm3 and danRer7 are available
      dm3: /path/to/Normalization/norm_scripts/dm3_ensGenes.txt
      danRer7: /path/to/Normalization/norm_scripts/danRer7_ensGenes.txt
 
-Alternatively, you can use a perl script (**/path/to/Normalization/norm_scripts/convert_gtf_to_PORT_geneinfo.transcripts.pl**) to convert an ENSEMBL gtf file to a gene information file. 
+Alternatively, you can use a perl script (**/path/to/Normalization/norm_scripts/convert_gtf_to_PORT_geneinfo.transcripts.pl**) to convert a gtf file to a gene information file.<br>
+>Note: PORT uses _transcript_id_ to _gene_id_ mapping information for gene-level quantification. If a gene model has more than one transcript per gene, please make sure the _transcript_ids_ and _gene_ids_ are different.
 
 ---------------
 

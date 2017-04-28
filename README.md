@@ -23,12 +23,13 @@ Make sure you have the latest version of PORT:
   * Raw sequence reads used to generate SAM/BAM.
   * Unaligned files can be gzipped.
   * One file per sample (single-end data) or two files per sample (paired-end data)
+  * _Paired-end data: readpairs need to have same read ids_
 - [Gene info files](https://github.com/itmat/Normalization/blob/master/about_cfg.md#2-gene-info)
 - [Genome fa/fai](https://github.com/itmat/Normalization/blob/master/about_cfg.md#3-fa-and-fai)
 - Aligned reads (SAM/BAM) 
   * SAM/BAM files need to have unique read ids. 
   * Required tags: **IH (or NH) and HI**.
-  * __Paired End data: mated alignments need to be in adjacent lines.__
+  * _Paired End data: mated alignments need to be in adjacent lines._
   * One SAM/BAM per sample.
 
 >aligner options to use for PORT compatibility: 
