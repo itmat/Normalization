@@ -33,6 +33,7 @@ my $last_dir = $fields[@fields-1];
 my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $stats_dir = $study_dir . "STATS/EXON_INTRON_JUNCTION";
+my $lc_dir = $study_dir . "STATS/lineCounts";
 
 for(my $i=2; $i<@ARGV; $i++) {
     my $option_found = "false";
@@ -43,6 +44,7 @@ for(my $i=2; $i<@ARGV; $i++) {
     }
     if($ARGV[$i] eq '-alt_stats') {
         $stats_dir = "$ARGV[$i+1]/EXON_INTRON_JUNCTION/";
+	$lc_dir = "$ARGV[$i+1]/lineCounts";
 	$i++;
 	$option_found = "true";
     }
@@ -70,8 +72,8 @@ unless (-d $stats_dir){
     `mkdir -p $stats_dir`;}
 my $outfileU = "$stats_dir/percent_exon_inconsistent_Unique.txt";
 my $outfileNU = "$stats_dir/percent_exon_inconsistent_NU.txt";
-my $ei_lc_U = "$study_dir/STATS/lineCounts/exon_inconsist.unique.lc.txt";
-my $ei_lc_NU = "$study_dir/STATS/lineCounts/exon_inconsist.nu.lc.txt";
+my $ei_lc_U = "$lc_dir/exon_inconsist.unique.lc.txt";
+my $ei_lc_NU = "$lc_dir/exon_inconsist.nu.lc.txt";
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; 
 if ($U eq "true"){

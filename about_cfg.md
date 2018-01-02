@@ -56,7 +56,7 @@ ensembl gene info files for mm9, mm10, hg19, hg38, dm3 and danRer7 are available
      dm3: /path/to/Normalization/norm_scripts/dm3_ensGenes.txt
      danRer7: /path/to/Normalization/norm_scripts/danRer7_ensGenes.txt
 
->Note: PORT uses the mapping of _transcripts_ to _genes_ for gene-level quantification: read counts of each transcript of a gene are merged for overall gene expression. For genes with multiple transcripts, make sure the "name" (transcript id) and "name2" (gene_id) are not the same.
+>Note: PORT uses the mapping of _transcripts_ to _genes_ for gene-level quantification: read counts of all transcripts of a gene are merged for overall gene expression. For annotations with genes with multiple transcripts, make sure the "name" (transcript id) and "name2" (gene_id) are not the same.
 
 Alternatively, you can use a perl script (**/path/to/Normalization/norm_scripts/convert_gtf_to_PORT_geneinfo.transcripts.pl**) to convert a gtf file to a gene information file.<br>
 >Note: In this case, check the "gene_id" and "transcript_id" attributes in the gtf file.

@@ -33,12 +33,13 @@ my $last_dir = $fields[@fields-1];
 my $study_dir = $LOC;
 $study_dir =~ s/$last_dir//;
 my $stats_dir = $study_dir . "STATS/EXON_INTRON_JUNCTION";
-
+my $lc_dir = $study_dir . "STATS/lineCounts";
 for(my $i=2; $i<@ARGV; $i++) {
     my $option_found = "false";
     if ($ARGV[$i] eq '-alt_stats'){
 	$option_found = "true";
 	$stats_dir = "$ARGV[$i+1]/EXON_INTRON_JUNCTION";
+	$lc_dir = "$ARGV[$i+1]/lineCounts";
 	$i++;
     }
     if($ARGV[$i] eq '-nu') {
@@ -68,10 +69,12 @@ and non-unique by default so if that's what you want don't use either arg
 
 unless (-d $stats_dir){
     `mkdir -p $stats_dir`;}
+unless (-d $lc_dir){
+    `mkdir -p $lc_dir`;}
 my $outfileU = "$stats_dir/percent_intergenic_Unique.txt";
 my $outfileNU = "$stats_dir/percent_intergenic_NU.txt";
-my $ig_lc_U = "$study_dir/STATS/lineCounts/intergenic.unique.lc.txt";
-my $ig_lc_NU = "$study_dir/STATS/lineCounts/intergenic.nu.lc.txt";
+my $ig_lc_U = "$lc_dir/intergenic.unique.lc.txt";
+my $ig_lc_NU = "$lc_dir/intergenic.nu.lc.txt";
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; 
 if ($U eq "true"){

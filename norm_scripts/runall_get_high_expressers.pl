@@ -212,7 +212,8 @@ unless (-e $exons){
     die "Cannot find $exons file\n";
 }
 my $exons_to_annot = "$exons.tmp";
-my $x = `cut -f 1 $exons > $exons_to_annot`;
+my $x = `echo \"exon\" > $exons_to_annot`;
+$x = `cut -f 1 $exons >> $exons_to_annot`;
 my $annotated_exons = $exons;
 $annotated_exons =~ s/master_list/annotated_master_list/;
 my $master_sh = "$shdir/annotate_master_list_of_exons.sh";

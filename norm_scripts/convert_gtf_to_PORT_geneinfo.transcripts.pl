@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-my $Usage =  "perl convert_gtf_to_PORT_geneinfo.transcripts.pl <gtffile>
+my $Usage =  "perl convert_gtf_to_PORT_geneinfo.transcripts.pl <gtffile> <outputfile>
 
 [option]
  -convert_chrom <chromtable> : use this option to convert chromosome names to match the chromosome names in fasta.
@@ -10,6 +10,10 @@ my $Usage =  "perl convert_gtf_to_PORT_geneinfo.transcripts.pl <gtffile>
     			       from_chromosome_name\tto_chromosome_name
 
 			       <chromtable> can be downloaded from: https://github.com/dpryan79/ChromosomeMappings
+
+# PORT uses the mapping of transcripts to genes for gene-level quantification: 
+#    read counts of all transcripts of a gene are merged for overall gene expression. 
+# For annotations with genes with multiple transcripts, make sure the \"transcript_id\" and \"gene_id\" are not the same.
 
 
 # Accepts a GTF file and coverts it to the following format:
@@ -22,16 +26,17 @@ my $Usage =  "perl convert_gtf_to_PORT_geneinfo.transcripts.pl <gtffile>
 # exons for all minus-strand transcripts.
 
 
+
 ";
 
-if (@ARGV<1){
+if (@ARGV<2){
     die $Usage;
 }
 
 my $convert = "false";
 my %CHR;
 my $table = "";
-for(my $i=1;$i<@ARGV;$i++){
+for(my $i=2;$i<@ARGV;$i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-convert_chrom'){
 	$convert = "true";
@@ -59,8 +64,7 @@ my $gtf_file = $ARGV[0]; #Name of gtf file
 my @sp = split("/",$gtf_file);
 my $name = $sp[@sp-1];
 $name =~ s/.gtf$//;
-my $outfile = $gtf_file;
-$outfile =~ s/.gtf$/.PORT_geneinfo.txt/;
+my $outfile = $ARGV[1];
 
 open(OUT, ">$outfile") or die "cannot open $outfile\n";
 print OUT "#$name.chrom\t$name.strand\t$name.txStart\t$name.txEnd\t$name.exonCount\t$name.exonStarts\t$name.exonEnds\t$name.name\t$name.name2\t$name.ensemblToGeneName.value\t$name.geneSymbol\t$name.biotype\n";

@@ -821,6 +821,7 @@ sub cigar2spans {
     return $spans;
 
 }
+print "got here\n";
 }
 1;
-print "got here\n";
+

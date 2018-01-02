@@ -246,7 +246,9 @@ for(my $i=0; $i<@ARGV; $i++) {
         $cutoff_he = $ARGV[$i+1];
         $i++;
         $option_found = "true";
-	$filter_high_expressers = "true";
+	unless ($cutoff_he == 100){
+	    $filter_high_expressers = "true";
+	}
         if ($cutoff_he !~ /(\d+$)/ ){
             die "-cutoff_highexp <n> : <n> needs to be a number\n";
         }
@@ -309,6 +311,7 @@ $study_dir =~ s/$last_dir//;
 my $normdir = $study_dir . "NORMALIZED_DATA";
 my $study = $fields[@fields-2];
 my $altstats = "";
+my $lc_dir = $study_dir . "/STATS/lineCounts/";
 my $dirs = `wc -l $sample_dir`;
 my @a = split(" ", $dirs);
 my $num_samples = $a[0];
@@ -316,15 +319,17 @@ my $cutoff_le = 0;
 if ($filter_low_expressers eq "true"){
     $cutoff_le = $cutoff_temp;
 }
-
+my $s_dir = "$study_dir/STATS/";
 if ($new_norm eq "true"){
     for(my $i=0; $i<@ARGV; $i++) {
         if ($ARGV[$i] eq "-alt_out"){
             $normdir = $ARGV[$i+1];
 	    $altstats = "-alt_stats $normdir/STATS/";
-	    unless (-d "$normdir/STATS/"){
-		`mkdir -p $normdir/STATS/`;
+	    unless (-d "$normdir"){
+		`mkdir -p $normdir`;
 	    }
+	    $lc_dir = "$normdir/STATS/lineCounts/";
+	    $s_dir = "$normdir/STATS/";
         }
     }
 }
@@ -597,7 +602,8 @@ if ($filter_high_expressers eq "true"){
 
 my $UONLY = "";
 #check UONLY
-my $statsfile = "$study_dir/STATS/mappingstats_summary.txt";
+my $statsfile = "$s_dir/mappingstats_summary.txt";
+
 if (-e $statsfile){
     my $maxline = `tail -2 $statsfile | head -1`;
     my @m = split(/\t/,$maxline);
@@ -606,7 +612,7 @@ if (-e $statsfile){
     }
 }
 open(LOG, ">>$logfile");
-print LOG "\nPORT v0.8.4-beta\n";
+print LOG "\nPORT v0.8.5-beta\n";
 my $default_input = $input;
 #$default_input = `cat $shdir/runall_normalization.sh`;
 $default_input =~ s/perl\ //g;
@@ -857,7 +863,7 @@ if ($run_prepause eq "true"){
     if ($run_job eq "true"){
 	$name_of_job = "$study.sam2mappingstats";
 	$err_name = "sam2mappingstats.*.err";
-	$total = "$study_dir/STATS/total_num_reads.txt";
+	$total = "$s_dir/total_num_reads.txt";
 	$sorted = `cut -f 2 $total | sort -n`;
 	@a = split (/\n/, $sorted);
 	$min_map = $a[0];
@@ -1020,17 +1026,17 @@ if ($run_prepause eq "true"){
                 $c_option = "$submit \\\"$batchjobs,$jobname, $request, $queue_6G, $stat\\\"";
             }
 	    $new_queue = "-mem $queue_6G";
-	    $total = "$study_dir/STATS/total_num_reads.txt";
+	    $total = "$s_dir/total_num_reads.txt";
 	    $sorted = `cut -f 2 $total | sort -n`;
 	    @a = split (/\n/, $sorted);
 	    $min_map = $a[0];
 	    $max_map = $a[@a-1];
-            if ($min_map > 50000000){ #50,000,000
+            if ($max_map > 50000000){ #50,000,000
 		$new_queue = "-mem $queue_30G";
-                if ($min_map > 100000000){ #100,000,000
+                if ($max_map > 100000000){ #100,000,000
                     $new_queue = "-mem $queue_45G";
                 }
-                if ($min_map > 150000000){
+                if ($max_map > 150000000){
                     $new_queue = "-mem $queue_60G";
                 }
             }
@@ -1148,7 +1154,8 @@ if ($run_prepause eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_3G, $stat\\\"";
 	}
 	$new_queue = "-mem $queue_3G";
-	my $numr = `sort -nrk 1 $study_dir/STATS/ribo_percents.txt | head -1`;
+	my $rfile = "$s_dir/ribo_percents.txt";
+	my $numr = `sort -nrk 1 $rfile | head -1`;
 	chomp($numr);
 	my @xnumr = split(" " , $numr);
 	my $maxribo = $xnumr[0];
@@ -1388,7 +1395,7 @@ if ($run_prepause eq "true"){
         }
 	$new_queue = "-mem $queue_15G";
 
-	$total = "$study_dir/STATS/total_num_reads.txt";
+	$total = "$s_dir/total_num_reads.txt";
         $sorted = `cut -f 2 $total | sort -n`;
         @a = split (/\n/, $sorted);
         $min_map = $a[0];
@@ -1492,6 +1499,17 @@ if ($run_prepause eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_10G, $stat\\\"";
         }
 	$new_queue = "-mem $queue_10G";
+	my $nu_lcfile = "$lc_dir/gene.nu.lc.txt";
+	if ($STRANDED =~ /^true/i){
+	    $nu_lcfile = "$lc_dir/gene.nu.sense.lc.txt";
+	}
+        my $sorted_nu_lcfile = `cut -f 2 $nu_lcfile | sort -n`;
+        @a = split (/\n/, $sorted_nu_lcfile);
+        my $max_nu_lc = $a[@a-1];
+#	print "maxnulc:$max_nu_lc\n";
+	if ($max_nu_lc > 50000000){
+	    $new_queue = "-mem $queue_30G";
+	}
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
@@ -1685,7 +1703,7 @@ if ($run_prepause eq "true"){
 	    }
 	    $new_queue = "-mem $queue_15G";
 
-	    $total = "$study_dir/STATS/total_num_reads.txt";
+	    $total = "$s_dir/total_num_reads.txt";
 	    $sorted = `cut -f 2 $total | sort -n`;
 	    @a = split (/\n/, $sorted);
 	    $min_map = $a[0];
@@ -1863,7 +1881,8 @@ if ($run_prepause eq "true"){
 	}
 	$new_queue = "-mem $queue_3G";
 
-        my $numr = `sort -nrk 1 $study_dir/STATS/ribo_percents.txt | head -1`;
+        my $rfile = "$s_dir/ribo_percents.txt";
+        my $numr = `sort -nrk 1 $rfile | head -1`;
         chomp($numr);
         my @xnumr = split(" " , $numr);
 	my $maxribo = $xnumr[0];
@@ -2661,21 +2680,26 @@ if ($run_prepause eq "true"){
 	&check_err ($name_of_job, $err_name, $job_num);
 	$job_num++;
     }
-    
+
     if ($run_job eq "true"){
+	# if STUDY/STATS doesn't exist (this happens when -alt_out is used in part1)
+	# copy STATS from altout/STATS to STUDY
+	unless (-d "$study_dir/STATS"){
+	    `cp -r $s_dir $study_dir/`;
+	}
 	if (($run_prepause eq "true")&&($run_norm eq "false")){
 	    print LOG "\n[PART1 complete] ";
 	    print LOG "Check the following before proceeding:\n\n";
 
 	    if ($GNORM eq "true"){
-                $exp_num_reads = `grep -A 3 Expected $study_dir/STATS/GENE/expected_num_reads_gnorm.txt | grep -A 3 estimate`;
+                $exp_num_reads = `grep -A 3 Expected $s_dir/GENE/expected_num_reads_gnorm.txt"; | grep -A 3 estimate`;
                 chomp($exp_num_reads);
                 print LOG "\n[Gene Normalization]\n";
                 print LOG "(1) Number of reads\n";
                 print LOG "$exp_num_reads\n";
-                print LOG "See \"$study_dir/STATS/GENE/expected_num_reads_gnorm.txt\" \nand modify the list of sample directories (\"$sample_dir\") accordingly to get more reads.\n\n";
+                print LOG "See \"$exp_file\" \nand modify the list of sample directories (\"$sample_dir\") accordingly to get more reads.\n\n";
                 print LOG "(2) High Expressers\n";
-		my @highfiles = glob("$study_dir/STATS/GENE/percent_high_expresser_gene*txt");
+		my @highfiles = glob("$s_dir/GENE/percent_high_expresser_gene*txt");
 		my $highcnt = 0;
 		foreach my $highfile (@highfiles){
 		    my $x = `head -1 $highfile | wc -w`;
@@ -2691,18 +2715,18 @@ if ($run_prepause eq "true"){
 		    print LOG "PORT did not find any highly expressed genes ($cutoff_he% used as cutoff).\n\n";
 		}
 		else{
-		    print LOG "See \"$study_dir/STATS/GENE/percent_high_expresser_gene*txt\" \nUse \"-cutoff_highexp <n>\" option to set/change the highexpresser cutoff value.\n(You may use -cutoff_highexp 100 to unfilter/keep the highexpressers.)\n\n";
+		    print LOG "See \"$s_dir/GENE/percent_high_expresser_gene*txt\" \nUse \"-cutoff_highexp <n>\" option to set/change the highexpresser cutoff value.\n(You may use -cutoff_highexp 100 to unfilter/keep the highexpressers.)\n\n";
 		}
 	    }
 	    if ($EIJ eq "true"){
-		$exp_num_reads = `grep -A 3 Expected $study_dir/STATS/EXON_INTRON_JUNCTION/expected_num_reads.txt | grep -A 3 estimate`;
+		$exp_num_reads = `grep -A 3 Expected $s_dir/EXON_INTRON_JUNCTION/expected_num_reads.txt | grep -A 3 estimate`;
 		chomp($exp_num_reads);
 		print LOG "\n[Exon-Intron-Junction Normalization]\n";
 		print LOG "(1) Number of reads\n";
 		print LOG "$exp_num_reads\n";
-		print LOG "See \"$study_dir/STATS/EXON_INTRON_JUNCTION/expected_num_reads.txt\" \nand modify the list of sample directories (\"$sample_dir\") accordingly to get more reads.\n\n";
+		print LOG "See \"$s_dir/EXON_INTRON_JUNCTION/expected_num_reads.txt\" \nand modify the list of sample directories (\"$sample_dir\") accordingly to get more reads.\n\n";
 		print LOG "(2) High Expressers\n";
-                my @highfiles = glob("$study_dir/STATS/EXON_INTRON_JUNCTION/percent_high_expresser_*txt");
+                my @highfiles = glob("$s_dir/EXON_INTRON_JUNCTION/percent_high_expresser_*txt");
 		my $highcnt = 0;
 		foreach my $highfile (@highfiles){
                     my $x = `head -1 $highfile | wc -w`;
@@ -2718,7 +2742,7 @@ if ($run_prepause eq "true"){
                     print LOG "PORT did not find any highly expressed exons/introns ($cutoff_he% used as cutoff).\n\n";
                 }
 		else{
-		    print LOG "Check \"$study_dir/STATS/EXON_INTRON_JUNCTION/percent_high_expresser_*.txt\" \nUse \"-cutoff_highexp <n>\" option to set/change the highexpresser cutoff value.\n(You may use -cutoff_highexp 100 to unfilter/keep the highexpressers.)\n\n";
+		    print LOG "Check \"$s_dir/EXON_INTRON_JUNCTION/percent_high_expresser_*.txt\" \nUse \"-cutoff_highexp <n>\" option to set/change the highexpresser cutoff value.\n(You may use -cutoff_highexp 100 to unfilter/keep the highexpressers.)\n\n";
 		}
 	    }
 =comment
@@ -2757,6 +2781,12 @@ if ($run_norm eq "true"){
 	}
         elsif ($EIJ eq "true"){
             print LOG "\n[Exon-Intron-Junction Normalization - PART2]\n\n";
+        }
+	# IF -alt_out STATS directory does not exist, copy the STUDY/STATS/
+        unless (-d "$s_dir"){
+	    my $temp_dir = $s_dir;
+	    $temp_dir =~ s/STATS//;
+            `cp -r $study_dir/STATS/ $temp_dir`;
         }
     }
     #check_fasta
@@ -2904,11 +2934,12 @@ if ($run_norm eq "true"){
 		    }
 		    $new_queue = "-mem $queue_15G";
 
-		    $total = "$study_dir/STATS/total_num_reads.txt";
+		    $total = "$s_dir/total_num_reads.txt";
 		    $sorted = `cut -f 2 $total | sort -n`;
 		    @a = split (/\n/, $sorted);
 		    $min_map = $a[0];
 		    $max_map = $a[@a-1];
+#		    print "maxmap:$max_map\n";
 		    if ($max_map > 50000000){
 			$new_queue = "-mem $queue_30G";
 			if ($max_map > 100000000){
@@ -3312,7 +3343,7 @@ if ($run_norm eq "true"){
 	    while(qx{$stat | wc -l} > $maxjobs){
 		sleep(10);
 	    }
-	    $total = "$study_dir/STATS/total_num_reads.txt";
+	    $total = "$s_dir/total_num_reads.txt";
 	    $sorted = `cut -f 2 $total | sort -n`;
 	    @a = split (/\n/, $sorted);
 	    $min_map = $a[0];
@@ -3367,7 +3398,20 @@ if ($run_norm eq "true"){
             $c_option = "$submit \\\"$batchjobs, $jobname, $request, $queue_10G, $stat\\\"";
 	}
 	$new_queue = "-mem $queue_10G";
-
+	my $nu_lcfile = "$lc_dir/gene.nu.lc.txt";
+        if ($STRANDED =~ /^true/i){
+            $nu_lcfile = "$lc_dir/gene.nu.sense.lc.txt";
+        }
+	unless (-e $nu_lcfile){
+	    die "$nu_lcfile does not exist.\n";
+	}
+        my $sorted_nu_lcfile = `cut -f 2 $nu_lcfile | sort -n`;
+        @a = split (/\n/, $sorted_nu_lcfile);
+        my $min_nu_lc = $a[0];
+#        print "minulc:$min_nu_lc\n";
+        if ($min_nu_lc > 50000000){
+            $new_queue = "-mem $queue_30G";
+        }
         while(qx{$stat | wc -l} > $maxjobs){
             sleep(10);
         }
@@ -3510,7 +3554,7 @@ if ($run_norm eq "true"){
         }
 	
 	my $mem_quants = $mem;
-	if ($num_samples > 200){
+	if ($num_samples > 100){
 	    $mem_quants = "$request$queue_10G";
 	}
         $job = "echo \"perl $norm_script_dir/quants2spreadsheet_min_max.pl $sample_dir $LOC genequants $filter_highexp $data_stranded -normdir $normdir\" | $batchjobs $mem_quants $jobname \"$study.quants2spreadsheet_gnorm\" -o $logdir/$study.quants2spreadsheet_gnorm.out -e $logdir/$study.quants2spreadsheet_gnorm.err";
@@ -4118,9 +4162,9 @@ if ($run_norm eq "true"){
 	}
 	$new_queue = "-mem $queue_15G";
 
-        my $linecounts = "$study_dir/STATS/lineCounts/exon.unique.lc.1.txt";
+        my $linecounts = "$lc_dir/exon.unique.lc.1.txt";
 	if ($STRANDED =~ /^true/i){
-            $linecounts = "$study_dir/STATS/lineCounts/exon.unique.sense.lc.1.txt";
+            $linecounts = "$lc_dir/exon.unique.sense.lc.1.txt";
         }
         @g = glob("$linecounts");
         if (@g ne '0'){
@@ -4276,7 +4320,7 @@ if ($run_norm eq "true"){
 	$new_queue = "-mem $queue_10G";
 
 	if ($num_samples > 100){
-	    $new_queue = "-mem $queue_30G";
+	    $new_queue = "-mem $queue_45G";
 	}
 	if ($num_samples > 500){
 	    $new_queue = "-mem $queue_60G";

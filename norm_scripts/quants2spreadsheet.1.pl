@@ -100,6 +100,7 @@ if ($type =~ /^gene/i){
 
 my $exon_dir = $norm_dir . "/FINAL_SAM/exonmappers";
 my $intron_dir = $norm_dir . "/FINAL_SAM/intronmappers";
+my $ig_dir = $norm_dir . "/FINAL_SAM/intergenicmappers";
 my $spread_dir = $norm_dir . "/SPREADSHEETS";
 my ($exon_dir_a, $intron_dir_a);
 if ($stranded eq "true"){

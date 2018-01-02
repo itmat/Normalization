@@ -70,7 +70,7 @@ for(my $i=0; $i<@GHEADER; $i++){
 if (!defined($chrcol) || !defined($exonstartcol) || !defined($exonendcol) || !defined($strandcol) || !defined($symcol)){
     die "Your header must contain columns with the following suffixes: chrom, strand, exonStarts, exonEnds and geneSymbol\n";
 }
-my (%EXONS, %STR);
+my (%EXONS, %STR, %SYMBOL);
 while(my $line = <GENE>){
     chomp($line);
     my @a = split(/\t/,$line);
