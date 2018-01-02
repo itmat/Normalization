@@ -7,8 +7,7 @@
 -----------------
 
 ### About PORT
-PORT is a resampling based read-level normalization and quantification pipeline for RNA-Seq differential expression analysis.<br>
-PORT offers two types of normalization: <br>__GENE Normalization__ and __EXON-INTRON-JUNCTION Normalization__.<br>
+PORT is a resampling based read-level normalization and quantification pipeline for RNA-Seq differential expression analysis and it offers two types of normalization: __GENE Normalization__ and __EXON-INTRON-JUNCTION Normalization__.
 
 -----------------
 
