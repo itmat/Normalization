@@ -2692,7 +2692,7 @@ if ($run_prepause eq "true"){
 	    print LOG "Check the following before proceeding:\n\n";
 
 	    if ($GNORM eq "true"){
-                $exp_num_reads = `grep -A 3 Expected $s_dir/GENE/expected_num_reads_gnorm.txt"; | grep -A 3 estimate`;
+                $exp_num_reads = `grep -A 3 Expected $s_dir/GENE/expected_num_reads_gnorm.txt" | grep -A 3 estimate`;
                 chomp($exp_num_reads);
                 print LOG "\n[Gene Normalization]\n";
                 print LOG "(1) Number of reads\n";
