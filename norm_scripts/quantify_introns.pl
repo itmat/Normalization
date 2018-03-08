@@ -362,11 +362,11 @@ sub roman($) {
 
 sub isroman($) {
     my $arg = shift;
-    return $arg ne '' and
+    return ($arg ne '' and
         $arg =~ /^(?: M{0,3})
                  (?: D?C{0,3} | C[DM])
                  (?: L?X{0,3} | X[LC])
-                 (?: V?I{0,3} | I[VX])$/ix;
+                 (?: V?I{0,3} | I[VX])$/ix);
 }
 
 
