@@ -205,10 +205,10 @@ while(my $line = <INFILE>){
     }
     my $x;
     if ($gz eq "true"){
-	$x= "echo \"zcat $line | wc -l | xargs echo -n >> $temp_file.$i.$study && echo -e '\t$line' >> $temp_file.$i.$study\" | $submit $request_memory_option$mem $jobname_option $jobname -e $logname.$i.err -o $logname.$i.out";
+	$x= "echo \"zcat $line | wc -l | xargs echo -n >> $temp_file.$i.$study && echo ' $line' >> $temp_file.$i.$study\" | $submit $request_memory_option$mem $jobname_option $jobname -e $logname.$i.err -o $logname.$i.out";
     }
     else {
-	$x ="echo \"wc -l < $line | xargs echo -n >> $temp_file.$i.$study && echo -e '\t$line' >> $temp_file.$i.$study\" | $submit $request_memory_option$mem $jobname_option $jobname -e $logname.$i.err -o $logname.$i.out";
+	$x ="echo \"wc -l < $line | xargs echo -n >> $temp_file.$i.$study && echo ' $line' >> $temp_file.$i.$study\" | $submit $request_memory_option$mem $jobname_option $jobname -e $logname.$i.err -o $logname.$i.out";
     }
     if ($hn_only eq "true"){
 	$ssh->system($x) or
