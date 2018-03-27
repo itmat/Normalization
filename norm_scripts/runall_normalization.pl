@@ -612,7 +612,7 @@ if (-e $statsfile){
     }
 }
 open(LOG, ">>$logfile");
-print LOG "\nPORT v0.8.5-beta\n";
+print LOG "\nPORT v0.8.5b-beta\n";
 my $default_input = $input;
 #$default_input = `cat $shdir/runall_normalization.sh`;
 $default_input =~ s/perl\ //g;
