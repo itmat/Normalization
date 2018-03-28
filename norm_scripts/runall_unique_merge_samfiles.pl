@@ -198,7 +198,7 @@ my $norm_ig_dir = $norm_dir . "/intergenicmappers";
 my $norm_und_dir = $norm_dir . "/exon_inconsistent";
 my $norm_merged_dir = $norm_dir . "/merged";
 unless (-d $norm_merged_dir){
-    `mkdir $norm_merged_dir`;
+    `mkdir -p $norm_merged_dir`;
 }
 
 open(IN, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n"; # dirnames;

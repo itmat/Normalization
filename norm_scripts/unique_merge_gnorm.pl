@@ -71,7 +71,7 @@ $loc_study =~ s/$last_dir//;
 my $norm_dir = "$normdir/GENE/FINAL_SAM/";
 my $norm_merged_dir = $norm_dir . "/merged";
 unless (-d $norm_merged_dir){
-    `mkdir $norm_merged_dir`;
+    `mkdir -p $norm_merged_dir`;
 }
 my $id = $ARGV[0];
 my ($genefile, $genefile_a);

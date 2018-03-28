@@ -185,9 +185,9 @@ my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
 
 unless (-d $shdir){
-    `mkdir $shdir`;}
+    `mkdir -p $shdir`;}
 unless (-d $logdir){
-    `mkdir $logdir`;}
+    `mkdir -p $logdir`;}
 
 my $cutoff = 100;
 

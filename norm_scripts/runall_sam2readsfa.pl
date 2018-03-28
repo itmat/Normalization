@@ -50,9 +50,9 @@ $study_dir =~ s/$last_dir//;
 $shdir = $study_dir . "shell_scripts";
 $logdir = $study_dir . "logs";
 unless (-d $shdir){
-    `mkdir $shdir`;}
+    `mkdir -p $shdir`;}
 unless (-d $logdir){
-    `mkdir $logdir`;}
+    `mkdir -p $logdir`;}
 $sam = $ARGV[2];
 $path = abs_path($0);
 $path =~ s/runall_//;

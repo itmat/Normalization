@@ -208,15 +208,15 @@ my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
 
 unless (-d $shdir){
-    `mkdir $shdir`;}
+    `mkdir -p $shdir`;}
 
 unless (-d $logdir){
-    `mkdir $logdir`;}
+    `mkdir -p $logdir`;}
 
 my $norm_dir = "$normdir/EXON_INTRON_JUNCTION";
 my $spread_dir = $norm_dir . "/SPREADSHEETS";
 unless (-d $spread_dir){
-    `mkdir $spread_dir`;
+    `mkdir -p $spread_dir`;
 }
 my $FILE = $ARGV[0];
 

@@ -575,9 +575,9 @@ my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
 my $logfile = $logdir . "/$study.run_normalization.log";
 unless (-d $shdir){
-    `mkdir $shdir`;}
+    `mkdir -p $shdir`;}
 unless (-d $logdir){
-    `mkdir $logdir`;}
+    `mkdir -p $logdir`;}
 
 my $cluster_max = "";
 if ($maxjobs ne '200'){

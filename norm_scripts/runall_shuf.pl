@@ -209,9 +209,9 @@ $study_dir =~ s/$last_dir//;
 $shdir = $study_dir . "shell_scripts";
 $logdir = $study_dir . "logs";
 unless (-d $shdir){
-    `mkdir $shdir`;}
+    `mkdir -p $shdir`;}
 unless (-d $logdir){
-    `mkdir $logdir`;}
+    `mkdir -p $logdir`;}
 %LINECOUNTS;
 
 if ($U eq 'true'){

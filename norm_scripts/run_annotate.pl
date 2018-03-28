@@ -169,14 +169,14 @@ $study_dir =~ s/$last_dir//;
 $shdir = $study_dir . "shell_scripts";
 $logdir = $study_dir . "logs";
 unless (-d $shdir){
-    `mkdir $shdir`;}
+    `mkdir -p $shdir`;}
 unless (-d $logdir){
-    `mkdir $logdir`;}
+    `mkdir -p $logdir`;}
 $norm_dir = "$normdir/EXON_INTRON_JUNCTION";
 $spread_dir = $norm_dir . "/SPREADSHEETS";
 
 unless (-d $spread_dir){
-    `mkdir $spread_dir`;
+    `mkdir -p $spread_dir`;
 }
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";

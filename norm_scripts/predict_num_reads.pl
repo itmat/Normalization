@@ -109,10 +109,10 @@ and non-unique by default so if that's what you want don't use either arg
 }
 
 unless (-d "$stats_dir"){
-    `mkdir $stats_dir`;
+    `mkdir -p $stats_dir`;
 }
 unless (-d "$stats_dir/EXON_INTRON_JUNCTION/"){
-    `mkdir $stats_dir/EXON_INTRON_JUNCTION/`;
+    `mkdir -p $stats_dir/EXON_INTRON_JUNCTION/`;
 }
 my $outfile = "$stats_dir/EXON_INTRON_JUNCTION/expected_num_reads.txt";
 if ($filter eq "true"){

@@ -200,9 +200,9 @@ $study_dir =~ s/$last_dir//;
 my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
 unless (-d $shdir){
-    `mkdir $shdir`;}
+    `mkdir -p $shdir`;}
 unless (-d $logdir){
-    `mkdir $logdir`;}
+    `mkdir -p $logdir`;}
 my $norm_dir = "$normdir/EXON_INTRON_JUNCTION/";
 if ($gnorm eq "true"){
     $norm_dir = "$normdir/GENE/";
@@ -226,7 +226,7 @@ while(my $line = <INFILE>) {
     else {
 	$final_dir = $final_M_dir;
 	unless (-d $junctions_dir){
-	    `mkdir $junctions_dir`;
+	    `mkdir -p $junctions_dir`;
 	}
 	$filename = "$id.merged.sam";
 	if ($gnorm eq "true"){

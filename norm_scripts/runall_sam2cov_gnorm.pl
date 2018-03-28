@@ -238,7 +238,7 @@ my $logdir = $study_dir . "logs";
 my $norm_dir = "$normdir/GENE/";
 my $cov_dir = $norm_dir . "/COV";
 unless (-d $cov_dir){
-    `mkdir $cov_dir`;
+    `mkdir -p $cov_dir`;
 }
 my $finalsam_dir = "$norm_dir/FINAL_SAM";
 my $final_M_dir = "$finalsam_dir/merged";

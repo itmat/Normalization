@@ -43,7 +43,7 @@ for (my $i=2;$i<@ARGV;$i++){
 }
 
 unless (-d $stats_dir){
-    `mkdir $stats_dir`;}
+    `mkdir -p $stats_dir`;}
 
 if (-e "$LOC/ribosomal_counts.txt"){
     `rm "$LOC/ribosomal_counts.txt"`;

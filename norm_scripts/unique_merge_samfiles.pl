@@ -76,7 +76,7 @@ my $norm_ig_dir = $norm_dir . "/intergenicmappers";
 my $norm_und_dir = $norm_dir . "/exon_inconsistent";
 my $norm_merged_dir = $norm_dir . "/merged";
 unless (-d $norm_merged_dir){
-    `mkdir $norm_merged_dir`;
+    `mkdir -p $norm_merged_dir`;
 }
 my ($norm_exon_dir_a,  $norm_intron_dir_a);
 if ($stranded eq "true"){

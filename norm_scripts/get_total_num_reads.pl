@@ -176,9 +176,9 @@ if ($replace_mem eq "true"){
 my $sample_dirs = $ARGV[0];
 my $logdir = $study_dir . "logs";
 unless (-d $logdir){
-    `mkdir $logdir`;}
+    `mkdir -p $logdir`;}
 unless (-d $stats_dir){
-    `mkdir $stats_dir`;}
+    `mkdir -p $stats_dir`;}
 my $input_files = $ARGV[2];
 my $temp_file = "$stats_dir/temp";
 my @t = glob ("$temp_file*$study");
