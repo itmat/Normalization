@@ -110,9 +110,6 @@ if ($U eq "true"){
 	if ($se eq "false"){
 	    $total_u = int($total_u / 2);
 	}
-	else{
-	    $total_u--;
-	}
     }
     else{
 	die "cannot find file '$filter_u'\n";
@@ -139,9 +136,6 @@ if ($U eq "true"){
 	    $total_u_a = $a[0];
 	    if ($se eq "false"){
 		$total_u_a = int($total_u_a/ 2);
-	    }
-	    else{
-		$total_u_a--;
 	    }
 	}
 	else{
@@ -172,9 +166,6 @@ if ($NU eq "true"){
 	if ($se eq "false"){
             $total_nu = int($total_nu/ 2);
 	}
-        else{
-            $total_nu--;
-        }
     }
     else{
 	die "cannot find file '$filter_nu'\n";
@@ -202,9 +193,6 @@ if ($NU eq "true"){
 	    if ($se eq "false"){
 		$total_nu_a = int($total_nu_a/ 2);
 	    }
-	    else{
-		$total_nu_a--;
-	    }
 	}
 	else{
 	    die "cannot find file '$filter_nu_a'\n";
@@ -227,104 +215,120 @@ if ($NU eq "true"){
 }
 
 if($U eq "true"){
-    open(IN_U, $temp_u);
-    open(OUT, ">$outfile");
-    open(OUT2, ">$highfile");
-    print OUT "ensGene\t%gene\tgeneSymbol\tgeneCoordinates\n";
-    print OUT2 "ensGene\t%gene\tgeneSymbol\tgeneCoordinates\n";
-    while(my $line_U = <IN_U>){
-	chomp($line_U);
-	my @au = split(/\t/, $line_U);
-	my $geneu = $au[0];
-	my $quantu = $au[1];
-	my $sym = $au[3];
-	my $coord = $au[4];
-	my $percent_u = int(($quantu / $total_u)* 10000 ) / 100;
-	$percent_u = sprintf("%.2f", $percent_u);
-	print OUT "$geneu\t$percent_u\t$sym\t$coord\n";
-	if ($percent_u >= $cutoff){
-	    print OUT2 "$geneu\t$percent_u\t$sym\t$coord\n";
-	}
-    }
-    close(IN_U);
-    close(OUT);
-    close(OUT2);
-    `rm $temp_u`;
-    if ($stranded eq "true"){
-	open(IN_U_A, $temp_u_a);
-	open(OUT, ">$outfile_a");
-	open(OUT2, ">$highfile_a");
+	open(IN_U, $temp_u);
+	open(OUT, ">$outfile");
+	open(OUT2, ">$highfile");
 	print OUT "ensGene\t%gene\tgeneSymbol\tgeneCoordinates\n";
 	print OUT2 "ensGene\t%gene\tgeneSymbol\tgeneCoordinates\n";
-	while(my $line_U_A = <IN_U_A>){
-	    chomp($line_U_A);
-	    my @au = split(/\t/, $line_U_A);
+	while(my $line_U = <IN_U>){
+	    chomp($line_U);
+	    my @au = split(/\t/, $line_U);
 	    my $geneu = $au[0];
 	    my $quantu = $au[1];
 	    my $sym = $au[3];
 	    my $coord = $au[4];
-	    my $percent_u = int(($quantu / $total_u_a)* 10000 ) / 100;
+	    my $percent_u = 0;
+	    #Prevents divide-by-zero error if there are no Unique (sense) reads.
+	    if($total_u > 0) {
+	        $percent_u = int(($quantu / $total_u)* 10000 ) / 100;
+	    }
 	    $percent_u = sprintf("%.2f", $percent_u);
 	    print OUT "$geneu\t$percent_u\t$sym\t$coord\n";
 	    if ($percent_u >= $cutoff){
-		print OUT2 "$geneu\t$percent_u\t$sym\t$coord\n";
+	        print OUT2 "$geneu\t$percent_u\t$sym\t$coord\n";
 	    }
 	}
-	close(IN_U_A);
+	close(IN_U);
 	close(OUT);
 	close(OUT2);
-	`rm $temp_u_a`;
-    }
+	`rm $temp_u`;
+	if ($stranded eq "true"){
+	    open(IN_U_A, $temp_u_a);
+	    open(OUT, ">$outfile_a");
+	    open(OUT2, ">$highfile_a");
+	    print OUT "ensGene\t%gene\tgeneSymbol\tgeneCoordinates\n";
+	    print OUT2 "ensGene\t%gene\tgeneSymbol\tgeneCoordinates\n";
+	    while(my $line_U_A = <IN_U_A>){
+	        chomp($line_U_A);
+	        my @au = split(/\t/, $line_U_A);
+	        my $geneu = $au[0];
+	        my $quantu = $au[1];
+	        my $sym = $au[3];
+	        my $coord = $au[4];
+	        my $percent_u = 0;
+	        #Prevents divide-by-zero error if there are no Unique antisense reads.
+	        if($total_u_a > 0) {
+	            $percent_u = int(($quantu / $total_u_a)* 10000 ) / 100;
+	        }
+	        $percent_u = sprintf("%.2f", $percent_u);
+	        print OUT "$geneu\t$percent_u\t$sym\t$coord\n";
+	        if ($percent_u >= $cutoff){
+	            print OUT2 "$geneu\t$percent_u\t$sym\t$coord\n";
+	        }
+	    }
+	    close(IN_U_A);
+	    close(OUT);
+	    close(OUT2);
+	    `rm $temp_u_a`;
+	}
 }
 if($NU eq "true"){
-    open(IN_NU, $temp_nu);
-    open(OUT, ">$outfile");
-    #open(OUT2, ">$highfile");
-    print OUT "ensGene\t%gene\tgeneSymbol\tgeneCoordinates\n";
-    #print OUT2 "ensGene\t%max\tgeneSymbol\tgeneCoordinates\n";
-    while(my $line_NU = <IN_NU>){
-	chomp($line_NU);
-	my @anu = split(/\t/, $line_NU);
-	my $genenu = $anu[0];
-	my $quantnu = $anu[2];
-	my $sym = $anu[3];
-	my $coord = $anu[4];
-	my $percent_nu = int(($quantnu / $total_nu)* 10000 ) / 100;	
-	$percent_nu = sprintf("%.2f", $percent_nu);
-	print OUT "$genenu\t$percent_nu\t$sym\t$coord\n";
-	#if ($percent_nu >= $cutoff){
-	#    print OUT2 "$genenu\t$percent_nu\t$sym\t$coord\n";
-	#}
-    }
-    close(IN_NU);
-    close(OUT);
-    #close(OUT2);
-    `rm $temp_nu`;
-    if ($stranded eq "true"){
-	open(IN_NU_A, $temp_nu_a);
-	open(OUT, ">$outfile_a");
-	#open(OUT2, ">$highfile_a");
-	print OUT "ensGene\t%max\tgeneSymbol\tgeneCoordinates\n";
+	open(IN_NU, $temp_nu);
+	open(OUT, ">$outfile");
+	#open(OUT2, ">$highfile");
+	print OUT "ensGene\t%gene\tgeneSymbol\tgeneCoordinates\n";
 	#print OUT2 "ensGene\t%max\tgeneSymbol\tgeneCoordinates\n";
-	while(my $line_NU_A = <IN_NU_A>){
-	    chomp($line_NU_A);
-	    my @anu = split(/\t/, $line_NU_A);
+	while(my $line_NU = <IN_NU>){
+	    chomp($line_NU);
+	    my @anu = split(/\t/, $line_NU);
 	    my $genenu = $anu[0];
 	    my $quantnu = $anu[2];
 	    my $sym = $anu[3];
 	    my $coord = $anu[4];
-	    my $percent_nu = int(($quantnu / $total_nu_a)* 10000 ) / 100;
+	    my $percent_nu = 0;
+	    #Prevents divide-by-zero error if there are no NU (sense) reads.
+	    if($total_nu > 0) {
+	        $percent_nu = int(($quantnu / $total_nu)* 10000 ) / 100;
+	    }
 	    $percent_nu = sprintf("%.2f", $percent_nu);
 	    print OUT "$genenu\t$percent_nu\t$sym\t$coord\n";
 	    #if ($percent_nu >= $cutoff){
-	    #print OUT2 "$genenu\t$percent_nu\t$sym\t$coord\n";
+	    #    print OUT2 "$genenu\t$percent_nu\t$sym\t$coord\n";
 	    #}
 	}
-	close(IN_NU_A);
+	close(IN_NU);
 	close(OUT);
 	#close(OUT2);
-	`rm $temp_nu_a`;
-    }
+	`rm $temp_nu`;
+	if ($stranded eq "true"){
+	    open(IN_NU_A, $temp_nu_a);
+	    open(OUT, ">$outfile_a");
+	    #open(OUT2, ">$highfile_a");
+	    print OUT "ensGene\t%max\tgeneSymbol\tgeneCoordinates\n";
+	    #print OUT2 "ensGene\t%max\tgeneSymbol\tgeneCoordinates\n";
+	    while(my $line_NU_A = <IN_NU_A>){
+	        chomp($line_NU_A);
+	        my @anu = split(/\t/, $line_NU_A);
+	        my $genenu = $anu[0];
+	        my $quantnu = $anu[2];
+	        my $sym = $anu[3];
+	        my $coord = $anu[4];
+	        my $percent_nu = 0;
+	        #Prevents divide-by-zero error if there are no NU antisense reads.
+	        if($total_nu_a > 0) {
+	            $percent_nu = int(($quantnu / $total_nu_a)* 10000 ) / 100;
+	        }
+	        $percent_nu = sprintf("%.2f", $percent_nu);
+	        print OUT "$genenu\t$percent_nu\t$sym\t$coord\n";
+	        #if ($percent_nu >= $cutoff){
+	        #print OUT2 "$genenu\t$percent_nu\t$sym\t$coord\n";
+	        #}
+	    }
+	    close(IN_NU_A);
+	    close(OUT);
+	    #close(OUT2);
+	    `rm $temp_nu_a`;
+	}
 }
 
 print "got here\n";
