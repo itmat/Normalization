@@ -199,11 +199,11 @@ my $path = abs_path($0);
 $path =~ s/runall_//;
 my $sampledirs = $ARGV[0];
 unless (-d $stats_dir){
-    `mkdir $stats_dir`;}
+    `mkdir -p $stats_dir`;}
 unless (-d $shdir){
-    `mkdir $shdir`;}
+    `mkdir -p $shdir`;}
 unless (-d $logdir){
-    `mkdir $logdir`;}
+    `mkdir -p $logdir`;}
 my $sam_name = $ARGV[2];
 
 my %DIRS;

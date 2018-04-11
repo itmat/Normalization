@@ -61,7 +61,7 @@ if($count == 0){
 }
 my $dirs = $ARGV[0];
 unless (-d $stats_dir){
-    `mkdir $stats_dir`;}
+    `mkdir -p $stats_dir`;}
 my (%total, %uniqueandFRconsistently, %uniqueandAtLeastOneMapped, %NUandAtLeastOneMapped, %TotalMapped, %TotalMapped_cons, %NUandFRconsistently, %Overlap, %NOverlap, %Pover, %min_chrm, %max_chrm, %UchrM);
 my ($min_total, $min_total_frcons, $min_utotal_f_or_r_cons, $min_nutotal_f_or_r, $min_total_UorNU, $min_total_UandNU, $min_nutotal, $min_pover);
 my ($max_total,$max_total_frcons,$max_total_UorNU,$max_utotal_f_or_r_cons,$max_pover,$max_nutotal,$max_nutotal_f_or_r,$max_total_UandNU) = (0,0,0,0,0,0,0,0);

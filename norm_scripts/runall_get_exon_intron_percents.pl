@@ -178,9 +178,9 @@ my $shdir = $study_dir . "shell_scripts";
 my $logdir = $study_dir . "logs";
 
 unless (-d $shdir){
-    `mkdir $shdir`;}
+    `mkdir -p $shdir`;}
 unless (-d $logdir){
-    `mkdir $logdir`;}
+    `mkdir -p $logdir`;}
 
 my $cutoff = 100;
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";

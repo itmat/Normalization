@@ -76,7 +76,7 @@ while ($line = <INFILE>){
     $out_M = "$final_M_dir/$id.FINAL.norm.sam";
     if ($option_found eq "false"){
 	unless (-d $final_M_dir){
-	    `mkdir $final_M_dir`;
+	    `mkdir -p $final_M_dir`;
 	}
 	#merged
 	open(OUTM, ">$out_M");
@@ -133,7 +133,7 @@ while ($line = <INFILE>){
     else{
 	if ($U eq "true"){
 	    unless (-d $final_U_dir){
-		`mkdir $final_U_dir`;
+		`mkdir -p $final_U_dir`;
 	    }
 	    #unique 
 	    open(OUTU, ">$out_U");
@@ -166,7 +166,7 @@ while ($line = <INFILE>){
 	
 	if ($NU eq "true"){
             unless (-d $final_NU_dir){
-                `mkdir $final_NU_dir`;
+                `mkdir -p $final_NU_dir`;
             }
 	    #non-unique
 	    open(OUTNU, ">$out_NU");

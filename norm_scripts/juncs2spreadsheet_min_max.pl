@@ -39,7 +39,7 @@ $junc_dir = $norm_dir . "/JUNCTIONS";
 $spread_dir = $norm_dir. "/SPREADSHEETS";
 
 unless (-d $spread_dir){
-    `mkdir $spread_dir`;
+    `mkdir -p $spread_dir`;
 }
 
 $outfile = "$spread_dir/master_list_of_junction_counts";

@@ -26,7 +26,7 @@ my $norm_dir = "$normdir/GENE/";
 my $spread_dir = $norm_dir . "/SPREADSHEETS";
 
 unless (-d $spread_dir){
-    `mkdir $spread_dir`;
+    `mkdir -p $spread_dir`;
 }
 
 open(INFILE, $ARGV[0]) or die "cannot find file '$ARGV[0]'\n";

@@ -171,10 +171,10 @@ if ($stranded eq "true"){
 	$sensedir = "$directory/sense";
 	$antisensedir = "$directory/antisense";
 	unless (-d "$sensedir"){
-	    `mkdir $sensedir`;
+	    `mkdir -p $sensedir`;
 	}
 	unless (-d "$antisensedir"){
-	    `mkdir $antisensedir`;
+	    `mkdir -p $antisensedir`;
 	}
 	$exonquants = "$sensedir/$samname";
 	$exonquants =~ s/.sam.gz$/.sense.exonquants/;

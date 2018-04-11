@@ -113,18 +113,18 @@ and non-unique by default so if that's what you want don't use either arg
 ";
 }
 unless (-d $outfiledir){
-    `mkdir $outfiledir`;
+    `mkdir -p $outfiledir`;
 }
 my ($OUTFILEU, $OUTFILENU);
 if ($U eq "true"){
     unless(-d "$outfiledir/Unique"){
-	`mkdir $outfiledir/Unique`;
+	`mkdir -p $outfiledir/Unique`;
     }
     open($OUTFILEU, "| /bin/gzip -c > $outfileU.gz") or die "file '$outfileU.gz' cannot open for writing\n"; # the output file
 }
 if ($NU eq "true"){
     unless(-d "$outfiledir/NU"){
-        `mkdir $outfiledir/NU`;
+        `mkdir -p $outfiledir/NU`;
     }
     open($OUTFILENU, "| /bin/gzip -c > $outfileNU.gz") or die "file '$outfileNU.gz' cannot open for writing\n";
 }

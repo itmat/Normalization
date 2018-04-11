@@ -105,7 +105,7 @@ if ($stranded eq "true"){
 }
 my $spread_dir = $norm_dir . "/SPREADSHEETS";
 unless (-d $spread_dir){
-    `mkdir $spread_dir`;
+    `mkdir -p $spread_dir`;
 }
 my ($out_MIN, $out_MAX, $sample_name_file);
 my ($out_MIN_A, $out_MAX_A, $sample_name_file_a);

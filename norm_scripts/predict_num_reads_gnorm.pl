@@ -89,10 +89,10 @@ and non-unique by default so if that's what you want don't use either arg
 }
 
 unless (-d "$stats_dir"){
-    `mkdir $stats_dir`;
+    `mkdir -p $stats_dir`;
 }
 unless (-d "$stats_dir/GENE/"){
-    `mkdir $stats_dir/GENE/`;
+    `mkdir -p $stats_dir/GENE/`;
 }
 my $outfile = "$stats_dir/GENE/expected_num_reads_gnorm.txt";
 if ($filter eq "true"){

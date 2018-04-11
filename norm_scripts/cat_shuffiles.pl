@@ -74,20 +74,20 @@ unless (-d $norm_dir){
 }
 my $norm_exon_dir = $norm_dir . "/exonmappers";
 unless (-d $norm_exon_dir){
-    `mkdir $norm_exon_dir`;
+    `mkdir -p $norm_exon_dir`;
 }
 
 my $norm_intron_dir = $norm_dir . "/intronmappers";
 unless (-d $norm_intron_dir){
-    `mkdir $norm_intron_dir`;
+    `mkdir -p $norm_intron_dir`;
 }
 my $norm_ig_dir = $norm_dir . "/intergenicmappers";
 unless (-d $norm_ig_dir){
-    `mkdir $norm_ig_dir`;
+    `mkdir -p $norm_ig_dir`;
 }
 my $norm_und_dir = $norm_dir . "/exon_inconsistent";
 unless (-d $norm_und_dir){
-    `mkdir $norm_und_dir`;
+    `mkdir -p $norm_und_dir`;
 }
 
 my @g;
@@ -214,16 +214,16 @@ if ($stranded eq "false"){
 }
 if ($stranded eq "true"){
     unless (-d "$norm_exon_dir/sense"){
-        `mkdir $norm_exon_dir/sense`;
+        `mkdir -p $norm_exon_dir/sense`;
     }
     unless (-d "$norm_exon_dir/antisense"){
-        `mkdir $norm_exon_dir/antisense`;
+        `mkdir -p $norm_exon_dir/antisense`;
     }
     unless (-d "$norm_intron_dir/sense"){
-        `mkdir $norm_intron_dir/sense`;
+        `mkdir -p $norm_intron_dir/sense`;
     }
     unless (-d "$norm_intron_dir/antisense"){
-        `mkdir $norm_intron_dir/antisense`;
+        `mkdir -p $norm_intron_dir/antisense`;
     }
    if ($numargs eq "0"){
 	unless (-d "$current_LOC/EIJ/Unique/sense/"){
