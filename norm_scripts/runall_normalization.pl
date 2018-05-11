@@ -2692,12 +2692,12 @@ if ($run_prepause eq "true"){
 	    print LOG "Check the following before proceeding:\n\n";
 
 	    if ($GNORM eq "true"){
-                $exp_num_reads = `grep -A 3 Expected $s_dir/GENE/expected_num_reads_gnorm.txt" | grep -A 3 estimate`;
+                $exp_num_reads = `grep -A 3 Expected $s_dir/GENE/expected_num_reads_gnorm.txt | grep -A 3 estimate`;
                 chomp($exp_num_reads);
                 print LOG "\n[Gene Normalization]\n";
                 print LOG "(1) Number of reads\n";
                 print LOG "$exp_num_reads\n";
-                print LOG "See \"$exp_file\" \nand modify the list of sample directories (\"$sample_dir\") accordingly to get more reads.\n\n";
+                print LOG "See \"$s_dir/GENE/expected_num_reads_gnorm.txt\" \nand modify the list of sample directories (\"$sample_dir\") accordingly to get more reads.\n\n";
                 print LOG "(2) High Expressers\n";
 		my @highfiles = glob("$s_dir/GENE/percent_high_expresser_gene*txt");
 		my $highcnt = 0;
