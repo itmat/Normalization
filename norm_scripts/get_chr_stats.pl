@@ -116,7 +116,7 @@ while(my $line = <INFILE>){
         $file = "$LOC/$line/EIJ/Unique/$line.filtered_u.numchr_count.txt";
     }
     foreach my $key (sort {&cmpChrs($a,$b)} keys %CHR){
-	my $find = `grep -w '$key' $file`;
+	my $find = `grep -w '^$key' $file`;
 	my $count = "0.00";
 	if ($find !~ /^$/){
 	    my @f = split(/\t/,$find);
