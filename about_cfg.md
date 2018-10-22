@@ -83,6 +83,7 @@ You can get the index file (*.fai) using [samtools](http://samtools.sourceforge.
 
 #### [3] samtools
 Provide the location of your copy of samtools
+You can get the most recent source code with `git clone git://github.com/samtools/samtools.git`
 
 ----------------
 
