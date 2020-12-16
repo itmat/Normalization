@@ -359,7 +359,7 @@ sub arabic($) {
 }
 sub isroman($) {
     my $arg = shift;
-    return ($arg ne '' and
+    return ($arg ne '' &&
 	$arg =~ /^(?: M{0,3})
 	(?: D?C{0,3} | C[DM])
 	(?: L?X{0,3} | X[LC])
