@@ -70,7 +70,7 @@ OPTIONS:
 
 for(my $i=0; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq '-v'){
-	die "\nPORT v0.8.5d-beta\n\n";
+	die "\nPORT v0.8.5e-beta\n\n";
     }
 }
 for(my $i=0; $i<@ARGV; $i++) {
