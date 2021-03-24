@@ -97,7 +97,7 @@ Return a true value if N is a roman numeral, false otherwise.
 =cut
 sub isroman($) {
     my $arg = shift;
-    return ($arg ne '' and
+    return ($arg ne '' &&
         $arg =~ /^(?: M{0,3})
                  (?: D?C{0,3} | C[DM])
                  (?: L?X{0,3} | X[LC])
