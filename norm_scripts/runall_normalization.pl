@@ -4319,12 +4319,17 @@ if ($run_norm eq "true"){
 	}
 	$new_queue = "-mem $queue_10G";
 
-	if ($num_samples > 100){
-	    $new_queue = "-mem $queue_45G";
-	}
-	if ($num_samples > 500){
-	    $new_queue = "-mem $queue_60G";
-	}
+        # Scale amount of requested memory based on number of samples.
+        # Prevents memory overflow errors.
+        if ($num_samples > 500){
+            $new_queue = "-mem $queue_60G";
+        }
+        elsif ($num_samples > 100){
+            $new_queue = "-mem $queue_45G";
+        }
+        elsif ($num_samples > 50){
+            $new_queue = "-mem $queue_15G";
+        }
 	my $novelei = "";
 	if ($novel eq "true"){
 	    $novelei = "-novel";
