@@ -241,23 +241,24 @@ if ($type eq "-fq"){
 #makeblastdb
 my $database1 = "blastdb1.$dir";
 my $database2 = "blastdb2.$dir";
+my $max_db_file_size = "5GB";
 
 if ($se eq "true"){
     if ($gz eq "false"){
-	my $x = `$blastdir/bin/makeblastdb -dbtype nucl -in $file1 -max_file_sz 300MB -out $LOC/$dir/$database1`;
+	my $x = `$blastdir/bin/makeblastdb -dbtype nucl -in $file1 -max_file_sz $max_db_file_size -out $LOC/$dir/$database1`;
     }
     else{
-	my $x = `gunzip -c $file1 | $blastdir/bin/makeblastdb -dbtype nucl -max_file_sz 300MB -in - -out $LOC/$dir/$database1 -title $database1`;
+	my $x = `gunzip -c $file1 | $blastdir/bin/makeblastdb -dbtype nucl -max_file_sz $max_db_file_size -in - -out $LOC/$dir/$database1 -title $database1`;
     }
 }
 if ($pe eq "true"){
     if ($gz eq "false"){
-        my $x = `$blastdir/bin/makeblastdb -dbtype nucl -max_file_sz 300MB -in $file1 -out $LOC/$dir/$database1`;
-        my $y = `$blastdir/bin/makeblastdb -dbtype nucl -max_file_sz 300MB -in $file2 -out $LOC/$dir/$database2`;
+        my $x = `$blastdir/bin/makeblastdb -dbtype nucl -max_file_sz $max_db_file_size -in $file1 -out $LOC/$dir/$database1`;
+        my $y = `$blastdir/bin/makeblastdb -dbtype nucl -max_file_sz $max_db_file_size -in $file2 -out $LOC/$dir/$database2`;
     }
     else{
-	my $x = `gunzip -c $file1 | $blastdir/bin/makeblastdb -dbtype nucl -max_file_sz 300MB -in - -out $LOC/$dir/$database1 -title $database1`;
-	my $y = `gunzip -c $file2 | $blastdir/bin/makeblastdb -dbtype nucl -max_file_sz 300MB -in - -out $LOC/$dir/$database2 -title $database2`;
+	my $x = `gunzip -c $file1 | $blastdir/bin/makeblastdb -dbtype nucl -max_file_sz $max_db_file_size -in - -out $LOC/$dir/$database1 -title $database1`;
+	my $y = `gunzip -c $file2 | $blastdir/bin/makeblastdb -dbtype nucl -max_file_sz $max_db_file_size -in - -out $LOC/$dir/$database2 -title $database2`;
     }
 }
 
