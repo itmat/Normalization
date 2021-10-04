@@ -104,7 +104,7 @@ while(my $line = <IN>){
 		next;
 	    }
 	    else{ # err - not empty
-		print "4: restart\n";
+#		print "4: restart\n";
 		$RESTART{$line} = 1;
 		my $x = `rm $ofile`;
 		my $y = `rm $efile`;
