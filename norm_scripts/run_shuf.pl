@@ -25,6 +25,11 @@ my @shuffled = (1..$line_count);
 
 my %lineWanted;
 
+# HACK TO AVOID ARRAY INDEX OUT OF BOUNDS PROBLEMS
+if($min_num > $line_count) {
+    $min_num = $line_count;
+}
+
 for (my $i=0;$i<$min_num;$i++){
     my $num = $shuffled[$i];
     $num =~ s/\//_/g;

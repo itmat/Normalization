@@ -297,9 +297,9 @@ while(my $line = <QU>){
 	    foreach my $db1 (keys %DBS1){
 		my $bout = "$DBS1{$db1}.$tcnt";
 		my $logname = "$logdir/runblast.$db1.$tcnt";
-		while (qx{$status | wc -l} > $njobs){
-		    sleep(10);
-		}
+#		while (qx{$status | wc -l} > $njobs){
+#		    sleep(10);
+#		}
 #		my $x = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db1 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
 		my $x = "echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db1 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err";
 		if ($hn_only eq "true"){
@@ -315,9 +315,9 @@ while(my $line = <QU>){
 	    foreach my $db2 (keys %DBS2){
 		my $bout = "$DBS2{$db2}.$tcnt";
 		my $logname = "$logdir/runblast.$db2.$tcnt";
-		while (qx{$status | wc -l} > $njobs){
-		    sleep(10);
-		}
+#		while (qx{$status | wc -l} > $njobs){
+#		    sleep(10);
+#		}
 #		my $y = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db2 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
 		my $y = "echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db2 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err";
                 if ($hn_only eq "true"){
@@ -347,9 +347,9 @@ close(TQ);
 foreach my $db1 (keys %DBS1){
     my $bout = "$DBS1{$db1}.$tcnt";
     my $logname = "$logdir/runblast.$db1.$tcnt";
-    while (qx{$status | wc -l} > $njobs){
-	sleep(10);
-    }
+#    while (qx{$status | wc -l} > $njobs){
+#	sleep(10);
+#    }
 #    my $x = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db1 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
     my $x = "echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db1 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err";
     if ($hn_only eq "true"){
@@ -365,9 +365,9 @@ foreach my $db1 (keys %DBS1){
 foreach my $db2 (keys %DBS2){
     my $bout = "$DBS2{$db2}.$tcnt";
     my $logname = "$logdir/runblast.$db2.$tcnt";
-    while (qx{$status | wc -l} > $njobs){
-	sleep(10);
-    }
+#    while (qx{$status | wc -l} > $njobs){
+#	sleep(10);
+#    }
 #    my $y = `echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db2 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err`;
     my $y = "echo \"$blastdir/bin/blastn -task blastn -db $LOC/$dir/$db2 -query $tempq.$tcnt -num_descriptions 1000000000 -num_alignments 1000000000 > $bout && echo \"got here\"\" | $submit $jobname_option $jobname $request_memory_option$mem -o $logname.out -e $logname.err";
     if ($hn_only eq "true"){
