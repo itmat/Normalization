@@ -241,7 +241,7 @@ if ($type eq "-fq"){
 #makeblastdb
 my $database1 = "blastdb1.$dir";
 my $database2 = "blastdb2.$dir";
-my $max_db_file_size = "5GB";
+my $max_db_file_size = "300MB";
 
 if ($se eq "true"){
     if ($gz eq "false"){
