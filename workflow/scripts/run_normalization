@@ -4,57 +4,12 @@
 use FindBin qw($Bin);
 use lib ("$Bin/pm/lib/perl5");
 use File::Type;
-use Net::OpenSSH;
 
-my $USAGE =  "\nUsage: run_normalization --sample_dirs <file of sample_dirs> --loc <s> --alignedfilename <s> --cfg <cfg file> [options]
+my $USAGE =  "\nUsage: run_normalization --aligned_files <aligned files> --cfg <cfg file> [options]
 
 where:
---sample_dirs <file of sample_dirs> : is a file of sample directories with alignment output without path
---loc <s> : full path of the directory with the sample directories
---unaligned <file of fa/fqfiles> : is a file with the full path of all input fa or fq files
---alignedfilename <s> : is the name of aligned file; All alignment files MUST have the same name across sample (e.g. RUM.sam, RUM.bam, Aligned.out.sam, Aligned.out.bam) 
+--aligned_files <aligned files> : list of aligned (bam/sam) files
 --cfg <cfg file> : is a cfg file for the study
-
-OPTIONS:
-     [pipeline options]
-     By default, the pipeline will run through the steps in PART1 and pause (recommended).
-     You will have a chance to check the following before resuming:
-      (1) number of reads you will have after normalization 
-          - modify the list of sample directories accordingly.
-      (2) percent high expressers
-          - use -cutoff_highexp <n> option to set/change the highexpresser cutoff value.
-
-     -part1_part2 : Use this option if you want to run steps in PART1 and PART2 without pausing. 
-     -part2 : Use this option to resume the pipeline at PART2. You may edit the <file of sample_dirs> file 
-               and/or change the highexpresser cutoff value.
-     -alt_out <s> : Use this option to redirect the normalized data to an alternate output directory <s> (full path)
-                    (Default: /path/to/studydir/NORMALIZED_DATA/)
-     -h : print usage 
-     -v : print version of PORT
-
-     [normalization parameters]
-     -cutoff_highexp <n> : is cutoff % value to identify highly expressed genes/exons/introns.
-                           the script will consider genes/exons/introns with gene/exon/intronpercents greater than n(%) as high expressers,
-                           report the list of highly expressed genes/exons and normalize the reads that map to those genes/exons/introns separately.
-                           (Default = 100; with the default cutoff, genes/exons/introns expressed >3% will be reported)
-     -cutoff_lowexp <n> : is cutoff counts to identify low expressers in the final spreadsheets (exon, intron and junc).
-                          the script will consider features with sum of counts for all samples less than <n> as low expressers
-                          and remove them from all samples for the final spreadsheets.
-                          (Default = 0; this will remove features with sum of counts = 0)
-
-     [exon-intron-junction normalization only]
-     -novel_off : set this if you DO NOT want to generate/use a study-specific master list of exons/introns 
-                  (By default, the pipeline will add inferred exons/introns to the list of exons/introns)
-     -min <n> : is minimum size of inferred exon for get_inferred_exons.pl script (Default = 10)
-     -max <n> : is maximum size of inferred exon for get_inferred_exons.pl script (Default = 2000)
-     -depthExon <n> : the pipeline splits filtered sam files into 1,2,3...n exonmappers and downsamples each separately.
-                   (Default = 20)
-     -depthIntron <n> : the pipeline splits filtered sam files into 1,2,3...n intronmappers and downsamples each separately.
-                   (Default = 10)
-     -flanking_region <n> : is used for generating list of flanking regions.
-                            by default, 5000 bp up/downstream of each gene will be considered a flanking region.
-                            use this option to change the size <n>.
-
 ";
 
 
@@ -69,74 +24,28 @@ for(my $i=0; $i<@ARGV; $i++) {
     }
 }
 
-if(@ARGV < 10) {
+if(@ARGV < 3) {
     die $USAGE;
 }
 
 
 
 my $required = 0;
-my $count_b = 0;
-my $count_r = 0;
-my $min = 10;
-my $max = 2000;
-my $cutoff_he = 100;
-my $flanking = 5000;
-my $filter_high_expressers = "false";
-my $i_exon = 20;
-my $i_intron = 10;
-my $filter_low_expressers = "false";
-my $novel = "true";
-my $shfile_name = "runall_normalization.sh";
 
-my ($sample_dir, $LOC, $alignedfilename, $cfg_file, $cutoff_temp, $last_step);
+my ($cfg_file);
 my $part2 = "false";
+my @aligned_files;
 for(my $i=0; $i<@ARGV; $i++) {
     my $option_found = "false";
-    if ($ARGV[$i] eq '-alt_out'){
+    if ($ARGV[$i] eq '--aligned_files'){
         $option_found = "true";
-        $i++;
-    }
-    if ($ARGV[$i] eq '-part1_part2'){
-        $option_found = "true";
-        $shfile_name = "runall_normalization_part1_part2.sh";
-        $count_b++;
-    }
-    if ($ARGV[$i] eq '-part2'){
-        $option_found = "true";
-        $part2 = "true";
-        $shfile_name = "runall_normalization_part2.sh";
-        $count_b++;
-    }
-    if ($ARGV[$i] eq '--sample_dirs'){
-        $option_found = "true";
-        $sample_dir = $ARGV[$i+1];
-        if ($sample_dir =~ /^-/ | $sample_dir eq ""){
-            die "\nplease provide <file of sample_dirs> for --sample_dirs\n";
+        while($i < @ARGV) {
+            if ($ARGV[i] =~ /^-/) {
+                last
+            }
+            push(@aligned_files, $ARGV[$i]);
+            $i++;
         }
-        $i++;
-        $required++;
-    }
-    if ($ARGV[$i] eq '-novel_off'){
-        $option_found = "true";
-        $novel = "false";
-    }
-    if ($ARGV[$i] eq '--loc'){
-        $option_found = "true";
-        $LOC = $ARGV[$i+1];
-        if ($LOC =~ /^-/ | $LOC eq ""){
-            die "\nplease provide '/path/to/directory with the sample directories' for --loc\n";
-        }
-        $i++;
-        $required++;
-    }
-    if ($ARGV[$i] eq '--alignedfilename'){
-        $option_found = "true";
-        $alignedfilename = $ARGV[$i+1];
-        if ($alignedfilename =~ /^-/ | $alignedfilename eq ""){
-            die "\nplease provide the 'name of aligned file' for --alignedfilename\n";
-        }
-        $i++;
         $required++;
     }
     if ($ARGV[$i] eq '--cfg'){
@@ -148,87 +57,16 @@ for(my $i=0; $i<@ARGV; $i++) {
         $i++;
         $required++;
     }
-    if($ARGV[$i] eq '-min') {
-        $min = $ARGV[$i+1];
-        $i++;
-        $option_found = "true";
-        if ($min !~ /(\d+$)/ ){
-            die "-min <n> : <n> needs to be a number\n";
-        }
-    }
-    if($ARGV[$i] eq '-max') {
-        $max = $ARGV[$i+1];
-        $i++;
-        $option_found = "true";
-        if ($max !~ /(\d+$)/ ){
-            die "-max <n> : <n> needs to be a number\n";
-        }
-    }
-    if($ARGV[$i] eq '-cutoff_highexp') {
-        $cutoff_he = $ARGV[$i+1];
-        $i++;
-        $option_found = "true";
-        $filter_high_expressers = "true";
-        if ($cutoff_he !~ /(\d+$)/ ){
-            die "-cutoff_highexp <n> : <n> needs to be a number\n";
-        }
-    }
-    if ($ARGV[$i] eq '-flanking_region'){
-        $flanking = $ARGV[$i+1];
-        $i++;
-        $option_found = "true";
-        if (($flanking !~ /(\d+$)/) || ($flanking < 0) ){
-            die "-flanking_region <n> : <n> needs to be a number greater than 0\n";
-        }
-    }
-    if ($ARGV[$i] eq '-depthExon'){
-        $i_exon = $ARGV[$i+1];
-        if ($i_exon !~ /(\d+$)/ ){
-            die "-depthExon <n> : <n> needs to be a number\n";
-        }
-        $i++;
-        $option_found = "true";
-    }
-    if ($ARGV[$i] eq '-depthIntron'){
-        $i_intron = $ARGV[$i+1];
-        if ($i_intron !~ /(\d+$)/ ){
-            die "-depthIntron <n> : <n> needs to be a number\n";
-        }
-        $i++;
-        $option_found = "true";
-    }
-    if($ARGV[$i] eq '-cutoff_lowexp') {
-        $cutoff_temp = $ARGV[$i+1];
-        $i++;
-        $option_found = "true";
-        $filter_low_expressers = "true";
-        if ($cutoff_temp !~ /(\d+$)/ ){
-            die "-cutoff_lowexp <n> : <n> needs to be a number\n";
-        }
-    }
     if($option_found eq "false") {
         die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
-if ($required ne '5'){
-    die "please specify the required parameters: --sample_dirs, --loc, --unaligned, --alignedfilename and --cfg\n";
+if ($required ne '2'){
+    die "please specify the required parameters: --cfg\n";
 }
-if ($count_b > 1){
-    die "you can only set one of the following options: -part1_part2, -part2\n";
+if (length(@aligned_files) == 0) {
+    die "need to provide at least one aligned_file"
 }
-my $dirs = `wc -l $sample_dir`;
-my @a = split(" ", $dirs);
-my $num_samples = $a[0];
-my $cutoff_le = 0;
-if ($filter_low_expressers eq "true"){
-    $cutoff_le = $cutoff_temp;
-}
-$LOC =~ s/\/$//;
-my @fields = split("/", $LOC);
-my $last_dir = $fields[@fields-1];
-my $study_dir = $LOC;
-$study_dir =~ s/$last_dir//;
-my $study = $fields[@fields-2];
 
 my $GNORM = "false";
 my $EIJ = "false";
@@ -381,115 +219,29 @@ if ($GZIP_COV ne ""){
     }
 }
 
-my $shdir = $study_dir . "shell_scripts";
-my $logdir = $study_dir . "logs";
-my $logfile = $logdir . "/$study.run_normalization.log";
-
-unless (-d $shdir){
-    `mkdir -p $shdir`;}
-unless (-d $logdir){
-    `mkdir -p $logdir`;}
-
-my %SAMFLAGS;
-my $bam = "false";
-my $bam_cnt = 0;
-my $bam_option = "-sam";
 #check sam/bam
-open(IN, $sample_dir) or die "ERROR: cannot find file \"$sample_dir\".\nPlease provide a file of sample directories.\n";
-while (my $line = <IN>){
-    chomp($line);
-    $line =~ s/^\s+|\s+$//g;
-    my $file_loc = "$LOC/$line/$alignedfilename";
-    #check if the aligned files exist
-    unless (-e $file_loc){
-        die "ERROR: Aligned file \"$file_loc\" does not exist. Please double check --sample_dirs, --loc, and --alignedfilename\n";
-    }
-    my $ft = File::Type->new();
-    my $type_from_file = $ft->checktype_filename($file_loc);
-    if ($type_from_file =~ /zip/){
-        $bam = "true";
-        $bam_cnt++;
-        $bam_option = "-bam";
-    }
-}
-close(IN);
-unless (($bam_cnt == 0) || ($bam_cnt == $num_samples)){
-    die "\nERROR: All input aligned files need to be in the same format (sam/bam).\n\n";
-}
 my $se = "false";
 my $pe = "false";
 my $se_option = "";
 my $se_cnt = 0;
 
 #check single/paired
-open(IN, $sample_dir) or die "ERROR: cannot find file \"$sample_dir\".\nPlease provide a file of sample directories.\n";
-while (my $line = <IN>){
-    chomp($line);
-    $line =~ s/^\s+|\s+$//g;
-    my $file_loc = "$LOC/$line/$alignedfilename";
-    if ($bam eq "false"){#samfile
-        my $count = 0;
-        open(SAM, $file_loc);
-        while(!eof(SAM)){
-            my $line = <SAM>;
-            if ($count > 10000){
-                last;
-            }
-            chomp($line);
-            if ($line =~ /^@/){
-                next;
-            }
-            my @a = split(/\t/,$line);
-            my $bit = $a[1];
-            if ($bit & 1){
-                $pe = "true";
-            }
-            else{
-                $se = "true";
-            }
-            $count++;
-        }
-        close(SAM);
+for my $file_loc (@aligned_files) {
+    my $flag = `$samtools view $file_loc | head -1 | cut -f 2`;
+    if ($flag & 1) {
+        $pe = "true";
+    } else {
+        $se = "true";
     }
-    if ($bam eq "true"){#bamfile
-        unless ($file_loc =~ /.bam$/i){
-            die "\nERROR: Input BAM file name must end with \".bam\"\n\n";
-        }
-        my $x = `$samtools view -h $file_loc | head -10000 | grep -v ^@ | cut -f 2 | sort -u >> $LOC/bitflags.tmp`;
-    }
-}
-close(IN);
-
-if ($bam eq "true"){
-    open(BIT, "$LOC/bitflags.tmp") or die "ERROR: cannot find $LOC/bitflags.tmp\n";
-    while(my $bit = <BIT>){
-        chomp($bit);
-        if ($bit & 1){
-            $pe = "true";
-        }
-        else{
-            $se = "true";
-        }
-    }
-    close(BIT);
 }
 
 if ((($pe eq "true") && ($se eq "true")) || (($pe eq "false") && ($se eq "false"))){
     die "ERROR: All input aligned files need to be in the same format (single/paired end).\n\n";
 }
 
-if (-e "$LOC/bitflags.tmp"){
-    my $r = `rm $LOC/bitflags.tmp`;
-}
 if ($se eq "true"){
     $se_option = "-se";
 }
-my $gz = "false";
-my $gz_option = "";
-my $gz_cnt=0;
-my $fa = "false";
-my $fq = "false";
-
 
 #check input fa, gene info
 my $hap = "false";
@@ -627,7 +379,6 @@ close(FA);
 # $hashsize0  #all chr names in gene information file 
 # $hashsize_n0  #user provided chr names (if provided)
 my $hashsize1 = keys(%CHR); 
-open(LOG, ">>$logfile");
 
 if ($hashsize0 eq $hashsize1){ # none of chromosome names match
     die "\nERROR: Please check the input GENOME_FA \"$genome\".\nDescription line (\">\") must begin with a chromosome name that matches the chromosome names in GENE INFO (# 2. GENE INFO in your cfg file \"$cfg_file\").\nPlease check and modify the file(s) appropriately.\n\n";
@@ -635,12 +386,12 @@ if ($hashsize0 eq $hashsize1){ # none of chromosome names match
 else{
     if ($part2 eq "false"){
         if ($hashsize1 > 0){
-            print LOG "\n========\nWARNING\n========\n";
-            print LOG "The following chromosome names are in the provided GENE INFO file but not in the GENOME_FA file:\n";
+            print STDERR "\n========\nWARNING\n========\n";
+            print STDERR "The following chromosome names are in the provided GENE INFO file but not in the GENOME_FA file:\n";
             foreach my $chrom  (keys %CHR){
-                print LOG "$chrom\n";
+                print STDERR "$chrom\n";
             }
-            print LOG "\n";
+            print STDERR "\n";
         }
     }
 }
@@ -651,9 +402,6 @@ if ($chromname eq "true"){
         die "\nERROR: Please check the input \"$chrom\".\nNone of the chromosome names match the chromosome names in the input GENOME_FA \"$genome\".\nPlease check and modify the file(s) appropriately.\n\n";
     }
 }
-my $runall_shfile = $shdir . "/" . $shfile_name;
-open(SH, ">$runall_shfile");
-$argv = join(" ", @ARGV);
 
 print SH "perl $norm_script_dir/runall_normalization.pl $argv $se_option $bam_option\n";
 close(SH);
@@ -727,20 +475,6 @@ if ($part2 eq "true"){
     }
 }
 
-my @s = split(" ", $status);
-my $stat = $s[0];
-while(qx{$stat | wc -l} > $maxjobs){
-    sleep(10);
-}
-my $check_study_port = `$status | grep $study.RUNALL_NORMALIZATION | wc -l`;
-if ($check_study_port == 1){
-    die "\nERROR: PORT job with study name \"$study\" is already running.\n\n"
-}
-
-my $runport = "-o $logdir/$study.runall_normalization.out -e $logdir/$study.runall_normalization.err < $runall_shfile";
-if ($HOST_NAME =~ /^$/){
-    `$runport`;
-}
 
 open(PC, ">", "results/precheck.pass")
 print PC "PASS"

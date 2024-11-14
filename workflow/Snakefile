@@ -9,14 +9,17 @@ def sample_to_bam(wildcards):
     return config['aligned_files'][wildcards.sample_id]
 
 rule all:
-    "results/precheck.txt"
-    expand("reuslts/{sample_id}/total_num_reads.txt", sample_id = sample_ids)
+    "results/precheck.txt",
+    expand("reuslts/STATS/total_num_reads.txt", sample_id = sample_ids)
 
 rule precheck:
+    input:
+        aligned = config['aligned_files'].values()
+        cfg = config['port_config']
     output:
         "results/precheck.txt"
     script:
-        f"scripts/run_normalization.pl --sample_dirs {sample_dir_file} --loc {loc} --alignedfilename {alignedfilename} --cfg {configfile}"
+        "scripts/run_normalization.pl --aligned_files {input.aligned} --cfg {input.cfg}"
 
 rule get_total_num_reads:
     input:
@@ -27,3 +30,13 @@ rule get_total_num_reads:
         config['containers']['samtools']
     shell:
         "samtools view -c -F 2432 {input.bam} > {output}"
+
+rule get_total_num_reads_agg:
+    input:
+        tnr = expand("results/{sample_id}/total_num_reads.txt", sample_id = sample_ids)
+    output:
+        tnr = "results/STATS/total_num_reads.txt"
+    run:
+        with open(output.tnr, 'wt') as out:
+            for sample_id, tnrf in zip(sample_ids, input.tnr):
+                out.write(sample_id, open(tnrf).read())
