@@ -168,30 +168,63 @@ foreach my $intron (keys %INTRON_LIST){
     }
 }
 
+my %CHRS;
+my %GLIST2;
 foreach my $gene (keys %GLIST){
-    (my $gchr, my $gstart, my $gend) = $gene =~ /^(.*):(\d*)-(\d*)$/g;
-    foreach my $intron (keys %INTRON_LIST){
-	if ($INTRON_LIST{$intron} eq "1"){
-            (my $chr, my $start, my $end) = $intron =~ /^(.*):(\d*)-(\d*)$/g;
-            if ($gchr eq $chr){
-                if (($gstart <= $start) && ( $gend >= $end)){ #if novel intron is contained in annotated gene, delete
-                    delete $INTRON_LIST{$intron};
-                }
-            }
-            else{
-                next;
-            }
-	}
-    }
+    (my $chr, my $start, my $end) = $gene =~ /^(.*):(\d*)-(\d*)$/g;
+    $GLIST2{$chr}{$gene} = $start;
+    $CHRS{$chr}=1;
 }
 
-=comment
 foreach my $intron (keys %INTRON_LIST){
-    if ($INTRON_LIST{$intron} eq '1'){
-        print "NOVEL2:$intron\n";
+    (my $chr, my $start, my $end) = $intron =~ /^(.*):(\d*)-(\d*)$/g;
+    $INTRON_LIST2{$chr}{$intron} = $start;
+    $CHRS{$chr}=1;
+}
+
+foreach my $chr (keys %CHRS){
+    undef @I;
+    undef @G;
+    my $cnt=0;
+    my @G;
+    foreach my $gene (sort {$GLIST2{$chr}{$a}<=>$GLIST2{$chr}{$b}} keys %{$GLIST2{$chr}}){
+        (my $gchr, my $start, my $end) = $gene =~ /^(.*):(\d*)-(\d*)$/g;
+        if($chr eq $gchr) {
+            $G[$cnt][0] = $start;
+            $G[$cnt][1] = $end;
+            $cnt++;
+        }
+    }
+    $cnt=0;
+    my @I;
+    foreach my $gene (sort {$INTRON_LIST2{$chr}{$a}<=>$INTRON_LIST2{$chr}{$b}} keys %{$INTRON_LIST2{$chr}}){
+        (my $ichr, my $start, my $end) = $gene =~ /^(.*):(\d*)-(\d*)$/g;
+        if($chr eq $ichr) {
+            $I[$cnt][0] = $start;
+            $I[$cnt][1] = $end;
+            $cnt++;
+        }
+    }
+
+    my $intron_index=0;
+    for(my $g=0; $g<@G; $g++) {
+        for(my $i=$intron_index; $i<@I; $i++) {
+            if($G[$g][0] <= $I[$i][0] && $G[$g][1] >= $I[$i][1]) {
+                # novel intron is contained in annotated gene, delete
+                my $s = $I[$i][0];
+                my $e = $I[$i][1];
+                my $intron = "$chr:$s-$e";
+                delete $INTRON_LIST{$intron};
+            }
+        }
+        while($I[$intron_index][1] < $G[$i][0]) {
+            if(!($I[$intron_index][1] =~ /\S/) || !($G[$i][0] =~ /\S/)) {
+                last;
+            }
+            $intron_index++;
+        }
     }
 }
-=cut
 
 open(OUT, ">$final_list");
 open(NOV, ">$LOC/$study.list_of_novel_introns.txt");
