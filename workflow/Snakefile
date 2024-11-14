@@ -1,0 +1,29 @@
+import yaml
+with open("config.yaml") as cfg:
+    default_config = yaml.load(cfg)
+config = default_config.update(config)
+
+sample_ids = list(config['aligned_files'].keys())
+
+def sample_to_bam(wildcards):
+    return config['aligned_files'][wildcards.sample_id]
+
+rule all:
+    "results/precheck.txt"
+    expand("reuslts/{sample_id}/total_num_reads.txt", sample_id = sample_ids)
+
+rule precheck:
+    output:
+        "results/precheck.txt"
+    script:
+        f"scripts/run_normalization.pl --sample_dirs {sample_dir_file} --loc {loc} --alignedfilename {alignedfilename} --cfg {configfile}"
+
+rule get_total_num_reads:
+    input:
+        sample_to_bam
+    output:
+        "results/{sample_id}/total_num_reads.txt"
+    container:
+        config['containers']['samtools']
+    shell:
+        "samtools view -c -F 2432 {input.bam} > {output}"

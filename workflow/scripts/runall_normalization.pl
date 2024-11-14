@@ -4,12 +4,11 @@ use FindBin qw($Bin);
 use lib ("$Bin/pm/lib/perl5");
 use Net::OpenSSH;
 
-my $USAGE =  "\nUsage: perl runall_normalization.pl --sample_dirs <file of sample_dirs> --loc <s> --unaligned <file of fa/fqfiles> --alignedfilename <s> --cfg <cfg file> [options]
+my $USAGE =  "\nUsage: perl runall_normalization.pl --sample_dirs <file of sample_dirs> --loc <s> --alignedfilename <s> --cfg <cfg file> [options]
 
 where:
 --sample_dirs <file of sample_dirs> : is a file of sample directories with alignment output without path
 --loc <s> : full path of the directory with the sample directories
---unaligned <file of fa/fqfiles> : is a file with the full path of all input fa or fq files
 --alignedfilename <s> : is the name of aligned sam/bam file (e.g. RUM.sam, RUM.bam, Aligned.out.sam, Aligned.out.bam) 
 --cfg <cfg file> : is a cfg file for the study
 
@@ -41,12 +40,9 @@ OPTIONS:
      [data type]
      -se : set this if the data are single end, 
            otherwise by default it will assume it's a paired end data
-     -fa : set this if the unaligned files are in fasta format 
-     -fq : set this if the unaligned files are in fastq format 
-     -gz : set this if the unaligned files are compressed
      -sam : set this if the aligned files are in sam format
      -bam : set this if the aligned files are in bam format
-    
+
      [normalization parameters]
      -cutoff_highexp <n> : is cutoff % value to identify highly expressed genes/exons/introns.
                            the script will consider genes/exons/introns with gene/exon/intronpercents greater than n(%) as high expressers,
@@ -75,17 +71,15 @@ OPTIONS:
 
 ";
 
-if(@ARGV < 10) {
+if(@ARGV < 8) {
     die $USAGE;
 }
 
 my $required = 0;
-my $unaligned = 0;
 my $aligned = 0;
 my $count_b = 0;
 my $count_r = 0;
 my $se = "";
-my $unaligned_z = "";
 my $min = 10;
 my $max = 800;
 my $cutoff_he = 100;
@@ -103,7 +97,7 @@ my $run_norm = "false";
 my $shfile_name = "runall_normalization.sh";
 my $resume = "false";
 my $resume_at = "false";
-my ($sample_dir, $LOC, $unaligned_file, $alignedfilename, $unaligned_type, $cfg_file, $cutoff_temp, $bam);
+my ($sample_dir, $LOC, $alignedfilename, $cfg_file, $cutoff_temp, $bam);
 my ($name_to_check, $res_num, $last_step);
 my $new_norm = "false";
 my $b_option = "";
@@ -171,15 +165,6 @@ for(my $i=0; $i<@ARGV; $i++) {
         $i++;
 	$required++;
     }
-    if ($ARGV[$i] eq '--unaligned'){
-	$option_found = "true";
-        $unaligned_file = $ARGV[$i+1];
-	if ($unaligned_file =~ /^-/ | $unaligned_file eq ""){
-	    die "\nplease provide <file of fa/fqfiles> for --unaligned\n";
-	}
-        $i++;
-	$required++;
-    }
     if ($ARGV[$i] eq '--alignedfilename'){
 	$option_found = "true";
 	$alignedfilename = $ARGV[$i+1];
@@ -201,20 +186,6 @@ for(my $i=0; $i<@ARGV; $i++) {
     if ($ARGV[$i] eq '-se'){
         $option_found = "true";
 	$se = "-se";
-    }
-    if ($ARGV[$i] eq '-fa'){
-        $option_found = "true";
-	$unaligned++;
-	$unaligned_type = "-fa";
-    }
-    if ($ARGV[$i] eq '-fq'){
-        $option_found = "true";
-	$unaligned++;
-	$unaligned_type = "-fq";
-    }
-    if ($ARGV[$i] eq '-gz'){
-        $option_found = "true";
-        $unaligned_z = "-gz";
     }
     if ($ARGV[$i] eq '-sam'){
         $option_found = "true";
@@ -287,11 +258,8 @@ for(my $i=0; $i<@ARGV; $i++) {
         die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
-if ($required ne '5'){
-    die "please specify the required parameters: --sample_dirs, --loc, --unaligned, --alignedfilename and --cfg\n";
-}
-if ($unaligned ne '1'){
-    die "you have to specify the type of your unaligned files: '-fa' or '-fq'\n"
+if ($required ne '4'){
+    die "please specify the required parameters: --sample_dirs, --loc, --alignedfilename and --cfg\n";
 }
 if ($aligned ne '1'){
     die "you have to specify the type of your aligned files: '-sam' or '-bam'\n";
@@ -389,7 +357,7 @@ if ($normcnt == 0){
 use Cwd 'abs_path';
 my $norm_script_dir = abs_path($0);
 $norm_script_dir =~ s/\/runall_normalization.pl//;
-my $rl = `perl $norm_script_dir/get_readlength.pl $unaligned_file $unaligned_type $unaligned_z`;
+my $rl = `perl $norm_script_dir/get_readlength.pl $samtools $sample_dir $aligned_file`;
 chomp($rl);
 my $read_length= $rl;
 
