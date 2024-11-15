@@ -5,13 +5,15 @@ default_config.update(config)
 config = default_config
 
 sample_ids = list(config['aligned_files'].keys())
+paired_end_flag = "" if config['paired_end'] else '-se'
 
-def sample_to_bam(wildcards):
-    return config['aligned_files'][wildcards.sample_id]
+def sample_to_bam(sample_id):
+    return config['aligned_files'][sample_id]
 
 rule all:
     input:
         "results/precheck.txt",
+        "results/check_samformat.txt",
         expand("results/STATS/total_num_reads.txt", sample_id = sample_ids)
 
 rule precheck:
@@ -27,7 +29,7 @@ rule precheck:
 
 rule get_total_num_reads:
     input:
-        bam = sample_to_bam
+        bam = lambda wildcards: sample_to_bam[wildcards.sample_id] 
     output:
         "results/{sample_id}/total_num_reads.txt"
     container:
@@ -45,3 +47,16 @@ rule get_total_num_reads_agg:
             for sample_id, tnrf in zip(sample_ids, input.tnr):
                 tot_num_reads = open(tnrf).read()
                 out.write("{sample_id}\t{tot_num_reads}")
+
+rule check_samformat:
+    input:
+        [sample_to_bam(sample_id) for sample_id in sample_ids]
+    output:
+        "results/check_samformat.txt"
+    params:
+        pe = paired_end_flag,
+        script = workflow.source_path("scripts/check_samformat.pl")
+    container:
+        config['containers']['samtools']
+    shell:
+        "perl {params.script} {input} {params.pe}"
