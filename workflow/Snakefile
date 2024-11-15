@@ -15,6 +15,7 @@ rule all:
         "results/precheck.pass",
         "results/check_samformat.pass",
         "results/STATS/total_num_reads.txt",
+        expand("results/SAMPLES/{sample_id}/{sample_id}_mappingstats.txt", sample_id=sample_ids),
 
 rule precheck:
     input:
@@ -59,3 +60,14 @@ rule check_samformat:
         config['containers']['samtools']
     shell:
         "perl /workflow/scripts/check_samformat.pl {input} {params.pe}"
+
+rule sam2mappingstats:
+    input:
+        bam = lambda wildcards: sample_to_bam(wildcards.sample_id),
+        tnr = "results/SAMPLES/{sample_id}/total_num_reads.txt",
+    output:
+        "results/SAMPLES/{sample_id}/{sample_id}_mappingstats.txt"
+    container:
+        config['containers']['samtools']
+    shell:
+        "perl /workflow/scripts/sam2mappingstats.pl {input.bam} {output} -numreads `cat {input.tnr}`"

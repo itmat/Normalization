@@ -9,18 +9,8 @@ samfile : SAM file must use the IH or NH tags to indicate multi-mappers
 outfilename : name of the output txt file
 
 options: 
-         -bam <samtools> : bam input
-
          -numreads <n>  :  This is the total number of reads.
                                 - This cannot usually be inferred from the SAM file
-
-         -covU <f>  :  <f> is the coverage unique mappers bed file with zero-based half-open coordinates.
-                       Use this option to report the number and percent of bases mapped.
-
-         -covNU <f>    <f> is the coverage non-unique mappers bed file with zero-based half-open coordinates.
-                       Use this option to report the number and percent of bases mapped.
-
-         -species <s>  : <s> is hg18, hg19, mm9 or mm10, susscr3.  Use this if -cov is specified.
 
 NOTE: This script assumes ids have not been used multiple times for different reads. 
       It's ok if forward and reverse of the same read pair use the same id. 
@@ -30,283 +20,181 @@ NOTE: This script assumes ids have not been used multiple times for different re
 
 my $sam_in = $ARGV[0];
 my $outfile = $ARGV[1];
-my $covU = "";
-my $covNU = "";
 my $num_ids = 0;
-my $species = "";
-my $bam = "false";
 my $samtools = "";
 for(my $i=2; $i<@ARGV; $i++) {
     my $argument_recognized = 0;
     if($ARGV[$i] eq '-numreads') {
-	$num_ids = $ARGV[$i+1];
-	$i++;
-	$argument_recognized = 1;
-    }
-    if ($ARGV[$i] eq '-bam'){
-	$bam = "true";
-	$argument_recognized = 1;
-	$samtools = $ARGV[$i+1];
-	$i++;
-    }
-    if($ARGV[$i] eq '-covU') {
-	$covU = $ARGV[$i+1];
-	$i++;
-	$argument_recognized = 1;
-    }
-    if($ARGV[$i] eq '-covNU') {
-	$covNU = $ARGV[$i+1];
-	$i++;
-	$argument_recognized = 1;
-    }
-    if($ARGV[$i] eq '-species') {
-	$species = $ARGV[$i+1];
-	$i++;
-	$argument_recognized = 1;
+        $num_ids = $ARGV[$i+1];
+        $i++;
+        $argument_recognized = 1;
     }
     if($argument_recognized == 0) {
-	die "ERROR: command line arugument '$ARGV[$i]' not recognized.\n";
+        die "ERROR: command line arugument '$ARGV[$i]' not recognized.\n";
     }
-}
-if($covU =~ /\S/ && !($species =~ /\S/)) {
-    die "Error: if you specify a coverage plot with -covU, you also must specify the species.\n";
-}
-if($covNU =~ /\S/ && !($species =~ /\S/)) {
-    die "Error: if you specify a coverage plot with -covNU, you also must specify the species.\n";
 }
 
-my $genome_size = 0;
-if($species eq 'susscr3') {
-    $genome_size = 2808525991;
-}
-if($species eq 'mm9') {
-    $genome_size = 2725765481;
-}
-if($species eq 'mm10') {
-    $genome_size = 2730871774;
-}
-if($species eq 'hg18') {
-    $genome_size = 3096521113;
-}
-if($species eq 'hg19') {
-    $genome_size = 3101804741;
-}
-my $bases_covered_U = 0;
-if($covU =~ /\S/) {
-    open(INFILE, $covU);
-    my $linecnt = 0;
-    while(my $line = <INFILE>) {
-	$linecnt++;
-	if($linecnt % 1000000 == 0) {
-	    my $date = `date`;
-	    print "processed $linecnt lines of '$covU'\t$date";
-	}
-	if($line =~ /track/) {
-	    next;
-	}
-	chomp($line);
-	my @a = split(/\t/,$line);
-	$bases_covered_U = $bases_covered_U + $a[2] - $a[1];
-    }
-    close(INFILE);
-}
-my $bases_covered_NU = 0;
-if($covNU =~ /\S/) {
-    open(INFILE, $covNU);
-    my $linecnt = 0;
-    while(my $line = <INFILE>) {
-	$linecnt++;
-	if($linecnt % 1000000 == 0) {
-	    my $date = `date`;
-	    print "processed $linecnt lines of '$covNU'\t$date";
-	}
-	if($line =~ /track/) {
-	    next;
-	}
-	chomp($line);
-	my @a = split(/\t/,$line);
-	$bases_covered_NU = $bases_covered_NU + $a[2] - $a[1];
-    }
-    close(INFILE);
-}
 my @NAME;
-if ($bam eq "true"){
-    my $pipecmd = "$samtools view -h $sam_in";
-    open(SAM, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
-}
-else{
-    open(SAM, $sam_in) or die "cannot find file \"$sam_in\"\n";
-}
+my $pipecmd = "samtools view $sam_in";
+open(SAM, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
+
+my $i = 0;
 while (<SAM>){
-    if (1..1000){
-	if ($_ =~ /^@/){
-	    next;
-	}
-	my @a = split (/\t/, $_);
-	my $seqname = $a[0];
-	$seqname =~ s/[^A-Za-z0-9 ]//g;
-	push(@NAME, $seqname);
-	#$length = length $seqname;
+    if ($_ =~ /^@/){
+        next;
     }
+    if ($i > 10000) {
+        last;
+    }
+    my @a = split (/\t/, $_);
+    my $seqname = $a[0];
+    $seqname =~ s/[^A-Za-z0-9 ]//g;
+    push(@NAME, $seqname);
+    #$length = length $seqname;
+    $i++;
 }
 close(SAM);
+
 my $common_str = "";
-if ($bam eq "false"){
-    my $last_1000;
-    $last_1000 = `tail -1000 $sam_in`;
-    my @tail = split(/\n/, $last_1000);
-    for my $seq (@tail){
-	if ($seq !~ /^@/){
-	    my @a = split (/\t/, $seq);
-	    my $seqname = $a[0];
-	    $seqname =~ s/[^A-Za-z0-9 ]//g;
-	    push(@NAME, $seqname);
-	}
-    }
-}
 $common_str = &LCP(@NAME);
-#die "common_str: $common_str\n";
+
 my (%U, %NU, %CHR_U, %CHR_NU, %numLocs, %CHR_NU_Unique);
-if ($bam eq "true"){
-    my $pipecmd = "$samtools view -h $sam_in";
-    open(INFILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
-}
-else{
-    open(INFILE, $sam_in) or die "cannot find file \"$sam_in\"\n";
-}
+$pipecmd = "samtools view -h $sam_in";
+open(INFILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
+
 my $linecnt = 0;
 my $num_OL = 0;
 my $num_NOL = 0;
 while(my $line = <INFILE>) {
     $linecnt++;
     if($linecnt % 1000000 == 0) {
-	my $date = `date`;
-	print "processed $linecnt lines\t$date";
+        my $date = `date`;
+        print "processed $linecnt lines\t$date";
     }
     chomp($line);
     if($line =~ /^@/) {
-	next;
+        next;
     }
     my @a = split(/\t/,$line);
     my $seqname = $a[0];
     $seqname =~ s/[^A-Za-z0-9 ]//g;
     $seqname =~ s/$common_str//g;
     if($a[5] eq '*' || $a[5] eq '.') {
-	next;
+        next;
     }
     my $n = 0;
     if($line =~ /IH:i:(\d+)/) {
-	$n = $1;
+        $n = $1;
     }
     if($line =~ /NH:i:(\d+)/) {
-	$n = $1;
+        $n = $1;
     }
     my $num_alignments = $n;
     if($num_alignments == 1) {
-	if(!(defined $U{$seqname})) {
-	    $CHR_U{$a[2]}++;
-	}
-	if ($a[1] & 1){ # paired end
-	    if($a[1] & 2**6) {
-		if (!defined $U{$seqname}){
-		    $U{$seqname} = 0;
-		    if($U{$seqname} == 0) {
-			$U{$seqname} = 1;   # 1 means forward found only so far
-		    }
-		    if($U{$seqname} == 2) { # 2 means reverse found only so far
-			$U{$seqname} = 3;   # 3 means both forward and reverse found
-		    }
-		}
-		else{
-		    if($U{$seqname}+0 == 0) {
+        if(!(defined $U{$seqname})) {
+            $CHR_U{$a[2]}++;
+        }
+        if ($a[1] & 1){ # paired end
+            if($a[1] & 2**6) {
+                if (!defined $U{$seqname}){
+                    $U{$seqname} = 0;
+                    if($U{$seqname} == 0) {
+                        $U{$seqname} = 1;   # 1 means forward found only so far
+                    }
+                    if($U{$seqname} == 2) { # 2 means reverse found only so far
+                        $U{$seqname} = 3;   # 3 means both forward and reverse found
+                    }
+                }
+                else{
+                    if($U{$seqname}+0 == 0) {
                         $U{$seqname} = 1;   # 1 means forward found only so far
                     }
                     if($U{$seqname}+0 == 2) { # 2 means reverse found only so far
                         $U{$seqname} = 3;   # 3 means both forward and reverse found
                     }
-		}
-		if($line =~ /XO:A:T/) {
-		    $num_OL++;
-		}
-		if($line =~ /XO:A:F/) {
-		    $num_NOL++;
-		}
-	    } 
-	    else {
-		if (!defined $U{$seqname}){
-		    $U{$seqname} = 0;
-		    if($U{$seqname}+0==0) {
-			$U{$seqname} = 2;   # 2 means reverse found only so far
-		    }
-		    if($U{$seqname}+0==1) { # 1 means forward found only so far
-			$U{$seqname} = 3;   # 3 means both forward and reverse found
-		    }
-		}
-		else{
+                }
+                if($line =~ /XO:A:T/) {
+                    $num_OL++;
+                }
+                if($line =~ /XO:A:F/) {
+                    $num_NOL++;
+                }
+            } 
+            else {
+                if (!defined $U{$seqname}){
+                    $U{$seqname} = 0;
                     if($U{$seqname}+0==0) {
                         $U{$seqname} = 2;   # 2 means reverse found only so far
                     }
                     if($U{$seqname}+0==1) { # 1 means forward found only so far
                         $U{$seqname} = 3;   # 3 means both forward and reverse found
                     }
-		}
-	    }
-	}
-	else { # single end
-	    $U{$seqname} = 1;
-	}
+                }
+                else{
+                    if($U{$seqname}+0==0) {
+                        $U{$seqname} = 2;   # 2 means reverse found only so far
+                    }
+                    if($U{$seqname}+0==1) { # 1 means forward found only so far
+                        $U{$seqname} = 3;   # 3 means both forward and reverse found
+                    }
+                }
+            }
+        }
+        else { # single end
+            $U{$seqname} = 1;
+        }
     } 
     else {
-	if ($a[1] & 1){ # paired end
-	    if($a[1] & 2**6) {
-		if (!defined $NU{$seqname}){
-		    $NU{$seqname} = 0;
-		    if($NU{$seqname}+0==0) {
-			$NU{$seqname} = 1;   # 1 means forward found only so far
-		    }
-		    if($NU{$seqname}+0==2) { # 2 means reverse found only so far
-			$NU{$seqname} = 3;   # 3 means both forward and reverse found
-		    }
-		    $CHR_NU_Unique{$a[2]}++;
-		}
-		else{
-		    if($NU{$seqname}+0==0) {
-			$NU{$seqname} = 1;   # 1 means forward found only so far
+        if ($a[1] & 1){ # paired end
+            if($a[1] & 2**6) {
+                if (!defined $NU{$seqname}){
+                    $NU{$seqname} = 0;
+                    if($NU{$seqname}+0==0) {
+                        $NU{$seqname} = 1;   # 1 means forward found only so far
                     }
                     if($NU{$seqname}+0==2) { # 2 means reverse found only so far
                         $NU{$seqname} = 3;   # 3 means both forward and reverse found
                     }
-		}
-		$CHR_NU{$a[2]}++;
-	    } 
-	    else {
-		if (!defined $NU{$seqname}){
+                    $CHR_NU_Unique{$a[2]}++;
+                }
+                else{
+                    if($NU{$seqname}+0==0) {
+                        $NU{$seqname} = 1;   # 1 means forward found only so far
+                    }
+                    if($NU{$seqname}+0==2) { # 2 means reverse found only so far
+                        $NU{$seqname} = 3;   # 3 means both forward and reverse found
+                    }
+                }
+                $CHR_NU{$a[2]}++;
+            } 
+            else {
+                if (!defined $NU{$seqname}){
                     $NU{$seqname} = 0;
-		    if($NU{$seqname}+0==0) {
-			$NU{$seqname} = 2;   # 2 means reverse found only so far
-		    }
-		    if($NU{$seqname}+0==1) { # 1 means forward found only so far
-			$NU{$seqname} = 3;   # 3 means both forward and reverse found
-		    }
-		    $CHR_NU_Unique{$a[2]}++;
-		}
-		else{
-		    if($NU{$seqname}+0==0) {
+                    if($NU{$seqname}+0==0) {
                         $NU{$seqname} = 2;   # 2 means reverse found only so far
                     }
                     if($NU{$seqname}+0==1) { # 1 means forward found only so far
                         $NU{$seqname} = 3;   # 3 means both forward and reverse found
                     }
-		}
-	    }
-	}
-	else { #single end
-	    if (!defined $NU{$seqname}){
-		$CHR_NU_Unique{$a[2]}++;
-		$NU{$seqname} = 1;
-	    }
-	    $CHR_NU{$a[2]}++;
-	}
+                    $CHR_NU_Unique{$a[2]}++;
+                }
+                else{
+                    if($NU{$seqname}+0==0) {
+                        $NU{$seqname} = 2;   # 2 means reverse found only so far
+                    }
+                    if($NU{$seqname}+0==1) { # 1 means forward found only so far
+                        $NU{$seqname} = 3;   # 3 means both forward and reverse found
+                    }
+                }
+            }
+        }
+        else { #single end
+            if (!defined $NU{$seqname}){
+                $CHR_NU_Unique{$a[2]}++;
+                $NU{$seqname} = 1;
+            }
+            $CHR_NU{$a[2]}++;
+        }
     }
     $numLocs{$n}++;
 }
@@ -324,17 +212,17 @@ foreach my $key (keys  %U) {
     $Nids++;
     $linecnt++;
     if($linecnt % 1000000 == 0) {
-	my $date = `date`;
-	print "processed $linecnt U IDs\t$date";
+        my $date = `date`;
+        print "processed $linecnt U IDs\t$date";
     }
     if($U{$key} == 1) {
-	$forwardonlyU++;
+        $forwardonlyU++;
     }
     if($U{$key} == 2) {
-	$reverseonlyU++;
+        $reverseonlyU++;
     }
     if($U{$key} == 3) {
-	$bothmappedU++;
+        $bothmappedU++;
     }
 }
 
@@ -343,17 +231,17 @@ foreach my $key (keys %NU) {
     $Nids++;
     $linecnt++;
     if($linecnt % 1000000 == 0) {
-	my $date = `date`;
-	print "processed $linecnt NU IDs\t$date";
+        my $date = `date`;
+        print "processed $linecnt NU IDs\t$date";
     }
     if($NU{$key}+0==1) {
-	$forwardonlyNU++;
+        $forwardonlyNU++;
     }
     if($NU{$key}+0==2) {
-	$reverseonlyNU++;
+        $reverseonlyNU++;
     }
     if($NU{$key}+0==3) {
-	$bothmappedNU++;
+        $bothmappedNU++;
     }
 }
 
@@ -448,23 +336,6 @@ At least one of forward or reverse mapped: $total_formatted ($total_percent%)
 
 ";
 
-if($covU =~ /\S/ || $covNU =~ /\S/) {
-    my $genome_size_formatted = &format_large_int($genome_size);
-    print OUT "genome size: $genome_size_formatted\n"
-}
-if($covU =~ /\S/) {
-    my $coverageU_formatted = &format_large_int($bases_covered_U);
-    my $coverageU_percent = int($bases_covered_U / $genome_size * 10000) / 100;
-    $coverageU_percent = sprintf("%.2f", $coverageU_percent);
-    print OUT "number of bases covered by unique mappers: $coverageU_formatted ($coverageU_percent%)\n";
-}
-if($covNU =~ /\S/) {
-    my $coverageNU_formatted = &format_large_int($bases_covered_NU);
-    my $coverageNU_percent = int($bases_covered_NU / $genome_size * 10000) / 100;
-    $coverageNU_percent = sprintf("%.2f", $coverageNU_percent);
-    print OUT "number of bases covered by non-unique mappers: $coverageNU_formatted ($coverageNU_percent%)\n\n";
-}
-
 print OUT "Uniquely mapping reads per chromosome
 -------------------------------------
 chr\tnum\t%ofU\t%allMapped\t%ofAll
@@ -483,25 +354,11 @@ print OUT "\nNon-Uniquely mapping reads per chromosome\n------------------------
 print OUT "chr\tnum_alignments\tnum_reads\n";
 foreach my $chr (sort {&cmpChrs($a,$b)} keys %CHR_NU) {
     unless (exists $CHR_NU_Unique{$chr}){
-	$CHR_NU_Unique{$chr} = 0;
+        $CHR_NU_Unique{$chr} = 0;
     }
     print OUT "$chr\t$CHR_NU{$chr}\t$CHR_NU_Unique{$chr}\n";
 }
 
-=comment
-print OUT "\nNon-Uniquely mapping reads per chromosome\n-----------------------------------------\n";
-print OUT "chr\tnum\t%ofNU\t%allMapped\t%ofAll\n";
-foreach my $chr (sort {&cmpChrs($a,$b)} keys %CHR_NU) {
-    my $totalNU = $bothmappedNU + $forwardonlyNU + $reverseonlyNU;
-    my $pall = int($CHR_NU{$chr} / $num_ids * 10000) / 100;
-    $pall = sprintf("%.2f", $pall);
-    my $pNU = int($CHR_NU{$chr} / $totalNU * 10000) / 100;
-    $pNU = sprintf("%.2f", $pNU);
-    my $ptm = int($CHR_U{$chr} / $total * 10000) / 100;
-    $ptm = sprintf("%.2f", $ptm);
-    print OUT "$chr\t$CHR_NU{$chr}\t$pNU\t$ptm\t$pall\n";
-}
-=cut
 print OUT "
 Num. Locations      Num. Reads
 ------------------------------
@@ -519,12 +376,12 @@ sub LCP {
     foreach (@_) {
         $min_length = length($_) if length($_) < $min_length;
     }
-  INDEX: foreach my $ch ( split //, $first ) {
-      last INDEX unless $i < $min_length;
-      foreach  my $string (@_) {
-	  last INDEX if substr($string, $i, 1) ne $ch;
-      }
-  }
+    INDEX: foreach my $ch ( split //, $first ) {
+        last INDEX unless $i < $min_length;
+        foreach  my $string (@_) {
+            last INDEX if substr($string, $i, 1) ne $ch;
+        }
+    }
     continue { $i++ }
     return substr $first, 0, $i;
 }
@@ -735,81 +592,6 @@ sub cmpChrs () {
     return 1;
 }
 
-=comment
-sub clean () {
-    my ($infilename, $outfilename) = @_;
-    open(INFILE, $infilename);
-    open(OUTFILE, ">>$outfilename");
-    while(my $line = <INFILE>) {
-	my $flag = 0;
-	chomp($line);
-	my @a = split(/\t/,$line);
-	my $strand = $a[4];
-	my $chr = $a[1];
-	my @b2 = split(/, /,$a[2]);
-	$a[3] =~ s/://g;
-	my $seq_temp = $a[3];
-	$seq_temp =~ s/\+//g;
-	if(length($seq_temp) < $match_length_cutoff) {
-	    next;
-	}
-	for(my $i=0; $i<@b2; $i++) {
-	    my @c2 = split(/-/,$b2[$i]);
-	    if($c2[1] < $c2[0]) {
-		$flag = 1;
-	    }
-	}
-        if(defined $CHR2SEQ{$chr} && !(defined $samheader{$chr})) {
-	    $CS = $chrsize{$chr};
-	    $samheader{$chr} = "\@SQ\tSN:$chr\tLN:$CS\n";
-	}
-	if(defined $CHR2SEQ{$chr} && $flag == 0) {
-	    if($line =~ /[^\t]\+[^\t]/) {   # insertions will break things, have to fix this, for now not just cleaning these lines
-		my @LINE = split(/\t/,$line);
-		print OUTFILE "$LINE[0]\t$LINE[1]\t$LINE[2]\t$LINE[4]\t$LINE[3]\n";
-	    } else {
-		my @b = split(/, /, $a[2]);
-		my $SEQ = "";
-		for(my $i=0; $i<@b; $i++) {
- 		    my @c = split(/-/,$b[$i]);
-		    my $len = $c[1] - $c[0] + 1;
-		    my $start = $c[0] - 1;
-		    $SEQ = $SEQ . substr($CHR2SEQ{$chr}, $start, $len);
-		}
-		&trimleft($SEQ, $a[3], $a[2]) =~ /(.*)\t(.*)/;
-		my $spans = $1;
-		my $seq = $2;
-		my $length1 = length($seq);
-		my $length2 = length($SEQ);
-		for(my $i=0; $i<$length2 - $length1; $i++) {
-		    $SEQ =~ s/^.//;
-		}
-		$seq =~ s/://g;
-		&trimright($SEQ, $seq, $spans) =~ /(.*)\t(.*)/;
-		$spans = $1;
-		$seq = $2;
-		$seq = addJunctionsToSeq($seq, $spans);
-
-		# should fix the following so it doesn't repeat the operation unnecessarily
-		# while processing the RUM_NU file
-		my $seq_temp = $seq;
-		$seq_temp =~ s/://g;
-		$seq_temp =~ s/\+//g;
-		if(length($seq_temp) >= $match_length_cutoff) {
-		    if($countmismatches eq "true") {
-			$num_mismatches = &countmismatches($SEQ, $seq);
-			print OUTFILE "$a[0]\t$chr\t$spans\t$strand\t$seq\t$num_mismatches\n";
-		    } else {
-			print OUTFILE "$a[0]\t$chr\t$spans\t$strand\t$seq\n";
-		    }
-		}
-	    }
-	}
-    }
-    close(INFILE);
-    close(OUTFILE);
-}
-=cut
 sub removefirst () {
     my ($n_1,  $spans_1,  $seq_1) = @_;
     $seq_1 =~ s/://g;
@@ -1044,4 +826,3 @@ sub Roman($) {
 sub roman($) {
     lc Roman shift;
 }
-print "got here\n";
