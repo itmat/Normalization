@@ -3,7 +3,7 @@
 #use strict;
 use FindBin qw($Bin);
 use lib ("$Bin/pm/lib/perl5");
-use File::Type;
+#use File::Type;
 
 my $USAGE =  "\nUsage: run_normalization --aligned_files <aligned files> --cfg <cfg file> [options]
 
@@ -39,8 +39,9 @@ for(my $i=0; $i<@ARGV; $i++) {
     my $option_found = "false";
     if ($ARGV[$i] eq '--aligned_files'){
         $option_found = "true";
+        $i++;
         while($i < @ARGV) {
-            if ($ARGV[i] =~ /^-/) {
+            if ($ARGV[$i] =~ /^-/) {
                 last
             }
             push(@aligned_files, $ARGV[$i]);
@@ -476,8 +477,8 @@ if ($part2 eq "true"){
 }
 
 
-open(PC, ">", "results/precheck.pass")
-print PC "PASS"
+open(PC, ">", "results/precheck.txt");
+print PC "PASS";
 close(PC);
 
 sub parse_config_file () {
