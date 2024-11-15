@@ -1,9 +1,7 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use FindBin qw($Bin);
 use lib ("$Bin/pm/lib/perl5");
-use Net::OpenSSH;
 my $USAGE = "\nUsage: perl get_total_num_reads.pl <in file> <out file>";
 if(@ARGV<2) {
     die $USAGE;

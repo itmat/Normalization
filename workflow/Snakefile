@@ -12,8 +12,8 @@ def sample_to_bam(sample_id):
 
 rule all:
     input:
-        "results/precheck.txt",
-        "results/check_samformat.txt",
+        "results/precheck.pass",
+        "results/check_samformat.pass",
         expand("results/STATS/total_num_reads.txt", sample_id = sample_ids)
 
 rule precheck:
@@ -21,11 +21,11 @@ rule precheck:
         aligned = config['aligned_files'].values(),
         cfg = config['port_config'],
     output:
-        "results/precheck.txt"
-    params:
-        script = workflow.source_path("scripts/run_normalization")
+        touch("results/precheck.pass")
+    container:
+        config['containers']['samtools']
     shell:
-        "perl {params.script} --aligned_files {input.aligned} --cfg {input.cfg}"
+        "perl /workflow/scripts/run_normalization --aligned_files {input.aligned} --cfg {input.cfg}"
 
 rule get_total_num_reads:
     input:
@@ -46,17 +46,16 @@ rule get_total_num_reads_agg:
         with open(output.tnr, 'wt') as out:
             for sample_id, tnrf in zip(sample_ids, input.tnr):
                 tot_num_reads = open(tnrf).read()
-                out.write("{sample_id}\t{tot_num_reads}")
+                out.write(f"{sample_id}\t{tot_num_reads}")
 
 rule check_samformat:
     input:
         [sample_to_bam(sample_id) for sample_id in sample_ids]
     output:
-        "results/check_samformat.txt"
+        touch("results/check_samformat.pass")
     params:
         pe = paired_end_flag,
-        script = workflow.source_path("scripts/check_samformat.pl")
     container:
         config['containers']['samtools']
     shell:
-        "perl {params.script} {input} {params.pe}"
+        "perl /workflow/scripts/check_samformat.pl {input} {params.pe}"

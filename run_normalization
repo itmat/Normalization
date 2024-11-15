@@ -1,0 +1,74 @@
+#!/usr/bin/env python
+
+import pathlib
+import yaml
+import subprocess
+import argparse
+
+parser = argparse.ArgumentParser(
+    description = "run_normalization - any unrecognized arguments are passed to snakemake"
+)
+parser.add_argument("--cfg", help="config file")
+
+args, unknown = parser.parse_known_args()
+
+def read_port_config(cfg_file):
+    config = dict()
+    with open(cfg_file, "rt") as cfg_file:
+        for line in cfg_file:
+            line = line.strip()
+            if line.startswith("#"):
+                continue
+            elif len(line) == 0:
+                continue
+            else:
+                splits = line.split(" = ")
+                if len(splits) == 1:
+                    before = splits[0]
+                    config[before] = None
+                else:
+                    before, after = splits
+                    config[before] = after
+    return config
+
+# Load config files
+config = yaml.load(open(args.cfg, "rt"), yaml.Loader)
+port_config = read_port_config(config['port_config'])
+
+# Collect any files from the config
+# so that we can make sure that apptainer binds their paths
+# in the containers we execute in
+file_args = [
+    "CHRNAMES",
+    "GENE_INFO_FILE",
+    "GENOME_FA",
+    "GENOME_FAI",
+    "SAMTOOLS",
+    "rRNA_FA",
+    "SAM2COV_LOC",
+]
+file_paths = [pathlib.Path(port_config[arg]).parent for arg in file_args]
+file_paths += [pathlib.Path(x).parent for x in config['aligned_files'].values()]
+file_paths = list(set(file_paths))
+
+# Assemble all bind paths, including the workflow itself
+workflow_path = pathlib.Path(__file__).resolve().parent / "workflow"
+bind_paths = [
+    f"{workflow_path}:/workflow",
+    *[str(p) for p in file_paths]
+]
+
+# Build the snakemake command
+cmd = [
+    "snakemake",
+    "--snakefile",
+    f"{workflow_path}/Snakefile",
+    "--use-singularity",
+    "--singularity-args",
+    f"--bind {','.join(bind_paths)}",
+    "--configfile", args.cfg,
+    *unknown
+]
+
+# Run the pipeline
+subprocess.run(cmd, check=True)

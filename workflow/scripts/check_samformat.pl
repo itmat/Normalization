@@ -29,10 +29,10 @@ for (my $i=1; $i<@ARGV;$i++){
 
 my $cnt = 0;
 for my $aligned_file (@aligned_files) {
-    my $pipecmd = "$samtools view $aligned_file";
+    my $pipecmd = "samtools view $aligned_file";
     open(SAM, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 
-    while (!eof <SAM>) {
+    while (!eof SAM) {
         my $first = <SAM>;
         if ($first =~ /^@/){
             next;
@@ -97,7 +97,3 @@ for my $aligned_file (@aligned_files) {
     }
     close(SAM);
 }
-
-open(my $flagfile, ">", "results/check_samformat.txt")
-print $flagfile "All pass";
-close($flagfile)

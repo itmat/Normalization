@@ -1,7 +1,6 @@
 #!/usr/bin/env perl
 #use warnings;
 #use strict;
-use FindBin qw($Bin);
 use lib ("$Bin/pm/lib/perl5");
 #use File::Type;
 
@@ -207,10 +206,6 @@ if ($CONVERT_SAM2BAM ne ""){
         $convert_sam2bam= "false";
     }
 }
-my $samtools = $SAMTOOLS;
-if ($samtools =~ /^$/){
-    die "You need to provide samtools location. (# 3. FA and FAI - [3] samtools in your cfg file \"$cfg_file\")\n";
-}
 if ($GZIP_COV ne ""){
     if ($GZIP_COV =~ /^true/i){
         $gzip_cov = "true";
@@ -228,7 +223,7 @@ my $se_cnt = 0;
 
 #check single/paired
 for my $file_loc (@aligned_files) {
-    my $flag = `$samtools view $file_loc | head -1 | cut -f 2`;
+    my $flag = `samtools view $file_loc | head -1 | cut -f 2`;
     if ($flag & 1) {
         $pe = "true";
     } else {
@@ -475,11 +470,6 @@ if ($part2 eq "true"){
         }
     }
 }
-
-
-open(PC, ">", "results/precheck.txt");
-print PC "PASS";
-close(PC);
 
 sub parse_config_file () {
     my ($File, $Config) = @_;
