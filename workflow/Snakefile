@@ -14,7 +14,7 @@ rule all:
     input:
         "results/precheck.pass",
         "results/check_samformat.pass",
-        expand("results/STATS/total_num_reads.txt", sample_id = sample_ids)
+        "results/STATS/total_num_reads.txt",
 
 rule precheck:
     input:
@@ -29,9 +29,9 @@ rule precheck:
 
 rule get_total_num_reads:
     input:
-        bam = lambda wildcards: sample_to_bam[wildcards.sample_id] 
+        bam = lambda wildcards: sample_to_bam(wildcards.sample_id) 
     output:
-        "results/{sample_id}/total_num_reads.txt"
+        "results/SAMPLES/{sample_id}/total_num_reads.txt"
     container:
         config['containers']['samtools']
     shell:
@@ -39,7 +39,7 @@ rule get_total_num_reads:
 
 rule get_total_num_reads_agg:
     input:
-        tnr = expand("results/{sample_id}/total_num_reads.txt", sample_id = sample_ids)
+        tnr = expand("results/SAMPLES/{sample_id}/total_num_reads.txt", sample_id = sample_ids)
     output:
         tnr = "results/STATS/total_num_reads.txt"
     run:
