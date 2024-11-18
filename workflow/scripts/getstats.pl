@@ -2,34 +2,26 @@
 use warnings;
 use strict;
 
-my $USAGE = "\nUsage: perl getstats.pl <dirs> <loc> [option]
-where 
-<dirs> is a file of directory names (without path)
-<loc> is where the sample directories are
+my $USAGE = "\nUsage: perl getstats.pl <path> <path> ... <path> [option]
+  where <path> gives paths to the {id}_mappingstats.txt files
 
 [option]
   -mito \"<name>, <name>, ... ,<name>\": name(s) of mitochondrial chromosomes
-  -alt_stats <s>
+  -summary_file <path>: path to write out summary file to
+  -mito_file <path>: path to write out mito file to
 
 This will parse the mapping_stats.txt files for all dirs
 and output a table with summary info across all samples.
 
 ";
 
-if(@ARGV<2) {
-    die $USAGE;
-}
 my %MITO;
+my @filepaths;
 my $count = 0;
-my $LOC = $ARGV[1];
-$LOC =~ s/\/$//;
-my @fields = split("/", $LOC);
-my $last_dir = $fields[@fields-1];
-my $study_dir = $LOC;
-$study_dir =~ s/$last_dir//;
-my $stats_dir = $study_dir . "STATS";
+my $summary_file;
+my $mito_file;
 
-for(my $i=2;$i<@ARGV;$i++){
+for(my $i=0;$i<@ARGV;$i++){
     my $option_found = "false";
     if ($ARGV[$i] eq '-mito'){
         my $argv_all = $ARGV[$i+1];
@@ -47,37 +39,47 @@ for(my $i=2;$i<@ARGV;$i++){
         }
         $i++;
     }
-    if ($ARGV[$i] eq '-alt_stats'){
+    if ($ARGV[$i] eq '-summary_file'){
         $option_found = "true";
-        $stats_dir = $ARGV[$i+1];
+        $summary_file = $ARGV[$i+1];
+        $i++;
+    }
+    if ($ARGV[$i] eq '-mito_file'){
+        $option_found = "true";
+        $mito_file = $ARGV[$i+1];
         $i++;
     }
     if($option_found eq "false") {
+        push(@filepaths, $ARGV[$i]);
+    }
+    if ($option_found eq "false" & $ARGV[$i] =~ /^-/) {
         die "option \"$ARGV[$i]\" was not recognized.\n";
     }
 }
 if($count == 0){
    die "please provide mitochondrial chromosome name using -mito \"<name>\" option.\n";
 }
-my $dirs = $ARGV[0];
-unless (-d $stats_dir){
-    `mkdir -p $stats_dir`;}
 my (%total, %uniqueandFRconsistently, %uniqueandAtLeastOneMapped, %NUandAtLeastOneMapped, %TotalMapped, %TotalMapped_cons, %NUandFRconsistently, %Overlap, %NOverlap, %Pover, %min_chrm, %max_chrm, %UchrM);
 my ($min_total, $min_total_frcons, $min_utotal_f_or_r_cons, $min_nutotal_f_or_r, $min_total_UorNU, $min_total_UandNU, $min_nutotal, $min_pover);
 my ($max_total,$max_total_frcons,$max_total_UorNU,$max_utotal_f_or_r_cons,$max_pover,$max_nutotal,$max_nutotal_f_or_r,$max_total_UandNU) = (0,0,0,0,0,0,0,0);
 
-open(DIRS, $dirs) or die "cannot find file '$dirs'\n";
-while(my $dir = <DIRS>) {
-    chomp($dir);
-    my $id = $dir;
-    my $filename = "$LOC/$dir/$id.mappingstats.txt";
-    if(!(-e "$filename")) {
-	next;
+my $id;
+for my $filepath (@filepaths){
+    chomp($filepath);
+    print $filepath;
+    if ($filepath =~ /\/([^\/]*)_mappingstats\.txt$/){
+        $id = $1;
+    } else {
+        die "file path did not have the expected <id>_mappingstats.txt structure";
     }
-    my $x = `head -1 $filename`;
+    if(!(-e "$filepath")) {
+        die "given file did not exist";
+    }
+
+    my $x = `head -1 $filepath`;
     chomp($x);
     $x =~ s/[^\d,]//g;
-    $total{$dir} = $x;
+    $total{$id} = $x;
     my $TOTAL = $x;
     $TOTAL =~ s/,//g;
     if ($TOTAL =~ /^$/){
@@ -85,7 +87,7 @@ while(my $dir = <DIRS>) {
     }
     $min_total = $TOTAL;
 
-    $x = `grep "Both forward and reverse mapped consistently" $filename`;
+    $x = `grep "Both forward and reverse mapped consistently" $filepath`;
     chomp($x);
     $x =~ /([\d,]+)/;
     my $y = $1;
@@ -94,14 +96,14 @@ while(my $dir = <DIRS>) {
     my $TOTAL_FRCONS = $1;
     $x =~ s/\(//;
     $x =~ s/\)//;
-    $uniqueandFRconsistently{$dir} = "$y ($x)";
+    $uniqueandFRconsistently{$id} = "$y ($x)";
     if ($TOTAL_FRCONS =~ /^$/){
         $TOTAL_FRCONS = 0;
-        $uniqueandFRconsistently{$dir} = "0 (0.00%)";
+        $uniqueandFRconsistently{$id} = "0 (0.00%)";
     }
     $min_total_frcons = $TOTAL_FRCONS;
 
-    $x = `grep "At least one of forward or reverse mapped" $filename | head -1`;
+    $x = `grep "At least one of forward or reverse mapped" $filepath | head -1`;
     chomp($x);
     $x =~ /([\d,]+)/;
     $y = $1;
@@ -111,15 +113,15 @@ while(my $dir = <DIRS>) {
     $UTOTAL_F_or_R_CONS =~ s/,//g;
     $x =~ s/\(//;
     $x =~ s/\)//;
-    $uniqueandAtLeastOneMapped{$dir} = "$y ($x)";
+    $uniqueandAtLeastOneMapped{$id} = "$y ($x)";
     if ($UTOTAL_F_or_R_CONS =~ /^$/){
         $UTOTAL_F_or_R_CONS = 0;
-        $uniqueandAtLeastOneMapped{$dir} = "0 (0.00%)";
+        $uniqueandAtLeastOneMapped{$id} = "0 (0.00%)";
     }
     $min_utotal_f_or_r_cons = $UTOTAL_F_or_R_CONS;
     $min_utotal_f_or_r_cons =~ s/,//g;
 
-    $x = `grep "At least one of forward or reverse mapped" $filename | head -2 | tail -1`;
+    $x = `grep "At least one of forward or reverse mapped" $filepath | head -2 | tail -1`;
     chomp($x);
     $x =~ /([\d,]+)/;
     $y = $1;
@@ -129,15 +131,15 @@ while(my $dir = <DIRS>) {
     $NUTOTAL_F_or_R =~ s/,//g;
     $x =~ s/\(//;
     $x =~ s/\)//;
-    $NUandAtLeastOneMapped{$dir} = "$y ($x)";
+    $NUandAtLeastOneMapped{$id} = "$y ($x)";
     if ($NUTOTAL_F_or_R =~ /^$/){
         $NUTOTAL_F_or_R = 0;
-        $NUandAtLeastOneMapped{$dir} = "0 (0.00%)";
+        $NUandAtLeastOneMapped{$id} = "0 (0.00%)";
     }
     $min_nutotal_f_or_r = $NUTOTAL_F_or_R;
     $min_nutotal_f_or_r =~ s/,//g;
 
-    $x = `grep "At least one of forward or reverse mapped" $filename | tail -1`;
+    $x = `grep "At least one of forward or reverse mapped" $filepath | tail -1`;
     chomp($x);
     $x =~ /([\d,]+)/;
     $y = $1;
@@ -146,15 +148,15 @@ while(my $dir = <DIRS>) {
     my $TOTALMAPPED = $1;
     $x =~ s/\(//;
     $x =~ s/\)//;
-    $TotalMapped{$dir} = "$y ($x)";
+    $TotalMapped{$id} = "$y ($x)";
     if ($TOTALMAPPED =~ /^$/){
         $TOTALMAPPED = 0;
-        $TotalMapped{$dir} = "0 (0.00%)";
+        $TotalMapped{$id} = "0 (0.00%)";
     }
     $min_total_UorNU = $TOTALMAPPED;
     $min_total_UorNU =~ s/,//g;
 
-    $x = `grep "Total number consistent:" $filename | tail -1`;
+    $x = `grep "Total number consistent:" $filepath | tail -1`;
     chomp($x);
     $x =~ /([\d,]+)/;
     $y = $1;
@@ -163,15 +165,15 @@ while(my $dir = <DIRS>) {
     my $TOTALMAPPED_CONS = $1;
     $x =~ s/\(//;
     $x =~ s/\)//;
-    $TotalMapped_cons{$dir} = "$y ($x)";
+    $TotalMapped_cons{$id} = "$y ($x)";
     if ($TOTALMAPPED_CONS =~ /^$/){
         $TOTALMAPPED_CONS = 0;
-        $TotalMapped_cons{$dir} = "0 (0.00%)";
+        $TotalMapped_cons{$id} = "0 (0.00%)";
     }
     $min_total_UandNU = $TOTALMAPPED_CONS;
     $min_total_UandNU =~ s/,//g;
 
-    $x = `grep "Total number consistent ambiguous" $filename`;
+    $x = `grep "Total number consistent ambiguous" $filepath`;
     chomp($x);
     $x =~ s/^.*: //;
     $x =~ /^(.*) /;
@@ -181,24 +183,24 @@ while(my $dir = <DIRS>) {
         $NUTOTAL_F_and_R = 0;
         $x = "0 (0.00%)";
     }
-    $NUandFRconsistently{$dir} = $x;
+    $NUandFRconsistently{$id} = $x;
     $min_nutotal = $NUTOTAL_F_and_R;
     $min_nutotal =~ s/,//g;
 
-    $x = `grep "do overlap" $filename | head -1`;
+    $x = `grep "do overlap" $filepath | head -1`;
     chomp($x);
     $x =~ s/[^\d,]//g;
     my $overlap = $x;
     $overlap =~ s/,//;
-    $Overlap{$dir} = "$x";
+    $Overlap{$id} = "$x";
 
     my $noverlap = 0;
-    $x = `grep "don.t overlap" $filename | head -1`;
+    $x = `grep "don.t overlap" $filepath | head -1`;
     chomp($x);
     $x =~ s/[^\d,]//g;
     $noverlap = $x;
     $noverlap =~ s/,//;
-    $NOverlap{$dir} = "$x";
+    $NOverlap{$id} = "$x";
 
     if($overlap =~ /^$/){
         $overlap = 0;
@@ -207,18 +209,18 @@ while(my $dir = <DIRS>) {
         $noverlap = 0;
     }
     if($overlap + $noverlap > 0) {
-        $Pover{$dir} = int($overlap / ($overlap+$noverlap) * 1000) / 10;
+        $Pover{$id} = int($overlap / ($overlap+$noverlap) * 1000) / 10;
     }
     else{
-        $Pover{$dir} = 0;
+        $Pover{$id} = 0;
     }
-    $Pover{$dir} = sprintf("%.2f", $Pover{$dir});
-    $min_pover = $Pover{$dir};
+    $Pover{$id} = sprintf("%.2f", $Pover{$id});
+    $min_pover = $Pover{$id};
     $min_pover =~ s/,//g;
     foreach my $key (sort keys %MITO){
-        $x = `grep -w '$key' $filename | head -1`;
+        $x = `grep -w '$key' $filepath | head -1`;
         if ($x eq ''){
-	    $x = '0';
+            $x = '0';
         }
         else{
             my @a1 = split(" ",$x);
@@ -231,17 +233,14 @@ while(my $dir = <DIRS>) {
         $max_chrm{$key} = $x;
         my $x2 = &format_large_int($x);
         if ($x2 eq ''){
-	    $x2 = '0';
+            $x2 = '0';
         }
-        $UchrM{$dir}{$key} = "$x2 ($y%)";
+        $UchrM{$id}{$key} = "$x2 ($y%)";
     }
 }
-close(DIRS);
 
-my $outfile = "$stats_dir/mappingstats_summary.txt"; 
-my $mitofile = "$stats_dir/mitochondrial_percents.txt";
-open(OUT, ">$outfile");
-open(MITO, ">$mitofile");
+open(OUT, ">$summary_file");
+open(MITO, ">$mito_file");
 #print OUT "id\ttotal\t!<>\t!<|>\t!chrM(%!)\t\%overlap\t~!<>\t~!<|>\t<|>\n";
 print OUT "id\ttotalreads\tUniqueFWDandREV\tUniqueFWDorREV\t%overlap\tNon-UniqueFWDandREV\tNon-UniqueFWDorREV\tFWDandREVmapped\tFWDorREVmapped\n";
 print MITO "id\t";

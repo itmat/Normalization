@@ -10,12 +10,32 @@ paired_end_flag = "" if config['paired_end'] else '-se'
 def sample_to_bam(sample_id):
     return config['aligned_files'][sample_id]
 
+def read_port_config(cfg_file):
+    config = dict()
+    with open(cfg_file, "rt") as cfg_file:
+        for line in cfg_file:
+            line = line.strip()
+            if line.startswith("#"):
+                continue
+            elif len(line) == 0:
+                continue
+            else:
+                splits = line.split(" = ")
+                if len(splits) == 1:
+                    before = splits[0]
+                    config[before] = None
+                else:
+                    before, after = splits
+                    config[before] = after
+    return config
+port_config = read_port_config(config['port_config'])
+
 rule all:
     input:
         "results/precheck.pass",
         "results/check_samformat.pass",
         "results/STATS/total_num_reads.txt",
-        expand("results/SAMPLES/{sample_id}/{sample_id}_mappingstats.txt", sample_id=sample_ids),
+        "results/STATS/mappingstats_summary.txt",
 
 rule precheck:
     input:
@@ -71,3 +91,16 @@ rule sam2mappingstats:
         config['containers']['samtools']
     shell:
         "perl /workflow/scripts/sam2mappingstats.pl {input.bam} {output} -numreads `cat {input.tnr}`"
+
+rule getstats:
+    input:
+        expand("results/SAMPLES/{sample_id}/{sample_id}_mappingstats.txt", sample_id=sample_ids),
+    output:
+        mappingstats = "results/STATS/mappingstats_summary.txt",
+        mito = "results/STATS/mitochondrial_percents.txt",
+    params:
+        mito = port_config['CHRM']
+    container:
+        config['containers']['perl']
+    shell:
+        "perl /workflow/scripts/getstats.pl {input} -mito_file {output.mito} -summary_file {output.mappingstats} -mito {params.mito}"
