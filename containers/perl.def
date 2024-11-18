@@ -1,0 +1,7 @@
+Bootstrap: docker
+From: perl:5.40.0
+
+%post
+    cpan FindBin Cwd IO::File Getopt::Long File::Spec File::Path File::stat File::Copy File::Temp \
+        Text::Wrap Carp Data::Dumper Pod autodie POSIX Scalar::Util Archive::Tar List::Util \
+        List::MoreUtils Math::Matrix Socket subs vars

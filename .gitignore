@@ -1,4 +1,8 @@
 documentation.md
+images/
+.snakemake/
+venv/
+workflow/scripts/pm
 norm_scripts/resolve_multimappers.pl
 norm_scripts/filter_and_label.pl
 norm_scripts/filter_and_label_gnorm.pl

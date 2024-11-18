@@ -36,6 +36,7 @@ rule all:
         "results/check_samformat.pass",
         "results/STATS/total_num_reads.txt",
         "results/STATS/mappingstats_summary.txt",
+        "results/one-line.fa",
 
 rule precheck:
     input:
@@ -104,3 +105,15 @@ rule getstats:
         config['containers']['perl']
     shell:
         "perl /workflow/scripts/getstats.pl {input} -mito_file {output.mito} -summary_file {output.mappingstats} -mito {params.mito}"
+
+rule modify_to_onelinefa:
+    input:
+        fa = port_config['GENOME_FA'],
+    output:
+        fa = "results/one-line.fa"
+        #TODO: make this temporary?
+    container:
+        #TODO: we need a better way to handle this container
+        config['containers']['perl']
+    shell:
+        'perl /workflow/scripts/rum-2.0.5_05/bin/modify_fa_to_have_seq_on_one_line.pl {input.fa} > {output.fa};'
