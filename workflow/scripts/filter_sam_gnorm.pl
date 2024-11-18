@@ -4,16 +4,14 @@ use warnings;
 
 $| = 1;
 if(@ARGV<3) {
-    die "Usage: perl filter_sam_gnorm.pl <sam infile> <sam outfile> <more ids> [options]
+    die "Usage: perl filter_sam_gnorm.pl <sam infile> <sam U outfile> <sam NU outfile> [options]
 
 where 
 <sam infile> is input sam file (aligned sam) to be filtered 
-<sam outfile> output sam file name (e.g. path/to/sampledirectory/sampleid.filtered.sam)
-<more ids> ribosomalids file
+<sam U outfile> output sam file name (e.g. path/to/sampledirectory/sampleid.filtered.sam) for Unique reads
+<sam NU outfile> output sam file name (e.g. path/to/sampledirectory/sampleid.filtered.sam) for non-unique reads
 
 option:
-  -bam <samtools>: bam input
-
   -chromnames <file> : a file of chromosome names
 
   -mito \"<name>, <name>, ... ,<name>\": name(s) of mitochondrial chromosomes
@@ -29,24 +27,16 @@ option:
 This will remove all rows from <sam infile> except those that satisfy all of the following:
 1. Unique mapper / Non-Unique mapper
 2. Both forward and reverse map consistently
-3. id not in file <more ids>
-4. a) Default: chromosome is one of the numbered ones, or X, or Y (e.g. chr1, chr2, chrX, chrY OR 1, 2, X, Y)
+3. a) Default: chromosome is one of the numbered ones, or X, or Y (e.g. chr1, chr2, chrX, chrY OR 1, 2, X, Y)
                and chromosome in -mito list.
    b) with -chromnames option: chromosome is listed in -chromnames <file>, chromosome in -mito list.
 
 ";
 }
 
-my $outfile = $ARGV[1];
-my @fields = split("/", $outfile);
-my $outname = $fields[@fields-1];
-my $outfiledir = $outfile;
-$outfiledir =~ s/\/$outname//;
-my $outfileU = "$outfiledir/Unique/$outname";
-$outfileU =~ s/.sam$/_u.sam/i;
-my $outfileNU = "$outfiledir/NU/$outname";
-$outfileNU =~ s/.sam$/_nu.sam/i;
-
+my $infile = $ARGV[0];
+my $outfileU = $ARGV[1];
+my $outfileNU = $ARGV[2];
 
 my $NU = "true";
 my $U = "true";
@@ -56,7 +46,6 @@ my $use_chr_names = "false";
 my $chromnames;
 my %MITO;
 my $count = 0;
-my $bam = "false";
 my $samtools = "";
 for(my $i=3; $i<@ARGV; $i++) {
     my $option_found = "false";
@@ -64,12 +53,6 @@ for(my $i=3; $i<@ARGV; $i++) {
 	$option_found = "true";
 	$chromnames = $ARGV[$i+1];
 	$use_chr_names = "true";
-	$i++;
-    }
-    if ($ARGV[$i] eq '-bam'){
-	$option_found = "true";
-	$bam = "true";
-	$samtools = $ARGV[$i+1];
 	$i++;
     }
     if ($ARGV[$i] eq '-mito'){
@@ -112,31 +95,14 @@ and non-unique by default so if that's what you want don't use either arg
 -u or -nu.
 ";
 }
-unless (-d $outfiledir){
-    `mkdir -p $outfiledir`;
-}
 my ($OUTFILEU, $OUTFILENU);
 if ($U eq "true"){
-    unless(-d "$outfiledir/Unique"){
-	`mkdir -p $outfiledir/Unique`;
-    }
-    open($OUTFILEU, "| /bin/gzip -c > $outfileU.gz") or die "file '$outfileU.gz' cannot open for writing\n"; # the output file
+    open($OUTFILEU, "| /bin/gzip -c > $outfileU") or die "file '$outfileU' cannot open for writing\n"; # the output file
 }
 if ($NU eq "true"){
-    unless(-d "$outfiledir/NU"){
-        `mkdir -p $outfiledir/NU`;
-    }
-    open($OUTFILENU, "| /bin/gzip -c > $outfileNU.gz") or die "file '$outfileNU.gz' cannot open for writing\n";
+    open($OUTFILENU, "| /bin/gzip -c > $outfileNU") or die "file '$outfileNU' cannot open for writing\n";
 }
 
-my $ribofile = $ARGV[2]; # file with id's that have the ribo reads
-my %RIBO_IDs;
-open(INFILE2, $ribofile) or die "file '$ribofile' cannot open for reading\n";
-while(my $line = <INFILE2>) {
-    chomp($line);
-    $RIBO_IDs{$line} = 1;
-}
-close(INFILE2);
 
 my %CHR_NAMES;
 if ($use_chr_names eq "true"){
@@ -151,13 +117,9 @@ if ($use_chr_names eq "true"){
     }
     close(CHR);
 }
-if ($bam eq "true"){
-    my $pipecmd = "$samtools view -h $ARGV[0]";
-    open(INFILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
-}
-else{
-    open(INFILE, $ARGV[0]) or die "cannot find file \"$ARGV[0]\"\n";
-}
+
+my $pipecmd = "samtools view $infile";
+open(INFILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 my $cnt = 0;
 my $line = <INFILE>;
 my @a = split(/\t/,$line);
@@ -170,13 +132,7 @@ until($n > 8) {
     $cnt++;
 }
 close(INFILE);
-if ($bam eq "true"){
-    my $pipecmd = "$samtools view -h $ARGV[0]";
-    open(INFILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
-}
-else{
-    open(INFILE, $ARGV[0]) or die "cannot find file \"$ARGV[0]\"\n";
-}
+open(INFILE, '-|', $pipecmd) or die "Opening pipe [$pipecmd]: $!\n+";
 for(my $i=0; $i<$cnt; $i++) { # skip header
     my $line = <INFILE>;
 }
@@ -263,9 +219,6 @@ while(my $forward = <INFILE>) {
 =cut
 	$id = $F[0];
 	
-	if(exists $RIBO_IDs{$id}) {
-	    next;
-	}
 	my $Nf = "";
 	my $Nr = "";
 	$forward =~ /(N|I)H:i:(\d+)/;
@@ -327,9 +280,6 @@ while(my $forward = <INFILE>) {
 =cut
 	$id = $F[0];
 	
-	if(exists $RIBO_IDs{$id}) {
-	    next;
-	}
 	my $Nf = "";
 	$forward =~ /(N|I)H:i:(\d+)/;
         $Nf = $2;
@@ -354,5 +304,3 @@ if ($U eq "true"){
 if ($NU eq "true"){
     close($OUTFILENU);
 }
-
-print "got here\n";

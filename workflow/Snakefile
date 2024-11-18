@@ -37,6 +37,7 @@ rule all:
         "results/STATS/total_num_reads.txt",
         "results/STATS/mappingstats_summary.txt",
         "results/one-line.fa",
+        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.sam.gz", sample_id = sample_ids),
 
 rule precheck:
     input:
@@ -117,3 +118,18 @@ rule modify_to_onelinefa:
         config['containers']['perl']
     shell:
         'perl /workflow/scripts/rum-2.0.5_05/bin/modify_fa_to_have_seq_on_one_line.pl {input.fa} > {output.fa};'
+
+rule filtersam_gnorm:
+    input:
+        bam = lambda wildcards: sample_to_bam(wildcards.sample_id),
+    output:
+        unique = "results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.sam.gz",
+        NU = "results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.sam.gz",
+    params:
+        paired_end = paired_end_flag,
+        mito = port_config['CHRM']
+    container:
+        config['containers']['samtools']
+    shell:
+        # TODO: should -u/-nu ever be set? Appears to happen in PORT 0.8.5 if there are no NU mappers at all
+        "perl /workflow/scripts/filter_sam_gnorm.pl {input} {output} {params.paired_end} -mito {params.mito}"
