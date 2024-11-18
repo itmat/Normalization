@@ -2,100 +2,36 @@
 use warnings;
 use strict;
 
-my $USAGE = "\nUsage: perl get_chr_stats.pl <sample dirs> <loc> [option]
+my $USAGE = "\nUsage: perl get_chr_stats.pl <outfile> <infile1> <infile2> ...
 
-<sample dirs> is  a file of sample directories with alignment output without path
-<loc> is where the sample directories are
-
-options:
- -GENE: set this if you're running GENE normalization
-
- -EIJ: set this if you're running EXON-INTRON-JUNCTION normalization
-
- -alt_stats <s>
-
+<outfile>: path to write output file total
+<infile>: path to input numchr_count.txt files
 ";
 
 if (@ARGV < 2){
     die $USAGE;
 }
-my $LOC = $ARGV[1];
-$LOC =~ s/\/$//;
-my @fields = split("/", $LOC);
-my $last_dir = $fields[@fields-1];
-my $study = $fields[@fields-2];
-my $study_dir = $LOC;
-$study_dir =~ s/$last_dir//;
-my $shdir = $study_dir . "shell_scripts";
-my $logdir = $study_dir . "logs";
-my $statsdir = $study_dir . "/STATS/";
+my $outfile = $ARGV[0];
+my @infiles;
 
-my $gnorm = "false";
-my $eij = "false";
-my $numargs = 0;
-for(my $i=2;$i<@ARGV;$i++){
-    my $option_found = "false";
-    if ($ARGV[$i] eq '-alt_stats'){
-	$statsdir = $ARGV[$i+1];
-	$i++;
-	$option_found = "true";
-    }
-    if ($ARGV[$i] eq '-GENE'){
-	$gnorm = "true";
-	$numargs++;
-    }
-    if ($ARGV[$i] eq '-EIJ'){
-	$eij = "true";
-	$numargs++;
-    }
-}
-
-if ($numargs ne '1'){
-    die "you have to specify what type of normalization you're running. choose -GENE or -EIJ \n\n";
-}
-
-
-my $samples = $ARGV[0];
-my $outfile;
-if ($gnorm eq "true"){
-    unless (-d $statsdir){
-	my $make = `mkdir -p $statsdir`;
-    }
-
-    $outfile = $statsdir . "/percent_reads_chr_gene.txt";
-}
-if ($eij eq "true"){
-    unless (-d $statsdir){
-	my $make = `mkdir -p $statsdir`;
-    }
-
-    $outfile = $statsdir . "/percent_reads_chr_exon-intron-junction.txt";
+for(my $i=1; $i<@ARGV; $i++){
+    push(@infiles, $ARGV[$i]);
 }
 
 my %CHR;
-open(IN, $samples);
-while (my $line = <IN>){
-    chomp($line);
-    my $file;
-    if ($gnorm eq "true"){
-	$file = "$LOC/$line/GNORM/Unique/$line.filtered_u.numchr_count.txt";
-    }
-    if ($eij eq "true"){
-	$file = "$LOC/$line/EIJ/Unique/$line.filtered_u.numchr_count.txt";
-    }
+for my $file (@infiles) {
     open(FILE, $file);
     my $total = <FILE>;
     my $header = <FILE>;
     while(my $line2 = <FILE>){
-	chomp($line2);
-	my @c = split(/\t/, $line2);
-	my $chr = $c[0];
-	chomp($chr);
-	$CHR{$chr} = 1;
+        chomp($line2);
+        my @c = split(/\t/, $line2);
+        my $chr = $c[0];
+        chomp($chr);
+        $CHR{$chr} = 1;
     }
     close(FILE);
 }
-close(IN);
 
 open(OUT, ">$outfile");
 print OUT "sample\t";
@@ -104,33 +40,28 @@ foreach my $key (sort {&cmpChrs($a,$b)} keys %CHR){
 }
 print OUT "\n";
 
-open(INFILE, $samples);
-while(my $line = <INFILE>){
-    chomp($line);
-    my $file;
-    print OUT "$line\t";
-    if ($gnorm eq "true"){
-        $file = "$LOC/$line/GNORM/Unique/$line.filtered_u.numchr_count.txt";
+for my $file (@infiles){
+    my $id;
+    if ($file =~ m{([^/]+)\.filtered_u.numchr_count.txt$}) {
+        $id = $1;
+    } else {
+        die "The file path does not match the expected format.\n";
     }
-    if ($eij eq "true"){
-        $file = "$LOC/$line/EIJ/Unique/$line.filtered_u.numchr_count.txt";
-    }
+    print OUT "$id\t";
+
     foreach my $key (sort {&cmpChrs($a,$b)} keys %CHR){
-	my $find = `grep -w '^$key' $file`;
-	my $count = "0.00";
-	if ($find !~ /^$/){
-	    my @f = split(/\t/,$find);
-	    $count = $f[2];
-	    chomp($count);
-	}
-	print OUT "$count\t";
+        my $find = `grep -w '^$key' $file`;
+        my $count = "0.00";
+        if ($find !~ /^$/){
+            my @f = split(/\t/,$find);
+            $count = $f[2];
+            chomp($count);
+        }
+        print OUT "$count\t";
     }
     print OUT "\n";
 }
 close(OUT);
-close(INFILE);
-
-print "got here\n";
 
 sub cmpChrs ($$) {
     my $a2_c = lc($_[1]);
@@ -321,4 +252,6 @@ sub cmpChrs ($$) {
 
 	return 1;
     }
+
+print "got here\n";
 }

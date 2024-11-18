@@ -38,7 +38,7 @@ rule all:
         "results/STATS/mappingstats_summary.txt",
         "results/one-line.fa",
         expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.sam.gz", sample_id = sample_ids),
-        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.numchr_count.txt", sample_id = sample_ids),
+        "results/STATS/percent_reads_chr_gene.txt"
 
 rule precheck:
     input:
@@ -144,3 +144,13 @@ rule get_percent_numchr:
         config['containers']['perl']
     shell:
         "perl /workflow/scripts/get_percent_numchr.pl {input} {output}"
+
+rule get_chr_stats_gnorm:
+    input:
+        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.numchr_count.txt", sample_id = sample_ids),
+    output:
+        "results/STATS/percent_reads_chr_gene.txt"
+    container:
+        config['containers']['perl']
+    shell:
+        "perl /workflow/scripts/get_chr_stats.pl {output} {input}"
