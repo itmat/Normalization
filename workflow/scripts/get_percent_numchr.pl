@@ -42,4 +42,3 @@ foreach my $key (keys %CHR){
     print OUT "$key\t$CHR{$key}\t";
     printf OUT "%.2f\n", $percent;
 }
-print "got here\n";

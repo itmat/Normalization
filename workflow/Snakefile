@@ -38,6 +38,7 @@ rule all:
         "results/STATS/mappingstats_summary.txt",
         "results/one-line.fa",
         expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.sam.gz", sample_id = sample_ids),
+        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.numchr_count.txt", sample_id = sample_ids),
 
 rule precheck:
     input:
@@ -133,3 +134,13 @@ rule filtersam_gnorm:
     shell:
         # TODO: should -u/-nu ever be set? Appears to happen in PORT 0.8.5 if there are no NU mappers at all
         "perl /workflow/scripts/filter_sam_gnorm.pl {input} {output} {params.paired_end} -mito {params.mito}"
+
+rule get_percent_numchr:
+    input:
+        "results/READS/{sample_id}/{norm_type}/Unique/{sample_id}.filtered_u.sam.gz"
+    output:
+        "results/READS/{sample_id}/{norm_type}/Unique/{sample_id}.filtered_u.numchr_count.txt"
+    container:
+        config['containers']['perl']
+    shell:
+        "perl /workflow/scripts/get_percent_numchr.pl {input} {output}"
