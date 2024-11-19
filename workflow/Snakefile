@@ -31,7 +31,7 @@ sample_ids = list(config['aligned_files'].keys())
 paired_end_flag = "" if config['paired_end'] else '-se'
 orientation_flag = '' if not port_config['STRANDED'] else "-str_f" if port_config['FWD'] == "TRUE" else "-str_r"
 stranded_flag = '-stranded' if port_config['STRANDED'] == "TRUE" else '',
-filtered_suffixes = ["genes.sense", "genes.antisense"] if port_config['STRANDED'] == "TRUE" else ["genes"]
+sense_types = [".sense", ".antisense"] if port_config['STRANDED'] == "TRUE" else [""]
 
 rule all:
     input:
@@ -45,8 +45,10 @@ rule all:
         "results/READS/master_list_of_genes.txt",
         expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genefilter.sense.txt.gz", sample_id = sample_ids),
         expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genefilter.sense.txt.gz", sample_id = sample_ids),
-        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.{suffix}.sam.gz", sample_id = sample_ids, suffix = filtered_suffixes),
-        expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.{suffix}.sam.gz", sample_id = sample_ids, suffix = filtered_suffixes),
+        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genes{type}.sam.gz", sample_id = sample_ids, type = sense_types),
+        expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genes{type}.sam.gz", sample_id = sample_ids, type = sense_types),
+        expand("results/STATS/lineCounts/gene.unique{type}.lc.txt", type = sense_types),
+        expand("results/STATS/lineCounts/gene.nu{type}.lc.txt", type = sense_types),
 
 rule precheck:
     input:
@@ -240,8 +242,8 @@ rule genefilter:
         sam = "results/READS/{sample_id}/GNORM/{unique_nu}/{sample_id}.filtered_{u_nu}.sam.gz",
         genefile = "results/READS/{sample_id}/GNORM/{unique_nu}/{sample_id}.filtered_{u_nu}.txt.gz",
     output:
-        expand("results/READS/{{sample_id}}/GNORM/{{unique_nu}}/{{sample_id}}.filtered_{{u_nu}}.{suffix}.sam.gz", suffix=filtered_suffixes),
-        expand("results/READS/{{sample_id}}/GNORM/{{unique_nu}}/{{sample_id}}.filtered_{{u_nu}}.{suffix}.linecount.txt", suffix=filtered_suffixes),
+        expand("results/READS/{{sample_id}}/GNORM/{{unique_nu}}/{{sample_id}}.filtered_{{u_nu}}.genes{type}.sam.gz", type=sense_types),
+        expand("results/READS/{{sample_id}}/GNORM/{{unique_nu}}/{{sample_id}}.filtered_{{u_nu}}.genes{type}.linecount.txt", type=sense_types),
     params:
         stranded = stranded_flag,
         paired = paired_end_flag,
@@ -250,3 +252,19 @@ rule genefilter:
         config['containers']['samtools']
     shell:
         "perl /workflow/scripts/genefilter.pl {input.sam} {input.genefile} {params.outname} {params.paired} {params.stranded}"
+
+rule copy_lcfiles:
+    input:
+        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genes{type}.linecount.txt", type=sense_types, sample_id = sample_ids),
+        expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genes{type}.linecount.txt", type=sense_types, sample_id = sample_ids),
+    output:
+        expand("results/STATS/lineCounts/gene.unique{type}.lc.txt", type = sense_types),
+        expand("results/STATS/lineCounts/gene.nu{type}.lc.txt", type = sense_types),
+    params:
+        out_dir = "results/STATS/lineCounts/",
+        input_dirs = expand("results/READS/{sample_id}/", sample_id = sample_ids),
+        stranded = stranded_flag,
+    container:
+        config['containers']['perl']
+    shell:
+        "perl /workflow/scripts/copy_lcfiles.pl {params.out_dir} {params.input_dirs} {params.stranded} -gnorm"
