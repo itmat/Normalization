@@ -4,9 +4,6 @@ with open(workflow.source_path("config.yaml")) as cfg:
 default_config.update(config)
 config = default_config
 
-sample_ids = list(config['aligned_files'].keys())
-paired_end_flag = "" if config['paired_end'] else '-se'
-
 def sample_to_bam(sample_id):
     return config['aligned_files'][sample_id]
 
@@ -30,6 +27,11 @@ def read_port_config(cfg_file):
     return config
 port_config = read_port_config(config['port_config'])
 
+sample_ids = list(config['aligned_files'].keys())
+paired_end_flag = "" if config['paired_end'] else '-se'
+orientation_flag = '' if not port_config['STRANDED'] else "-str_f" if port_config['FWD'] == "TRUE" else "-str_r"
+stranded_flag = '-stranded' if port_config['STRANDED'] == "TRUE" else '',
+
 rule all:
     input:
         "results/precheck.pass",
@@ -40,6 +42,8 @@ rule all:
         expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.sam.gz", sample_id = sample_ids),
         "results/STATS/percent_reads_chr_gene.txt",
         "results/READS/master_list_of_genes.txt",
+        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genefilter.sense.txt.gz", sample_id = sample_ids),
+        expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genefilter.sense.txt.gz", sample_id = sample_ids),
 
 rule precheck:
     input:
@@ -175,6 +179,55 @@ rule get_master_list_of_genes:
     container:
         config['containers']['perl']
     params:
-        stranded = '-stranded' if port_config['STRANDED'] == "TRUE" else '',
+        stranded = stranded_flag,
     shell:
         "perl /workflow/scripts/get_master_list_of_genes.pl {input.ens} {output} {params.stranded} -readlength `cat {input.readlength}`"
+
+checkpoint sam2genes_gnorm_split:
+    input:
+        bam = lambda wildcards: sample_to_bam(wildcards.sample_id)
+    output:
+        suffixes = "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits.txt",
+        dir = directory("results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/"),
+    container:
+        config['containers']['samtools']
+    params:
+        n_rows_per_batch = 5_000_000
+    shell:
+        # Perform the splits and write out the split suffixes
+        "mkdir {output.dir} && samtools view {input.bam} | split -l {params.n_rows_per_batch} - {output.dir}/sam2genes_temp. && find {output.dir}/* | sed -nE \"s/.*sam2genes_temp.(.*)/\\1/p\" > {output.suffixes}"
+
+
+# TODO: sam2genes_gnorm_split splits the sam file up into smaller files for parallelism, but Snakemake cannot use a checkpoint
+# with temporary output. Therefore, the output is currently permanent, which is undesirable as it is large and redundant
+# Since the actual split files are not directly 'outputs' of the sam2genes_gnorm_split rule, it my be possible to delete them
+# in sam2genes_gnorm after using them
+rule sam2genes_gnorm:
+    input:
+        suffixes = "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits.txt",
+        split = "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/sam2genes_temp.{suffix}",
+        ens = port_config['GENE_INFO_FILE'],
+    output:
+        temp("results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/sam2genes_temp.{suffix}.txt.gz")
+    params:
+        paired_end = paired_end_flag,
+        orientation = orientation_flag,
+    container:
+        config['containers']['samtools']
+    shell:
+        "perl /workflow/scripts/sam2genes.pl {input.split} {input.ens} {output} {params.paired_end} {params.orientation}"
+
+def sam2genes_agg(wildcards):
+        out = list(checkpoints.sam2genes_gnorm_split.get(sample_id = wildcards.sample_id, unique_nu = wildcards.unique_nu).output)
+        with out[0].open() as f:
+            suffixes = f.read().splitlines()
+        return [f"results/READS/{wildcards.sample_id}/GNORM/{wildcards.unique_nu}/sam2genes_splits/sam2genes_temp.{suffix}.txt.gz"
+                for suffix in suffixes]
+
+rule cat_genes_files:
+    input:
+        sam2genes_agg
+    output:
+        "results/READS/{sample_id}/GNORM/{unique_nu}/{sample_id}.filtered_{u_nu}.genefilter.sense.txt.gz"
+    shell:
+        "zcat {input} | gzip > {output}"
