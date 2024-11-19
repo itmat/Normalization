@@ -31,6 +31,7 @@ sample_ids = list(config['aligned_files'].keys())
 paired_end_flag = "" if config['paired_end'] else '-se'
 orientation_flag = '' if not port_config['STRANDED'] else "-str_f" if port_config['FWD'] == "TRUE" else "-str_r"
 stranded_flag = '-stranded' if port_config['STRANDED'] == "TRUE" else '',
+filtered_suffixes = ["genes.sense", "genes.antisense"] if port_config['STRANDED'] == "TRUE" else ["genes"]
 
 rule all:
     input:
@@ -44,6 +45,8 @@ rule all:
         "results/READS/master_list_of_genes.txt",
         expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genefilter.sense.txt.gz", sample_id = sample_ids),
         expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genefilter.sense.txt.gz", sample_id = sample_ids),
+        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.{suffix}.sam.gz", sample_id = sample_ids, suffix = filtered_suffixes),
+        expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.{suffix}.sam.gz", sample_id = sample_ids, suffix = filtered_suffixes),
 
 rule precheck:
     input:
@@ -208,7 +211,7 @@ rule sam2genes_gnorm:
         split = "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/sam2genes_temp.{suffix}",
         ens = port_config['GENE_INFO_FILE'],
     output:
-        temp("results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/sam2genes_temp.{suffix}.txt.gz")
+        "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/sam2genes_temp.{suffix}.txt.gz"
     params:
         paired_end = paired_end_flag,
         orientation = orientation_flag,
@@ -228,6 +231,22 @@ rule cat_genes_files:
     input:
         sam2genes_agg
     output:
-        "results/READS/{sample_id}/GNORM/{unique_nu}/{sample_id}.filtered_{u_nu}.genefilter.sense.txt.gz"
+        "results/READS/{sample_id}/GNORM/{unique_nu}/{sample_id}.filtered_{u_nu}.txt.gz",
     shell:
         "zcat {input} | gzip > {output}"
+
+rule genefilter:
+    input:
+        sam = "results/READS/{sample_id}/GNORM/{unique_nu}/{sample_id}.filtered_{u_nu}.sam.gz",
+        genefile = "results/READS/{sample_id}/GNORM/{unique_nu}/{sample_id}.filtered_{u_nu}.txt.gz",
+    output:
+        expand("results/READS/{{sample_id}}/GNORM/{{unique_nu}}/{{sample_id}}.filtered_{{u_nu}}.{suffix}.sam.gz", suffix=filtered_suffixes),
+        expand("results/READS/{{sample_id}}/GNORM/{{unique_nu}}/{{sample_id}}.filtered_{{u_nu}}.{suffix}.linecount.txt", suffix=filtered_suffixes),
+    params:
+        stranded = stranded_flag,
+        paired = paired_end_flag,
+        outname = "results/READS/{sample_id}/GNORM/{unique_nu}/{sample_id}.filtered_{u_nu}.genes.sam.gz",
+    container:
+        config['containers']['samtools']
+    shell:
+        "perl /workflow/scripts/genefilter.pl {input.sam} {input.genefile} {params.outname} {params.paired} {params.stranded}"
