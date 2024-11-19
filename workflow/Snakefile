@@ -50,6 +50,8 @@ rule all:
         expand("results/STATS/lineCounts/gene.unique{type}.lc.txt", type = sense_types),
         expand("results/STATS/lineCounts/gene.nu{type}.lc.txt", type = sense_types),
         "results/STATS/GENE/sense_vs_antisense_genemappers_NU.txt",
+        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genefilter{type}.genequants", sample_id = sample_ids, type = sense_types),
+        expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genefilter{type}.genequants", sample_id = sample_ids, type = sense_types),
 
 rule precheck:
     input:
@@ -264,8 +266,8 @@ rule genefilter:
 
 rule copy_lcfiles:
     input:
-        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genes{type}.linecount.txt", type=sense_types, sample_id = sample_ids),
-        expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genes{type}.linecount.txt", type=sense_types, sample_id = sample_ids),
+        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genefilter{type}.linecount.txt", type=sense_types, sample_id = sample_ids),
+        expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genefilter{type}.linecount.txt", type=sense_types, sample_id = sample_ids),
     output:
         expand("results/STATS/lineCounts/gene.unique{type}.lc.txt", type = sense_types),
         expand("results/STATS/lineCounts/gene.nu{type}.lc.txt", type = sense_types),
@@ -280,8 +282,8 @@ rule copy_lcfiles:
 
 rule get_sense2antisense_stats:
     input:
-        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genes{type}.linecount.txt", type=sense_types, sample_id = sample_ids),
-        expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genes{type}.linecount.txt", type=sense_types, sample_id = sample_ids),
+        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genefilter{type}.linecount.txt", type=sense_types, sample_id = sample_ids),
+        expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genefilter{type}.linecount.txt", type=sense_types, sample_id = sample_ids),
         sample_file = "results/sample_ids.txt",
     output:
         "results/STATS/GENE/sense_vs_antisense_genemappers_Unique.txt",
@@ -289,4 +291,17 @@ rule get_sense2antisense_stats:
     container:
         config['containers']['perl']
     shell:
-            "perl /workflow/scripts/get_sense2antisense_stats.pl {input.sample_file} results/READS -gnorm"
+        "perl /workflow/scripts/get_sense2antisense_stats.pl {input.sample_file} results/READS -gnorm"
+
+rule quantify_genes_gnorm:
+    input:
+        genefilter = "results/READS/{sample_id}/GNORM/{unique_nu}/{sample_id}.filtered_{u_nu}.genefilter.sense.txt.gz",
+        ens = "results/READS/master_list_of_genes.txt"
+    output:
+        "results/READS/{sample_id}/GNORM/{unique_nu}/{sample_id}.filtered_{u_nu}.genefilter{type}.genequants",
+    params:
+        paired = paired_end_flag,
+    container:
+        config['containers']['perl']
+    shell:
+        "perl /workflow/scripts/quantify_genes.pl {input.genefilter} {input.ens} {output} {params.paired}"
