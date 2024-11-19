@@ -60,6 +60,7 @@ rule all:
         expand("results/READS/{sample_id}/{sample_id}.genepercents{type}.txt", sample_id = sample_ids, type = sense_types),
         expand("results/READS/{sample_id}/{sample_id}.genepercents.nu{type}.txt", sample_id = sample_ids, type = sense_types),
         expand("results/STATS/GENE/percent_high_expresser_gene{type}.txt", type=sense_types),
+        "results/STATS/GENE/expected_num_reads_gnorm.txt",
 
 rule precheck:
     input:
@@ -380,3 +381,19 @@ rule get_percent_high_expresser_gnorm:
         config['containers']['perl']
     shell:
         "perl /workflow/scripts/get_percent_high_expresser_gnorm.pl {input.sample_ids} results/READS {params.stranded}"
+
+rule predict_num_reads_gnorm:
+    #TODO: this script originally was modified by filter_highexp option, but I'm not sure it should be
+    input:
+        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genes{type}.linecount.txt", sample_id = sample_ids, type = sense_types),
+        expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genes{type}.linecount.txt", sample_id = sample_ids, type = sense_types),
+        sample_ids = "results/sample_ids.txt"
+    output:
+        "results/STATS/GENE/expected_num_reads_gnorm.txt",
+    params:
+        stranded = stranded_flag,
+        paired = paired_end_flag,
+    container:
+        config['containers']['perl']
+    shell:
+        "perl /workflow/scripts/predict_num_reads_gnorm.pl {input.sample_ids} results/READS {params.paired} {params.stranded}"
