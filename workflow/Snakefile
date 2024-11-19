@@ -49,6 +49,7 @@ rule all:
         expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genes{type}.sam.gz", sample_id = sample_ids, type = sense_types),
         expand("results/STATS/lineCounts/gene.unique{type}.lc.txt", type = sense_types),
         expand("results/STATS/lineCounts/gene.nu{type}.lc.txt", type = sense_types),
+        "results/STATS/GENE/sense_vs_antisense_genemappers_NU.txt",
 
 rule precheck:
     input:
@@ -60,6 +61,14 @@ rule precheck:
         config['containers']['samtools']
     shell:
         "perl /workflow/scripts/run_normalization --aligned_files {input.aligned} --cfg {input.cfg}"
+
+rule sample_ids:
+    output:
+        "results/sample_ids.txt"
+    run:
+        with open(output[0], 'wt') as f:
+            for sample_id in sample_ids:
+                f.write(f"{sample_id}\n")
 
 rule get_total_num_reads:
     input:
@@ -268,3 +277,16 @@ rule copy_lcfiles:
         config['containers']['perl']
     shell:
         "perl /workflow/scripts/copy_lcfiles.pl {params.out_dir} {params.input_dirs} {params.stranded} -gnorm"
+
+rule get_sense2antisense_stats:
+    input:
+        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genes{type}.linecount.txt", type=sense_types, sample_id = sample_ids),
+        expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genes{type}.linecount.txt", type=sense_types, sample_id = sample_ids),
+        sample_file = "results/sample_ids.txt",
+    output:
+        "results/STATS/GENE/sense_vs_antisense_genemappers_Unique.txt",
+        "results/STATS/GENE/sense_vs_antisense_genemappers_NU.txt",
+    container:
+        config['containers']['perl']
+    shell:
+            "perl /workflow/scripts/get_sense2antisense_stats.pl {input.sample_file} results/READS -gnorm"
