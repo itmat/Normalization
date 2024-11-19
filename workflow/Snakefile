@@ -58,6 +58,7 @@ rule all:
         expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genefilter{type}.genequants", sample_id = sample_ids, type = sense_types),
         expand("results/STATS/GENE/percent_genemappers_{unique_nu}_{sense}.txt", unique_nu = ["Unique", "NU"], sense=["sense", "antisense"]),
         expand("results/READS/{sample_id}/{sample_id}.genepercents{type}.txt", sample_id = sample_ids, type = sense_types),
+        expand("results/READS/{sample_id}/{sample_id}.genepercents.nu{type}.txt", sample_id = sample_ids, type = sense_types),
 
 rule precheck:
     input:
@@ -334,9 +335,7 @@ rule get_percent_genemappers:
 rule get_high_genes:
     input:
         expand("results/READS/{{sample_id}}/GNORM/Unique/{{sample_id}}.filtered_u.genefilter{type}.genequants", type = sense_types),
-        expand("results/READS/{{sample_id}}/GNORM/NU/{{sample_id}}.filtered_nu.genefilter{type}.genequants", type = sense_types),
         expand("results/READS/{{sample_id}}/GNORM/Unique/{{sample_id}}.filtered_u.genefilter{type}.txt.gz", type = sense_types),
-        expand("results/READS/{{sample_id}}/GNORM/NU/{{sample_id}}.filtered_nu.genefilter{type}.txt.gz", type = sense_types),
     output:
         expand("results/READS/{{sample_id}}/{{sample_id}}.genepercents{type}.txt", type = sense_types),
     params:
@@ -344,6 +343,23 @@ rule get_high_genes:
         stranded = stranded_flag,
         outname = "results/READS/{sample_id}/{sample_id}.genepercents.txt",
         cutoff = cutoff_highexp,
+    container:
+        config['containers']['perl']
+    shell:
+        "perl /workflow/scripts/get_genepercents.pl results/READS/{wildcards.sample_id} {params.cutoff} {params.outname} {params.stranded} {params.paired}"
+
+rule get_genepercents:
+    # Same as get_high_genes but for non-unique and has a hard-coded cutoff of 100 (i.e., no cutoff)
+    input:
+        expand("results/READS/{{sample_id}}/GNORM/NU/{{sample_id}}.filtered_nu.genefilter{type}.genequants", type = sense_types),
+        expand("results/READS/{{sample_id}}/GNORM/NU/{{sample_id}}.filtered_nu.genefilter{type}.txt.gz", type = sense_types),
+    output:
+        expand("results/READS/{{sample_id}}/{{sample_id}}.genepercents.nu{type}.txt", type = sense_types),
+    params:
+        paired = paired_end_flag,
+        stranded = stranded_flag,
+        cutoff = 100, # fixed, not parameterized
+        outname = "results/READS/{sample_id}/{sample_id}.genepercents.nu.txt",
     container:
         config['containers']['perl']
     shell:
