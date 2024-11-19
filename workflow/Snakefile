@@ -33,6 +33,10 @@ orientation_flag = '' if not port_config['STRANDED'] else "-str_f" if port_confi
 stranded_flag = '-stranded' if port_config['STRANDED'] == "TRUE" else '',
 sense_types = [".sense", ".antisense"] if port_config['STRANDED'] == "TRUE" else [""]
 
+# TODO: allow this to be configured by the user --cutoff_highexp
+# and separetly for part1 and part2, possibly
+cutoff_highexp = 3 # percent
+
 rule all:
     input:
         "results/precheck.pass",
@@ -53,6 +57,7 @@ rule all:
         expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genefilter{type}.genequants", sample_id = sample_ids, type = sense_types),
         expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genefilter{type}.genequants", sample_id = sample_ids, type = sense_types),
         expand("results/STATS/GENE/percent_genemappers_{unique_nu}_{sense}.txt", unique_nu = ["Unique", "NU"], sense=["sense", "antisense"]),
+        expand("results/READS/{sample_id}/{sample_id}.genepercents{type}.txt", sample_id = sample_ids, type = sense_types),
 
 rule precheck:
     input:
@@ -325,3 +330,21 @@ rule get_percent_genemappers:
         config['containers']['perl']
     shell:
         "perl /workflow/scripts/get_percent_genemappers.pl {input.sample_file} results/READS {params.stranded}"
+
+rule get_high_genes:
+    input:
+        expand("results/READS/{{sample_id}}/GNORM/Unique/{{sample_id}}.filtered_u.genefilter{type}.genequants", type = sense_types),
+        expand("results/READS/{{sample_id}}/GNORM/NU/{{sample_id}}.filtered_nu.genefilter{type}.genequants", type = sense_types),
+        expand("results/READS/{{sample_id}}/GNORM/Unique/{{sample_id}}.filtered_u.genefilter{type}.txt.gz", type = sense_types),
+        expand("results/READS/{{sample_id}}/GNORM/NU/{{sample_id}}.filtered_nu.genefilter{type}.txt.gz", type = sense_types),
+    output:
+        expand("results/READS/{{sample_id}}/{{sample_id}}.genepercents{type}.txt", type = sense_types),
+    params:
+        paired = paired_end_flag,
+        stranded = stranded_flag,
+        outname = "results/READS/{sample_id}/{sample_id}.genepercents.txt",
+        cutoff = cutoff_highexp,
+    container:
+        config['containers']['perl']
+    shell:
+        "perl /workflow/scripts/get_genepercents.pl results/READS/{wildcards.sample_id} {params.cutoff} {params.outname} {params.stranded} {params.paired}"
