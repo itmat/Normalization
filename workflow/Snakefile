@@ -59,6 +59,7 @@ rule all:
         expand("results/STATS/GENE/percent_genemappers_{unique_nu}_{sense}.txt", unique_nu = ["Unique", "NU"], sense=["sense", "antisense"]),
         expand("results/READS/{sample_id}/{sample_id}.genepercents{type}.txt", sample_id = sample_ids, type = sense_types),
         expand("results/READS/{sample_id}/{sample_id}.genepercents.nu{type}.txt", sample_id = sample_ids, type = sense_types),
+        expand("results/STATS/GENE/percent_high_expresser_gene{type}.txt", type=sense_types),
 
 rule precheck:
     input:
@@ -338,6 +339,7 @@ rule get_high_genes:
         expand("results/READS/{{sample_id}}/GNORM/Unique/{{sample_id}}.filtered_u.genefilter{type}.txt.gz", type = sense_types),
     output:
         expand("results/READS/{{sample_id}}/{{sample_id}}.genepercents{type}.txt", type = sense_types),
+        expand("results/READS/{{sample_id}}/{{sample_id}}.high_expressers_gene{type}.txt", type = sense_types),
     params:
         paired = paired_end_flag,
         stranded = stranded_flag,
@@ -355,6 +357,7 @@ rule get_genepercents:
         expand("results/READS/{{sample_id}}/GNORM/NU/{{sample_id}}.filtered_nu.genefilter{type}.txt.gz", type = sense_types),
     output:
         expand("results/READS/{{sample_id}}/{{sample_id}}.genepercents.nu{type}.txt", type = sense_types),
+        expand("results/READS/{{sample_id}}/{{sample_id}}.high_expressers_gene.nu{type}.txt", type = sense_types),
     params:
         paired = paired_end_flag,
         stranded = stranded_flag,
@@ -364,3 +367,16 @@ rule get_genepercents:
         config['containers']['perl']
     shell:
         "perl /workflow/scripts/get_genepercents.pl results/READS/{wildcards.sample_id} {params.cutoff} {params.outname} {params.stranded} {params.paired}"
+
+rule get_percent_high_expresser_gnorm:
+    input:
+        expand("results/READS/{sample_id}/{sample_id}.high_expressers_gene{type}.txt", sample_id = sample_ids, type = sense_types),
+        sample_ids = "results/sample_ids.txt"
+    output:
+        expand("results/STATS/GENE/percent_high_expresser_gene{type}.txt", type=sense_types),
+    params:
+        stranded = stranded_flag,
+    container:
+        config['containers']['perl']
+    shell:
+        "perl /workflow/scripts/get_percent_high_expresser_gnorm.pl {input.sample_ids} results/READS {params.stranded}"

@@ -46,8 +46,8 @@ unless (-d "$stats_dir/GENE/"){
 my $outfileU = "$stats_dir/GENE/percent_high_expresser_gene.txt";
 my $outfileU_A;
 if ($stranded eq "true"){
-    $outfileU = "$stats_dir/GENE/percent_high_expresser_gene_sense.txt";
-    $outfileU_A = "$stats_dir/GENE/percent_high_expresser_gene_antisense.txt";
+    $outfileU = "$stats_dir/GENE/percent_high_expresser_gene.sense.txt";
+    $outfileU_A = "$stats_dir/GENE/percent_high_expresser_gene.antisense.txt";
 }
 my %HIGH_GENE;
 my %HIGH_GENE_A;
