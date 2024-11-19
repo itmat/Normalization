@@ -2,10 +2,10 @@
 use strict;
 use warnings;
 
-my $USAGE = "\nUsage: perl get_master_list_of_genes.pl <ensGenes file> <loc> [option]
+my $USAGE = "\nUsage: perl get_master_list_of_genes.pl <ensGenes file> <outfile> [option]
 
 <ensGene file> ensembl table must contain columns with the following suffixes: name, chrom, strand, txStart, txEnd, exonStarts, exonEnds, name2, ensemblToGeneName.value
-<loc> is where the sample directories are
+<outfile> is the file to write the list out to
 
 option:
  -stranded: set this if your data are strand-specific.
@@ -39,8 +39,7 @@ for(my $i=2; $i<@ARGV; $i++) {
 if ($rl_cnt ne 1){
     die "-readlength <n> is required.\n";
 }
-my $LOC = $ARGV[1];
-$LOC =~ s/\/$//;
+my $outfile = $ARGV[1];
 my $ensFile = $ARGV[0];
 my (%ID, %GENECHR, %GENEST, %GENEEND);
 open(ENS, $ensFile) or die "cannot find file \"$ensFile\"\n";
@@ -115,7 +114,7 @@ foreach my $key (keys %ID){
     $GENESORT{$key} = $coord;
 }
 close(MAS);
-my $master_list_of_genes = "$LOC/master_list_of_genes.txt";
+my $master_list_of_genes = $outfile;
 open(MAS, ">$master_list_of_genes");
 
 foreach my $key (sort {&cmpChrs($GENESORT{$a},$GENESORT{$b})} keys %GENESORT){

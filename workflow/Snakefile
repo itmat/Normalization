@@ -38,7 +38,8 @@ rule all:
         "results/STATS/mappingstats_summary.txt",
         "results/one-line.fa",
         expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.sam.gz", sample_id = sample_ids),
-        "results/STATS/percent_reads_chr_gene.txt"
+        "results/STATS/percent_reads_chr_gene.txt",
+        "results/READS/master_list_of_genes.txt",
 
 rule precheck:
     input:
@@ -154,3 +155,26 @@ rule get_chr_stats_gnorm:
         config['containers']['perl']
     shell:
         "perl /workflow/scripts/get_chr_stats.pl {output} {input}"
+
+rule get_readlength:
+    input:
+        bam = [sample_to_bam(sample_id) for sample_id in sample_ids],
+    output:
+        "results/READS/readlength.txt"
+    container:
+        config['containers']['samtools']
+    shell:
+        "perl /workflow/scripts/get_readlength.pl {input} > {output}"
+
+rule get_master_list_of_genes:
+    input:
+        ens = port_config['GENE_INFO_FILE'],
+        readlength = "results/READS/readlength.txt",
+    output:
+        "results/READS/master_list_of_genes.txt"
+    container:
+        config['containers']['perl']
+    params:
+        stranded = '-stranded' if port_config['STRANDED'] == "TRUE" else '',
+    shell:
+        "perl /workflow/scripts/get_master_list_of_genes.pl {input.ens} {output} {params.stranded} -readlength `cat {input.readlength}`"
