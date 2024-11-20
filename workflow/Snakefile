@@ -37,6 +37,11 @@ sense_types = [".sense", ".antisense"] if port_config['STRANDED'] == "TRUE" else
 # and separetly for part1 and part2, possibly
 cutoff_highexp = 3 # percent
 
+wildcard_constraints:
+    suffix = "[^\.]+",
+    u_nu = "u|nu",
+    unique_nu = "Unique|NU",
+
 rule all:
     input:
         "results/precheck.pass",
@@ -49,8 +54,8 @@ rule all:
         "results/READS/master_list_of_genes.txt",
         expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genefilter.sense.txt.gz", sample_id = sample_ids),
         expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genefilter.sense.txt.gz", sample_id = sample_ids),
-        expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genes{type}.sam.gz", sample_id = sample_ids, type = sense_types),
-        expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genes{type}.sam.gz", sample_id = sample_ids, type = sense_types),
+        #expand("results/READS/{sample_id}/GNORM/Unique/{sample_id}.filtered_u.genes{type}.sam.gz", sample_id = sample_ids, type = sense_types),
+        #expand("results/READS/{sample_id}/GNORM/NU/{sample_id}.filtered_nu.genes{type}.sam.gz", sample_id = sample_ids, type = sense_types),
         expand("results/STATS/lineCounts/gene.unique{type}.lc.txt", type = sense_types),
         expand("results/STATS/lineCounts/gene.nu{type}.lc.txt", type = sense_types),
         "results/STATS/GENE/sense_vs_antisense_genemappers_NU.txt",
@@ -208,11 +213,10 @@ rule get_master_list_of_genes:
     shell:
         "perl /workflow/scripts/get_master_list_of_genes.pl {input.ens} {output} {params.stranded} -readlength `cat {input.readlength}`"
 
-checkpoint sam2genes_gnorm_split:
+rule sam2genes_gnorm_split:
     input:
         bam = lambda wildcards: sample_to_bam(wildcards.sample_id)
     output:
-        suffixes = "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits.txt",
         dir = directory("results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/"),
     container:
         config['containers']['samtools']
@@ -220,17 +224,25 @@ checkpoint sam2genes_gnorm_split:
         n_rows_per_batch = 5_000_000
     shell:
         # Perform the splits and write out the split suffixes
-        "mkdir {output.dir} && samtools view {input.bam} | split -l {params.n_rows_per_batch} - {output.dir}/sam2genes_temp. && find {output.dir}/* | sed -nE \"s/.*sam2genes_temp.(.*)/\\1/p\" > {output.suffixes}"
+        "mkdir {output.dir} && samtools view {input.bam} | split -l {params.n_rows_per_batch} - {output.dir}/sam2genes_temp."
 
+checkpoint sam2genes_gnorm_split_suffixes:
+    # NOTE: snakemake doesn't support temporary output files in checkpoints, so we make this rule a checkpoint
+    # instead of sam2genes_gnorm_split, and this rule just summarizes the files of sam2genes_gnorm_split
+    input:
+        dir = "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/",
+    output:
+        suffixes = "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits.txt",
+    container:
+        config['containers']['perl']
+    shell:
+        "find {input.dir}/* | sed -nE \"s/.*sam2genes_temp.(.*)/\\1/p\" > {output.suffixes}"
 
-# TODO: sam2genes_gnorm_split splits the sam file up into smaller files for parallelism, but Snakemake cannot use a checkpoint
-# with temporary output. Therefore, the output is currently permanent, which is undesirable as it is large and redundant
-# Since the actual split files are not directly 'outputs' of the sam2genes_gnorm_split rule, it my be possible to delete them
-# in sam2genes_gnorm after using them
 rule sam2genes_gnorm:
     input:
         suffixes = "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits.txt",
-        split = "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/sam2genes_temp.{suffix}",
+        dir = "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/",
+        #split = "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/sam2genes_temp.{suffix}",
         ens = port_config['GENE_INFO_FILE'],
     output:
         "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/sam2genes_temp.{suffix}.txt.gz"
@@ -240,10 +252,10 @@ rule sam2genes_gnorm:
     container:
         config['containers']['samtools']
     shell:
-        "perl /workflow/scripts/sam2genes.pl {input.split} {input.ens} {output} {params.paired_end} {params.orientation}"
+        "perl /workflow/scripts/sam2genes.pl {input.dir}/sam2genes_temp.{wildcards.suffix} {input.ens} {output} {params.paired_end} {params.orientation}"
 
-def sam2genes_agg(wildcards):
-        out = list(checkpoints.sam2genes_gnorm_split.get(sample_id = wildcards.sample_id, unique_nu = wildcards.unique_nu).output)
+def all_sam2genes_output(wildcards):
+        out = list(checkpoints.sam2genes_gnorm_split_suffixes.get(sample_id = wildcards.sample_id, unique_nu = wildcards.unique_nu).output)
         with out[0].open() as f:
             suffixes = f.read().splitlines()
         return [f"results/READS/{wildcards.sample_id}/GNORM/{wildcards.unique_nu}/sam2genes_splits/sam2genes_temp.{suffix}.txt.gz"
@@ -251,9 +263,11 @@ def sam2genes_agg(wildcards):
 
 rule cat_genes_files:
     input:
-        sam2genes_agg
+        all_sam2genes_output
     output:
         "results/READS/{sample_id}/GNORM/{unique_nu}/{sample_id}.filtered_{u_nu}.txt.gz",
+    container:
+        config['containers']['perl']
     shell:
         "zcat {input} | gzip > {output}"
 
@@ -262,7 +276,7 @@ rule genefilter:
         sam = "results/READS/{sample_id}/GNORM/{unique_nu}/{sample_id}.filtered_{u_nu}.sam.gz",
         genefile = "results/READS/{sample_id}/GNORM/{unique_nu}/{sample_id}.filtered_{u_nu}.txt.gz",
     output:
-        expand("results/READS/{{sample_id}}/GNORM/{{unique_nu}}/{{sample_id}}.filtered_{{u_nu}}.genes{type}.sam.gz", type=sense_types),
+        expand("results/READS/{{sample_id}}/GNORM/{{unique_nu}}/{{sample_id}}.filtered_{{u_nu}}.genefilter{type}.txt.gz", type=sense_types),
         expand("results/READS/{{sample_id}}/GNORM/{{unique_nu}}/{{sample_id}}.filtered_{{u_nu}}.genes{type}.linecount.txt", type=sense_types),
     params:
         stranded = stranded_flag,
@@ -304,6 +318,7 @@ rule get_sense2antisense_stats:
 
 rule quantify_genes_gnorm:
     input:
+        # TODO: does this support non-stranded files? those don't have ".sense"
         genefilter = "results/READS/{sample_id}/GNORM/{unique_nu}/{sample_id}.filtered_{u_nu}.genefilter.sense.txt.gz",
         ens = "results/READS/master_list_of_genes.txt"
     output:
@@ -358,7 +373,6 @@ rule get_genepercents:
         expand("results/READS/{{sample_id}}/GNORM/NU/{{sample_id}}.filtered_nu.genefilter{type}.txt.gz", type = sense_types),
     output:
         expand("results/READS/{{sample_id}}/{{sample_id}}.genepercents.nu{type}.txt", type = sense_types),
-        expand("results/READS/{{sample_id}}/{{sample_id}}.high_expressers_gene.nu{type}.txt", type = sense_types),
     params:
         paired = paired_end_flag,
         stranded = stranded_flag,
@@ -367,7 +381,7 @@ rule get_genepercents:
     container:
         config['containers']['perl']
     shell:
-        "perl /workflow/scripts/get_genepercents.pl results/READS/{wildcards.sample_id} {params.cutoff} {params.outname} {params.stranded} {params.paired}"
+        "perl /workflow/scripts/get_genepercents.pl results/READS/{wildcards.sample_id} {params.cutoff} {params.outname} {params.stranded} {params.paired} -nu"
 
 rule get_percent_high_expresser_gnorm:
     input:
