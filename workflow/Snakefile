@@ -217,7 +217,7 @@ rule sam2genes_gnorm_split:
     input:
         bam = lambda wildcards: sample_to_bam(wildcards.sample_id)
     output:
-        dir = directory("results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/"),
+        dir = temp(directory("results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/")),
     container:
         config['containers']['samtools']
     params:
@@ -242,10 +242,9 @@ rule sam2genes_gnorm:
     input:
         suffixes = "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits.txt",
         dir = "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/",
-        #split = "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/sam2genes_temp.{suffix}",
         ens = port_config['GENE_INFO_FILE'],
     output:
-        "results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes_splits/sam2genes_temp.{suffix}.txt.gz"
+        temp("results/READS/{sample_id}/GNORM/{unique_nu}/sam2genes/sam2genes_temp.{suffix}.txt.gz")
     params:
         paired_end = paired_end_flag,
         orientation = orientation_flag,
@@ -258,7 +257,7 @@ def all_sam2genes_output(wildcards):
         out = list(checkpoints.sam2genes_gnorm_split_suffixes.get(sample_id = wildcards.sample_id, unique_nu = wildcards.unique_nu).output)
         with out[0].open() as f:
             suffixes = f.read().splitlines()
-        return [f"results/READS/{wildcards.sample_id}/GNORM/{wildcards.unique_nu}/sam2genes_splits/sam2genes_temp.{suffix}.txt.gz"
+        return [f"results/READS/{wildcards.sample_id}/GNORM/{wildcards.unique_nu}/sam2genes/sam2genes_temp.{suffix}.txt.gz"
                 for suffix in suffixes]
 
 rule cat_genes_files:
