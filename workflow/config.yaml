@@ -1,4 +1,4 @@
 containers: {
     "samtools": "docker://biocontainers/samtools:v1.9-4-deb_cv1",
-    "perl": "/home/thobr/PORT/Normalization/images/perl.sif",
+    "perl": "https://s3.us-east-1.amazonaws.com/itmat.data/images/PORT/perl.sif",
 }
