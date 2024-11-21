@@ -1,6 +1,11 @@
 Bootstrap: docker
 From: perl:5.40.0
 
+%environment
+    export LC_ALL=C
+    export LANG=C
+    export LANGUAGE=C
+
 %post
     cpan FindBin Cwd IO::File Getopt::Long File::Spec File::Path File::stat File::Copy File::Temp \
         Text::Wrap Carp Data::Dumper Pod autodie POSIX Scalar::Util Archive::Tar List::Util \
