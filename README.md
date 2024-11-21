@@ -12,8 +12,30 @@ PORT is a resampling based read-level normalization and quantification pipeline 
 -----------------
 
 ### Running PORT
-Please see the [PORT wiki](https://github.com/itmat/normalization/wiki) for usage, input/output files and an explanation of the pipeline.<br>
->PORT is designed to be run on a compute cluster. It has been tested on SGE and LSF.
+
+PORT requires python version 3.11 or greater for its Snakemake pipeline.
+To install PORT run:
+
+```bash
+git clone https://github.com/itmat/Normalization.git
+cd Normalization
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+To run PORT, execute:
+```bash
+./run_normalization --cfg my_config_file.yaml --jobs 1
+```
+The `--jobs 1` argument will run PORT using a single process on the local machine, which is typically very slow.
+Please refer to Snakemake documentation to set up a profile to run using multiple nodes on a compute cluster, for example:
+```bash
+./run_normalization --cfg my_config_file.yaml --profile my_cluster --jobs 100
+```
+if you have set up a profile called `my_cluster` and want to run with 100 jobs.
+
+Please see the [PORT wiki](https://github.com/itmat/normalization/wiki) for usage, input/output files and an explanation of the pipeline.
 
 -----------------
 
