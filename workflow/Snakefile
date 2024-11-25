@@ -1,7 +1,18 @@
 import yaml
 with open(workflow.source_path("config.yaml")) as cfg:
     default_config = yaml.load(cfg, yaml.Loader)
-default_config.update(config)
+
+def update_recursive(A, B):
+    ''' like A.update(B) but performs in-place deep updates of all subdicts too '''
+    for key, val in B.items():
+        if key not in A:
+            A[key] = val
+        else:
+            if isinstance(A[key], dict) and isinstance(B[key], dict):
+                update_recursive(A[key], B[key])
+            else:
+                A[key] = val
+update_recurisve(default_config,config)
 config = default_config
 
 def sample_to_bam(sample_id):
