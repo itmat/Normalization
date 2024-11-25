@@ -12,7 +12,8 @@ def update_recursive(A, B):
                 update_recursive(A[key], B[key])
             else:
                 A[key] = val
-update_recurisve(default_config,config)
+
+update_recursive(default_config,config)
 config = default_config
 
 def sample_to_bam(sample_id):
